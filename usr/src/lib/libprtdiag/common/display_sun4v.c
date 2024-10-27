@@ -904,7 +904,7 @@ sun4v_display_cpus(picl_nodehdl_t cpuh, void* args)
 	picl_prophdl_t tblh;
 	picl_prophdl_t rowproph;
 	picl_propinfo_t propinfo;
-	int *int_value;
+	unsigned int *int_value;
 	int cpuid;
 	char *comp_value;
 	char *no_prop_value = "   ";
