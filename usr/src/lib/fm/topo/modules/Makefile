@@ -26,6 +26,11 @@
 # Copyright 2022 Garrett D'Amore
 #
 
+sparc_SUBDIRS =	sun4u \
+		sun4v \
+		SUNW,Sun-Fire \
+		SUNW,SPARC-Enterprise
+
 i386_SUBDIRS = i86pc
 
 SUBDIRS = common $($(MACH)_SUBDIRS)
