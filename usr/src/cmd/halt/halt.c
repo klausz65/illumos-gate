@@ -1164,16 +1164,23 @@ parse_fastboot_args(char *bootargs_buf, size_t buf_size,
 		 * No unix argument, but mountpoint is not empty, use
 		 * /platform/i86pc/kernel/$ISADIR/unix as default.
 		 */
-		char isa[20];
+		char isa[SYS_NMLN];
+		char platform[SYS_NMLN];
+
+		if (sysinfo(SI_PLATFORM, platform, sizeof (platform)) == -1) {
+			(void) fprintf(stderr,
+			    gettext("%s: Unknown platform"), cmdname);
+			return (EINVAL);
+		}
 
 		if (sysinfo(SI_ARCHITECTURE_64, isa, sizeof (isa)) != -1)
 			(void) snprintf(&unixfile[mplen],
 			    sizeof (unixfile) - mplen,
-			    "/platform/i86pc/kernel/%s/unix", isa);
+			    "/platform/%s/kernel/%s/unix", platform, isa);
 		else if (sysinfo(SI_ARCHITECTURE_32, isa, sizeof (isa)) != -1) {
 			(void) snprintf(&unixfile[mplen],
 			    sizeof (unixfile) - mplen,
-			    "/platform/i86pc/kernel/unix");
+			    "/platform/%s/kernel/unix", platform);
 		} else {
 			(void) fprintf(stderr,
 			    gettext("%s: Unknown architecture"), cmdname);
@@ -1431,7 +1438,7 @@ main(int argc, char *argv[])
 	/*
 	 * If fast reboot, do some sanity check on the argument
 	 */
-	if (fast_reboot == 1) {
+	if (fast_reboot > 0) {
 		int rc;
 		int is_dryrun = 0;
 
