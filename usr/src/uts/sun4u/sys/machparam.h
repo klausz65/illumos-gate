@@ -173,6 +173,18 @@ extern "C" {
 #define	DEFAULTSTKSZ	(3*PAGESIZE)
 
 /*
+ * Use a slightly larger thread stack size for interrupt threads rather than
+ * the default. This is useful for cases where the networking stack may do an
+ * rx and a tx in the context of a single interrupt and when combined with
+ * various promisc hooks that need memory, can cause us to get dangerously
+ * close to the edge of the traditional stack sizes. This is only a few pages
+ * more than a traditional stack and given that we don't have that many
+ * interrupt threads, the memory costs end up being more than worthwhile.
+ */
+#define	LL_INTR_STKSZ_NPGS	4
+#define	LL_INTR_STKSZ		(LL_INTR_STKSZ_NPGS * PAGESIZE)
+
+/*
  * DEFAULT initial thread stack size.
  */
 #define	T0STKSZ		(2 * DEFAULTSTKSZ)
