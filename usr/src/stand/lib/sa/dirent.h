@@ -27,8 +27,6 @@
 #ifndef _SA_DIRENT_H
 #define	_SA_DIRENT_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Exported interfaces for standalone's subset of libc's <dirent.h>.
  * All standalone code *must* use this header rather than libc's.

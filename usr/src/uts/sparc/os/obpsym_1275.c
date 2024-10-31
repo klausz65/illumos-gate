@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This module provides kernel callbacks to IEEE 1275-1994 system.
  * such that address and name lookups can work and use kernel symbol names.

@@ -27,8 +27,6 @@
 #ifndef	_SYS_SCSI_ADAPTERS_FASVAR_H
 #define	_SYS_SCSI_ADAPTERS_FASVAR_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * QLogic FAS (Enhanced	Scsi Processor)	Definitions,
  * Software && Hardware.

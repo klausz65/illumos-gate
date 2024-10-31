@@ -24,8 +24,6 @@
  * All Rights Reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/promif.h>
 #include <sys/promimpl.h>
 

@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"	/* from SVR4.0 1.1 */
-
 #include <stdio.h>
 #include <strings.h>
 

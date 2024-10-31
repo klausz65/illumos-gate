@@ -26,8 +26,6 @@
 #ifndef	_RAMDISK_H
 #define	_RAMDISK_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 
 #ifdef	__cplusplus

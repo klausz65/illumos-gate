@@ -27,8 +27,6 @@
 #ifndef _SYS_BOOT_REDIRECT_H
 #define	_SYS_BOOT_REDIRECT_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

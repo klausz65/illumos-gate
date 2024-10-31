@@ -27,8 +27,6 @@
 #ifndef _VLDC_H
 #define	_VLDC_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

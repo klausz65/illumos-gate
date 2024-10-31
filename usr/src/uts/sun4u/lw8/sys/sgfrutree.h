@@ -27,8 +27,6 @@
 #ifndef _SGFRUTREE_H
 #define	_SGFRUTREE_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

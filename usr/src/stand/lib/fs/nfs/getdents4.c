@@ -26,8 +26,6 @@
  * Stuff relating to NFSv4 directory reading ...
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <rpc/types.h>
 #include <rpc/auth.h>
 #include <rpc/xdr.h>

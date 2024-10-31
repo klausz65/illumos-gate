@@ -27,8 +27,6 @@
 #ifndef _DR_IO_H
 #define	_DR_IO_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * VIO DR Control Protocol
  */

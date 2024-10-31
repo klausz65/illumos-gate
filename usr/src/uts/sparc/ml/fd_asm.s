@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This file contains no entry points which can be called directly from
  * C and hence is of no interest to lint. However, we want to avoid the

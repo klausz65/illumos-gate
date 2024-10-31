@@ -27,12 +27,9 @@
 #ifndef _GHD_QUEUE_H
 #define	_GHD_QUEUE_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
-
 
 /*
  *  A list of singly linked elements

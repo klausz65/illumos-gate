@@ -27,8 +27,6 @@
 #ifndef	_SYS_SGSBBC_MAILBOX_H
 #define	_SYS_SGSBBC_MAILBOX_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/sgsbbc.h>
 
 #ifdef	__cplusplus

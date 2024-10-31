@@ -26,8 +26,6 @@
 #ifndef	_SYS_DADA_DADA_H
 #define	_SYS_DADA_DADA_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Global include for SCSI subsystem
  */

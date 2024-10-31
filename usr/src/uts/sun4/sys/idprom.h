@@ -27,8 +27,6 @@
 #ifndef	_SYS_IDPROM_H
 #define	_SYS_IDPROM_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

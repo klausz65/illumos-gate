@@ -27,8 +27,6 @@
 #ifndef	_SYS_GP2CFG_H
 #define	_SYS_GP2CFG_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Header file for the Safari Configurator (gptwocfg).
  */

@@ -27,8 +27,6 @@
 #ifndef	_SYS_CPC_ULTRA_H
 #define	_SYS_CPC_ULTRA_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/inttypes.h>
 
 #ifdef __cplusplus

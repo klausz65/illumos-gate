@@ -27,8 +27,6 @@
 #ifndef	_ADM1031_H
 #define	_ADM1031_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This file contains the commands required to read & write to the internal
  * registers of ADM1031.

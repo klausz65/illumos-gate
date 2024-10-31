@@ -27,8 +27,6 @@
 #ifndef _SA_LIBINTL_H
 #define	_SA_LIBINTL_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Exported interfaces for standalone's subset of libintl's <libintl.h>.
  * All standalone code *must* use this header rather than libintl's.

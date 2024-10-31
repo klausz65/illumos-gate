@@ -27,8 +27,6 @@
 #ifndef _LPAD_H
 #define	_LPAD_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * sun4v Landing Pad
  */

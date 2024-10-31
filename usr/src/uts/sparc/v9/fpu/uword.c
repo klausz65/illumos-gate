@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /* Read/write user memory procedures for Sparc9 FPU simulator. */
 
 #include <sys/types.h>

@@ -27,8 +27,6 @@
 #ifndef	_BRPC_H
 #define	_BRPC_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <rpc/rpc.h>
 
 #ifdef	__cplusplus

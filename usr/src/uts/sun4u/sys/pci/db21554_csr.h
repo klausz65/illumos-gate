@@ -27,8 +27,6 @@
 #ifndef	_SYS_DB21554_CSR_H
 #define	_SYS_DB21554_CSR_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

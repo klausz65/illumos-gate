@@ -27,8 +27,6 @@
 #ifndef _MDEG_H
 #define	_MDEG_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * MD Event Generator (mdeg) interface.
  */
