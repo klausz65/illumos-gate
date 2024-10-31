@@ -11,22 +11,20 @@
 #
 # Copyright 2014, OmniTI Computer Consulting, Inc. All rights reserved.
 # Copyright 2016 RackTop Systems.
+# Copyright 2022, Richard Lowe.
 #
 
 include $(SRC)/Makefile.master
 
-SUBDIRS=
-$(BUILDPERL32)SUBDIRS += $(MACH)
-$(BUILDPERL64)SUBDIRS += $(MACH64)
+MODULE = Intrs
 
-all :=		TARGET = all
-install :=	TARGET = install
-clean :=	TARGET = clean
-clobber :=	TARGET = clobber
+include $(SRC)/cmd/perl/Makefile.perl
 
-all install clean clobber: $(SUBDIRS)
+CERRWARN += -_gcc=-Wno-unused-variable
 
-$(SUBDIRS): FRC
-	@cd $@; pwd; $(MAKE) $(TARGET)
+MAPFILES = mapfile-vers
 
-FRC:
+all: $(PERLEXT)
+install: $(ROOTPERLEXT) $(ROOTPERLMOD)
+
+include $(SRC)/cmd/perl/Makefile.targ

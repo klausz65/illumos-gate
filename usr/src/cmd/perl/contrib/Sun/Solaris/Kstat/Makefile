@@ -9,24 +9,30 @@
 # http://www.illumos.org/license/CDDL.
 #
 #
+# Copyright 2014 Gary Mills
 # Copyright 2014, OmniTI Computer Consulting, Inc. All rights reserved.
 # Copyright 2016 RackTop Systems.
+# Copyright 2022 Richard Lowe.
 #
 
 include $(SRC)/Makefile.master
 
-SUBDIRS=
-$(BUILDPERL32)SUBDIRS += $(MACH)
-$(BUILDPERL64)SUBDIRS += $(MACH64)
+MODULE = Kstat
 
-all :=		TARGET = all
-install :=	TARGET = install
-clean :=	TARGET = clean
-clobber :=	TARGET = clobber
+include $(SRC)/cmd/perl/Makefile.perl
 
-all install clean clobber: $(SUBDIRS)
+LDLIBS += -lkstat
 
-$(SUBDIRS): FRC
-	@cd $@; pwd; $(MAKE) $(TARGET)
+CERRWARN += -_gcc=-Wno-unused-value
+CERRWARN += -_gcc=-Wno-unused-variable
 
-FRC:
+# Additional include directories only needed for the SPARC platform
+$(SPARC_BLD)CPPFLAGS += -I$(ROOT)/usr/platform/sun4u/include \
+    -I$(ROOT)/usr/platform/sun4v/include
+
+MAPFILES = mapfile-vers
+
+all: $(PERLEXT)
+install: $(ROOTPERLEXT) $(ROOTPERLMOD)
+
+include $(SRC)/cmd/perl/Makefile.targ

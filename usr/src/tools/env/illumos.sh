@@ -92,17 +92,11 @@ export ENABLE_SMATCH=1
 # don't want to bother providing the CUPS headers this needs.
 export ENABLE_SMB_PRINTING=
 
-# If your distro uses certain versions of Perl, make sure either Makefile.master
-# contains your new defaults OR your .env file sets them.
-# These are how you would override for building on OmniOS r151028, for example.
-#export PERL_VERSION=5.28
-#export PERL_VARIANT=-thread-multi
-#export PERL_PKGVERS=
-
-# To disable building of the 32-bit or 64-bit perl modules (or both),
-# uncomment these lines:
-#export BUILDPERL32='#'
-#export BUILDPERL64='#'
+# If you want to use non-default perl (other than /usr/perl5/bin/perl) point
+# the PERL variable to the non-default perl binary here.  You want to do that
+# usually only in a rare case when you need to build perl modules for
+# non-default perl version.
+#export PERL=/usr/perl5/bin/perl
 
 # If your distro uses certain versions of Python, make sure either
 # Makefile.master contains your new defaults OR your .env file sets them.
