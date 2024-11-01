@@ -28,7 +28,10 @@ MANIFEST=	ldoms-agents.xml
 SVCMETHOD=	ldoms-agents
 
 include ../Makefile.cmd
+include ../Makefile.cmd.64
 
+
+LDFLAGS +=	-m64 -L$(ROOTLIB)/$(MACH64)
 
 LOCAL_SRCS=	ldmad.c			\
 		ldma_log.c		\
@@ -63,11 +66,9 @@ $(ROOTMANIFEST)		:= FILEMODE= 444
 LDLIBS +=	-lds -ldladm -ldevinfo -lpri
 INCS +=		-I$(ROOT)/usr/platform/sun4v/include/sys
 INCS +=		-I$(SRC)/uts/sun4v
-CPPFLAGS += 	-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 $(INCS)
+CPPFLAGS += 	-D_LARGEFILE_SOURCE $(INCS)
 CSTD =	$(CSTD_GNU99)
 CERRWARN +=	$(CNOWARN_UNINIT)
-
-LINTFLAGS += -erroff=E_BAD_PTR_CAST_ALIGN
 
 .KEEP_STATE:
 
@@ -81,10 +82,8 @@ install: all .WAIT $(ROOTCMD) $(ROOTMANIFEST) $(ROOTSVCMETHOD)
 
 check: $(CHKMANIFEST)
 
-lint: lint_SRCS
-
 clean:
-	$(RM) $(PROG) $(OBJS) $(LINT_FILES)
+	$(RM) $(PROG) $(OBJS)
 
 include ../Makefile.targ
 
