@@ -185,7 +185,7 @@ SYMBOL_VERSION SUNWprivate_1.1 {
 };
 
 
-$if _sparc || (_x86 && _ELF32)
+$if (_sparc && _ELF32) || (_x86 && _ELF32)
 # The following applies to sparc (32/64-bit), and 32-bit x86:
 #
 # It was a mistake ever to have exported these symbols from libadm.
