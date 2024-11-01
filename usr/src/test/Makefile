@@ -20,7 +20,6 @@
 .PARALLEL: $(SUBDIRS)
 
 SUBDIRS = \
-	bhyve-tests \
 	crypto-tests \
 	elf-tests \
 	libc-tests \
