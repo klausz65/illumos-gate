@@ -92,7 +92,7 @@ plcnt_t		plcnt;		/* page list count */
  * remain 0 if the workaround is not needed.
  */
 #if defined(SF_ERRATA_57)
-caddr_t errata57_limit;
+extern caddr_t errata57_limit;
 #endif
 
 extern void page_relocate_hash(page_t *, page_t *);
@@ -427,7 +427,6 @@ chkaout(struct exdata *exp)
 		return (ENOEXEC);
 }
 
-
 /*
  * Return non 0 value if the address may cause a VAC alias with KPM mappings.
  * KPM selects an address such that it's equal offset modulo shm_alignment and
@@ -672,7 +671,7 @@ map_pgszcvec(caddr_t addr, size_t size, uintptr_t off, int flags, int type,
  *
  *	page_counters[page_size][region_size]
  *
- *	page_size:	TTE size code of pages on page_size freelist.
+ *	page_size: 	TTE size code of pages on page_size freelist.
  *
  *	region_size:	TTE size code of a candidate larger page made up
  *			made up of contiguous free page_size pages.
@@ -682,7 +681,7 @@ map_pgszcvec(caddr_t addr, size_t size, uintptr_t off, int flags, int type,
  * made up of page_size free pages can be coalesced into a
  * regsion_size page. Yuck! Lets try an example:
  *
- *	page_counters[1][3] is the table element used for identifying
+ * 	page_counters[1][3] is the table element used for identifying
  *	candidate 4M pages from contiguous pages off the 64K free list.
  *	Each index in the page_counters[1][3].array spans 4M. Its the
  *	number of free 512K size (regsion_size - 1) groups of contiguous
