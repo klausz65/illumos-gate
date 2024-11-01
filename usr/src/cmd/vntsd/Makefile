@@ -33,10 +33,12 @@ MANIFEST = vntsd.xml
 SVCMETHOD = svc-vntsd
 
 include ../Makefile.cmd
+include ../Makefile.cmd.64
 
 POFILES = $(SRCS:.c=.po)
 POFILE = $(PROG)_msg.po
 
+sparcv9_XARCH += -xarch=niagara2
 CFLAGS += $(CCVERBOSE)
 
 LDLIBS += -lsocket -lnsl -lsecdb
