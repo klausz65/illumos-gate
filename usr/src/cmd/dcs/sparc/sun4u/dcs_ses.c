@@ -122,7 +122,7 @@ static cond_t	sessions_cv   = DEFAULTCV;
  * are used, fork a new process and call ses_handler().
  */
 int
-ses_start(int fd)
+ses_start(uint64_t fd)
 {
 #ifdef DCS_MULTI_THREAD
 
@@ -558,7 +558,7 @@ ses_handler(void *arg)
 
 
 	if (ses_alloc() == -1) {
-		(void) rdr_close((int)arg);
+		(void) rdr_close((long int)arg);
 		return ((void *)-1);
 	}
 
@@ -571,7 +571,7 @@ ses_handler(void *arg)
 	memset(sp, 0, sizeof (session_t));
 	sp->state = DCS_CONNECTED;
 	sp->random_resp = lrand48();
-	sp->fd = (int)arg;
+	sp->fd = (long int)arg;
 	sp->id = curr_ses_id();
 
 	/* initially, block all signals and cancels */
