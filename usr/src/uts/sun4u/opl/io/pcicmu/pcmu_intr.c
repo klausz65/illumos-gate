@@ -42,7 +42,7 @@
 #include <sys/pcicmu/pcicmu.h>
 #include <sys/sdt.h>
 
-uint_t pcmu_intr_wrapper(caddr_t arg);
+uint_t pcmu_intr_wrapper(caddr_t, caddr_t);
 
 /*
  * interrupt jabber:
@@ -122,7 +122,7 @@ warn:
  * DDI_INTR_UNCLAIMED otherwise.
  */
 uint_t
-pcmu_intr_wrapper(caddr_t arg)
+pcmu_intr_wrapper(caddr_t arg, caddr_t arg1 __unused)
 {
 	pcmu_ib_ino_info_t *ino_p = (pcmu_ib_ino_info_t *)arg;
 	uint_t result = 0, r;
@@ -222,7 +222,7 @@ pcmu_add_intr(dev_info_t *dip, dev_info_t *rdip, ddi_intr_handle_impl_t *hdlp)
 	    hdlp->ih_pri, hdlp->ih_vector);
 
 	DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp,
-	    (ddi_intr_handler_t *)pcmu_intr_wrapper, (caddr_t)ino_p, NULL);
+	    pcmu_intr_wrapper, (caddr_t)ino_p, NULL);
 
 	ret = i_ddi_add_ivintr(hdlp);
 
