@@ -74,7 +74,7 @@ extern int	kpm_tlb_flush;
  * shouldn't have their mutexes in the same cache line.
  */
 #ifdef	DEBUG
-extern int kpmp_hash_debug;
+int kpmp_hash_debug;
 #define	KPMP_HASH(kpp)	(kpmp_hash_debug ? &kpmp_table[0] : &kpmp_table[ \
 	((uintptr_t)(kpp) + ((uintptr_t)(kpp) >> kpmp_shift)) \
 	& (kpmp_table_sz - 1)])

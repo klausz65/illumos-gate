@@ -84,7 +84,11 @@
 #include <sys/mem_cage.h>
 #include <vm/vm_dep.h>
 #include <sys/fpu/fpusystm.h>
+#ifdef	DEBUG
+#include <vm/mach_kpm_debug.h>
+#else
 #include <vm/mach_kpm.h>
+#endif
 #include <sys/callb.h>
 
 #ifdef	DEBUG
