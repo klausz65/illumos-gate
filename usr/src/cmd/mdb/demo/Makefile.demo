@@ -33,6 +33,7 @@ clobber := TARGET = clobber
 lint := TARGET = lint
 
 MACH :sh= uname -p
+SUBDIRS_sparc = sparc sparcv9
 SUBDIRS_i386 = i386 amd64
 SUBDIRS = $(SUBDIRS_$(MACH))
 
