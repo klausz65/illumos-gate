@@ -232,7 +232,7 @@ _setup(Boot *ebp, Dyn *ld_dyn)
 	    _syspagsz, _rt_name, ld_base, interp_base, fd, phdr,
 	    _execname, _argv, uid, euid, gid, egid,
 	    /* CSTYLED */
-	    NULL, auxflags, hwcap)) == NULL) {
+	    auxflags, hwcap)) == NULL) {
 		rtldexit(&lml_main, 1);
 	}
 	/* END CSTYLED */
