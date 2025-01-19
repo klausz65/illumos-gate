@@ -23,7 +23,6 @@
 
  CDDL HEADER END
 
- ident	"%Z%%M%	%I%	%E% SMI"
 -->
 
 <topology name='SUNW,Sun-Blade-T6340' scheme='hc'>
