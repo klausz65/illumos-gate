@@ -1311,8 +1311,8 @@ singleton(struct parse *p, cset *cs)
 		return (OUT);
 
 	/* Count the number of characters present in the bitmap */
-	for (i = n = 0; i < NC; i++)
-		if (CHIN(cs, i)) {
+	for (i = n = 0; i < p->nc; i++)
+		if (CHIN(p->nc, cs, i)) {
 			n++;
 			s = i;
 		}
