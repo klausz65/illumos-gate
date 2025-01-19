@@ -27,6 +27,7 @@
  */
 /*
  * Copyright 2019 Joyent, Inc.
+ * Copyright 2022 Jason King
  */
 
 /*
@@ -166,7 +167,7 @@ extern int findnextgid(gid_t, gid_t, gid_t *);
 #define	NN_UNIT_SPACE		(1U << 1)
 
 /* Minimum size for the output of nicenum, including NULL */
-#define	NN_NUMBUF_SZ		(6)
+#define	NN_NUMBUF_SZ		(7)
 
 void nicenum(uint64_t, char *, size_t);
 void nicenum_scale(uint64_t, size_t, char *, size_t, uint32_t);
