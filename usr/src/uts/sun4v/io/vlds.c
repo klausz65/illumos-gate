@@ -590,7 +590,7 @@ vlds_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 	vlds_state_t *sp;
 	ds_svc_hdl_t hdl;
 	ds_domain_hdl_t dhdl;
-	char *servicep;
+	char *servicep = 0;
 	int rv;
 	int minor = (int)getminor(dev);
 
