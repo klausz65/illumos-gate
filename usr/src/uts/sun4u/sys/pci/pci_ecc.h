@@ -78,7 +78,7 @@ extern void ecc_configure(pci_t *pci_p);
 extern void ecc_enable_intr(pci_t *pci_p);
 extern void ecc_disable_wait(ecc_t *ecc_p);
 extern uint_t ecc_disable_nowait(ecc_t *ecc_p);
-extern uint_t ecc_intr(caddr_t a);
+extern uint_t ecc_intr(caddr_t, caddr_t);
 extern int ecc_err_handler(ecc_errstate_t *ecc_err_p);
 extern void ecc_err_drain(void *, ecc_errstate_t *, errorq_elem_t *);
 
