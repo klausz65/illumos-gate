@@ -1263,7 +1263,7 @@ io_cm_info(ri_ap_t *ap, cfga_list_data_t *cfga, int flags, rcmd_t *rcm)
 	while ((rcm_tuple = rcm_info_next(rcm_info, rcm_tuple)) != NULL) {
 		if ((rcm_rsrc = rcm_info_rsrc(rcm_tuple)) == NULL)
 			continue;
-		if (deventry = lookup(&devicetable, rcm_rsrc)) {
+		if ((deventry = lookup(&devicetable, rcm_rsrc))) {
 			if (add_usage(deventry, rcm_rsrc, rcm_tuple)) {
 				retval = -1;
 				goto end;

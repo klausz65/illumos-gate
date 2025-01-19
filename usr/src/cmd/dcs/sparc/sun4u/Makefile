@@ -28,11 +28,12 @@
 MANIFEST=	dcs.xml
 
 include ../../../Makefile.cmd
+include ../../../Makefile.cmd.64
 include ../../../../Makefile.psm
 
 PROG=		dcs
 
-CLASS=		32
+CLASS=		64
 
 PLATFORM=	sun4u
 
@@ -66,9 +67,6 @@ HDRS=		dcs.h \
 
 OBJS=		$(SRCS:%.c=%.o)
 
-LINT_SRCS=	$(SRCS)
-LINT_FILES=	$(LINT_SRCS:%.c=%.ln)
-
 POFILES=	dcs_msg.po
 
 $(ROOTLIBPROG) :=	FILEMODE=	0755
@@ -85,11 +83,10 @@ MULTI_PROC_FLAGS=	-D__EXTENSIONS__
 CPPFLAGS= 	-I$(USR_PSM_INCL_DIR) $(CPPFLAGS.master) \
 		$($(CONCURR_MODE)_FLAGS)
 
-LINT_FLAGS=	-c -Nlevel=4 -Ncheck $($(CONCURR_MODE)_FLAGS)
+LDFLAGS +=	-m64 -L$(ROOTLIB)/$(MACH64)
 
 XGETFLAGS +=	-a -s -x $(PROG).xcl
 
-CERRWARN +=	-_gcc=-Wno-parentheses
 CERRWARN +=	$(CNOWARN_UNINIT)
 
 #
@@ -119,9 +116,6 @@ $(PROG): $(OBJS) $(HDRS)
 install: all .WAIT $(ROOTLIBPROG) $(ROOTMANIFEST) $(ROOTSVCMETHOD)
 
 check:	$(CHKMANIFEST)
-
-lint:
-	$(LINT) $(LINT_FLAGS) $(CPPFLAGS) $(LINT_SRCS)
 
 clean:
 	$(RM) $(PROG) $(OBJS) $(LINT_FILES)
