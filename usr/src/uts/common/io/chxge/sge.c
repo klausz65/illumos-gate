@@ -87,7 +87,7 @@ static uint64_t os_freelist_buffer_alloc(ch_t *sa, int sz, mblk_t **mb,
     ulong_t *dh);
 void pe_os_free_contig(ch_t *, size_t, void *, uint64_t, ulong_t, ulong_t);
 
-static inline uint32_t t1_sge_rx(pesge *sge, freelQ_t *Q,
+static uint32_t t1_sge_rx(pesge *sge, freelQ_t *Q,
     unsigned int len, unsigned int offload);
 #ifdef HOST_PAUSE
 static void t1_sge_check_pause(pesge *sge, struct freelQ *Q);
@@ -798,7 +798,7 @@ os_freelist_buffer_alloc(ch_t *sa, int sz, mblk_t **mb, ulong_t *dh)
 	}
 }
 
-static inline unsigned int
+static unsigned int
 t1_sge_rx(pesge *sge, struct freelQ *Q, unsigned int len, unsigned int offload)
 {
 	mblk_t *skb;
