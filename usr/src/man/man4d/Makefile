@@ -48,7 +48,6 @@ _MANFILES=	aac.4d		\
 		dtrace.4d	\
 		e1000g.4d	\
 		ehci.4d		\
-		ena.4d		\
 		fasttrap.4d	\
 		fbt.4d		\
 		fcip.4d		\
@@ -143,6 +142,8 @@ _MANFILES=	aac.4d		\
 		usbsksp.4d	\
 		usbsprl.4d	\
 		usbvc.4d	\
+		vioscsi.4d	\
+		virtio.4d	\
 		virtualkm.4d	\
 		vni.4d		\
 		vr.4d		\
@@ -242,8 +243,6 @@ i386_MANFILES=	ahci.4d		\
 		vio9p.4d	\
 		vioblk.4d	\
 		vioif.4d	\
-		vioscsi.4d	\
-		virtio.4d	\
 		wpi.4d		\
 		xhci.4d		\
 		zen_udf.4d	\
