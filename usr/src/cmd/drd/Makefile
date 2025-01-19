@@ -33,9 +33,13 @@ MANIFEST=	drd.xml
 SVCMETHOD=	svc-drd
 
 include ../Makefile.cmd
+include ../Makefile.cmd.64
 include ../../Makefile.psm
 
-CLASS=		32
+sparcv9_XARCH += -xarch=niagara2
+LDFLAGS +=	-m64
+
+CLASS =	64
 
 PLATFORM=	sun4v
 
@@ -47,9 +51,6 @@ HDRS=		drd.h
 
 OBJS=		$(SRCS:%.c=%.o)
 
-LINT_SRCS=	$(SRCS)
-LINT_FILES=	$(LINT_SRCS:%.c=%.ln)
-
 ROOTCMDDIR=		$(ROOTLIB)/ldoms
 ROOTMANIFESTDIR=	$(ROOTSVCPLATFORMSUN4V)
 $(ROOTMANIFEST)		:= FILEMODE= 444
@@ -58,8 +59,6 @@ $(ROOTMANIFEST)		:= FILEMODE= 444
 # FLAGS:
 #
 CPPFLAGS= 	-I$(SRC)/uts/sun4v $(CPPFLAGS.master) -D_REENTRANT
-
-LINT_FLAGS=	-c -Nlevel=4 -Ncheck 
 
 XGETFLAGS +=	-a -s -x $(PROG).xcl
 
@@ -85,9 +84,6 @@ $(PROG): $(OBJS) $(HDRS)
 install: all .WAIT $(ROOTCMD) $(ROOTMANIFEST) $(ROOTSVCMETHOD)
 
 check:	$(CHKMANIFEST)
-
-lint:
-	$(LINT) $(LINT_FLAGS) $(CPPFLAGS) $(LINT_SRCS)
 
 clean:
 	$(RM) $(PROG) $(OBJS) $(LINT_FILES)
