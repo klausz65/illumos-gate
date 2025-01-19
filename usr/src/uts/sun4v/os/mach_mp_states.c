@@ -37,7 +37,7 @@
 extern uint64_t xc_tick_limit;
 extern uint64_t xc_tick_jump_limit;
 
-extern void cpu_intrq_unregister_powerdown(uint64_t doneflag_va);
+extern void cpu_intrq_unregister_powerdown(uint64_t, uint64_t);
 
 /*
  * set_idle_cpu is called from idle() when a CPU becomes idle.
@@ -183,7 +183,7 @@ xt_cpu_unreg_powerdown(struct cpu *cpup)
 
 	not_done = 1;
 
-	xt_one_unchecked(cpuid, (xcfunc_t *)cpu_intrq_unregister_powerdown,
+	xt_one_unchecked(cpuid, cpu_intrq_unregister_powerdown,
 	    (uint64_t)&not_done, 0);
 
 	starttick = lasttick = gettick();
