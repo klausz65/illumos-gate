@@ -28,8 +28,6 @@
 #ifndef _EPIC_H
 #define	_EPIC_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

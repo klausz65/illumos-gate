@@ -26,8 +26,6 @@
  * icmp4.c, Code implementing the Internet Control Message Protocol (v4) ICMP.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <socket_impl.h>
 #include <socket_inet.h>

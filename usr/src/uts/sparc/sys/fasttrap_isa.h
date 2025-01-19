@@ -27,8 +27,6 @@
 #ifndef	_FASTTRAP_ISA_H
 #define	_FASTTRAP_ISA_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 
 #ifdef	__cplusplus

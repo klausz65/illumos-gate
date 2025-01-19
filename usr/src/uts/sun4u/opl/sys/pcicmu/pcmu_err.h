@@ -26,8 +26,6 @@
 #ifndef	_SYS_PCMU_ERR_H
 #define	_SYS_PCMU_ERR_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/ddifm.h>
 
 #ifdef	__cplusplus

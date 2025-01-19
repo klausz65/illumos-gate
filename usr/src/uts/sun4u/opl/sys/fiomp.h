@@ -26,8 +26,6 @@
 #ifndef _FIOMP_H
 #define	_FIOMP_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

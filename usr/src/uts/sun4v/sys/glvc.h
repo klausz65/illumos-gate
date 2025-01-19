@@ -26,8 +26,6 @@
 #ifndef	_GLVC_H
 #define	_GLVC_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

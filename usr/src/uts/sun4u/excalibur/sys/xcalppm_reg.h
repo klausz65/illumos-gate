@@ -33,8 +33,6 @@
 #ifndef	_SYS_XCALPPM_REG_H
 #define	_SYS_XCALPPM_REG_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

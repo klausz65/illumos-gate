@@ -24,7 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
 
 	.section	".text",#alloc,#execinstr
 	.file	"mont_mulf_asm_v9.s"
@@ -84,7 +83,6 @@ TwoToMinus32:
 !    2		      ! * Copyright 2003 Sun Microsystems, Inc.  All rights reserved.
 !    3		      ! * Use is subject to license terms.
 !    4		      ! */
-!    6		      !#pragma ident	"%Z%%M%	%I%	%E% SMI"
 !    9		      !/*
 !   10		      ! * If compiled without -DRF_INLINE_MACROS then needs -lm at link time
 !   11		      ! * If compiled with -DRF_INLINE_MACROS then needs conv.il at compile time

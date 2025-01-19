@@ -26,8 +26,6 @@
 #ifndef _SYS_PPM_PLAT_H
 #define	_SYS_PPM_PLAT_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/i2c/clients/i2c_gpio.h>
 
 #ifdef  __cplusplus

@@ -26,9 +26,6 @@
 #ifndef	_DDM2S_H
 #define	_DDM2S_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif

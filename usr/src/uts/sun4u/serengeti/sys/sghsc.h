@@ -27,8 +27,6 @@
 #ifndef	_SYS_SGHSC_H
 #define	_SYS_SGHSC_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

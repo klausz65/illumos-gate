@@ -24,8 +24,6 @@
  * All rights reserved.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * The routines are NOT part of the interface, merely internal
  * utilities which assist in making the interface standalone.

@@ -27,8 +27,6 @@
 #ifndef _SYS_FPU_GLOBALS_H
 #define	_SYS_FPU_GLOBALS_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Sparc floating-point simulator PRIVATE include file.
  */

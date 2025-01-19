@@ -27,8 +27,6 @@
 #ifndef _SYS_BBC_BEEP_H
 #define	_SYS_BBC_BEEP_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -25,8 +25,6 @@
 #ifndef	_SYS_SCSI_ADAPTERS_FASCMD_H
 #define	_SYS_SCSI_ADAPTERS_FASCMD_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/note.h>
 #include <sys/isa_defs.h>
 #include <sys/scsi/scsi_types.h>

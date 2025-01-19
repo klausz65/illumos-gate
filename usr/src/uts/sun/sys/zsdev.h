@@ -27,8 +27,6 @@
 #ifndef	_SYS_ZSDEV_H
 #define	_SYS_ZSDEV_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Onboard serial ports.
  * Device dependent software definitions.

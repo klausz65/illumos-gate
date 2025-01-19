@@ -27,8 +27,6 @@
 #ifndef _SYS_AVINTR_H
 #define	_SYS_AVINTR_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4 */
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

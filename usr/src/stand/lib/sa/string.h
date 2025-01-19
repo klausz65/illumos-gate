@@ -27,8 +27,6 @@
 #ifndef _SA_STRING_H
 #define	_SA_STRING_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Exported interfaces for standalone's subset of libc's <string.h>.
  * All standalone code *must* use this header rather than libc's.

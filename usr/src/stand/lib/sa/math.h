@@ -27,8 +27,6 @@
 #ifndef _SA_MATH_H
 #define	_SA_MATH_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Exported interfaces for standalone's subset of libm's <math.h>.
  * All standalone code *must* use this header rather than libm's.

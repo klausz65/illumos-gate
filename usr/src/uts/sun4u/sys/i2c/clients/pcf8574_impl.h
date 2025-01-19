@@ -27,8 +27,6 @@
 #ifndef	_PCF8574_IMPL_H
 #define	_PCF8574_IMPL_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

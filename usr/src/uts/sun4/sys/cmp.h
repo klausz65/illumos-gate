@@ -27,8 +27,6 @@
 #ifndef	_CMP_H
 #define	_CMP_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/cpuvar.h>
 
 #ifdef	__cplusplus

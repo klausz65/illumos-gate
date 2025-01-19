@@ -27,8 +27,6 @@
 #ifndef _SA_ARPA_INET_H
 #define	_SA_ARPA_INET_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Exported interfaces for standalone's subset of libsocket's <arpa/inet.h>.
  * All standalone code *must* use this header rather than libsockets's.

@@ -27,8 +27,6 @@
 #ifndef	_SYS_DADA_DADA_RESOURCE_H
 #define	_SYS_DADA_DADA_RESOURCE_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/dada/dada_types.h>
 
 #ifdef	__cplusplus

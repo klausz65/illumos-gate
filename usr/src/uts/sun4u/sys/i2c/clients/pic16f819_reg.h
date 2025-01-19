@@ -27,8 +27,6 @@
 #ifndef	_PIC16F819_REG_H
 #define	_PIC16F819_REG_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
