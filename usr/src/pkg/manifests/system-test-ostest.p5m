@@ -39,8 +39,9 @@ dir  path=opt/os-tests/tests
 file path=opt/os-tests/tests/clock_gettime.32 mode=0555
 file path=opt/os-tests/tests/clock_gettime.64 mode=0555
 dir  path=opt/os-tests/tests/cores
-$(i386_ONLY)dir path=opt/os-tests/tests/cores/amd64
-$(i386_ONLY)file path=opt/os-tests/tests/cores/amd64/libdumper.so.1 mode=0755
+dir  path=opt/os-tests/tests/cores/$(ARCH64)
+link path=opt/os-tests/tests/cores/$(ARCH64)/libdumper.so target=libdumper.so.1
+file path=opt/os-tests/tests/cores/$(ARCH64)/libdumper.so.1 mode=0755
 file path=opt/os-tests/tests/cores/core_prereqs mode=0555
 file path=opt/os-tests/tests/cores/coretests mode=0555
 file path=opt/os-tests/tests/cores/dumper.32 mode=0555
