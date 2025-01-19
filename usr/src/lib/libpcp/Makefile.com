@@ -53,6 +53,8 @@ PLATLIBS =	$(USR_PLAT_DIR)/$(PLATFORM)/lib
 INS.slink6=	$(RM) -r $@; $(SYMLINK) ../../$(PLATFORM)/lib/libpcp.so.1 $@
 INS.slink7=	$(RM) -r $@; $(SYMLINK) ../../$(PLATFORM)/lib/libpcp.so $@
 
+pics/libpcp.o := CERRWARN += -_gcc=-Wno-clobbered
+
 .KEEP_STATE:
 
 #
