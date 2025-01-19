@@ -53,7 +53,7 @@ INSTALL_TARGET  = $(BINARY) $(ROOTMODULE)
 # Overrides
 #
 
-#COPTIMIZE = -xO4
+CFLAGS		+= $(CCINLINESIZE)
 
 INC_PATH  += -I$(UTSBASE)/common/io/myri10ge -I$(UTSBASE)/common/io/myri10ge/firmware
 
