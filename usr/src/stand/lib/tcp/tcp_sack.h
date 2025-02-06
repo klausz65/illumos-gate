@@ -27,8 +27,6 @@
 #ifndef	_INET_SACK_H
 #define	_INET_SACK_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <netinet/tcp.h>	/* for tcp_seq */
 
 #ifdef	__cplusplus

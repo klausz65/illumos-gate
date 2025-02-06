@@ -27,9 +27,6 @@
 #ifndef	_SYS_RMC_COMM_DRVINTF_H
 #define	_SYS_RMC_COMM_DRVINTF_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-
 #include <sys/rmc_comm_hproto.h>
 
 #ifdef	__cplusplus

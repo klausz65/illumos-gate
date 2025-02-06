@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <dhcp_impl.h>
 #include <sys/types.h>
 #include <socket_impl.h>

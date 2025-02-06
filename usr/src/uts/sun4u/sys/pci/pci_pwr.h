@@ -27,8 +27,6 @@
 #ifndef _SYS_PCI_PWR_H
 #define	_SYS_PCI_PWR_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/epm.h>
 
 #ifdef	__cplusplus

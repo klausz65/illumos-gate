@@ -27,8 +27,6 @@
 #ifndef	_SYS_SIMMSTAT_H
 #define	_SYS_SIMMSTAT_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

@@ -27,8 +27,6 @@
 #ifndef _SYS_CPU_MODULE_H
 #define	_SYS_CPU_MODULE_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/pte.h>
 #include <sys/async.h>
 #include <sys/x_call.h>

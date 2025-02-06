@@ -26,8 +26,6 @@
 #ifndef	_OPL_H
 #define	_OPL_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

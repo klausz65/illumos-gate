@@ -27,8 +27,6 @@
 #ifndef	_SYS_GPTWO_CPU_H
 #define	_SYS_GPTWO_CPU_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Header file for the CPU component to the Safari Configurator (gptwo_cpu).
  */

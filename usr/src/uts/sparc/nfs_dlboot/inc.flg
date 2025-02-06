@@ -20,8 +20,5 @@
 #
 # CDDL HEADER END
 #
-#
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-#
 
 find_files "s.*" usr/src/common/net/dhcp

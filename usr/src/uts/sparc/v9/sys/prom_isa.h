@@ -27,8 +27,6 @@
 #ifndef	_SYS_PROM_ISA_H
 #define	_SYS_PROM_ISA_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/feature_tests.h>
 #include <sys/obpdefs.h>
 

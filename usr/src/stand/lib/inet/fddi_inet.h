@@ -28,8 +28,6 @@
 #ifndef _FDDI_INET_H
 #define	_FDDI_INET_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

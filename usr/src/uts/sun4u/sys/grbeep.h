@@ -26,8 +26,6 @@
 #ifndef _SYS_GRBEEP_H
 #define	_SYS_GRBEEP_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

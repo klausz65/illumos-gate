@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"	/* SunOS-4.1 */
-
 /* Unpack procedures for Sparc FPU simulator. */
 
 #include <sys/fpu/fpu_simulator.h>

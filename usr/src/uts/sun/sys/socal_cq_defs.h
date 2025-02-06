@@ -26,8 +26,6 @@
 #ifndef _SYS_SOCAL_CQ_DEFS_H
 #define	_SYS_SOCAL_CQ_DEFS_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

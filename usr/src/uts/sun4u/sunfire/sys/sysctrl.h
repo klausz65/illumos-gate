@@ -27,8 +27,6 @@
 #ifndef	_SYS_SYSCTRL_H
 #define	_SYS_SYSCTRL_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

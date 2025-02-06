@@ -27,8 +27,6 @@
 #ifndef	_SYS_PROM_DEBUG_H
 #define	_SYS_PROM_DEBUG_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/promif.h>
 
 #ifdef	__cplusplus

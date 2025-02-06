@@ -25,8 +25,6 @@
 #ifndef _OPLMSU_H
 #define	_OPLMSU_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

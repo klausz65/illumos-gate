@@ -27,8 +27,6 @@
 #ifndef	_SYS_SCSI_ADAPTERS_SFVAR_H
 #define	_SYS_SCSI_ADAPTERS_SFVAR_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * FC-AL FCP driver definitions
  */

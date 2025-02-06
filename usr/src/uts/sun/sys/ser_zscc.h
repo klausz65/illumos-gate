@@ -26,8 +26,6 @@
 #ifndef _SYS_SER_ZSCC_H
 #define	_SYS_SER_ZSCC_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Zilog 8530 SCC Serial Communications Controller
  *

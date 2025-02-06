@@ -27,8 +27,6 @@
 #ifndef	_PMAP_H
 #define	_PMAP_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

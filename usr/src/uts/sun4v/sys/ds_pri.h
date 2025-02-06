@@ -27,8 +27,6 @@
 #ifndef	_SYS_DS_PRI_H_
 #define	_SYS_DS_PRI_H_
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 
 #ifdef __cplusplus

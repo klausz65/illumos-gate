@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * CPU-specific functions needed by the Kernel-Debugger Interface (KDI).  These
  * functions are invoked directly by the kernel debugger (kmdb) while the system

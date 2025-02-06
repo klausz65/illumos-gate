@@ -27,8 +27,6 @@
 #ifndef	_SYS_MACHTHREAD_H
 #define	_SYS_MACHTHREAD_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/asi.h>
 #include <sys/sun4asi.h>
 #include <sys/machasi.h>

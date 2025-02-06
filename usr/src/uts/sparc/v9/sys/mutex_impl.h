@@ -26,8 +26,6 @@
 #ifndef _SYS_MUTEX_IMPL_H
 #define	_SYS_MUTEX_IMPL_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifndef	_ASM
 #include <sys/types.h>
 #include <sys/machlock.h>

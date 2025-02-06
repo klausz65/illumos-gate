@@ -26,8 +26,6 @@
 #ifndef	_SYS_PCMU_UTIL_H
 #define	_SYS_PCMU_UTIL_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

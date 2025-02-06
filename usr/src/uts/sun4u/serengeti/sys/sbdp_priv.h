@@ -27,8 +27,6 @@
 #ifndef _SBDP_PRIV_H
 #define	_SBDP_PRIV_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

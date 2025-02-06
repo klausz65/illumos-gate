@@ -26,8 +26,6 @@
 #ifndef	_SYS_PCI_SPACE_H
 #define	_SYS_PCI_SPACE_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

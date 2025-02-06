@@ -27,8 +27,6 @@
 #ifndef _SBDP_MBOX_H
 #define	_SBDP_MBOX_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

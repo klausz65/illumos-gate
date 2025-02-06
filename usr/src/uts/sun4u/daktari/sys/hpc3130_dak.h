@@ -27,8 +27,6 @@
 #ifndef	_SYS_HPC3130_DAK_H
 #define	_SYS_HPC3130_DAK_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

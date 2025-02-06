@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  *	This provides the interface to store a named key in stable local
  *	storage.  These keys are retrieved and used by OBP and WAN boot

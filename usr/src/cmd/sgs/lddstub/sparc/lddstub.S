@@ -23,8 +23,6 @@
  *	Copyright (c) 1991, Sun Microsystems, Inc.
  */
 
-#ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Stub file for ldd(1).  Provides for preloading shared libraries.
  */

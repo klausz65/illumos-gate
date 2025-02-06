@@ -30,8 +30,6 @@
  *  had existed previously.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/param.h>
 #include <sys/vnode.h>
 #include <sys/sysmacros.h>

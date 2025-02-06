@@ -25,8 +25,6 @@
 #ifndef _MEM_CACHE_IOCTL_H
 #define	_MEM_CACHE_IOCTL_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
