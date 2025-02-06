@@ -14379,7 +14379,7 @@ out:
 }
 
 int
-lscf_editprop()
+lscf_editprop(void)
 {
 	char *buf, *editor;
 	size_t bufsz;
