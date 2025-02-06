@@ -521,7 +521,11 @@ fhc_handle_imr(struct fhc_soft_state *softsp)
 {
 	int i;
 	int cent;
+#ifdef	DEBUG
+	uint_t tmp_reg __unused;
+#else
 	uint_t tmp_reg;
+#endif
 
 
 	if (softsp->is_central) {
@@ -822,7 +826,11 @@ static int
 fhc_init(struct fhc_soft_state *softsp)
 {
 	int i;
+#ifdef	DEBUG
+	uint_t tmp_reg __unused;
+#else
 	uint_t tmp_reg;
+#endif
 	int board;
 
 	/*
@@ -1015,7 +1023,7 @@ bad:
 }
 
 static uint_t
-fhc_intr_wrapper(caddr_t arg)
+fhc_intr_wrapper(caddr_t arg, caddr_t arg1 __unused)
 {
 	uint_t intr_return;
 	uint_t tmpreg;
@@ -1057,13 +1065,17 @@ fhc_intr_wrapper(caddr_t arg)
 #define	MAX_INTR_CNT 10
 
 static uint_t
-fhc_zs_intr_wrapper(caddr_t arg)
+fhc_zs_intr_wrapper(caddr_t arg, caddr_t arg1 __unused)
 {
 	struct fhc_soft_state *softsp = (struct fhc_soft_state *)arg;
 	uint_t (*funcp0)(caddr_t, caddr_t);
 	uint_t (*funcp1)(caddr_t, caddr_t);
 	caddr_t funcp0_arg1, funcp0_arg2, funcp1_arg1, funcp1_arg2;
+#ifdef	DEBUG
+	uint_t tmp_reg __unused;
+#else
 	uint_t tmp_reg;
+#endif
 	uint_t result = DDI_INTR_UNCLAIMED;
 	volatile uint_t *clear_reg;
 	uchar_t *spurious_cntr = &softsp->spurious_zs_cntr;
@@ -1126,7 +1138,11 @@ fhc_add_intr_impl(dev_info_t *dip, dev_info_t *rdip,
 	    ddi_get_soft_state(fhcp, ddi_get_instance(dip));
 	volatile uint_t *mondo_vec_reg;
 	uint_t tmp_mondo_vec;
+#ifdef	DEBUG
+	uint_t tmpreg __unused; /* HW flush reg */
+#else
 	uint_t tmpreg; /* HW flush reg */
+#endif
 	uint_t cpu_id;
 	int ret = DDI_SUCCESS;
 
@@ -1204,8 +1220,7 @@ fhc_add_intr_impl(dev_info_t *dip, dev_info_t *rdip,
 		 * and enable interrupts for this ino.
 		 */
 		if (zs_inst == 0) {
-			DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp,
-			    (ddi_intr_handler_t *)fhc_zs_intr_wrapper,
+			DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp, fhc_zs_intr_wrapper,
 			    (caddr_t)softsp, NULL);
 
 			ret = i_ddi_add_ivintr(hdlp);
@@ -1259,8 +1274,7 @@ fhc_add_intr_impl(dev_info_t *dip, dev_info_t *rdip,
 		 * Save the fhc_arg in the ispec so we can use this info
 		 * later to uninstall this interrupt spec.
 		 */
-		DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp,
-		    (ddi_intr_handler_t *)fhc_intr_wrapper,
+		DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp, fhc_intr_wrapper,
 		    (caddr_t)fhc_arg, NULL);
 
 		ret = i_ddi_add_ivintr(hdlp);
@@ -1324,7 +1338,11 @@ fhc_remove_intr_impl(dev_info_t *dip, dev_info_t *rdip,
     ddi_intr_handle_impl_t *hdlp)
 {
 	volatile uint_t *mondo_vec_reg;
+#ifdef	DEBUG
+	volatile uint_t tmpreg __unused;
+#else
 	volatile uint_t tmpreg;
+#endif
 	int i;
 	struct fhc_soft_state *softsp = (struct fhc_soft_state *)
 	    ddi_get_soft_state(fhcp, ddi_get_instance(dip));
@@ -1540,8 +1558,13 @@ fhc_xlate_intrs(ddi_intr_handle_impl_t *hdlp, uint32_t ign)
 }
 
 static int
+#ifdef	DEBUG
+fhc_ctlops_peekpoke(ddi_ctl_enum_t cmd, peekpoke_ctlops_t *in_args,
+    void *result __unused)
+#else
 fhc_ctlops_peekpoke(ddi_ctl_enum_t cmd, peekpoke_ctlops_t *in_args,
     void *result)
+#endif
 {
 	int err = DDI_SUCCESS;
 	on_trap_data_t otd;
@@ -2552,7 +2575,11 @@ fhc_intrdist(void *arg)
 	volatile uint_t *mondo_vec_reg;
 	volatile uint_t *intr_state_reg;
 	uint_t mondo_vec;
+#ifdef	DEBUG
+	uint_t tmp_reg __unused;
+#else
 	uint_t tmp_reg;
+#endif
 	uint_t cpu_id;
 	uint_t i;
 
@@ -3413,7 +3440,11 @@ os_completes_shutdown(void)
 	for (src = (uint_t *)fhc_shutdown_asm, dst = (uint_t *)copy_addr;
 	    src < (uint_t *)fhc_shutdown_asm_end;
 	    src++, dst++) {
+#ifdef	DEBUG
+		volatile uint_t dummy __unused;
+#else
 		volatile uint_t dummy;
+#endif
 
 		*dst = *src;
 		/*
