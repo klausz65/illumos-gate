@@ -272,6 +272,10 @@ extern void membar_consumer(void);
 #define	casip			atomic_cas_ulong
 #endif
 
+#if defined(__sparc)
+extern uint8_t ldstub(uint8_t *);
+#endif
+
 #endif	/* _KERNEL */
 
 #ifdef	__cplusplus
