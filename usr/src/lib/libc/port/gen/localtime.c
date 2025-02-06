@@ -29,7 +29,7 @@
  */
 
 /*	Copyright (c) 1988 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*	  All Rights Reserved	*/
 
 /*
  * A part of this file comes from public domain source, so
@@ -1047,7 +1047,7 @@ out:
  *	the assumption is:   If t exceeds 32-bit boundries and local zone
  *	is zoneinfo type, is_in_dst is set to to 0 for negative values
  *	of t, and set to the same DST state as the highest ordered
- * 	transition in cache for positive values of t.
+ *	transition in cache for positive values of t.
  */
 static void
 set_zone_default_context(void)
@@ -1068,7 +1068,7 @@ static void
 set_zone_context(time_t t)
 {
 	prev_t		*prevp;
-	int    		lo, hi, tidx, lidx;
+	int		lo, hi, tidx, lidx;
 	ttinfo_t	*ttisp, *std, *alt;
 	const char	*newtzname[2];
 
@@ -1276,7 +1276,7 @@ posix_check_dst(long long t, state_t *sp)
 	if (sp->zonerules == POSIX)	 {	/* POSIX rules */
 		pdaylight.rules[0] = &sp->start_rule;
 		pdaylight.rules[1] = &sp->end_rule;
-	} else { 			/* POSIX_USA: USA */
+	} else {			/* POSIX_USA: USA */
 		i = 0;
 		while (year < __usa_rules[i].s_year && i < MAX_RULE_TABLE) {
 			i++;
@@ -1436,8 +1436,11 @@ load_zoneinfo(const char *name, state_t *sp)
 	ttinfo_t	*ttisp;
 
 
-	if (name == NULL && (name = TZDEFAULT) == NULL)
-		return (-1);
+	if (name == NULL) {
+		name = TZDEFAULT;
+		if (name == NULL)
+			return (-1);
+	}
 
 	if ((name[0] == '/') || strstr(name, "../"))
 		return (-1);
