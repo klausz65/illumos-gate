@@ -171,7 +171,10 @@ sparc_MANFILES=	audiocs.4d	\
 		pcicmu.4d	\
 		pcipsy.4d	\
 		pcisch.4d	\
+		sf.4d		\
 		smbus.4d	\
+		socal.4d	\
+		ssd.4d		\
 		su.4d		\
 		todopl.4d	\
 		tsalarm.4d	\
