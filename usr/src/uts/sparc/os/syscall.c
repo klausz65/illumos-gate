@@ -1017,7 +1017,7 @@ loadable_syscall(
 	if (callp->sy_flags & SE_ARGC) {
 		int64_t (*sy_call)();
 
-		sy_call = (int64_t (*)())callp->sy_call;
+		sy_call = (int64_t (*)())(int64_t)callp->sy_call;
 		rval = (*sy_call)(a0, a1, a2, a3, a4, a5);
 	} else {
 		rval = syscall_ap();
