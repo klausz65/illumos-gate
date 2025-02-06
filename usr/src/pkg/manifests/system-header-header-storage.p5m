@@ -29,11 +29,11 @@ set name=pkg.description \
     value="SunOS C/C++ header files for development of software for device drivers specific to bus and platform"
 set name=info.classification \
     value="org.opensolaris.category.2008:Drivers/Other Peripherals"
-set name=variant.arch value=i386
+set name=variant.arch value=$(ARCH)
 dir  path=usr group=sys
 dir  path=usr/include
 dir  path=usr/include/sys
-file path=usr/include/sys/asy.h
+$(i386_ONLY)file path=usr/include/sys/asy.h
 dir  path=usr/include/sys/dktp
 file path=usr/include/sys/dktp/bbh.h
 file path=usr/include/sys/dktp/cm.h
@@ -49,9 +49,9 @@ file path=usr/include/sys/dktp/quetypes.h
 file path=usr/include/sys/dktp/queue.h
 file path=usr/include/sys/dktp/tgcom.h
 file path=usr/include/sys/dktp/tgdk.h
-file path=usr/include/sys/fd_debug.h
-file path=usr/include/sys/fdc.h
-file path=usr/include/sys/fdmedia.h
+$(i386_ONLY)file path=usr/include/sys/fd_debug.h
+$(i386_ONLY)file path=usr/include/sys/fdc.h
+$(i386_ONLY)file path=usr/include/sys/fdmedia.h
 legacy pkg=SUNWpsh \
     desc="SunOS C/C++ header files for development of software for device drivers specific to bus and platform" \
     name="Platform Support, Driver Header Files"
