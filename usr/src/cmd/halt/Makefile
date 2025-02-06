@@ -25,6 +25,8 @@
 #
 
 PROG = halt
+OBJS = halt.o
+SRCS = $(OBJS:%.o=%.c)
 
 include ../Makefile.cmd
 
@@ -58,11 +60,13 @@ all     :=	TARGET = all
 install :=	TARGET = install
 clean   :=	TARGET = clean
 clobber :=	TARGET = clobber
-lint    :=	TARGET = lint
-lint	:=	LINTFLAGS += -u
 
 
 all: $(PROG)
+
+$(PROG):	$(OBJS)
+	$(LINK.c) $(OBJS) -o $@ $(LDLIBS)
+	$(POST_PROCESS)
 
 install: all $(ROOTUSRSBINPROG) $(ROOTLINKS) $(ROOTSYMLINKS) $(SUBDIRS)
 
@@ -80,8 +84,6 @@ $(SUBDIRS):	FRC
 clean:
 
 clobber: $(SUBDIRS)
-
-lint:	lint_PROG
 
 check: $(CHKMANIFEST)
 
