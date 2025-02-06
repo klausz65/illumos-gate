@@ -284,7 +284,7 @@ void init_msg(rdr_msg_hdr_t *hdr);
 /*
  * From dcs_ses.c:
  */
-int ses_start(int fd);
+int ses_start(uint64_t fd);
 int ses_close(int err_code);
 int ses_abort(long ses_id);
 void ses_abort_enable(void);
