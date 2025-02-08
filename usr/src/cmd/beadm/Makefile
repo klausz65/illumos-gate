@@ -29,6 +29,7 @@ SRCS=		$(OBJS:%.o=%.c)
 POFILE=		beadm.po
 
 include ../Makefile.cmd
+include ../Makefile.cmd.64
 
 LDLIBS += -lnvpair -lbe -lcmdutils
 CERRWARN += -_gcc=-Wno-parentheses
