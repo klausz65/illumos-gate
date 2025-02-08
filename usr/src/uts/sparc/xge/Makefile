@@ -101,6 +101,7 @@ CERRWARN	+= -_gcc=-Wno-unused-variable
 CERRWARN	+= -_gcc=-Wno-unused-label
 CERRWARN	+= -_gcc=-Wno-empty-body
 CERRWARN	+= $(CNOWARN_UNINIT)
+CFLAGS		+= $(CCINLINESIZE)
 
 #
 #
