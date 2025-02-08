@@ -548,6 +548,18 @@ i386_MANFILES=			\
 		nvmeadm.8	\
 		pptadm.8	\
 		rdmsr.8
+sparc_MANFILES=			\
+		dcs.8		\
+		drd.8		\
+		efdaemon.8	\
+		ldmad.8		\
+		monitor.8	\
+		obpsym.8	\
+		oplhpd.8	\
+		prtdscp.8	\
+		sckmd.8		\
+		sf880drd.8	\
+		vntsd.8
 
 MANLINKS=	acctcon1.8			\
 		acctcon2.8			\
