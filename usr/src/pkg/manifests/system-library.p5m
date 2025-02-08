@@ -940,6 +940,7 @@ link path=usr/lib/libsecdb.so target=../../lib/libsecdb.so.1
 link path=usr/lib/libsecdb.so.1 target=../../lib/libsecdb.so.1
 link path=usr/lib/libsendfile.so target=../../lib/libsendfile.so.1
 link path=usr/lib/libsendfile.so.1 target=../../lib/libsendfile.so.1
+link path=usr/lib/libsff.so target=./libsff.so.1
 file path=usr/lib/libsff.so.1
 link path=usr/lib/libsip.so target=./libsip.so.1
 file path=usr/lib/libsip.so.1
