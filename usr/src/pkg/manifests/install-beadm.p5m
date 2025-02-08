@@ -39,8 +39,6 @@ dir  path=usr/lib
 dir  path=usr/lib/$(ARCH64)
 link path=usr/lib/$(ARCH64)/libbe.so target=./libbe.so.1
 file path=usr/lib/$(ARCH64)/libbe.so.1
-link path=usr/lib/libbe.so target=./libbe.so.1
-file path=usr/lib/libbe.so.1
 dir  path=usr/sbin
 link path=usr/sbin/beadm target=../../sbin/beadm
 dir  path=usr/share
