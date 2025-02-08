@@ -73,6 +73,7 @@ CERRWARN	+= -_gcc=-Wno-unused-function
 CERRWARN	+= -_gcc=-Wno-unused-variable
 CERRWARN	+= -_gcc=-Wno-parentheses
 CERRWARN	+= $(CNOWARN_UNINIT)
+CERRWARN	+= -_gcc=-Wno-inline
 CERRWARN	+= -_gcc=-Wno-empty-body
 
 #
