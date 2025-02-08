@@ -39,6 +39,7 @@ dir  path=kernel group=sys
 dir  path=kernel/drv group=sys
 dir  path=kernel/drv/$(ARCH64) group=sys
 file path=kernel/drv/$(ARCH64)/ecpp group=sys
+file path=kernel/drv/$(ARCH64)/glm group=sys
 file path=kernel/drv/$(ARCH64)/mpt group=sys
 file path=kernel/drv/$(ARCH64)/se group=sys
 file path=kernel/drv/ecpp.conf group=sys
@@ -46,6 +47,13 @@ file path=kernel/drv/mpt.conf group=sys preserve=true
 driver name=ecpp perms="* 0666 root sys" \
     alias=ns87317-ecpp \
     alias=pnpALI,1533,3
+driver name=glm perms="* 0755 root sys" class=scsi \
+    alias=pci1000,1 \
+    alias=pci1000,b \
+    alias=pci1000,c \
+    alias=pci1000,f \
+    alias=pci1000,20 \
+    alias=pci1000,21
 driver name=mpt class=scsi \
     alias=pci1000,30 \
     alias=pci1000,50 \
