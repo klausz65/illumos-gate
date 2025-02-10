@@ -17,7 +17,7 @@
 # Copyright 2023 Oxide Computer Company
 #
 
-SUBDIRS_i386 = i386 imc zen_umc
+SUBDIRS_i386 = i386 imc
 
 SUBDIRS =       \
 		cores \
@@ -41,6 +41,7 @@ SUBDIRS =       \
 		syscall \
 		timer \
 		uccid \
+		zen_umc \
 		$(SUBDIRS_$(MACH))
 
 PROGS = \
