@@ -207,6 +207,7 @@ GENUNIX_OBJS +=	\
 		gid.o		\
 		groups.o	\
 		grow.o		\
+		hat.o		\
 		hat_refmod.o	\
 		id32.o		\
 		id_space.o	\
