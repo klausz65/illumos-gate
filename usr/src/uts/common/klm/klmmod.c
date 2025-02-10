@@ -169,7 +169,7 @@ _info(struct modinfo *modinfop)
 
 /*
  * ****************************************************************
- * Stubs listed in modstubs.S
+ * Stubs listed in modstubs.s
  */
 
 /*

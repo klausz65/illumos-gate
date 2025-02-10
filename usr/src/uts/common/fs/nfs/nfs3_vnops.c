@@ -281,7 +281,7 @@ const fs_operation_def_t nfs3_vnodeops_template[] = {
 };
 
 /*
- * XXX:  This is referenced in modstubs.S
+ * XXX:  This is referenced in modstubs.s
  */
 struct vnodeops *
 nfs3_getvnodeops(void)

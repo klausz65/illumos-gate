@@ -24,6 +24,7 @@ PROG = testmatch
 
 LDLIBS64 += -lsaveargs
 
+ASFLAGS += -P
 AS_CPPFLAGS += -D_ASM
 
 $(PROG): $(OBJECTS)

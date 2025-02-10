@@ -54,8 +54,7 @@ CFLAGS +=	-_gcc=-Wall
 CFLAGS +=	$(CCNOAUTOINLINE) $(CCNOREORDER) $(CSTD_GNU99)
 CFLAGS +=	$(CSOURCEDEBUGFLAGS)
 CCASFLAGS=	-Wa,--divide
-ASFLAGS=	-Wa,--divide
-ASFLAGS64=	-Wa,--divide
+ASFLAGS=	--divide
 
 SMATCH_ =
 SMATCH_on =

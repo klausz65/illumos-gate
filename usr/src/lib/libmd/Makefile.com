@@ -44,3 +44,4 @@ CPPFLAGS +=	-I$(SRCDIR)
 LDLIBS +=	-lc
 
 SMOFF += 64bit_shift
+

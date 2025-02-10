@@ -87,7 +87,7 @@ cladm(int fac, int cmd, void *arg)
 		/*
 		 * error will be -1 if the cladm module cannot be loaded;
 		 * otherwise, it is the errno value returned
-		 * (see {i86,sparc}/ml/modstubs.S).
+		 * (see {i86,sparc}/ml/modstubs.s).
 		 */
 		if (error < 0)
 			error = ENOSYS;

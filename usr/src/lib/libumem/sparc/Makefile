@@ -26,7 +26,7 @@
 
 ISASRCDIR=.
 
-ASFLAGS += -xarch=v8plus		# we use flushw in asm_subr.S
+ASFLAGS += -xarch=v8plus		# we use flushw in asm_subr.s
 
 include ../Makefile.com
 include ../Makefile.targ

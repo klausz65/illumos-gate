@@ -79,7 +79,7 @@ LDFLAGS = $(LDFLAGS_$(CURTYPE))
 
 ASFLAGS_standalone = -DDIS_STANDALONE
 ASFLAGS_library =
-ASFLAGS += $(ASFLAGS_$(CURTYPE)) -D_ASM
+ASFLAGS += -P $(ASFLAGS_$(CURTYPE)) -D_ASM
 
 
 # We want the thread-specific errno in the library, but we don't want it in

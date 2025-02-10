@@ -42,14 +42,14 @@ $(OBJS_DIR)/%.o:		$(SUN4_BASE)/conf/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
 
-$(OBJS_DIR)/%.o:		$(SUN4_BASE)/conf/%.S
+$(OBJS_DIR)/%.o:		$(SUN4_BASE)/conf/%.s
 	$(COMPILE.s) -o $@ $<
 
 $(OBJS_DIR)/%.o:		$(SUN4_BASE)/cpu/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
 
-$(OBJS_DIR)/%.o:		$(SUN4_BASE)/cpu/%.S
+$(OBJS_DIR)/%.o:		$(SUN4_BASE)/cpu/%.s
 	$(COMPILE.s) -o $@ $<
 
 $(OBJS_DIR)/%.o:		$(SUN4_BASE)/io/%.c
@@ -72,7 +72,7 @@ $(OBJS_DIR)/%.o:		$(SUN4_BASE)/io/fpc/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
 
-$(OBJS_DIR)/%.o:		$(SUN4_BASE)/ml/%.S
+$(OBJS_DIR)/%.o:		$(SUN4_BASE)/ml/%.s
 	$(COMPILE.s) -o $@ $<
 
 $(OBJS_DIR)/%.o:		$(SUN4_BASE)/os/%.c

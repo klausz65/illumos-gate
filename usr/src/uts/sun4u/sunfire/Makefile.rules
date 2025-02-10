@@ -43,5 +43,5 @@ $(OBJS_DIR)/%.o:		$(UTSBASE)/sun4u/sunfire/io/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
 
-$(OBJS_DIR)/%.o:		$(UTSBASE)/sun4u/sunfire/ml/%.S
+$(OBJS_DIR)/%.o:		$(UTSBASE)/sun4u/sunfire/ml/%.s
 	$(COMPILE.s) -o $@ $<

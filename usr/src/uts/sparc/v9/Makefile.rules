@@ -44,7 +44,7 @@ $(OBJS_DIR)/%.o:		$(UTSBASE)/sparc/v9/fpu/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
 
-$(OBJS_DIR)/%.o:		$(UTSBASE)/sparc/v9/ml/%.S
+$(OBJS_DIR)/%.o:		$(UTSBASE)/sparc/v9/ml/%.s
 	$(COMPILE.s) -o $@ $<
 
 $(OBJS_DIR)/%.o:		$(UTSBASE)/sparc/v9/os/%.c

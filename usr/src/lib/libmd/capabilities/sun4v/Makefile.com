@@ -31,6 +31,6 @@ OBJECTS =	md5.o
 include		$(SRC)/lib/Makefile.lib
 
 AS_CPPFLAGS +=	-D__STDC__ -D_ASM -DPIC -D_REENTRANT -D$(MACH)
-ASFLAGS +=	$(AS_PICFLAGS)
+ASFLAGS +=	$(AS_PICFLAGS) -P
 CFLAGS +=	$(CCVERBOSE) -xarch=sparcvis
 CPPFLAGS +=	-D$(PLATFORM)

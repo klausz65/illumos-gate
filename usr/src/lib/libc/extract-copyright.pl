@@ -93,7 +93,7 @@ sub wanted {
 	my $path = $File::Find::name;
 
 	if (!-f $path) {
-		if ($path =~ /\.[chsS]$/) {
+		if ($path =~ /\.[chs]$/) {
 			push(@FILES, $path);
 		}
 	}

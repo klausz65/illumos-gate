@@ -40,10 +40,20 @@ CSRCS =		$(COBJS:%o=../common/%c)
 ASSRCS =	$(ASOBJS:%o=$(ISASRCDIR)/%s)
 SRCS =		$(CSRCS) $(ASSRCS)
 
+#
+# Ugh, this is a gross hack.  Our assembly routines uses lots of defines
+# to simplify variable access.  All these defines work fine for amd64
+# compiles because when compiling for amd64 we use the GNU assembler,
+# gas.  For 32-bit code we use the Sun assembler, as.  Unfortunatly
+# as does not handle certian constructs that gas does.  So rather than
+# make our code less readable, we'll just use gas to compile our 32-bit
+# code as well.
+#
+i386_AS		= $(amd64_AS)
+
 CPPFLAGS +=	-D_REENTRANT -U_ASM -I. -I../sys
 CFLAGS +=	$(CCVERBOSE)
-ASFLAGS +=	$(ASFLAGS_$(CURTYPE)) -D_ASM -I. -I../sys
-ASFLAGS64 +=	$(ASFLAGS_$(CURTYPE)) -D_ASM -I. -I../sys
+ASFLAGS =	-P $(ASFLAGS_$(CURTYPE)) -D_ASM -I. -I../sys
 
 #
 # Disable stack protection as this code might be running in an s10 context.
@@ -70,7 +80,7 @@ $(OBJECTS:%=pics/%): $(OFFSETS_H)
 $(OFFSETS_H): $(OFFSETS_SRC)
 	$(OFFSETS_CREATE) < $(OFFSETS_SRC) >$@
 
-pics/%.o: $(ISASRCDIR)/%.S
+pics/%.o: $(ISASRCDIR)/%.s
 	$(COMPILE.s) -o $@ $<
 	$(POST_PROCESS_S_O)
 

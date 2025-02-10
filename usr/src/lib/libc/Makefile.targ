@@ -30,7 +30,7 @@
 #
 # This first rule picks up optimized sources for libc variants.
 #
-pics/%.o: $(OPTIMIZED_LIBCBASE)/gen/%.S
+pics/%.o: $(OPTIMIZED_LIBCBASE)/gen/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
@@ -42,15 +42,11 @@ pics/%.o: $(LIBCBASE)/crt/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
-pics/%.o: $(LIBCBASE)/crt/%.S
-	$(BUILD.s)
-	$(POST_PROCESS_S_O)
-
 pics/%.o: $(LIBCBASE)/gen/%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-pics/%.o: $(LIBCBASE)/gen/%.S
+pics/%.o: $(LIBCBASE)/gen/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
@@ -58,12 +54,8 @@ pics/%.o: $(LIBCBASE)/../$(TARGET_ARCH)/gen/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
-pics/%.o: $(LIBCBASE)/../$(TARGET_ARCH)/gen/%.S
-	$(BUILD.s)
-	$(POST_PROCESS_S_O)
-
-pics/_stack_grow.o: $(LIBCBASE)/../$(TARGET_ARCH)/gen/_stack_grow.S
-	$(BUILD.s) $(LIBCBASE)/../$(TARGET_ARCH)/gen/_stack_grow.S
+pics/_stack_grow.o: $(LIBCBASE)/../$(TARGET_ARCH)/gen/_stack_grow.s
+	$(BUILD.s) $(LIBCBASE)/../$(TARGET_ARCH)/gen/_stack_grow.s
 	$(POST_PROCESS_S_O)
 
 pics/%.o: $(LIBCBASE)/fp/%.c
@@ -74,7 +66,7 @@ pics/%.o: $(LIBCBASE)/../$(MACH)/fp/%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-pics/%.o: $(LIBCBASE)/fp/%.S
+pics/%.o: $(LIBCBASE)/fp/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
@@ -90,15 +82,15 @@ pics/%.o: $(LIBCBASE)/sys/%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-pics/%.o: $(LIBCBASE)/../common/sys/%.S
+pics/%.o: $(LIBCBASE)/../common/sys/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
-pics/%.o: $(LIBCBASE)/sys/%.S
+pics/%.o: $(LIBCBASE)/sys/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
-pics/%.o: $(LIBCBASE)/../$(MACH)/sys/%.S
+pics/%.o: $(LIBCBASE)/../$(MACH)/sys/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
@@ -110,16 +102,17 @@ pics/%.o: $(LIBCBASE)/../$(TARGET_ARCH)/sys/%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-pics/%.o: $(LIBCBASE)/../$(TARGET_ARCH)/sys/%.S
+pics/%.o: $(LIBCBASE)/../$(TARGET_ARCH)/sys/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
 # rules to build large file aware objects (xxx64.o from xxx.s or xxx.c)
-pics/%64.o: $(LIBCBASE)/../common/sys/%.S
+
+pics/%64.o: $(LIBCBASE)/../common/sys/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
-pics/%64.o: $(LIBCBASE)/sys/%.S
+pics/%64.o: $(LIBCBASE)/sys/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
@@ -250,7 +243,7 @@ pics/%.o: $(LIBCBASE)/threads/%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-pics/%.o: $(LIBCBASE)/threads/%.S
+pics/%.o: $(LIBCBASE)/threads/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
@@ -258,7 +251,7 @@ pics/%.o: $(LIBCBASE)/../$(TARGET_ARCH)/threads/%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-pics/%.o: $(LIBCBASE)/../$(TARGET_ARCH)/threads/%.S
+pics/%.o: $(LIBCBASE)/../$(TARGET_ARCH)/threads/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
@@ -266,7 +259,7 @@ pics/%.o: $(LIBCBASE)/../$(TARGET_ARCH)/unwind/%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-pics/%.o: $(LIBCBASE)/../$(TARGET_ARCH)/unwind/%.S
+pics/%.o: $(LIBCBASE)/../$(TARGET_ARCH)/unwind/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
@@ -274,7 +267,7 @@ pics/%.o: $(LIBCBASE)/../port/unwind/%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-pics/%.o: $(LIBCBASE)/../$(MACH)/unwind/%.S
+pics/%.o: $(LIBCBASE)/../$(MACH)/unwind/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
@@ -290,11 +283,8 @@ pics/%.o: $(LIBCBASE)/$(CRTSRCS)/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
-pics/%.o: $(LIBCBASE)/$(CRTSRCS)/%.S
-	$(BUILD.s)
-	$(POST_PROCESS_S_O)
-
-pics/%.o: $(SRC)/common/atomic/$(TARGETMACH)/%.S
+# $(SRC)/common rules
+pics/%.o: $(SRC)/common/atomic/$(TARGETMACH)/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
