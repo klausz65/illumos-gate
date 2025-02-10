@@ -670,6 +670,10 @@ $(OBJS_DIR)/%.o:		$(UTSBASE)/common/io/bge/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
 
+$(OBJS_DIR)/%.o:		$(UTSBASE)/common/io/tu/%.c
+	$(COMPILE.c) -o $@ $<
+	$(CTFCONVERT_O)
+
 $(OBJS_DIR)/%.o:		$(UTSBASE)/common/io/blkdev/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
