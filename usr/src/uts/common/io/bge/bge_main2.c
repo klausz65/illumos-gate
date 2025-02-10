@@ -20,14 +20,7 @@
  */
 
 /*
- * Copyright (c) 2010-2013, by Broadcom, Inc.
- * All Rights Reserved.
- */
-
-/*
- * Copyright (c) 2002, 2010, Oracle and/or its affiliates.
- * All rights reserved.
- * Copyright 2016 Nexenta Systems, Inc.  All rights reserved.
+ * Copyright (c) 2002, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include "bge_impl.h"
@@ -35,12 +28,6 @@
 #include <sys/mac_provider.h>
 #include <sys/mac.h>
 #include <sys/mac_flow.h>
-
-
-#ifndef STRINGIFY
-#define XSTRINGIFY(x) #x
-#define STRINGIFY(x) XSTRINGIFY(x)
-#endif
 
 /*
  * This is the string displayed by modinfo, etc.
@@ -60,21 +47,18 @@ static char subdev_propname[] = "subsystem-id";
 static char subven_propname[] = "subsystem-vendor-id";
 static char rxrings_propname[] = "bge-rx-rings";
 static char txrings_propname[] = "bge-tx-rings";
-static char eee_propname[] = "bge-eee";
 static char fm_cap[] = "fm-capable";
 static char default_mtu[] = "default_mtu";
 
 static int bge_add_intrs(bge_t *, int);
 static void bge_rem_intrs(bge_t *);
 static int bge_unicst_set(void *, const uint8_t *, int);
-static int bge_addmac(void *, const uint8_t *);
-static int bge_remmac(void *, const uint8_t *);
 
 /*
  * Describes the chip's DMA engine
  */
 static ddi_dma_attr_t dma_attr = {
-	DMA_ATTR_V0,			/* dma_attr_version	*/
+	DMA_ATTR_V0,			/* dma_attr version	*/
 	0x0000000000000000ull,		/* dma_attr_addr_lo	*/
 	0xFFFFFFFFFFFFFFFFull,		/* dma_attr_addr_hi	*/
 	0x00000000FFFFFFFFull,		/* dma_attr_count_max	*/
@@ -82,9 +66,9 @@ static ddi_dma_attr_t dma_attr = {
 	0x00000FFF,			/* dma_attr_burstsizes	*/
 	0x00000001,			/* dma_attr_minxfer	*/
 	0x000000000000FFFFull,		/* dma_attr_maxxfer	*/
-	0x00000000FFFFFFFFull,		/* dma_attr_seg		*/
-	1,				/* dma_attr_sgllen	*/
-	0x00000001,			/* dma_attr_granular	*/
+	0xFFFFFFFFFFFFFFFFull,		/* dma_attr_seg		*/
+	1,				/* dma_attr_sgllen 	*/
+	0x00000001,			/* dma_attr_granular 	*/
 	DDI_DMA_FLAGERR			/* dma_attr_flags */
 };
 
@@ -137,20 +121,26 @@ static int		bge_get_priv_prop(bge_t *, const char *, uint_t,
 static void		bge_priv_propinfo(const char *,
     mac_prop_info_handle_t);
 
+#define	BGE_M_CALLBACK_FLAGS (MC_IOCTL | MC_GETCAPAB | MC_SETPROP | \
+    MC_GETPROP | MC_PROPINFO)
+
 static mac_callbacks_t bge_m_callbacks = {
-	.mc_callbacks = MC_IOCTL | MC_SETPROP | MC_GETPROP | MC_PROPINFO |
-	    MC_GETCAPAB,
-	.mc_getstat = bge_m_stat,
-	.mc_start = bge_m_start,
-	.mc_stop = bge_m_stop,
-	.mc_setpromisc = bge_m_promisc,
-	.mc_multicst = bge_m_multicst,
-	.mc_tx = bge_m_tx,
-	.mc_ioctl = bge_m_ioctl,
-	.mc_getcapab = bge_m_getcapab,
-	.mc_setprop = bge_m_setprop,
-	.mc_getprop = bge_m_getprop,
-	.mc_propinfo = bge_m_propinfo
+	BGE_M_CALLBACK_FLAGS,
+	bge_m_stat,
+	bge_m_start,
+	bge_m_stop,
+	bge_m_promisc,
+	bge_m_multicst,
+	0,
+	bge_m_tx,
+	NULL,
+	bge_m_ioctl,
+	bge_m_getcapab,
+	0,
+	0,
+	bge_m_setprop,
+	bge_m_getprop,
+	bge_m_propinfo
 };
 
 char *bge_priv_prop[] = {
@@ -499,6 +489,7 @@ bge_m_stop(void *arg)
 	} else
 		bge_stop(bgep);
 
+	bgep->link_update_timer = 0;
 	bgep->link_state = LINK_STATE_UNKNOWN;
 	mac_link_update(bgep->mh, bgep->link_state);
 
@@ -551,11 +542,6 @@ bge_m_start(void *arg)
 		if ((bgep->asf_status == ASF_STAT_RUN) &&
 		    (bgep->asf_pseudostop)) {
 			bgep->bge_mac_state = BGE_MAC_STARTED;
-			/* forcing a mac link update here */
-			bge_phys_check(bgep);
-			bgep->link_state = (bgep->param_link_up) ? LINK_STATE_UP :
-			                                           LINK_STATE_DOWN;
-			mac_link_update(bgep->mh, bgep->link_state);
 			mutex_exit(bgep->genlock);
 			return (0);
 		}
@@ -615,7 +601,7 @@ bge_unicst_set(void *arg, const uint8_t *macaddr, int slot)
 {
 	bge_t *bgep = arg;		/* private device info	*/
 
-	BGE_TRACE(("bge_unicst_set($%p, %s)", arg,
+	BGE_TRACE(("bge_m_unicst_set($%p, %s)", arg,
 	    ether_sprintf((void *)macaddr)));
 	/*
 	 * Remember the new current address in the driver state
@@ -682,7 +668,7 @@ bge_unicst_set(void *arg, const uint8_t *macaddr, int slot)
 		}
 	}
 #endif
-	BGE_DEBUG(("bge_unicst_set($%p) done", arg));
+	BGE_DEBUG(("bge_m_unicst_set($%p) done", arg));
 	if (bge_check_acc_handle(bgep, bgep->cfg_handle) != DDI_FM_OK) {
 		ddi_fm_service_impact(bgep->devinfo, DDI_SERVICE_DEGRADED);
 		mutex_exit(bgep->genlock);
@@ -1437,52 +1423,11 @@ bge_unicst_find(bge_t *bgep, const uint8_t *mac_addr)
 }
 
 /*
- * The job of bge_addmac() is to set up everything in hardware for the mac
- * address indicated to map to the specified group.
- *
- * For this to make sense, we need to first understand how most of the bge chips
- * work. A given packet reaches a ring in two distinct logical steps:
- *
- *  1) The device must accept the packet.
- *  2) The device must steer an accepted packet to a specific ring.
- *
- * For step 1, the device has four global MAC address filtering registers. We
- * must either add the address here or put the device in promiscuous mode.
- * Because there are only four of these and up to four groups, each group is
- * only allowed to program a single entry. Note, this is not explicitly done in
- * the driver. Rather, it is implicitly done by how we implement step 2. These
- * registers start at 0x410 and are referred to as the 'EMAC MAC Addresses' in
- * the manuals.
- *
- * For step 2, the device has eight sets of rule registers that are used to
- * control how a packet in step 1 is mapped to a specific ring. Each set is
- * comprised of a control register and a mask register. These start at 0x480 and
- * are referred to as the 'Receive Rules Control Registers' and 'Receive Rules
- * Value/Mask Registers'. These can be used to check for a 16-bit or 32-bit
- * value at an offset in the packet. In addition, two sets can be combined to
- * create a single conditional rule.
- *
- * For our purposes, we need to use this mechanism to steer a mac address to a
- * specific ring. This requires that we use two of the sets of registers per MAC
- * address that comes in here. The data about this is stored in 'mac_addr_rule'
- * member of the 'recv_ring_t'.
- *
- * A reasonable question to ask is why are we storing this on the ring, when it
- * relates to the group. The answer is that the current implementation of the
- * driver assumes that each group is comprised of a single ring. While some
- * parts may support additional rings, the driver doesn't take advantage of
- * that.
- *
- * A result of all this is that the driver will support up to 4 groups today.
- * Each group has a single ring. We want to make sure that each group can have a
- * single MAC address programmed into it. This results in the check for a rule
- * being assigned in the 'mac_addr_rule' member of the recv_ring_t below. If a
- * future part were to support more global MAC address filters in part 1 and
- * more rule registers needed for part 2, then we could relax this constraint
- * and allow a group to have more than one MAC address assigned to it.
+ * Programs the classifier to start steering packets matching 'mac_addr' to the
+ * specified ring 'arg'.
  */
 static int
-bge_addmac(void *arg, const uint8_t * mac_addr)
+bge_addmac(void *arg, const uint8_t *mac_addr)
 {
 	recv_ring_t *rrp = (recv_ring_t *)arg;
 	bge_t		*bgep = rrp->bgep;
@@ -1502,27 +1447,10 @@ bge_addmac(void *arg, const uint8_t * mac_addr)
 	}
 
 	/*
-	 * The driver only supports a MAC address being programmed to be
-	 * received by one ring in step 2. We check the global table of MAC
-	 * addresses to see if this address has already been claimed by another
-	 * group as a way to determine that.
+	 * First add the unicast address to a available slot.
 	 */
 	slot = bge_unicst_find(bgep, mac_addr);
-	if (slot != -1) {
-		mutex_exit(bgep->genlock);
-		return (EEXIST);
-	}
-
-	/*
-	 * Check to see if this group has already used its hardware resources
-	 * for step 2. If so, we have to return ENOSPC to MAC to indicate that
-	 * this group cannot handle an additional MAC address and that MAC will
-	 * need to use software classification on the default group.
-	 */
-	if (rrp->mac_addr_rule != NULL) {
-		mutex_exit(bgep->genlock);
-		return (ENOSPC);
-	}
+	ASSERT(slot == -1);
 
 	for (slot = 0; slot < bgep->unicst_addr_total; slot++) {
 		if (!bgep->curr_addr[slot].set) {
@@ -1531,12 +1459,18 @@ bge_addmac(void *arg, const uint8_t * mac_addr)
 		}
 	}
 
-	VERIFY3S(slot, <, bgep->unicst_addr_total);
+	ASSERT(slot < bgep->unicst_addr_total);
 	bgep->unicst_addr_avail--;
 	mutex_exit(bgep->genlock);
 
 	if ((err = bge_unicst_set(bgep, mac_addr, slot)) != 0)
 		goto fail;
+
+	/* A rule is already here. Deny this.  */
+	if (rrp->mac_addr_rule != NULL) {
+		err = ether_cmp(mac_addr, rrp->mac_addr_val) ? EEXIST : EBUSY;
+		goto fail;
+	}
 
 	/*
 	 * Allocate a bge_rule_info_t to keep track of which rule slots
@@ -1645,7 +1579,6 @@ bge_remmac(void *arg, const uint8_t *mac_addr)
 	return (0);
 }
 
-
 static int
 bge_flag_intr_enable(mac_intr_handle_t ih)
 {
@@ -1733,7 +1666,7 @@ bge_fill_ring(void *arg, mac_ring_type_t rtype, const int rg_index,
  */
 void
 bge_fill_group(void *arg, mac_ring_type_t rtype, const int rg_index,
-    mac_group_info_t * infop, mac_group_handle_t gh)
+	mac_group_info_t *infop, mac_group_handle_t gh)
 {
 	bge_t *bgep = arg;
 
@@ -1761,13 +1694,11 @@ bge_fill_group(void *arg, mac_ring_type_t rtype, const int rg_index,
 	}
 }
 
-
 /*ARGSUSED*/
 static boolean_t
 bge_m_getcapab(void *arg, mac_capab_t cap, void *cap_data)
 {
 	bge_t *bgep = arg;
-	mac_capab_rings_t *cap_rings;
 
 	switch (cap) {
 	case MAC_CAPAB_HCKSUM: {
@@ -1776,29 +1707,25 @@ bge_m_getcapab(void *arg, mac_capab_t cap, void *cap_data)
 		*txflags = HCKSUM_INET_FULL_V4 | HCKSUM_IPHDRCKSUM;
 		break;
 	}
-
-	case MAC_CAPAB_RINGS:
-		cap_rings = (mac_capab_rings_t *)cap_data;
+	case MAC_CAPAB_RINGS: {
+		mac_capab_rings_t *cap_rings = cap_data;
 
 		/* Temporarily disable multiple tx rings. */
 		if (cap_rings->mr_type != MAC_RING_TYPE_RX)
 			return (B_FALSE);
 
 		cap_rings->mr_group_type = MAC_GROUP_TYPE_STATIC;
-		cap_rings->mr_rnum =
-		cap_rings->mr_gnum =
+		cap_rings->mr_rnum = cap_rings->mr_gnum =
 		    MIN(bgep->chipid.rx_rings, MAC_ADDRESS_REGS_MAX);
 		cap_rings->mr_rget = bge_fill_ring;
 		cap_rings->mr_gget = bge_fill_group;
 		break;
-
+	}
 	default:
 		return (B_FALSE);
 	}
 	return (B_TRUE);
 }
-
-#ifdef NOT_SUPPORTED_XXX
 
 /*
  * Loopback ioctl code
@@ -1900,8 +1827,6 @@ bge_loop_ioctl(bge_t *bgep, queue_t *wq, mblk_t *mp, struct iocblk *iocp)
 	}
 }
 
-#endif /* NOT_SUPPORTED_XXX */
-
 /*
  * Specific bge IOCTLs, the gld module handles the generic ones.
  */
@@ -1941,7 +1866,6 @@ bge_m_ioctl(void *arg, queue_t *wq, mblk_t *mp)
 	case BGE_HARD_RESET:
 		break;
 
-#ifdef NOT_SUPPORTED_XXX
 	case LB_GET_INFO_SIZE:
 	case LB_GET_INFO:
 	case LB_GET_MODE:
@@ -1949,7 +1873,6 @@ bge_m_ioctl(void *arg, queue_t *wq, mblk_t *mp)
 		/* FALLTHRU */
 	case LB_SET_MODE:
 		break;
-#endif
 
 	}
 
@@ -1993,14 +1916,12 @@ bge_m_ioctl(void *arg, queue_t *wq, mblk_t *mp)
 		status = bge_chip_ioctl(bgep, wq, mp, iocp);
 		break;
 
-#ifdef NOT_SUPPORTED_XXX
 	case LB_GET_INFO_SIZE:
 	case LB_GET_INFO:
 	case LB_GET_MODE:
 	case LB_SET_MODE:
 		status = bge_loop_ioctl(bgep, wq, mp, iocp);
 		break;
-#endif
 
 	}
 
@@ -2073,7 +1994,7 @@ bge_m_ioctl(void *arg, queue_t *wq, mblk_t *mp)
  */
 
 #undef	BGE_DBG
-#define	BGE_DBG		BGE_DBG_MEM	/* debug flag for this code	*/
+#define	BGE_DBG		BGE_DBG_INIT	/* debug flag for this code	*/
 /*
  * Allocate an area of memory and a DMA handle for accessing it
  */
@@ -2667,12 +2588,8 @@ bge_alloc_bufs(bge_t *bgep)
 	/*
 	 * Enable PCI relaxed ordering only for RX/TX data buffers
 	 */
-	if (!(DEVICE_5717_SERIES_CHIPSETS(bgep) ||
-	    DEVICE_5725_SERIES_CHIPSETS(bgep) ||
-	    DEVICE_57765_SERIES_CHIPSETS(bgep))) {
-		if (bge_relaxed_ordering)
-			dma_attr.dma_attr_flags |= DDI_DMA_RELAXED_ORDERING;
-	}
+	if (bge_relaxed_ordering)
+		dma_attr.dma_attr_flags |= DDI_DMA_RELAXED_ORDERING;
 
 	/*
 	 * Allocate memory & handles for RX buffers
@@ -2685,9 +2602,6 @@ bge_alloc_bufs(bge_t *bgep)
 		if (err != DDI_SUCCESS)
 			return (DDI_FAILURE);
 	}
-	BGE_DEBUG(("DMA ALLOC: allocated %d chunks for Rx Buffers (rxbuffsize = %d)",
-	           rxbuffsize/BGE_SPLIT,
-	           rxbuffsize));
 
 	/*
 	 * Allocate memory & handles for TX buffers
@@ -2700,16 +2614,8 @@ bge_alloc_bufs(bge_t *bgep)
 		if (err != DDI_SUCCESS)
 			return (DDI_FAILURE);
 	}
-	BGE_DEBUG(("DMA ALLOC: allocated %d chunks for Tx Buffers (txbuffsize = %d)",
-	           txbuffsize/BGE_SPLIT,
-	           txbuffsize));
 
-	if (!(DEVICE_5717_SERIES_CHIPSETS(bgep) ||
-	    DEVICE_5725_SERIES_CHIPSETS(bgep) ||
-	    DEVICE_57765_SERIES_CHIPSETS(bgep))) {
-		/* no relaxed ordering for descriptors rings? */
-		dma_attr.dma_attr_flags &= ~DDI_DMA_RELAXED_ORDERING;
-	}
+	dma_attr.dma_attr_flags &= ~DDI_DMA_RELAXED_ORDERING;
 
 	/*
 	 * Allocate memory & handles for receive return rings
@@ -2722,21 +2628,14 @@ bge_alloc_bufs(bge_t *bgep)
 		if (err != DDI_SUCCESS)
 			return (DDI_FAILURE);
 	}
-	BGE_DEBUG(("DMA ALLOC: allocated %d chunks for Rx Descs cons (rx_rings = %d, rxdescsize = %d)",
-	           rxdescsize/rx_rings,
-	           rx_rings,
-	           rxdescsize));
 
 	/*
-	 * Allocate memory & handles for buffer (producer) descriptor rings.
-	 * Note that split=rx_rings.
+	 * Allocate memory & handles for buffer (producer) descriptor rings
 	 */
 	err = bge_alloc_dma_mem(bgep, rxbuffdescsize, &bge_desc_accattr,
 	    DDI_DMA_RDWR | DDI_DMA_CONSISTENT, &bgep->rx_desc[split]);
 	if (err != DDI_SUCCESS)
 		return (DDI_FAILURE);
-	BGE_DEBUG(("DMA ALLOC: allocated 1 chunks for Rx Descs prod (rxbuffdescsize = %d)",
-	           rxdescsize));
 
 	/*
 	 * Allocate memory & handles for TX descriptor rings,
@@ -2746,259 +2645,64 @@ bge_alloc_bufs(bge_t *bgep)
 	    DDI_DMA_RDWR | DDI_DMA_CONSISTENT, &bgep->tx_desc);
 	if (err != DDI_SUCCESS)
 		return (DDI_FAILURE);
-	BGE_DEBUG(("DMA ALLOC: allocated 1 chunks for Tx Descs / Status Block / Stats (txdescdize = %d)",
-               txdescsize));
 
 	/*
 	 * Now carve up each of the allocated areas ...
 	 */
-
-	/* rx buffers */
 	for (split = 0; split < BGE_SPLIT; ++split) {
 		area = bgep->rx_buff[split];
-
-		BGE_DEBUG(("RXB CHNK %d INIT: va=%p alen=%d off=%d pa=%llx psz=%d",
-		           split,
-		           area.mem_va,
-		           area.alength,
-		           area.offset,
-		           area.cookie.dmac_laddress,
-		           area.cookie.dmac_size));
-
 		bge_slice_chunk(&bgep->buff[BGE_STD_BUFF_RING].buf[split],
 		    &area, BGE_STD_SLOTS_USED/BGE_SPLIT,
 		    bgep->chipid.std_buf_size);
-
-		BGE_DEBUG(("RXB SLCE %d STND: va=%p alen=%d off=%d pa=%llx psz=%d (nslots=%d slotlen=%d)",
-		           split,
-		           bgep->buff[BGE_STD_BUFF_RING].buf[split].mem_va,
-		           bgep->buff[BGE_STD_BUFF_RING].buf[split].alength,
-		           bgep->buff[BGE_STD_BUFF_RING].buf[split].offset,
-		           bgep->buff[BGE_STD_BUFF_RING].buf[split].cookie.dmac_laddress,
-		           bgep->buff[BGE_STD_BUFF_RING].buf[split].cookie.dmac_size,
-		           BGE_STD_SLOTS_USED/BGE_SPLIT,
-		           bgep->chipid.std_buf_size));
-
 		bge_slice_chunk(&bgep->buff[BGE_JUMBO_BUFF_RING].buf[split],
 		    &area, bgep->chipid.jumbo_slots/BGE_SPLIT,
 		    bgep->chipid.recv_jumbo_size);
-
-		if ((bgep->chipid.jumbo_slots / BGE_SPLIT) > 0)
-		{
-			BGE_DEBUG(("RXB SLCE %d JUMB: va=%p alen=%d off=%d pa=%llx psz=%d (nslots=%d slotlen=%d)",
-			           split,
-			           bgep->buff[BGE_JUMBO_BUFF_RING].buf[split].mem_va,
-			           bgep->buff[BGE_JUMBO_BUFF_RING].buf[split].alength,
-			           bgep->buff[BGE_JUMBO_BUFF_RING].buf[split].offset,
-			           bgep->buff[BGE_JUMBO_BUFF_RING].buf[split].cookie.dmac_laddress,
-			           bgep->buff[BGE_JUMBO_BUFF_RING].buf[split].cookie.dmac_size,
-			           bgep->chipid.jumbo_slots/BGE_SPLIT,
-			           bgep->chipid.recv_jumbo_size));
-		}
-
 		bge_slice_chunk(&bgep->buff[BGE_MINI_BUFF_RING].buf[split],
 		    &area, BGE_MINI_SLOTS_USED/BGE_SPLIT,
 		    BGE_MINI_BUFF_SIZE);
-
-		if ((BGE_MINI_SLOTS_USED / BGE_SPLIT) > 0)
-		{
-			BGE_DEBUG(("RXB SLCE %d MINI: va=%p alen=%d off=%d pa=%llx psz=%d (nslots=%d slotlen=%d)",
-			           split,
-			           bgep->buff[BGE_MINI_BUFF_RING].buf[split].mem_va,
-			           bgep->buff[BGE_MINI_BUFF_RING].buf[split].alength,
-			           bgep->buff[BGE_MINI_BUFF_RING].buf[split].offset,
-			           bgep->buff[BGE_MINI_BUFF_RING].buf[split].cookie.dmac_laddress,
-			           bgep->buff[BGE_MINI_BUFF_RING].buf[split].cookie.dmac_size,
-			           BGE_MINI_SLOTS_USED/BGE_SPLIT,
-			           BGE_MINI_BUFF_SIZE));
-		}
-
-		BGE_DEBUG(("RXB CHNK %d DONE: va=%p alen=%d off=%d pa=%llx psz=%d",
-		           split,
-		           area.mem_va,
-		           area.alength,
-		           area.offset,
-		           area.cookie.dmac_laddress,
-		           area.cookie.dmac_size));
 	}
 
-	/* tx buffers */
 	for (split = 0; split < BGE_SPLIT; ++split) {
 		area = bgep->tx_buff[split];
-
-		BGE_DEBUG(("TXB CHNK %d INIT: va=%p alen=%d off=%d pa=%llx psz=%d",
-		           split,
-		           area.mem_va,
-		           area.alength,
-		           area.offset,
-		           area.cookie.dmac_laddress,
-		           area.cookie.dmac_size));
-
-		for (ring = 0; ring < tx_rings; ++ring) {
+		for (ring = 0; ring < tx_rings; ++ring)
 			bge_slice_chunk(&bgep->send[ring].buf[0][split],
 			    &area, BGE_SEND_BUF_NUM/BGE_SPLIT,
 			    bgep->chipid.snd_buff_size);
-
-			BGE_DEBUG(("TXB SLCE %d RING %d: va=%p alen=%d off=%d pa=%llx psz=%d (nslots=%d slotlen=%d)",
-			           split, ring,
-			           bgep->send[ring].buf[0][split].mem_va,
-			           bgep->send[ring].buf[0][split].alength,
-			           bgep->send[ring].buf[0][split].offset,
-			           bgep->send[ring].buf[0][split].cookie.dmac_laddress,
-			           bgep->send[ring].buf[0][split].cookie.dmac_size,
-			           BGE_SEND_BUF_NUM/BGE_SPLIT,
-			           bgep->chipid.snd_buff_size));
-		}
-
-		for (; ring < BGE_SEND_RINGS_MAX; ++ring) {
+		for (; ring < BGE_SEND_RINGS_MAX; ++ring)
 			bge_slice_chunk(&bgep->send[ring].buf[0][split],
 			    &area, 0, bgep->chipid.snd_buff_size);
-		}
-
-		BGE_DEBUG(("TXB CHNK %d DONE: va=%p alen=%d off=%d pa=%llx psz=%d",
-		           split,
-		           area.mem_va,
-		           area.alength,
-		           area.offset,
-		           area.cookie.dmac_laddress,
-		           area.cookie.dmac_size));
 	}
 
-	for (ring = 0; ring < rx_rings; ++ring) {
+	for (ring = 0; ring < rx_rings; ++ring)
 		bge_slice_chunk(&bgep->recv[ring].desc, &bgep->rx_desc[ring],
 		    bgep->chipid.recv_slots, sizeof (bge_rbd_t));
 
-		BGE_DEBUG(("RXD CONS RING %d: va=%p alen=%d off=%d pa=%llx psz=%d (nslots=%d slotlen=%d)",
-		           ring,
-		           bgep->recv[ring].desc.mem_va,
-		           bgep->recv[ring].desc.alength,
-		           bgep->recv[ring].desc.offset,
-		           bgep->recv[ring].desc.cookie.dmac_laddress,
-		           bgep->recv[ring].desc.cookie.dmac_size,
-		           bgep->chipid.recv_slots,
-		           sizeof(bge_rbd_t)));
-	}
-
-	/* dma alloc for rxbuffdescsize is located at bgep->rx_desc[#rings] */
-	area = bgep->rx_desc[rx_rings]; /* note rx_rings = one beyond rings */
-
-	for (; ring < BGE_RECV_RINGS_MAX; ++ring) /* skip unused rings */
+	area = bgep->rx_desc[rx_rings];
+	for (; ring < BGE_RECV_RINGS_MAX; ++ring)
 		bge_slice_chunk(&bgep->recv[ring].desc, &area,
 		    0, sizeof (bge_rbd_t));
-
-	BGE_DEBUG(("RXD PROD INIT: va=%p alen=%d off=%d pa=%llx psz=%d",
-	           area.mem_va,
-	           area.alength,
-	           area.offset,
-	           area.cookie.dmac_laddress,
-	           area.cookie.dmac_size));
-
 	bge_slice_chunk(&bgep->buff[BGE_STD_BUFF_RING].desc, &area,
 	    BGE_STD_SLOTS_USED, sizeof (bge_rbd_t));
-	BGE_DEBUG(("RXD PROD STND: va=%p alen=%d off=%d pa=%llx psz=%d (nslots=%d slotlen=%d)",
-	           bgep->buff[BGE_STD_BUFF_RING].desc.mem_va,
-	           bgep->buff[BGE_STD_BUFF_RING].desc.alength,
-	           bgep->buff[BGE_STD_BUFF_RING].desc.offset,
-	           bgep->buff[BGE_STD_BUFF_RING].desc.cookie.dmac_laddress,
-	           bgep->buff[BGE_STD_BUFF_RING].desc.cookie.dmac_size,
-	           BGE_STD_SLOTS_USED,
-	           sizeof(bge_rbd_t)));
-
 	bge_slice_chunk(&bgep->buff[BGE_JUMBO_BUFF_RING].desc, &area,
 	    bgep->chipid.jumbo_slots, sizeof (bge_rbd_t));
-	BGE_DEBUG(("RXD PROD JUMB: va=%p alen=%d off=%d pa=%llx psz=%d (nslots=%d slotlen=%d)",
-	           bgep->buff[BGE_JUMBO_BUFF_RING].desc.mem_va,
-	           bgep->buff[BGE_JUMBO_BUFF_RING].desc.alength,
-	           bgep->buff[BGE_JUMBO_BUFF_RING].desc.offset,
-	           bgep->buff[BGE_JUMBO_BUFF_RING].desc.cookie.dmac_laddress,
-	           bgep->buff[BGE_JUMBO_BUFF_RING].desc.cookie.dmac_size,
-	           bgep->chipid.jumbo_slots,
-	           sizeof(bge_rbd_t)));
-
 	bge_slice_chunk(&bgep->buff[BGE_MINI_BUFF_RING].desc, &area,
 	    BGE_MINI_SLOTS_USED, sizeof (bge_rbd_t));
-	BGE_DEBUG(("RXD PROD MINI: va=%p alen=%d off=%d pa=%llx psz=%d (nslots=%d slotlen=%d)",
-	           bgep->buff[BGE_MINI_BUFF_RING].desc.mem_va,
-	           bgep->buff[BGE_MINI_BUFF_RING].desc.alength,
-	           bgep->buff[BGE_MINI_BUFF_RING].desc.offset,
-	           bgep->buff[BGE_MINI_BUFF_RING].desc.cookie.dmac_laddress,
-	           bgep->buff[BGE_MINI_BUFF_RING].desc.cookie.dmac_size,
-	           BGE_MINI_SLOTS_USED,
-	           sizeof(bge_rbd_t)));
-
-	BGE_DEBUG(("RXD PROD DONE: va=%p alen=%d off=%d pa=%llx psz=%d",
-	           area.mem_va,
-	           area.alength,
-	           area.offset,
-	           area.cookie.dmac_laddress,
-	           area.cookie.dmac_size));
-
 	ASSERT(area.alength == 0);
 
 	area = bgep->tx_desc;
-
-	BGE_DEBUG(("TXD INIT: va=%p alen=%d off=%d pa=%llx psz=%d",
-	           area.mem_va,
-	           area.alength,
-	           area.offset,
-	           area.cookie.dmac_laddress,
-	           area.cookie.dmac_size));
-
-	for (ring = 0; ring < tx_rings; ++ring) {
+	for (ring = 0; ring < tx_rings; ++ring)
 		bge_slice_chunk(&bgep->send[ring].desc, &area,
 		    BGE_SEND_SLOTS_USED, sizeof (bge_sbd_t));
-
-		BGE_DEBUG(("TXD RING %d: va=%p alen=%d off=%d pa=%llx psz=%d (nslots=%d slotlen=%d)",
-		           ring,
-		           bgep->send[ring].desc.mem_va,
-		           bgep->send[ring].desc.alength,
-		           bgep->send[ring].desc.offset,
-		           bgep->send[ring].desc.cookie.dmac_laddress,
-		           bgep->send[ring].desc.cookie.dmac_size,
-		           BGE_SEND_SLOTS_USED,
-		           sizeof(bge_sbd_t)));
-	}
-
-	for (; ring < BGE_SEND_RINGS_MAX; ++ring) /* skip unused rings */
+	for (; ring < BGE_SEND_RINGS_MAX; ++ring)
 		bge_slice_chunk(&bgep->send[ring].desc, &area,
 		    0, sizeof (bge_sbd_t));
-
 	bge_slice_chunk(&bgep->statistics, &area, 1, sizeof (bge_statistics_t));
-	BGE_DEBUG(("TXD STATISTICS: va=%p alen=%d off=%d pa=%llx psz=%d (nslots=%d slotlen=%d)",
-	           bgep->statistics.mem_va,
-	           bgep->statistics.alength,
-	           bgep->statistics.offset,
-	           bgep->statistics.cookie.dmac_laddress,
-	           bgep->statistics.cookie.dmac_size,
-	           1,
-	           sizeof(bge_statistics_t)));
-
 	bge_slice_chunk(&bgep->status_block, &area, 1, sizeof (bge_status_t));
-	BGE_DEBUG(("TXD STATUS BLOCK: va=%p alen=%d off=%d pa=%llx psz=%d (nslots=%d slotlen=%d)",
-	           bgep->status_block.mem_va,
-	           bgep->status_block.alength,
-	           bgep->status_block.offset,
-	           bgep->status_block.cookie.dmac_laddress,
-	           bgep->status_block.cookie.dmac_size,
-	           1,
-	           sizeof(bge_status_t)));
-
-	BGE_DEBUG(("TXD DONE: va=%p alen=%d off=%d pa=%llx psz=%d",
-	           area.mem_va,
-	           area.alength,
-	           area.offset,
-	           area.cookie.dmac_laddress,
-	           area.cookie.dmac_size));
-
 	ASSERT(area.alength == BGE_STATUS_PADDING);
-
 	DMA_ZERO(bgep->status_block);
 
 	return (DDI_SUCCESS);
 }
-
-#undef	BGE_DBG
-#define	BGE_DBG		BGE_DBG_INIT	/* debug flag for this code	*/
 
 /*
  * This routine frees the transmit and receive buffers and descriptors.
@@ -3136,6 +2840,7 @@ bge_find_mac_address(bge_t *bgep, chip_id_t *cidp)
 	    cidp->vendor_addr.set ? "" : "not "));
 }
 
+
 /*ARGSUSED*/
 int
 bge_check_acc_handle(bge_t *bgep, ddi_acc_handle_t handle)
@@ -3256,7 +2961,6 @@ bge_unattach(bge_t *bgep)
 		ddi_periodic_delete(bgep->periodic_id);
 		bgep->periodic_id = NULL;
 	}
-
 	if (bgep->progress & PROGRESS_KSTATS)
 		bge_fini_kstats(bgep);
 	if (bgep->progress & PROGRESS_PHY)
@@ -3304,11 +3008,8 @@ bge_unattach(bge_t *bgep)
 		ddi_remove_softintr(bgep->drain_id);
 	if (bgep->progress & PROGRESS_BUFS)
 		bge_free_bufs(bgep);
-	if (bgep->progress & PROGRESS_REGS) {
+	if (bgep->progress & PROGRESS_REGS)
 		ddi_regs_map_free(&bgep->io_handle);
-		if (bgep->ape_enabled)
-			ddi_regs_map_free(&bgep->ape_handle);
-	}
 	if (bgep->progress & PROGRESS_CFG)
 		pci_config_teardown(&bgep->cfg_handle);
 
@@ -3392,209 +3093,6 @@ bge_resume(dev_info_t *devinfo)
 	return (DDI_SUCCESS);
 }
 
-static int
-bge_fw_img_is_valid(bge_t *bgep, uint32_t offset)
-{
-	uint32_t val;
-
-	if (bge_nvmem_read32(bgep, offset, &val) ||
-	    (val & 0xfc000000) != 0x0c000000 ||
-	    bge_nvmem_read32(bgep, offset + 4, &val) ||
-	    val != 0)
-		return (0);
-
-	return (1);
-}
-
-static void
-bge_read_mgmtfw_ver(bge_t *bgep)
-{
-	uint32_t val;
-	uint32_t offset;
-	uint32_t start;
-	int i, vlen;
-
-	for (offset = NVM_DIR_START;
-	     offset < NVM_DIR_END;
-	     offset += NVM_DIRENT_SIZE) {
-		if (bge_nvmem_read32(bgep, offset, &val))
-			return;
-
-		if ((val >> NVM_DIRTYPE_SHIFT) == NVM_DIRTYPE_ASFINI)
-			break;
-	}
-
-	if (offset == NVM_DIR_END)
-		return;
-
-	if (bge_nvmem_read32(bgep, offset - 4, &start))
-		return;
-
-	if (bge_nvmem_read32(bgep, offset + 4, &offset) ||
-	    !bge_fw_img_is_valid(bgep, offset) ||
-	    bge_nvmem_read32(bgep, offset + 8, &val))
-		return;
-
-	offset += val - start;
-
-	vlen = strlen(bgep->fw_version);
-
-	bgep->fw_version[vlen++] = ',';
-	bgep->fw_version[vlen++] = ' ';
-
-	for (i = 0; i < 4; i++) {
-		uint32_t v;
-
-		if (bge_nvmem_read32(bgep, offset, &v))
-			return;
-
-		v = BE_32(v);
-
-		offset += sizeof(v);
-
-		if (vlen > BGE_FW_VER_SIZE - sizeof(v)) {
-			memcpy(&bgep->fw_version[vlen], &v, BGE_FW_VER_SIZE - vlen);
-			break;
-		}
-
-		memcpy(&bgep->fw_version[vlen], &v, sizeof(v));
-		vlen += sizeof(v);
-	}
-}
-
-static void
-bge_read_dash_ver(bge_t *bgep)
-{
-	int vlen;
-	uint32_t apedata;
-	char *fwtype;
-
-	if (!bgep->ape_enabled || !bgep->asf_enabled)
-		return;
-
-	apedata = bge_ape_get32(bgep, BGE_APE_SEG_SIG);
-	if (apedata != APE_SEG_SIG_MAGIC)
-		return;
-
-	apedata = bge_ape_get32(bgep, BGE_APE_FW_STATUS);
-	if (!(apedata & APE_FW_STATUS_READY))
-		return;
-
-	apedata = bge_ape_get32(bgep, BGE_APE_FW_VERSION);
-
-	if (bge_ape_get32(bgep, BGE_APE_FW_FEATURES) &
-	    BGE_APE_FW_FEATURE_NCSI) {
-		bgep->ape_has_ncsi = B_TRUE;
-		fwtype = "NCSI";
-	} else if ((bgep->chipid.device == DEVICE_ID_5725) ||
-	    (bgep->chipid.device == DEVICE_ID_5727)) {
-		fwtype = "SMASH";
-	} else {
-		fwtype = "DASH";
-	}
-
-	vlen = strlen(bgep->fw_version);
-
-	snprintf(&bgep->fw_version[vlen], BGE_FW_VER_SIZE - vlen,
-	    " %s v%d.%d.%d.%d", fwtype,
-	    (apedata & APE_FW_VERSION_MAJMSK) >> APE_FW_VERSION_MAJSFT,
-	    (apedata & APE_FW_VERSION_MINMSK) >> APE_FW_VERSION_MINSFT,
-	    (apedata & APE_FW_VERSION_REVMSK) >> APE_FW_VERSION_REVSFT,
-	    (apedata & APE_FW_VERSION_BLDMSK));
-}
-
-static void
-bge_read_bc_ver(bge_t *bgep)
-{
-	uint32_t val;
-	uint32_t offset;
-	uint32_t start;
-	uint32_t ver_offset;
-	int i, dst_off;
-	uint32_t major;
-	uint32_t minor;
-	boolean_t newver = B_FALSE;
-
-	if (bge_nvmem_read32(bgep, 0xc, &offset) ||
-	    bge_nvmem_read32(bgep, 0x4, &start))
-		return;
-
-	if (bge_nvmem_read32(bgep, offset, &val))
-		return;
-
-	if ((val & 0xfc000000) == 0x0c000000) {
-		if (bge_nvmem_read32(bgep, offset + 4, &val))
-			return;
-
-		if (val == 0)
-			newver = B_TRUE;
-	}
-
-	dst_off = strlen(bgep->fw_version);
-
-	if (newver) {
-		if (((BGE_FW_VER_SIZE - dst_off) < 16) ||
-		    bge_nvmem_read32(bgep, offset + 8, &ver_offset))
-			return;
-
-		offset = offset + ver_offset - start;
-		for (i = 0; i < 16; i += 4) {
-			if (bge_nvmem_read32(bgep, offset + i, &val))
-				return;
-			val = BE_32(val);
-			memcpy(bgep->fw_version + dst_off + i, &val,
-			    sizeof(val));
-		}
-	} else {
-		if (bge_nvmem_read32(bgep, NVM_PTREV_BCVER, &ver_offset))
-			return;
-
-		major = (ver_offset & NVM_BCVER_MAJMSK) >> NVM_BCVER_MAJSFT;
-		minor = ver_offset & NVM_BCVER_MINMSK;
-		snprintf(&bgep->fw_version[dst_off], BGE_FW_VER_SIZE - dst_off,
-		    "v%d.%02d", major, minor);
-	}
-}
-
-static void
-bge_read_fw_ver(bge_t *bgep)
-{
-	uint32_t val;
-	uint32_t magic;
-
-	*bgep->fw_version = 0;
-
-	if ((bgep->chipid.nvtype == BGE_NVTYPE_NONE) ||
-	    (bgep->chipid.nvtype == BGE_NVTYPE_UNKNOWN)) {
-		snprintf(bgep->fw_version, sizeof(bgep->fw_version), "sb");
-		return;
-	}
-
-	mutex_enter(bgep->genlock);
-
-	bge_nvmem_read32(bgep, 0, &magic);
-
-	if (magic == EEPROM_MAGIC) {
-		bge_read_bc_ver(bgep);
-	} else {
-		/* ignore other configs for now */
-		mutex_exit(bgep->genlock);
-		return;
-	}
-
-	if (bgep->ape_enabled) {
-		if (bgep->asf_enabled) {
-			bge_read_dash_ver(bgep);
-		}
-	} else if (bgep->asf_enabled) {
-		bge_read_mgmtfw_ver(bgep);
-	}
-
-	mutex_exit(bgep->genlock);
-
-	bgep->fw_version[BGE_FW_VER_SIZE - 1] = 0; /* safety */
-}
-
 /*
  * attach(9E) -- Attach a device to the system
  *
@@ -3610,10 +3108,6 @@ bge_attach(dev_info_t *devinfo, ddi_attach_cmd_t cmd)
 	int instance;
 	int err;
 	int intr_types;
-	int *props = NULL;
-	uint_t numProps;
-	uint32_t regval;
-	uint32_t pci_state_reg;
 #ifdef BGE_IPMI_ASF
 	uint32_t mhcrValue;
 #ifdef __sparc
@@ -3691,38 +3185,6 @@ bge_attach(dev_info_t *devinfo, ddi_attach_cmd_t cmd)
 	 * and allow interrupts only when everything else is set up.
 	 */
 	err = pci_config_setup(devinfo, &bgep->cfg_handle);
-
-	bgep->ape_enabled = B_FALSE;
-	bgep->ape_regs = NULL;
-
-	cidp = &bgep->chipid;
-	cidp->device = pci_config_get16(bgep->cfg_handle, PCI_CONF_DEVID);
-	if (DEVICE_5717_SERIES_CHIPSETS(bgep) ||
-	    DEVICE_5725_SERIES_CHIPSETS(bgep)) {
-		err = ddi_regs_map_setup(devinfo, BGE_PCI_APEREGS_RNUMBER,
-		    &regs, 0, 0, &bge_reg_accattr, &bgep->ape_handle);
-		if (err != DDI_SUCCESS) {
-			ddi_regs_map_free(&bgep->io_handle);
-			bge_problem(bgep, "ddi_regs_map_setup() failed");
-			goto attach_fail;
-		}
-		bgep->ape_regs    = regs;
-		bgep->ape_enabled = B_TRUE;
-
-		/*
-		 * Allow reads and writes to the
-		 * APE register and memory space.
-		 */
-
-		pci_state_reg = pci_config_get32(bgep->cfg_handle,
-		    PCI_CONF_BGE_PCISTATE);
-		pci_state_reg |= PCISTATE_ALLOW_APE_CTLSPC_WR |
-		    PCISTATE_ALLOW_APE_SHMEM_WR | PCISTATE_ALLOW_APE_PSPACE_WR;
-		pci_config_put32(bgep->cfg_handle,
-		    PCI_CONF_BGE_PCISTATE, pci_state_reg);
-		bge_ape_lock_init(bgep);
-	}
-
 #ifdef BGE_IPMI_ASF
 #ifdef __sparc
 	/*
@@ -3730,6 +3192,8 @@ bge_attach(dev_info_t *devinfo, ddi_attach_cmd_t cmd)
 	 * registers. (This information will be used by bge_ind_put32,
 	 * bge_ind_get32 and bge_nic_read32)
 	 */
+	bgep->chipid.device = pci_config_get16(bgep->cfg_handle,
+	    PCI_CONF_DEVID);
 	value16 = pci_config_get16(bgep->cfg_handle, PCI_CONF_COMM);
 	value16 = value16 | (PCI_COMM_MAE | PCI_COMM_ME);
 	pci_config_put16(bgep->cfg_handle, PCI_CONF_COMM, value16);
@@ -3745,21 +3209,15 @@ bge_attach(dev_info_t *devinfo, ddi_attach_cmd_t cmd)
 	 * has been set in PCI_CONF_COMM already, we need to write the
 	 * byte-swapped value to it. So we just write zero first for simplicity.
 	 */
-	if (DEVICE_5717_SERIES_CHIPSETS(bgep) ||
-	    DEVICE_5725_SERIES_CHIPSETS(bgep) ||
-	    DEVICE_57765_SERIES_CHIPSETS(bgep))
+	if (DEVICE_5717_SERIES_CHIPSETS(bgep))
 		pci_config_put32(bgep->cfg_handle, PCI_CONF_BGE_MHCR, 0);
-#else
-	mhcrValue = MHCR_ENABLE_INDIRECT_ACCESS |
-	    MHCR_ENABLE_TAGGED_STATUS_MODE |
-	    MHCR_MASK_INTERRUPT_MODE |
-	    MHCR_MASK_PCI_INT_OUTPUT |
-	    MHCR_CLEAR_INTERRUPT_INTA;
-#endif
 	pci_config_put32(bgep->cfg_handle, PCI_CONF_BGE_MHCR, mhcrValue);
 	bge_ind_put32(bgep, MEMORY_ARBITER_MODE_REG,
 	    bge_ind_get32(bgep, MEMORY_ARBITER_MODE_REG) |
 	    MEMORY_ARBITER_ENABLE);
+#else
+	mhcrValue = pci_config_get32(bgep->cfg_handle, PCI_CONF_BGE_MHCR);
+#endif
 	if (mhcrValue & MHCR_ENABLE_ENDIAN_WORD_SWAP) {
 		bgep->asf_wordswapped = B_TRUE;
 	} else {
@@ -3772,6 +3230,8 @@ bge_attach(dev_info_t *devinfo, ddi_attach_cmd_t cmd)
 		goto attach_fail;
 	}
 	bgep->progress |= PROGRESS_CFG;
+	cidp = &bgep->chipid;
+	bzero(cidp, sizeof (*cidp));
 	bge_chip_cfg_init(bgep, cidp, B_FALSE);
 	if (bge_check_acc_handle(bgep, bgep->cfg_handle) != DDI_FM_OK) {
 		ddi_fm_service_impact(bgep->devinfo, DDI_SERVICE_LOST);
@@ -3804,8 +3264,6 @@ bge_attach(dev_info_t *devinfo, ddi_attach_cmd_t cmd)
 	    DDI_PROP_DONTPASS, rxrings_propname, cidp->rx_rings);
 	cidp->tx_rings = ddi_prop_get_int(DDI_DEV_T_ANY, devinfo,
 	    DDI_PROP_DONTPASS, txrings_propname, cidp->tx_rings);
-	cidp->eee = ddi_prop_get_int(DDI_DEV_T_ANY, devinfo,
-	    DDI_PROP_DONTPASS, eee_propname, cidp->eee);
 
 	cidp->default_mtu = ddi_prop_get_int(DDI_DEV_T_ANY, devinfo,
 	    DDI_PROP_DONTPASS, default_mtu, BGE_DEFAULT_MTU);
@@ -3824,7 +3282,6 @@ bge_attach(dev_info_t *devinfo, ddi_attach_cmd_t cmd)
 		goto attach_fail;
 	}
 	bgep->io_regs = regs;
-
 	bgep->progress |= PROGRESS_REGS;
 
 	/*
@@ -3834,29 +3291,6 @@ bge_attach(dev_info_t *devinfo, ddi_attach_cmd_t cmd)
 	if (bge_chip_id_init(bgep) == EIO) {
 		ddi_fm_service_impact(bgep->devinfo, DDI_SERVICE_LOST);
 		goto attach_fail;
-	}
-
-	err = ddi_prop_lookup_int_array(DDI_DEV_T_ANY, bgep->devinfo,
-	    0, "reg", &props, &numProps);
-	if ((err == DDI_PROP_SUCCESS) && (numProps > 0)) {
-		bgep->pci_bus  = PCI_REG_BUS_G(props[0]);
-		bgep->pci_dev  = PCI_REG_DEV_G(props[0]);
-		bgep->pci_func = PCI_REG_FUNC_G(props[0]);
-		ddi_prop_free(props);
-	}
-
-	if (DEVICE_5717_SERIES_CHIPSETS(bgep) ||
-	    DEVICE_5725_SERIES_CHIPSETS(bgep)) {
-		regval = bge_reg_get32(bgep, CPMU_STATUS_REG);
-		if ((bgep->chipid.device == DEVICE_ID_5719) ||
-		    (bgep->chipid.device == DEVICE_ID_5720)) {
-			bgep->pci_func =
-			    ((regval & CPMU_STATUS_FUNC_NUM_5719) >>
-			    CPMU_STATUS_FUNC_NUM_5719_SHIFT);
-		} else {
-			bgep->pci_func = ((regval & CPMU_STATUS_FUNC_NUM) >>
-			    CPMU_STATUS_FUNC_NUM_SHIFT);
-		}
 	}
 
 	err = bge_alloc_bufs(bgep);
@@ -4043,8 +3477,6 @@ bge_attach(dev_info_t *devinfo, ddi_attach_cmd_t cmd)
 	 * Determine whether to override the chip's own MAC address
 	 */
 	bge_find_mac_address(bgep, cidp);
-
-	bge_read_fw_ver(bgep);
 
 	bgep->unicst_addr_total = MAC_ADDRESS_REGS_MAX;
 	bgep->unicst_addr_avail = MAC_ADDRESS_REGS_MAX;

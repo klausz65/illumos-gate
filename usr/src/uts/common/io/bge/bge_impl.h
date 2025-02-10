@@ -20,13 +20,7 @@
  */
 
 /*
- * Copyright (c) 2010-2013, by Broadcom, Inc.
- * All Rights Reserved.
- */
-
-/*
- * Copyright (c) 2002, 2010, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2002, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 #ifndef _BGE_IMPL_H
@@ -51,6 +45,7 @@ extern "C" {
 #endif	/* __sparcv9 */
 #include <sys/kstat.h>
 #include <sys/ethernet.h>
+#include <sys/vlan.h>
 #include <sys/errno.h>
 #include <sys/dlpi.h>
 #include <sys/devops.h>
@@ -82,18 +77,6 @@ extern "C" {
 #include <sys/x86_archext.h>
 #endif
 
-#ifndef VLAN_TAGSZ
-#define VLAN_TAGSZ 4
-#endif
-
-#define BGE_STR_SIZE 32
-
-#ifndef OFFSETOF
-#define OFFSETOF(_s, _f) \
-    ((uint32_t)((uint8_t *)(&((_s *)0)->_f) - \
-                (uint8_t *)((uint8_t *) 0)))
-#endif
-
 /*
  * <sys/ethernet.h> *may* already have provided the typedef ether_addr_t;
  * but of course C doesn't provide a way to check this directly.  So here
@@ -111,7 +94,8 @@ typedef uchar_t ether_addr_t[ETHERADDRL];
  */
 extern int secpolicy_net_config(const cred_t *, boolean_t);
 
-#include <sys/miiregs.h>		/* by fjlite out of intel	*/
+#include <sys/netlb.h>			/* originally from cassini	*/
+#include <sys/miiregs.h>		/* by fjlite out of intel 	*/
 
 #include "bge.h"
 #include "bge_hw.h"
@@ -149,7 +133,6 @@ extern int secpolicy_net_config(const cred_t *, boolean_t);
 
 #define	BGE_PCI_CONFIG_RNUMBER	0
 #define	BGE_PCI_OPREGS_RNUMBER	1
-#define	BGE_PCI_APEREGS_RNUMBER	2
 #define	BGE_DMA_MODE		DDI_DMA_STREAMING
 #define	BGE_HEADROOM		34
 
@@ -185,7 +168,6 @@ extern int secpolicy_net_config(const cred_t *, boolean_t);
 
 #define	BGE_HALFTICK		268435456LL		/* 2**28 ns!	*/
 #define	BGE_CYCLIC_PERIOD	(4*BGE_HALFTICK)	/*    ~1.0s	*/
-#define	BGE_CYCLIC_TIMEOUT	(drv_usectohz(1000000))	/*    ~1.0s	*/
 #define	BGE_SERDES_STABLE_TIME	(3*BGE_HALFTICK)	/*    ~0.8s	*/
 #define	BGE_PHY_STABLE_TIME	(11*BGE_HALFTICK)	/*    ~3.0s	*/
 #define	BGE_LINK_SETTLE_TIME	(111*BGE_HALFTICK)	/*   ~30.0s	*/
@@ -318,6 +300,7 @@ extern int secpolicy_net_config(const cred_t *, boolean_t);
 #define	BGE_IDNUM		0		/* zero seems to work	*/
 #define	BGE_LOWAT		(256)
 #define	BGE_HIWAT		(256*1024)
+
 
 /*
  * Basic data types, for clarity in distinguishing 'numbers'
@@ -610,7 +593,6 @@ enum bge_nvmem_type {
  */
 typedef struct {
 	uint32_t		asic_rev;	/* masked from MHCR	*/
-	uint32_t		asic_rev_prod_id; /* new revision ID format */
 	uint32_t		businfo;	/* from private reg	*/
 	uint16_t		command;	/* saved during attach	*/
 
@@ -645,7 +627,6 @@ typedef struct {
 
 	uint32_t		rx_rings;	/* from bge.conf	*/
 	uint32_t		tx_rings;	/* from bge.conf	*/
-	uint32_t		eee;		/* from bge.conf	*/
 	uint32_t		default_mtu;	/* from bge.conf	*/
 
 	uint64_t		hw_mac_addr;	/* from chip register	*/
@@ -737,22 +718,11 @@ typedef struct bge {
 	/*
 	 * These fields are set by attach() and unchanged thereafter ...
 	 */
-	char			version[BGE_STR_SIZE];
-#define BGE_FW_VER_SIZE 32
-	char			fw_version[BGE_FW_VER_SIZE];
 	dev_info_t		*devinfo;	/* device instance	*/
-	uint32_t		pci_bus;	/* from "regs" prop */
-	uint32_t		pci_dev;	/* from "regs" prop */
-	uint32_t		pci_func;	/* from "regs" prop */
 	mac_handle_t		mh;		/* mac module handle	*/
 	ddi_acc_handle_t	cfg_handle;	/* DDI I/O handle	*/
 	ddi_acc_handle_t	io_handle;	/* DDI I/O handle	*/
 	void			*io_regs;	/* mapped registers	*/
-	ddi_acc_handle_t	ape_handle;	/* DDI I/O handle	*/
-	void			*ape_regs;	/* mapped registers	*/
-	boolean_t		ape_enabled;
-	boolean_t		ape_has_ncsi;
-
 	ddi_periodic_t		periodic_id;	/* periodical callback	*/
 	ddi_softintr_t		factotum_id;	/* factotum callback	*/
 	ddi_softintr_t		drain_id;	/* reschedule callback	*/
@@ -813,8 +783,6 @@ typedef struct bge {
 	/* may be obsoleted */
 	recv_ring_t		recv[BGE_RECV_RINGS_MAX]; /* 16*0x0090	*/
 	send_ring_t		send[BGE_SEND_RINGS_MAX]; /* 16*0x0100	*/
-
-	mac_resource_handle_t macRxResourceHandles[BGE_RECV_RINGS_MAX];
 
 	/*
 	 * Locks:
@@ -916,7 +884,6 @@ typedef struct bge {
 	uint64_t		tx_resched;
 	uint32_t		factotum_flag;	/* softint pending	*/
 	uintptr_t		pagemask;
-	boolean_t		rdma_length_bug_on_5719;
 
 	/*
 	 * NDD parameters (protected by genlock)
@@ -986,12 +953,11 @@ typedef struct bge {
 	uint32_t		param_drain_max;
 	uint64_t		param_link_speed;
 	link_duplex_t		param_link_duplex;
-	uint32_t		eee_lpi_wait;
 
+
+	uint32_t		link_update_timer;
 	uint64_t		timestamp;
 } bge_t;
-
-#define CATC_TRIGGER(bgep, data) bge_reg_put32(bgep, 0x0a00, (data))
 
 /*
  * 'Progress' bit flags ...
@@ -1065,31 +1031,35 @@ typedef struct bge {
  */
 #define	BGE_DBG_STOP		0x00000001	/* early debug_enter()	*/
 #define	BGE_DBG_TRACE		0x00000002	/* general flow tracing	*/
-#define	BGE_DBG_APE		0x00000004	/* low-level APE access	*/
-#define	BGE_DBG_HPSD		0x00000008	/* low-level HPSD access*/
+
 #define	BGE_DBG_REGS		0x00000010	/* low-level accesses	*/
 #define	BGE_DBG_MII		0x00000020	/* low-level MII access	*/
 #define	BGE_DBG_SEEPROM		0x00000040	/* low-level SEEPROM IO	*/
 #define	BGE_DBG_CHIP		0x00000080	/* low(ish)-level code	*/
+
 #define	BGE_DBG_RECV		0x00000100	/* receive-side code	*/
 #define	BGE_DBG_SEND		0x00000200	/* packet-send code	*/
+
 #define	BGE_DBG_INT		0x00001000	/* interrupt handler	*/
 #define	BGE_DBG_FACT		0x00002000	/* factotum (softint)	*/
+
 #define	BGE_DBG_PHY		0x00010000	/* Copper PHY code	*/
 #define	BGE_DBG_SERDES		0x00020000	/* SerDes code		*/
 #define	BGE_DBG_PHYS		0x00040000	/* Physical layer code	*/
 #define	BGE_DBG_LINK		0x00080000	/* Link status check	*/
+
 #define	BGE_DBG_INIT		0x00100000	/* initialisation	*/
 #define	BGE_DBG_NEMO		0x00200000	/* nemo interaction	*/
 #define	BGE_DBG_ADDR		0x00400000	/* address-setting code	*/
 #define	BGE_DBG_STATS		0x00800000	/* statistics		*/
+
 #define	BGE_DBG_IOCTL		0x01000000	/* ioctl handling	*/
 #define	BGE_DBG_LOOP		0x02000000	/* loopback ioctl code	*/
 #define	BGE_DBG_PPIO		0x04000000	/* Peek/poke ioctls	*/
 #define	BGE_DBG_BADIOC		0x08000000	/* unknown ioctls	*/
+
 #define	BGE_DBG_MCTL		0x10000000	/* mctl (csum) code	*/
 #define	BGE_DBG_NDD		0x20000000	/* NDD operations	*/
-#define	BGE_DBG_MEM		0x40000000	/* memory allocations and chunking */
 
 /*
  * Debugging ...
@@ -1137,9 +1107,6 @@ typedef struct bge {
 #define	BGE_LDB(b, args)	BGE_XDB(b, bgep->debug, (*bge_db(bgep)), args)
 #define	BGE_CDB(f, args)	BGE_XDB(BGE_DBG, bgep->debug, f, args)
 
-#define DEVNAME(_sc) ((_sc)->ifname)
-#define DPRINTF(f, ...) do { cmn_err(CE_NOTE, (f), __VA_ARGS__); } while (0)
-
 /*
  * Conditional-print macros.
  *
@@ -1180,20 +1147,11 @@ typedef struct bge {
 /* bge_chip.c */
 uint16_t bge_mii_get16(bge_t *bgep, bge_regno_t regno);
 void bge_mii_put16(bge_t *bgep, bge_regno_t regno, uint16_t value);
-uint16_t bge_phydsp_read(bge_t *bgep, bge_regno_t regno);
-void bge_phydsp_write(bge_t *bgep, bge_regno_t regno, uint16_t value);
 uint32_t bge_reg_get32(bge_t *bgep, bge_regno_t regno);
 void bge_reg_put32(bge_t *bgep, bge_regno_t regno, uint32_t value);
 void bge_reg_set32(bge_t *bgep, bge_regno_t regno, uint32_t bits);
 void bge_reg_clr32(bge_t *bgep, bge_regno_t regno, uint32_t bits);
-uint32_t bge_ape_get32(bge_t *bgep, bge_regno_t regno);
-void bge_ape_put32(bge_t *bgep, bge_regno_t regno, uint32_t value);
 void bge_mbx_put(bge_t *bgep, bge_regno_t regno, uint64_t value);
-void bge_ape_lock_init(bge_t *bgep);
-int bge_ape_scratchpad_read(bge_t *bgep, uint32_t *data, uint32_t base_off, uint32_t lenToRead);
-int bge_ape_scratchpad_write(bge_t *bgep, uint32_t dstoff, uint32_t *data, uint32_t lenToWrite);
-int bge_nvmem_read32(bge_t *bgep, bge_regno_t addr, uint32_t *dp);
-int bge_nvmem_write32(bge_t *bgep, bge_regno_t addr, uint32_t *dp);
 void bge_chip_cfg_init(bge_t *bgep, chip_id_t *cidp, boolean_t enable_dma);
 int bge_chip_id_init(bge_t *bgep);
 void bge_chip_coalesce_update(bge_t *bgep);
@@ -1273,9 +1231,7 @@ void bge_intr_enable(bge_t *bgep);
 void bge_intr_disable(bge_t *bgep);
 int bge_reprogram(bge_t *);
 
-/* bge_mii.c */
-void bge_eee_init(bge_t *bgep);
-void bge_eee_enable(bge_t * bgep);
+/* bge_phys.c */
 int bge_phys_init(bge_t *bgep);
 void bge_phys_reset(bge_t *bgep);
 int bge_phys_idle(bge_t *bgep);
@@ -1327,6 +1283,9 @@ void bge_adj_volt_5906(bge_t *bgep);
 #define	ASF_MODE_POST_INIT	4	/* only do post-init	 */
 
 #define	BGE_ASF_HEARTBEAT_INTERVAL		1500000
+
+#define	BGE_LINK_UPDATE_TIMEOUT	10	/* ~ 5 sec */
+#define	BGE_LINK_UPDATE_DONE	(BGE_LINK_UPDATE_TIMEOUT+1)
 
 #ifdef __cplusplus
 }

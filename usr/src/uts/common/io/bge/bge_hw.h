@@ -20,13 +20,7 @@
  */
 
 /*
- * Copyright (c) 2010-2013, by Broadcom, Inc.
- * All Rights Reserved.
- */
-
-/*
- * Copyright (c) 2002, 2010, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2002, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 #ifndef _BGE_HW_H
@@ -70,13 +64,8 @@ extern "C" {
 #define	DEVICE_ID_5705C			0x1653
 #define	DEVICE_ID_5705_2		0x1654
 #define	DEVICE_ID_5717			0x1655
-#define	DEVICE_ID_5717_C0		0x1665
 #define	DEVICE_ID_5718			0x1656
-#define	DEVICE_ID_5719			0x1657
-#define	DEVICE_ID_5720			0x165f
 #define	DEVICE_ID_5724			0x165c
-#define	DEVICE_ID_5725			0x1643
-#define	DEVICE_ID_5727			0x16f3
 #define	DEVICE_ID_5705M			0x165d
 #define	DEVICE_ID_5705MA3		0x165e
 #define	DEVICE_ID_5705F			0x166e
@@ -109,16 +98,6 @@ extern "C" {
 #define	DEVICE_ID_5906			0x1712
 #define	DEVICE_ID_5906M			0x1713
 #define	DEVICE_ID_57780			0x1692
-#define	DEVICE_ID_57761			0x16b0
-#define	DEVICE_ID_57762			0x1682
-#define	DEVICE_ID_57765			0x16b4
-#define	DEVICE_ID_57766			0x1686
-#define	DEVICE_ID_57781			0x16b1
-#define	DEVICE_ID_57782			0x16b7
-#define	DEVICE_ID_57785			0x16b5
-#define	DEVICE_ID_57786			0x16b3
-#define	DEVICE_ID_57791			0x16b2
-#define	DEVICE_ID_57795			0x16b6
 
 #define	REVISION_ID_5700_B0		0x10
 #define	REVISION_ID_5700_B2		0x12
@@ -208,15 +187,9 @@ extern "C" {
 		(bgep->chipid.device == DEVICE_ID_5789))
 
 #define	DEVICE_5717_SERIES_CHIPSETS(bgep) \
-		((bgep->chipid.device == DEVICE_ID_5717) ||\
+		(bgep->chipid.device == DEVICE_ID_5717) ||\
 		(bgep->chipid.device == DEVICE_ID_5718) ||\
-		(bgep->chipid.device == DEVICE_ID_5719) ||\
-		(bgep->chipid.device == DEVICE_ID_5720) ||\
-		(bgep->chipid.device == DEVICE_ID_5724))
-
-#define	DEVICE_5725_SERIES_CHIPSETS(bgep) \
-		((bgep->chipid.device == DEVICE_ID_5725) ||\
-		(bgep->chipid.device == DEVICE_ID_5727))
+		(bgep->chipid.device == DEVICE_ID_5724)
 
 #define	DEVICE_5723_SERIES_CHIPSETS(bgep) \
 		((bgep->chipid.device == DEVICE_ID_5723) ||\
@@ -235,23 +208,6 @@ extern "C" {
 #define	DEVICE_5906_SERIES_CHIPSETS(bgep) \
 		((bgep->chipid.device == DEVICE_ID_5906) ||\
 		(bgep->chipid.device == DEVICE_ID_5906M))
-
-/*
- * Even though the hardware register calls this the 57785 family, all of the
- * BSDs call this the 57765 series, so we call it that way to make it more
- * similar.
- */
-#define	DEVICE_57765_SERIES_CHIPSETS(bgep) \
-		((bgep->chipid.device == DEVICE_ID_57761) || \
-		(bgep->chipid.device == DEVICE_ID_57762) || \
-		(bgep->chipid.device == DEVICE_ID_57765) || \
-		(bgep->chipid.device == DEVICE_ID_57766) || \
-		(bgep->chipid.device == DEVICE_ID_57781) || \
-		(bgep->chipid.device == DEVICE_ID_57782) || \
-		(bgep->chipid.device == DEVICE_ID_57785) || \
-		(bgep->chipid.device == DEVICE_ID_57786) || \
-		(bgep->chipid.device == DEVICE_ID_57791) || \
-		(bgep->chipid.device == DEVICE_ID_57795))
 
 /*
  * Second section:
@@ -274,13 +230,11 @@ extern "C" {
 #define	MHCR_ENABLE_INDIRECT_ACCESS	0x00000080
 #define	MHCR_ENABLE_REGISTER_WORD_SWAP	0x00000040
 #define	MHCR_ENABLE_CLOCK_CONTROL_WRITE	0x00000020
-#define	MHCR_ENABLE_PCI_STATE_RW	0x00000010
+#define	MHCR_ENABLE_PCI_STATE_WRITE	0x00000010
 #define	MHCR_ENABLE_ENDIAN_WORD_SWAP	0x00000008
 #define	MHCR_ENABLE_ENDIAN_BYTE_SWAP	0x00000004
 #define	MHCR_MASK_PCI_INT_OUTPUT	0x00000002
 #define	MHCR_CLEAR_INTERRUPT_INTA	0x00000001
-#define	MHCR_BOUNDARY_CHECK		0x00002000
-#define	MHCR_TLP_MINOR_ERR_TOLERANCE	0x00008000
 
 #define	MHCR_CHIP_REV_5700_B0		0x71000000
 #define	MHCR_CHIP_REV_5700_B2		0x71020000
@@ -350,55 +304,27 @@ extern "C" {
 #define	MHCR_CHIP_REV_5906_A1		0xc0010000
 #define	MHCR_CHIP_REV_5906_A2		0xc0020000
 
-#define	CHIP_ASIC_REV_USE_PROD_ID_REG	0xf0000000
-#define	MHCR_CHIP_ASIC_REV(bgep) ((bgep)->chipid.asic_rev & 0xf0000000)
-#define	CHIP_ASIC_REV_PROD_ID(bgep) ((bgep)->chipid.asic_rev_prod_id)
-#define	CHIP_ASIC_REV(bgep) ((bgep)->chipid.asic_rev_prod_id >> 12)
+#define	MHCR_CHIP_REV_5723_A0		0xf0000000
+#define	MHCR_CHIP_REV_5723_A1		0xf0010000
+#define	MHCR_CHIP_REV_5723_A2		0xf0020000
+#define	MHCR_CHIP_REV_5723_B0		0xf1000000
 
+#define	MHCR_CHIP_ASIC_REV(ChipRevId)	((ChipRevId) & 0xf0000000)
 #define	MHCR_CHIP_ASIC_REV_5700		(0x7 << 28)
 #define	MHCR_CHIP_ASIC_REV_5701		(0x0 << 28)
 #define	MHCR_CHIP_ASIC_REV_5703		(0x1 << 28)
 #define	MHCR_CHIP_ASIC_REV_5704		(0x2 << 28)
 #define	MHCR_CHIP_ASIC_REV_5705		(0x3 << 28)
 #define	MHCR_CHIP_ASIC_REV_5721_5751	(0x4 << 28)
-#define	MHCR_CHIP_ASIC_REV_5714		(0x5 << 28)
+#define	MHCR_CHIP_ASIC_REV_5714 	(0x5 << 28)
 #define	MHCR_CHIP_ASIC_REV_5752		(0x6 << 28)
 #define	MHCR_CHIP_ASIC_REV_5754		(0xb << 28)
 #define	MHCR_CHIP_ASIC_REV_5787		((uint32_t)0xb << 28)
 #define	MHCR_CHIP_ASIC_REV_5755		((uint32_t)0xa << 28)
-#define	MHCR_CHIP_ASIC_REV_5715		((uint32_t)0x9 << 28)
+#define	MHCR_CHIP_ASIC_REV_5715 	((uint32_t)0x9 << 28)
 #define	MHCR_CHIP_ASIC_REV_5906		((uint32_t)0xc << 28)
-/* (0xf << 28) touches all 5717 and 5725 series as well (OK) */
 #define	MHCR_CHIP_ASIC_REV_5723		((uint32_t)0xf << 28)
 
-#define	CHIP_ASIC_REV_5723		0x5784
-#define	CHIP_ASIC_REV_5761		0x5761
-#define	CHIP_ASIC_REV_5785		0x5785
-#define	CHIP_ASIC_REV_57780		0x57780
-#define	CHIP_ASIC_REV_57785		0x57785
-
-#define	CHIP_ASIC_REV_5717		0x5717
-#define	CHIP_ASIC_REV_5719		0x5719
-#define	CHIP_ASIC_REV_5720		0x5720
-#define	CHIP_ASIC_REV_5762		0x5762 /* 5725/5727 */
-
-#define	CHIP_ASIC_REV_PROD_ID_REG	0x000000bc
-#define	CHIP_ASIC_REV_PROD_ID_GEN2_REG	0x000000f4
-#define	CHIP_ASIC_REV_PROD_ID_GEN15_REG	0x000000fc
-
-#define	CHIP_ASIC_REV_5717_B0		0x05717100
-#define	CHIP_ASIC_REV_5717_C0		0x05717200
-#define	CHIP_ASIC_REV_5718_B0		0x05717100
-#define	CHIP_ASIC_REV_5719_A0		0x05719000
-#define	CHIP_ASIC_REV_5719_A1		0x05719001
-#define	CHIP_ASIC_REV_5720_A0		0x05720000
-#define	CHIP_ASIC_REV_5725_A0		0x05762000
-#define	CHIP_ASIC_REV_5727_B0		0x05762100
-
-/*
- * Match any Metal Layer Revision.
- */
-#define	CHIP_ASIC_REV_57765_AX		0x577850
 
 /*
  * PCI DMA read/write Control Register, in PCI config space
@@ -448,9 +374,6 @@ extern "C" {
  * is set in the MHCR, EXCEPT for the RETRY_SAME_DMA bit which is always RW
  */
 #define	PCI_CONF_BGE_PCISTATE		0x70
-#define	PCISTATE_ALLOW_APE_CTLSPC_WR	0x00010000
-#define	PCISTATE_ALLOW_APE_SHMEM_WR	0x00020000
-#define	PCISTATE_ALLOW_APE_PSPACE_WR	0x00040000
 #define	PCISTATE_RETRY_SAME_DMA		0x00002000
 #define	PCISTATE_FLAT_VIEW		0x00000100
 #define	PCISTATE_EXT_ROM_RETRY		0x00000040
@@ -535,10 +458,7 @@ extern "C" {
  */
 #define	PCI_CONF_DEV_CTRL		0xd8
 #define	PCI_CONF_DEV_CTRL_5723		0xd4
-#define	PCI_CONF_DEV_CTRL_5717		0xb4
-#define	READ_REQ_SIZE_MASK		0x7000
 #define	READ_REQ_SIZE_MAX		0x5000
-#define	READ_REQ_SIZE_2K		0x4000
 #define	DEV_CTRL_NO_SNOOP		0x0800
 #define	DEV_CTRL_RELAXED		0x0010
 
@@ -577,7 +497,7 @@ extern "C" {
 #define	NIC_MEM_SHADOW_SEND_7_8		0x7000		/* bogus	*/
 #define	NIC_MEM_SHADOW_SEND_9_16	0x8000		/* bogus	*/
 #define	NIC_MEM_SHADOW_BUFF_STD		0x6000
-#define	NIC_MEM_SHADOW_BUFF_STD_5717	0x40000
+#define	NIC_MEM_SHADOW_BUFF_STD_5717		0x40000
 #define	NIC_MEM_SHADOW_BUFF_JUMBO	0x7000
 #define	NIC_MEM_SHADOW_BUFF_MINI	0x8000		/* bogus	*/
 #define	NIC_MEM_SHADOW_SEND_RING(ring, nslots)	(0x4000 + 4*(ring)*(nslots))
@@ -620,31 +540,9 @@ extern "C" {
 #define	HOST_COALESCE_MODE_REG		0x3c00
 #define	MEMORY_ARBITER_MODE_REG		0x4000
 #define	BUFFER_MANAGER_MODE_REG		0x4400
-#define	BUFFER_MANAGER_MODE_NO_TX_UNDERRUN	0x80000000
-#define	BUFFER_MANAGER_MODE_MBLOW_ATTN_ENABLE	0x00000010
 #define	READ_DMA_MODE_REG		0x4800
 #define	WRITE_DMA_MODE_REG		0x4c00
 #define	DMA_COMPLETION_MODE_REG		0x6400
-#define	FAST_BOOT_PC			0x6894
-
-#define	RDMA_RSRV_CTRL_REG		0x4900
-#define	RDMA_RSRV_CTRL_REG2		0x4890
-#define	RDMA_RSRV_CTRL_FIFO_OFLW_FIX	0x00000004
-#define	RDMA_RSRV_CTRL_FIFO_LWM_1_5K	0x00000c00
-#define	RDMA_RSRV_CTRL_FIFO_LWM_MASK	0x00000ff0
-#define	RDMA_RSRV_CTRL_FIFO_HWM_1_5K	0x000c0000
-#define	RDMA_RSRV_CTRL_FIFO_HWM_MASK	0x000ff000
-#define	RDMA_RSRV_CTRL_TXMRGN_320B	0x28000000
-#define	RDMA_RSRV_CTRL_TXMRGN_MASK	0xffe00000
-
-#define	RDMA_CORR_CTRL_REG		0x4910
-#define	RDMA_CORR_CTRL_REG2		0x48a0
-#define	RDMA_CORR_CTRL_BLEN_BD_4K	0x00030000
-#define	RDMA_CORR_CTRL_BLEN_LSO_4K	0x000c0000
-#define	RDMA_CORR_CTRL_TX_LENGTH_WA	0x02000000
-
-#define	BGE_NUM_RDMA_CHANNELS		4
-#define	BGE_RDMA_LENGTH			0x4be0
 
 /*
  * Other bits in some of the above state machine control registers
@@ -654,7 +552,6 @@ extern "C" {
  * Transmit MAC Mode Register
  * (TRANSMIT_MAC_MODE_REG, 0x045c)
  */
-#define	TRANSMIT_MODE_MBUF_LOCKUP_FIX	0x00000100
 #define	TRANSMIT_MODE_LONG_PAUSE	0x00000040
 #define	TRANSMIT_MODE_BIG_BACKOFF	0x00000020
 #define	TRANSMIT_MODE_FLOW_CONTROL	0x00000010
@@ -785,8 +682,6 @@ extern "C" {
  * Ethernet MAC Mode Register
  */
 #define	ETHERNET_MAC_MODE_REG		0x0400
-#define	ETHERNET_MODE_APE_TX_EN		0x10000000
-#define	ETHERNET_MODE_APE_RX_EN		0x08000000
 #define	ETHERNET_MODE_ENABLE_FHDE	0x00800000
 #define	ETHERNET_MODE_ENABLE_RDE	0x00400000
 #define	ETHERNET_MODE_ENABLE_TDE	0x00200000
@@ -1075,12 +970,8 @@ extern "C" {
 #define	SERDES_STATUS_COMMA_DETECTED	0x00000100
 #define	SERDES_STATUS_RXSTAT		0x000000ff
 
-/* 5780/5714 only */
-#define SERDES_RX_CONTROL		0x000005b0
-#define SERDES_RX_CONTROL_SIG_DETECT	0x00000400
-
 /*
- * SGMII Status Register (5717/18/19/20 only)
+ * SGMII Status Register (5717/5718 only)
  */
 #define	SGMII_STATUS_REG	0x5B4
 #define	MEDIA_SELECTION_MODE	0x00000100
@@ -1178,55 +1069,10 @@ extern "C" {
 #define	JUMBO_RCV_BD_REPLENISH_DEFAULT	0x00000020	/* 32	*/
 
 /*
- * CPMU registers (5717/18/19/20/57765 only)
+ * CPMU registers (5717/5718 only)
  */
-#define	CPMU_CLCK_ORIDE_REG		0x3624
-#define	CPMU_CLCK_ORIDE_MAC_ORIDE_EN	0x80000000
-#define	CPMU_STATUS_REG			0x362c
-#define	CPMU_STATUS_FUNC_NUM		0x20000000
-#define	CPMU_STATUS_FUNC_NUM_SHIFT	29
-#define	CPMU_STATUS_FUNC_NUM_5719	0xc0000000
-#define	CPMU_STATUS_FUNC_NUM_5719_SHIFT	30
-#define	CPMU_PADRNG_CTL_REG		0x3668
-#define	CPMU_PADRNG_CTL_RDIV2		0x00040000
-
-/*
- * EEE registers (5718/19/20 only)
- */
-#define	EEE_MODE_REG			0x36b0
-#define	EEE_MODE_APE_TX_DET_EN		0x00000004
-#define	EEE_MODE_ERLY_L1_XIT_DET	0x00000008
-#define	EEE_MODE_SND_IDX_DET_EN		0x00000040
-#define	EEE_MODE_LPI_ENABLE		0x00000080
-#define	EEE_MODE_LPI_IN_TX		0x00000100
-#define	EEE_MODE_LPI_IN_RX		0x00000200
-#define	EEE_MODE_EEE_ENABLE		0x00100000
-
-#define	EEE_DEBOUNCE_T1_CONTROL_REG	0x36b4
-#define	EEE_DEBOUNCE_T1_PCIEXIT_2047US	0x07ff0000
-#define	EEE_DEBOUNCE_T1_LNKIDLE_2047US	0x000007ff
-
-#define	EEE_DEBOUNCE_T2_CONTROL_REG	0x36b8
-#define	EEE_DEBOUNCE_T2_APE_TX_2047US	0x07ff0000
-#define	EEE_DEBOUNCE_T2_TXIDXEQ_2047US	0x000007ff
-
-#define	EEE_LINK_IDLE_CONTROL_REG	0x36bc
-#define	EEE_LINK_IDLE_PCIE_NL0		0x01000000
-#define	EEE_LINK_IDLE_UART_IDL		0x00000004
-#define	EEE_LINK_IDLE_APE_TX_MT		0x00000002
-
-#define	EEE_CONTROL_REG			0x36d0
-#define	EEE_CONTROL_EXIT_16_5_US	0x0000019d
-#define	EEE_CONTROL_EXIT_36_US		0x00000384
-#define	EEE_CONTROL_EXIT_20_1_US	0x000001f8
-
-/* Clause 45 expansion registers */
-#define	EEE_CL45_D7_RESULT_STAT			0x803e
-#define	EEE_CL45_D7_RESULT_STAT_LP_100TX	0x0002
-#define	EEE_CL45_D7_RESULT_STAT_LP_1000T	0x0004
-
-#define MDIO_MMD_AN			0x0007
-#define MDIO_AN_EEE_ADV			0x003c
+#define	CPMU_STATUS_REG	0x362c
+#define	CPMU_STATUS_FUN_NUM	0x20000000
 
 /*
  * Host Coalescing Engine Control Registers
@@ -1413,42 +1259,24 @@ extern "C" {
  * Miscellaneous Local Control Register (MLCR)
  */
 #define	MISC_LOCAL_CONTROL_REG		0x6808
-
 #define	MLCR_PCI_CTRL_SELECT		0x10000000
 #define	MLCR_LEGACY_PCI_MODE		0x08000000
 #define	MLCR_AUTO_SEEPROM_ACCESS	0x01000000
 #define	MLCR_SSRAM_CYCLE_DESELECT	0x00800000
 #define	MLCR_SSRAM_TYPE			0x00400000
 #define	MLCR_BANK_SELECT		0x00200000
-
-#define	MLCR_SRAM_SIZE_16M		0x00180000
-#define	MLCR_SRAM_SIZE_8M		0x00140000
-#define	MLCR_SRAM_SIZE_4M		0x00100000
-#define	MLCR_SRAM_SIZE_2M		0x000c0000
-#define	MLCR_SRAM_SIZE_1M		0x00080000
-#define	MLCR_SRAM_SIZE_512K		0x00040000
-#define	MLCR_SRAM_SIZE_256K		0x00000000
 #define	MLCR_SRAM_SIZE_MASK		0x001c0000
-
 #define	MLCR_ENABLE_EXTERNAL_MEMORY	0x00020000
-#define	MLCR_MISC_PINS_OUTPUT_2		0x00010000
 
+#define	MLCR_MISC_PINS_OUTPUT_2		0x00010000
 #define	MLCR_MISC_PINS_OUTPUT_1		0x00008000
 #define	MLCR_MISC_PINS_OUTPUT_0		0x00004000
 #define	MLCR_MISC_PINS_OUTPUT_ENABLE_2	0x00002000
 #define	MLCR_MISC_PINS_OUTPUT_ENABLE_1	0x00001000
-
 #define	MLCR_MISC_PINS_OUTPUT_ENABLE_0	0x00000800
 #define	MLCR_MISC_PINS_INPUT_2		0x00000400	/* R/O	*/
 #define	MLCR_MISC_PINS_INPUT_1		0x00000200	/* R/O	*/
 #define	MLCR_MISC_PINS_INPUT_0		0x00000100	/* R/O	*/
-
-#define	MLCR_GPIO_OUTPUT3		0x00000080
-#define	MLCR_GPIO_OE3			0x00000040
-#define	MLCR_USE_EXT_SIG_DETECT		0x00000020	/* 5714/5780 only */
-#define	MLCR_GPIO_INPUT3		0x00000020
-#define	MLCR_GPIO_UART_SEL		0x00000010	/* 5755 only */
-#define	MLCR_USE_SIG_DETECT		0x00000010	/* 5714/5780 only */
 
 #define	MLCR_INT_ON_ATTN		0x00000008	/* R/W	*/
 #define	MLCR_SET_INT			0x00000004	/* W/O	*/
@@ -1464,26 +1292,9 @@ extern "C" {
  * just this fashion.  It has to be set as an OUTPUT and driven LOW to
  * enable writing.  Otherwise, the SEEPROM is protected.
  */
-#define	MLCR_DEFAULT			(MLCR_AUTO_SEEPROM_ACCESS | \
-					 MLCR_MISC_PINS_OUTPUT_2  | \
-					 MLCR_MISC_PINS_OUTPUT_1  | \
-					 MLCR_MISC_PINS_OUTPUT_0)
-
-#define	MLCR_DEFAULT_5714		(MLCR_PCI_CTRL_SELECT     | \
-					 MLCR_LEGACY_PCI_MODE     | \
-					 MLCR_AUTO_SEEPROM_ACCESS | \
-					 MLCR_MISC_PINS_OUTPUT_2  | \
-					 MLCR_MISC_PINS_OUTPUT_1  | \
-					 MLCR_MISC_PINS_OUTPUT_0  | \
-					 MLCR_USE_SIG_DETECT)
-
-#define	MLCR_DEFAULT_5717		(MLCR_AUTO_SEEPROM_ACCESS)
-
-/*
- * MLCR_AUTO_SEEPROM_ACCESS is marked reserved in the 57765 family, so we don't
- * try to enable it like on the 5717.
- */
-#define	MLCR_DEFAULT_57765		0
+#define	MLCR_DEFAULT			0x0101c000
+#define	MLCR_DEFAULT_5714		0x1901c000
+#define	MLCR_DEFAULT_5717		0x01000000
 
 /*
  * Serial EEPROM Data/Address Registers (auto-access mode)
@@ -1540,58 +1351,31 @@ extern "C" {
 #define	NVM_CFG1_FLASH_MODE		0x00000001
 
 #define	NVM_SW_ARBITRATION_REG		0x7020
-#define	NVM_READ_REQ3			0x00008000
-#define	NVM_READ_REQ2			0x00004000
-#define	NVM_READ_REQ1			0x00002000
-#define	NVM_READ_REQ0			0x00001000
-#define	NVM_WON_REQ3			0x00000800
-#define	NVM_WON_REQ2			0x00000400
-#define	NVM_WON_REQ1			0x00000200
-#define	NVM_WON_REQ0			0x00000100
-#define	NVM_RESET_REQ3			0x00000080
-#define	NVM_RESET_REQ2			0x00000040
-#define	NVM_RESET_REQ1			0x00000020
-#define	NVM_RESET_REQ0			0x00000010
-#define	NVM_SET_REQ3			0x00000008
-#define	NVM_SET_REQ2			0x00000004
-#define	NVM_SET_REQ1			0x00000002
-#define	NVM_SET_REQ0			0x00000001
-
-#define	EEPROM_MAGIC			0x669955aa
-#define	EEPROM_MAGIC_FW			0xa5000000
-#define	EEPROM_MAGIC_FW_MSK		0xff000000
-#define	EEPROM_SB_FORMAT_MASK		0x00e00000
-#define	EEPROM_SB_FORMAT_1		0x00200000
-#define	EEPROM_SB_REVISION_MASK		0x001f0000
-#define	EEPROM_SB_REVISION_0		0x00000000
-#define	EEPROM_SB_REVISION_2		0x00020000
-#define	EEPROM_SB_REVISION_3		0x00030000
-#define	EEPROM_SB_REVISION_4		0x00040000
-#define	EEPROM_SB_REVISION_5		0x00050000
-#define	EEPROM_SB_REVISION_6		0x00060000
-#define	EEPROM_MAGIC_HW			0xabcd
-#define	EEPROM_MAGIC_HW_MSK		0xffff
-
-#define	NVM_DIR_START		0x18
-#define	NVM_DIR_END		0x78
-#define	NVM_DIRENT_SIZE		0xc
-#define	NVM_DIRTYPE_SHIFT	24
-#define	NVM_DIRTYPE_LENMSK	0x003fffff
-#define	NVM_DIRTYPE_ASFINI	1
-#define	NVM_DIRTYPE_EXTVPD	20
-#define	NVM_PTREV_BCVER		0x94
-#define	NVM_BCVER_MAJMSK	0x0000ff00
-#define	NVM_BCVER_MAJSFT	8
-#define	NVM_BCVER_MINMSK	0x000000ff
+#define	NVM_READ_REQ3			0X00008000
+#define	NVM_READ_REQ2			0X00004000
+#define	NVM_READ_REQ1			0X00002000
+#define	NVM_READ_REQ0			0X00001000
+#define	NVM_WON_REQ3			0X00000800
+#define	NVM_WON_REQ2			0X00000400
+#define	NVM_WON_REQ1			0X00000200
+#define	NVM_WON_REQ0			0X00000100
+#define	NVM_RESET_REQ3			0X00000080
+#define	NVM_RESET_REQ2			0X00000040
+#define	NVM_RESET_REQ1			0X00000020
+#define	NVM_RESET_REQ0			0X00000010
+#define	NVM_SET_REQ3			0X00000008
+#define	NVM_SET_REQ2			0X00000004
+#define	NVM_SET_REQ1			0X00000002
+#define	NVM_SET_REQ0			0X00000001
 
 /*
  * NVM access register
- * Applicable to BCM5721,BCM5751,BCM5752,BCM5714,BCM57725
+ * Applicable to BCM5721,BCM5751,BCM5752,BCM5714
  * and BCM5715 only.
  */
-#define	NVM_ACCESS_REG			0x7024
-#define	NVM_WRITE_ENABLE		0x00000002
-#define	NVM_ACCESS_ENABLE		0x00000001
+#define	NVM_ACCESS_REG			0X7024
+#define	NVM_WRITE_ENABLE		0X00000002
+#define	NVM_ACCESS_ENABLE		0X00000001
 
 /*
  * TLP Control Register
@@ -1622,24 +1406,6 @@ extern "C" {
 /*
  * Vendor-specific MII registers
  */
-
-#define	MII_MMD_CTRL			0x0d /* MMD Access Control register */
-#define	MII_MMD_CTRL_DATA_NOINC		0x4000
-#define	MII_MMD_ADDRESS_DATA		0x0e /* MMD Address Data register */
-
-#define	MII_RXR_COUNTERS		0x14 /* Local/Remote Rx Counts */
-#define	MII_DSP_RW_PORT			0x15 /* DSP read/write port */
-#define	MII_DSP_CONTROL			0x16 /* DSP control register */
-#define	MII_DSP_ADDRESS			0x17 /* DSP address register */
-
-#define	MII_DSP_TAP26			0x001a
-#define	MII_DSP_TAP26_ALNOKO		0x0001
-#define	MII_DSP_TAP26_RMRXSTO		0x0002
-#define	MII_DSP_TAP26_OPCSINPT		0x0004
-
-#define	MII_DSP_CH34TP2			0x4022
-#define	MII_DSP_CH34TP2_HIBW01		0x017b
-
 #define	MII_EXT_CONTROL			MII_VENDOR(0)
 #define	MII_EXT_STATUS			MII_VENDOR(1)
 #define	MII_RCV_ERR_COUNT		MII_VENDOR(2)
@@ -1724,9 +1490,6 @@ extern "C" {
 
 #define	MII_AUX_CTRL_MISC_WRITE_ENABLE	0x8000
 #define	MII_AUX_CTRL_MISC_WIRE_SPEED	0x0010
-
-#define	MII_AUX_CTRL_TX_6DB		0x0400
-#define	MII_AUX_CTRL_SMDSP_ENA		0x0800
 
 /*
  * Write this value to the AUX control register
@@ -1848,7 +1611,6 @@ typedef struct {
 #define	SBD_FLAG_IP_CKSUM		0x0002
 #define	SBD_FLAG_PACKET_END		0x0004
 #define	SBD_FLAG_IP_FRAG		0x0008
-#define	SBD_FLAG_JMB_PKT		0x0008
 #define	SBD_FLAG_IP_FRAG_END		0x0010
 
 #define	SBD_FLAG_VLAN_TAG		0x0040
@@ -2332,83 +2094,6 @@ typedef struct {
 #define	RRER_ASF_EVENT				0x4000
 
 #endif /* BGE_IPMI_ASF */
-
-/* APE registers.  Accessible through BAR1 */
-#define	BGE_APE_GPIO_MSG		0x0008
-#define	BGE_APE_GPIO_MSG_SHIFT		4
-#define	BGE_APE_EVENT			0x000c
-#define	 APE_EVENT_1			 0x00000001
-#define	BGE_APE_LOCK_REQ		0x002c
-#define	 APE_LOCK_REQ_DRIVER		 0x00001000
-#define	BGE_APE_LOCK_GRANT		0x004c
-#define	 APE_LOCK_GRANT_DRIVER		 0x00001000
-#define	BGE_APE_STICKY_TMR		0x00b0
-
-/* APE shared memory.  Accessible through BAR1 */
-#define	BGE_APE_SHMEM_BASE		0x4000
-#define	BGE_APE_SEG_SIG			0x4000
-#define	 APE_SEG_SIG_MAGIC		 0x41504521
-#define	BGE_APE_FW_STATUS		0x400c
-#define	 APE_FW_STATUS_READY		 0x00000100
-#define	BGE_APE_FW_FEATURES		0x4010
-#define	 BGE_APE_FW_FEATURE_NCSI	 0x00000002
-#define	BGE_APE_FW_VERSION		0x4018
-#define	 APE_FW_VERSION_MAJMSK		 0xff000000
-#define	 APE_FW_VERSION_MAJSFT		 24
-#define	 APE_FW_VERSION_MINMSK		 0x00ff0000
-#define	 APE_FW_VERSION_MINSFT		 16
-#define	 APE_FW_VERSION_REVMSK		 0x0000ff00
-#define	 APE_FW_VERSION_REVSFT		 8
-#define	 APE_FW_VERSION_BLDMSK		 0x000000ff
-#define	BGE_APE_SEG_MSG_BUF_OFF		0x401c
-#define	BGE_APE_SEG_MSG_BUF_LEN		0x4020
-#define	BGE_APE_HOST_SEG_SIG		0x4200
-#define	 APE_HOST_SEG_SIG_MAGIC		 0x484f5354
-#define	BGE_APE_HOST_SEG_LEN		0x4204
-#define	 APE_HOST_SEG_LEN_MAGIC		 0x00000020
-#define	BGE_APE_HOST_INIT_COUNT		0x4208
-#define	BGE_APE_HOST_DRIVER_ID		0x420c
-#define	 APE_HOST_DRIVER_ID_SOLARIS	0xf4000000
-#define	 APE_HOST_DRIVER_ID_MAGIC(maj, min) \
-	(APE_HOST_DRIVER_ID_SOLARIS | (maj & 0xff) << 16 | (min & 0xff) << 8)
-#define	BGE_APE_HOST_BEHAVIOR		0x4210
-#define	 APE_HOST_BEHAV_NO_PHYLOCK	 0x00000001
-#define	BGE_APE_HOST_HEARTBEAT_INT_MS	0x4214
-#define	 APE_HOST_HEARTBEAT_INT_DISABLE	 0
-#define	 APE_HOST_HEARTBEAT_INT_5SEC	 5000
-#define	BGE_APE_HOST_HEARTBEAT_COUNT	0x4218
-#define	BGE_APE_HOST_DRVR_STATE		0x421c
-#define	BGE_APE_HOST_DRVR_STATE_START	 0x00000001
-#define	BGE_APE_HOST_DRVR_STATE_UNLOAD	 0x00000002
-#define	BGE_APE_HOST_DRVR_STATE_WOL	 0x00000003
-#define	BGE_APE_HOST_WOL_SPEED		0x4224
-#define	BGE_APE_HOST_WOL_SPEED_AUTO	 0x00008000
-
-#define	BGE_APE_EVENT_STATUS		0x4300
-
-#define	 APE_EVENT_STATUS_DRIVER_EVNT	 0x00000010
-#define	 APE_EVENT_STATUS_STATE_CHNGE	 0x00000500
-#define	 APE_EVENT_STATUS_SCRTCHPD_READ	 0x00001600
-#define	 APE_EVENT_STATUS_SCRTCHPD_WRITE 0x00001700
-#define	 APE_EVENT_STATUS_STATE_START	 0x00010000
-#define	 APE_EVENT_STATUS_STATE_UNLOAD	 0x00020000
-#define	 APE_EVENT_STATUS_STATE_WOL	 0x00030000
-#define	 APE_EVENT_STATUS_STATE_SUSPEND	 0x00040000
-#define	 APE_EVENT_STATUS_EVENT_PENDING	 0x80000000
-
-#define	BGE_APE_PER_LOCK_REQ		0x8400
-#define	 APE_LOCK_PER_REQ_DRIVER	 0x00001000
-#define	BGE_APE_PER_LOCK_GRANT		0x8420
-#define	 APE_PER_LOCK_GRANT_DRIVER	 0x00001000
-
-/* APE convenience enumerations. */
-#define	BGE_APE_LOCK_PHY0		0
-#define	BGE_APE_LOCK_GRC		1
-#define	BGE_APE_LOCK_PHY1		2
-#define	BGE_APE_LOCK_PHY2		3
-#define	BGE_APE_LOCK_MEM		4
-#define	BGE_APE_LOCK_PHY3		5
-#define	BGE_APE_LOCK_GPIO		7
 
 #ifdef __cplusplus
 }

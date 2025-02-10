@@ -20,13 +20,7 @@
  */
 
 /*
- * Copyright (c) 2010-2013, by Broadcom, Inc.
- * All Rights Reserved.
- */
-
-/*
- * Copyright (c) 2002, 2010, Oracle and/or its affiliates.
- * All rights reserved.
+ * Copyright (c) 2002, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 #include "bge_impl.h"
@@ -449,12 +443,6 @@ start_tx:
 			hw_sbd_p->flags |= SBD_FLAG_IP_CKSUM;
 		if (pktp->pflags & HCK_FULLCKSUM)
 			hw_sbd_p->flags |= SBD_FLAG_TCP_UDP_CKSUM;
-		if (!(bgep->chipid.flags & CHIP_FLAG_NO_JUMBO) &&
-		    (DEVICE_5717_SERIES_CHIPSETS(bgep) ||
-		     DEVICE_5725_SERIES_CHIPSETS(bgep) ||
-		     DEVICE_57765_SERIES_CHIPSETS(bgep)) &&
-		    (txbuf->copy_len > ETHERMAX))
-			hw_sbd_p->flags |= SBD_FLAG_JMB_PKT;
 		hw_sbd_p->flags |= SBD_FLAG_PACKET_END;
 
 		txfill_next = NEXT(txfill_next, BGE_SEND_BUF_MAX);
