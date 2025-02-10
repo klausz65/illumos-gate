@@ -19,6 +19,9 @@ LIBRARY		= libmvec.a
 VERS		= .1
 
 OBJECTS		= $(mvecOBJS)
+pics/__vcos.o := sparc_XARCH = -m32 -xarch=v8
+pics/__vsin.o := sparc_XARCH = -m32 -xarch=v8
+pics/__vsincos.o := sparc_XARCH = -m32 -xarch=v8
 
 include ../Makefile.com
 
