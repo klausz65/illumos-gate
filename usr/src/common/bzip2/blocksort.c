@@ -343,7 +343,6 @@ void fallbackSort ( UInt32* fmap,
 
 /*---------------------------------------------*/
 static
-__inline__
 Bool mainGtU ( UInt32  i1, 
                UInt32  i2,
                UChar*  block, 
