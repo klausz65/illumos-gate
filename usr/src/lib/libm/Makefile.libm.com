@@ -59,6 +59,8 @@ CFLAGS64	+= -_gcc=-D__C99FEATURES__
 CFLAGS		+= -_gcc=-fno-strict-overflow
 CFLAGS64	+= -_gcc=-fno-strict-overflow
 
+CERRWARN	+= -_gcc=-Wno-unused-but-set-variable
+
 # sparse currently has no _Complex support
 CFLAGS		+= -_smatch=off
 CFLAGS64	+= -_smatch=off
