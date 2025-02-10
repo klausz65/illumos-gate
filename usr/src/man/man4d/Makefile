@@ -155,6 +155,8 @@ _MANFILES=	aac.4d		\
 
 sparc_MANFILES=	audiocs.4d	\
 		bbc_beep.4d	\
+		cvc.4d		\
+		cvcredir.4d	\
 		dad.4d		\
 		dm2s.4d		\
 		dr.4d		\
@@ -171,6 +173,7 @@ sparc_MANFILES=	audiocs.4d	\
 		pcicmu.4d	\
 		pcipsy.4d	\
 		pcisch.4d	\
+		schpc.4d	\
 		sf.4d		\
 		smbus.4d	\
 		socal.4d	\

@@ -46,8 +46,7 @@ CHKHDRS=	dm2s.h		\
 		fiomp.h		\
 		mc-opl.h	\
 		oplkm.h		\
-		oplkm_msg.h	\
-		sckm_io.h
+		oplkm_msg.h
 
 OPLMSUHDRS=	oplmsu.h	\
 		oplmsu_proto.h

@@ -51,7 +51,7 @@ $(USRPSMPROG) :=	FILEMODE =	0755
 #
 # FLAGS:
 #
-CPPFLAGS=	-I$(USR_PSM_INCL_DIR) -I$(SRC)/uts/sun4u/opl $(CPPFLAGS.master)
+CPPFLAGS=	-I$(USR_PSM_INCL_DIR) -I$(SRC)/uts/sun4u/starcat $(CPPFLAGS.master)
 
 LINT_FLAGS=	-c -Nlevel=4 -Ncheck
 

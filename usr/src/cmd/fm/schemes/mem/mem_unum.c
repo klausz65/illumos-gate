@@ -115,7 +115,7 @@ static const bank_dimm_t bank_dimm[] = {
 };
 
 /*
- * Burst Serengeti-style unums.
+ * Burst Serengeti and Starcat-style unums.
  * A DIMM unum string is expected to be in this form:
  * "[/N0/]SB12/P0/B0/D2 [J13500]"
  * A bank unum string is expected to be in this form:
@@ -261,11 +261,12 @@ mem_unum_burst(const char *pat, char ***dimmsp, size_t *ndimmsp)
 	const char *platform = fmd_fmri_get_platform();
 
 	/*
-	 * Call mem_unum_burst_sgsc() for Serengeti and
+	 * Call mem_unum_burst_sgsc() for Starcat, Serengeti and
 	 * Lightweight 8 platforms.  Call mem_unum_burst_pattern()
 	 * for all other platforms.
 	 */
-	if (strcmp(platform, "SUNW,Sun-Fire") == 0 ||
+	if (strcmp(platform, "SUNW,Sun-Fire-15000") == 0 ||
+	    strcmp(platform, "SUNW,Sun-Fire") == 0 ||
 	    strcmp(platform, "SUNW,Netra-T12") == 0)
 		return (mem_unum_burst_sgsc(pat, dimmsp, ndimmsp));
 	else

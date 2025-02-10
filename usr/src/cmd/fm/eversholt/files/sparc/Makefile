@@ -23,7 +23,7 @@
 # Copyright 2019 Peter Tribble.
 #
 
-SUBDIRS=sun4u sun4v
+SUBDIRS=sun4u sun4v SUNW,Sun-Fire-15000
 EFT_COMMON_FILES=		\
 	disk.eft		\
 	neptune_xaui.eft	\

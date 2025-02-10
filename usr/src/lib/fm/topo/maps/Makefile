@@ -32,6 +32,7 @@ sparc_SUBDIRS =	sun4u \
 		sparc \
 		SUNW,Sun-Fire \
 		SUNW,Sun-Fire-T200 \
+		SUNW,Sun-Fire-15000 \
 		SUNW,SPARC-Enterprise \
 		SUNW,Sun-Blade-T6300 \
 		SUNW,Sun-Blade-T6320 \

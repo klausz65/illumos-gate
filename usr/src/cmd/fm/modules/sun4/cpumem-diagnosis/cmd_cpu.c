@@ -116,6 +116,8 @@ cpu_nname2type(fmd_hdl_t *hdl, const char *name, size_t n)
 }
 
 const char *fmd_fmri_get_platform();
+#define	is_starcat	(strcmp(fmd_fmri_get_platform(), \
+"SUNW,Sun-Fire-15000") == 0)
 #define	is_serengeti	(strcmp(fmd_fmri_get_platform(), \
 "SUNW,Sun-Fire") == 0)
 
@@ -126,6 +128,8 @@ core2cpus(uint32_t core, cmd_cpu_type_t type, uint8_t level,
 	switch (type) {
 #ifdef sun4u
 
+#define	US4P_SCAT_CPUS_PER_CORE		2
+#define	US4P_SCAT_CPU_CORE_STEP		4
 #define	US4P_SGTI_CPUS_PER_CORE		2
 #define	US4P_SGTI_CPU_CORE_STEP		512
 #define	US4P_DAKC_CPUS_PER_CORE		2
@@ -134,7 +138,9 @@ core2cpus(uint32_t core, cmd_cpu_type_t type, uint8_t level,
 	case CPU_ULTRASPARC_IVplus:
 		switch (level) {
 		case CMD_CPU_LEVEL_CORE:
-			if (is_serengeti)
+			if (is_starcat)
+				*cpustep = US4P_SCAT_CPU_CORE_STEP;
+			else if (is_serengeti)
 				*cpustep = US4P_SGTI_CPU_CORE_STEP;
 			else
 				*cpustep = US4P_DAKC_CPU_CORE_STEP;
@@ -207,10 +213,17 @@ cmd_cpu2core(uint32_t cpuid, cmd_cpu_type_t type, uint8_t level)
 	switch (type) {
 #ifdef sun4u
 
+#define	US4P_SCAT_CORE_SYSBD_STEP	32
+
 	case CPU_ULTRASPARC_IVplus:
 		switch (level) {
 		case CMD_CPU_LEVEL_CORE:
-			if (is_serengeti)
+			if (is_starcat)
+				return ((cpuid /
+				    US4P_SCAT_CORE_SYSBD_STEP) *
+				    US4P_SCAT_CORE_SYSBD_STEP +
+				    (cpuid % US4P_SCAT_CPU_CORE_STEP));
+			else if (is_serengeti)
 				return (cpuid % US4P_SGTI_CPU_CORE_STEP);
 			else
 				return (cpuid % US4P_DAKC_CPU_CORE_STEP);

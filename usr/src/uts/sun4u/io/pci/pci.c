@@ -542,12 +542,14 @@ pci_map(dev_info_t *dip, dev_info_t *rdip, ddi_map_req_t *mp,
 	if (rval == DDI_SUCCESS) {
 		/*
 		 * Set-up access functions for FM access error capable drivers.
+		 * The axq workaround prevents fault management support
 		 */
 		if (DDI_FM_ACC_ERR_CAP(pci_p->pci_fm_cap) &&
 		    DDI_FM_ACC_ERR_CAP(ddi_fm_capable(rdip)) &&
 		    mp->map_handlep->ah_acc.devacc_attr_access !=
 		    DDI_DEFAULT_ACC)
 			pci_fm_acc_setup(mp, rdip);
+		pci_axq_setup(mp, pci_p->pci_pbm_p);
 	}
 
 done:
