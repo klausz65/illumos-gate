@@ -249,6 +249,60 @@ $(sparc_ONLY)file \
     path=platform/SUNW,Sun-Blade-2500/kernel/misc/$(ARCH64)/platmod group=sys \
     mode=0755
 $(sparc_ONLY)dir path=platform/SUNW,Sun-Fire group=sys
+$(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-15000 group=sys
+$(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-15000/kernel group=sys
+$(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-15000/kernel/$(ARCH64) group=sys
+$(sparc_ONLY)file path=platform/SUNW,Sun-Fire-15000/kernel/$(ARCH64)/unix \
+    group=sys mode=0755 pkg.depend.bypass-generate=\$CPU \
+    pkg.depend.bypass-generate=dtracestubs pkg.depend.bypass-generate=genunix
+$(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-15000/kernel/cpu group=sys
+$(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-15000/kernel/cpu/$(ARCH64) \
+    group=sys
+$(sparc_ONLY)file \
+    path=platform/SUNW,Sun-Fire-15000/kernel/cpu/$(ARCH64)/SUNW,UltraSPARC-III \
+    group=sys mode=0755
+$(sparc_ONLY)file \
+    path=platform/SUNW,Sun-Fire-15000/kernel/cpu/$(ARCH64)/SUNW,UltraSPARC-III+ \
+    group=sys mode=0755
+$(sparc_ONLY)link \
+    path=platform/SUNW,Sun-Fire-15000/kernel/cpu/$(ARCH64)/SUNW,UltraSPARC-IV \
+    target=SUNW,UltraSPARC-III+
+$(sparc_ONLY)link \
+    path=platform/SUNW,Sun-Fire-15000/kernel/cpu/$(ARCH64)/SUNW,UltraSPARC-IV+ \
+    target=SUNW,UltraSPARC-III+
+$(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-15000/kernel/crypto group=sys
+$(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-15000/kernel/crypto/$(ARCH64) \
+    group=sys
+$(sparc_ONLY)link \
+    path=platform/SUNW,Sun-Fire-15000/kernel/crypto/$(ARCH64)/aes \
+    target=../../../../sun4u-us3/kernel/crypto/$(ARCH64)/aes
+$(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-15000/kernel/drv group=sys
+$(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-15000/kernel/drv/$(ARCH64) \
+    group=sys
+$(sparc_ONLY)file path=platform/SUNW,Sun-Fire-15000/kernel/drv/$(ARCH64)/axq \
+    group=sys
+$(sparc_ONLY)file path=platform/SUNW,Sun-Fire-15000/kernel/drv/$(ARCH64)/dman \
+    group=sys
+$(sparc_ONLY)file \
+    path=platform/SUNW,Sun-Fire-15000/kernel/drv/$(ARCH64)/iosram group=sys
+$(sparc_ONLY)file path=platform/SUNW,Sun-Fire-15000/kernel/drv/$(ARCH64)/schpc \
+    group=sys
+$(sparc_ONLY)file path=platform/SUNW,Sun-Fire-15000/kernel/drv/dman.conf \
+    group=sys
+$(sparc_ONLY)file path=platform/SUNW,Sun-Fire-15000/kernel/drv/schpc.conf \
+    group=sys
+$(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-15000/kernel/misc group=sys
+$(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-15000/kernel/misc/$(ARCH64) \
+    group=sys
+$(sparc_ONLY)file \
+    path=platform/SUNW,Sun-Fire-15000/kernel/misc/$(ARCH64)/mboxsc group=sys \
+    mode=0755
+$(sparc_ONLY)file \
+    path=platform/SUNW,Sun-Fire-15000/kernel/misc/$(ARCH64)/platmod group=sys \
+    mode=0755
+$(sparc_ONLY)file \
+    path=platform/SUNW,Sun-Fire-15000/kernel/misc/$(ARCH64)/scosmb group=sys \
+    mode=0755
 $(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-280R group=sys
 $(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-280R/kernel group=sys
 $(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-280R/kernel/crypto group=sys
@@ -260,7 +314,7 @@ $(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-280R/kernel/drv group=sys
 $(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-280R/kernel/drv/$(ARCH64) group=sys
 $(sparc_ONLY)file \
     path=platform/SUNW,Sun-Fire-280R/kernel/drv/$(ARCH64)/pcf8574 group=sys \
-    pkg.depend.bypass-generate=i2c_svc
+    mode=0755 pkg.depend.bypass-generate=i2c_svc
 $(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-280R/kernel/misc group=sys
 $(sparc_ONLY)dir path=platform/SUNW,Sun-Fire-280R/kernel/misc/$(ARCH64) \
     group=sys
@@ -784,6 +838,8 @@ $(sparc_ONLY)file path=platform/sun4u/kernel/tod/$(ARCH64)/todopl group=sys \
     mode=0755
 $(sparc_ONLY)file path=platform/sun4u/kernel/tod/$(ARCH64)/todsg group=sys \
     mode=0755 pkg.depend.bypass-generate=sgsbbc
+$(sparc_ONLY)file path=platform/sun4u/kernel/tod/$(ARCH64)/todstarcat \
+    group=sys mode=0755 pkg.depend.bypass-generate=iosram
 $(sparc_ONLY)link path=platform/sun4u/kernel/unix target=$(ARCH64)/unix
 $(sparc_ONLY)dir path=platform/sun4v group=sys
 $(sparc_ONLY)file path=platform/sun4v/bootlst group=sys reboot-needed=true
@@ -865,6 +921,7 @@ $(sparc_ONLY)file path=usr/share/man/man4d/oplpanel.4d
 $(sparc_ONLY)file path=usr/share/man/man4d/pcicmu.4d
 $(sparc_ONLY)file path=usr/share/man/man4d/pcipsy.4d
 $(sparc_ONLY)file path=usr/share/man/man4d/pcisch.4d
+$(sparc_ONLY)file path=usr/share/man/man4d/schpc.4d
 $(sparc_ONLY)file path=usr/share/man/man4d/smbus.4d
 $(sparc_ONLY)file path=usr/share/man/man4d/su.4d
 $(sparc_ONLY)file path=usr/share/man/man4d/todopl.4d
@@ -883,6 +940,7 @@ $(sparc_ONLY)driver name=adm1031 alias=i2c-adm1031
 $(i386_ONLY)driver name=amd_iommu perms="* 0644 root sys" \
     alias=pci1002,5a23 \
     alias=pci1022,11ff
+$(sparc_ONLY)driver name=axq alias=SUNW,axq
 $(i386_ONLY)driver name=balloon perms="* 0444 root sys"
 $(sparc_ONLY)driver name=bbc_beep alias=SUNW,bbc-beep
 $(sparc_ONLY)driver name=central
@@ -909,6 +967,7 @@ $(sparc_ONLY)driver name=db21554 \
     alias=pci108e,6722 \
     alias=pciclass,060940 \
     alias=pciclass,060980
+$(sparc_ONLY)driver name=dman perms="* 0600 root sys"
 $(i386_ONLY)driver name=domcaps perms="* 0444 root sys"
 $(sparc_ONLY)driver name=dr
 $(sparc_ONLY)driver name=ebus class=ebus \
@@ -937,6 +996,7 @@ $(sparc_ONLY)driver name=hpc3130 perms="* 0644 root sys" \
     alias=FJSV,hpc3130 \
     alias=i2c-hpc3130
 $(sparc_ONLY)driver name=ics951601 alias=i2c-ics951601
+$(sparc_ONLY)driver name=iosram
 $(i386_ONLY)driver name=isa class=sysbus alias=pciclass,060100
 $(sparc_ONLY)driver name=isadma
 $(sparc_ONLY)driver name=jbusppm alias=jbus-ppm
@@ -1012,6 +1072,7 @@ $(sparc_ONLY)driver name=sbbc alias=pci108e,c416
 $(sparc_ONLY)driver name=sbus class=sbus
 $(sparc_ONLY)driver name=sbusmem
 $(sparc_ONLY)driver name=scfd alias=FJSV,scfc
+$(sparc_ONLY)driver name=schpc
 $(sparc_ONLY)driver name=schppm alias=gp2-ppm
 $(sparc_ONLY)driver name=seeprom \
     alias=i2c-at24c64 \

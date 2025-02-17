@@ -29,6 +29,7 @@
 sparc_SUBDIRS =	sun4u \
 		sun4v \
 		SUNW,Sun-Fire \
+		SUNW,Sun-Fire-15000 \
 		SUNW,SPARC-Enterprise
 
 i386_SUBDIRS = i86pc

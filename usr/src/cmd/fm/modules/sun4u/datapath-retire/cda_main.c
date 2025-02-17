@@ -177,7 +177,8 @@ cda_platform_check_support(fmd_hdl_t *hdl)
 		return (0);
 	}
 
-	if (strcmp(buf, "SUNW,Sun-Fire") == 0 ||
+	if (strcmp(buf, "SUNW,Sun-Fire-15000") == 0 ||
+	    strcmp(buf, "SUNW,Sun-Fire") == 0 ||
 	    strcmp(buf, "SUNW,Netra-T12") == 0)
 		return (1);
 	else

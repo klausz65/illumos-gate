@@ -14,12 +14,13 @@ sckmd \- Sun cryptographic key management daemon
 .fi
 
 .SH DESCRIPTION
+.sp
 .LP
 \fBsckmd\fR is a server process that resides on a high-end system domain to
 maintain the Internet Protocol Security (\fBIPsec\fR) Security Associations
 (\fBSAs\fR) needed to secure communications between a Service Processor or
 System Controller (SC) and platform management software running within a
-domain. The \fBdcs\fR(8) daemon uses these Security
+domain. The \fBcvcd\fR(8) and \fBdcs\fR(8) daemon uses these Security
 Associations. See \fBipsec\fR(4P) for a description of Security Associations.
 .sp
 .LP
@@ -42,6 +43,7 @@ svc:/platform/sun4u/sckmd:default
 .LP
 A domain supports only one running \fBsckmd\fR process at a time.
 .SH ATTRIBUTES
+.sp
 .LP
 See \fBattributes\fR(7) for descriptions of the following attributes:
 .sp
@@ -57,23 +59,26 @@ Interface Stability	Evolving
 .TE
 
 .SH SEE ALSO
+.sp
 .LP
 .BR ipsec (4P),
 .BR ipsecah (4P),
 .BR ipsecesp (4P),
 .BR pf_key (4P),
 .BR attributes (7),
+.BR cvcd (8),
 .BR dcs (8),
 .BR ipsecalgs (8),
 .BR ipsecconf (8)
 .SH NOTES
+.sp
 .LP
 The \fBsckmd\fR service is used only on Sun Fire high-end systems.
 It provides a mechanism for exchanging
 \fBIPsec\fR keys between a domain and its System Controller (\fBSC\fR) or
 Service Processor. These platforms use \fBIPsec\fR to secure the communications
 between the \fBSC\fR or Service Processor and a platform-specific daemon
-in the domain, such as \fBdcs\fR(8).
+in the domain. Such daemons currently include \fBcvcd\fR(8) and \fBdcs\fR(8).
 .sp
 .LP
 The documentation for each platform that supports \fBsckmd\fR describes how to

@@ -33,7 +33,7 @@
 #	Path to the base of the uts directory tree (usually /usr/src/uts).
 #
 UTSBASE	= ../../..
-INC_PATH	+= -I$(UTSBASE)/sun4u/opl/
+INC_PATH	+= -I$(UTSBASE)/sun4u/starcat/
 
 #
 #	Define the module and object file sets.

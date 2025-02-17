@@ -53,6 +53,7 @@ CORE_OBJS +=				\
 	prom_serengeti.o		\
 	prom_set_traptable.o		\
 	prom_sparc.o			\
+	prom_starcat.o			\
 	prom_sunfire.o			\
 	prom_tlb.o			\
 	prom_vername.o			\

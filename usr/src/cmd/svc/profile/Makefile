@@ -42,6 +42,7 @@ PROFILESRCS = \
 	ns_nis.xml \
 	ns_none.xml \
 	platform_SUNW,SPARC-Enterprise.xml \
+	platform_SUNW,Sun-Fire-15000.xml \
 	platform_SUNW,Sun-Fire-880.xml \
 	platform_SUNW,Sun-Fire.xml \
 	platform_none.xml \
