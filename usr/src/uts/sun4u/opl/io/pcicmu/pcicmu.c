@@ -839,7 +839,11 @@ pcmu_do_peek(pcmu_t *pcmu_p, peekpoke_ctlops_t *in_args)
 
 
 static int
+#ifdef	DEBUG
+pcmu_ctlops_peek(pcmu_t *pcmu_p, peekpoke_ctlops_t *in_args, void *result __unused)
+#else
 pcmu_ctlops_peek(pcmu_t *pcmu_p, peekpoke_ctlops_t *in_args, void *result)
+#endif
 {
 	result = (void *)in_args->host_addr;
 	return (pcmu_do_peek(pcmu_p, in_args));
@@ -1434,7 +1438,7 @@ pcmu_ecc_add_intr(pcmu_t *pcmu_p, int inum, pcmu_ecc_intr_info_t *eii_p)
 	mondo = ((pcmu_p->pcmu_cb_p->pcb_ign << PCMU_INO_BITS) |
 	    pcmu_p->pcmu_inos[inum]);
 
-	VERIFY(add_ivintr(mondo, pcmu_pil[inum], (intrfunc)pcmu_ecc_intr,
+	VERIFY(add_ivintr(mondo, pcmu_pil[inum], pcmu_ecc_intr,
 	    (caddr_t)eii_p, NULL, NULL) == 0);
 
 	return (PCMU_ATTACH_RETCODE(PCMU_ECC_OBJ,
@@ -2155,8 +2159,8 @@ pcmu_err_create(pcmu_t *pcmu_p)
 	 */
 	if (pcmu_ecc_queue == NULL) {
 		pcmu_ecc_queue = errorq_create("pcmu_ecc_queue",
-		    (errorq_func_t)pcmu_ecc_err_drain,
-		    (void *)NULL,
+		    (errorq_func_t)(uintptr_t)pcmu_ecc_err_drain,
+		    NULL,
 		    ECC_MAX_ERRS, sizeof (pcmu_ecc_errstate_t),
 		    PIL_2, ERRORQ_VITAL);
 		if (pcmu_ecc_queue == NULL)
