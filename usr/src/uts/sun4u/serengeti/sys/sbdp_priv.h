@@ -121,7 +121,7 @@ extern uint_t sbdp_debug;
 #define	SBDP_DIAG_MEM2		0x7f
 #define	SBDP_DIAG_NVCI		0xffff	/* Use stored value in nvci */
 
-int		*slices;
+extern int		*slices;
 
 #define	SBDP_INIT_PLATOPTS	(uint_t)-1
 #define	SBDP_PLATFORM_OPTS(s_platopts)  ((s_platopts) = SBDP_INIT_PLATOPTS, \
