@@ -130,7 +130,7 @@ abort_sequence_init(void)
 	abort_seq_tstamp = 0LL;
 	if (abort_seq_inum == 0)
 		abort_seq_inum = add_softintr(LOCK_LEVEL,
-		    (softintrfunc)abort_seq_softintr, NULL, SOFTINT_ST);
+		    (softintrfunc)(uintptr_t)abort_seq_softintr, NULL, SOFTINT_ST);
 }
 
 /*
