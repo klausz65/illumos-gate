@@ -170,7 +170,7 @@ extern "C" {
  */
 #define	DMA_WRITE_SYNC_REG			0x1C20
 
-extern uint_t cb_thermal_intr(caddr_t a);
+extern uint_t cb_thermal_intr(caddr_t, caddr_t);
 
 #define	PCI_ID_TO_IGN(pci_id)		((pci_ign_t)UPAID_TO_IGN(pci_id))
 
