@@ -22,12 +22,19 @@
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include <sys/asm_linkage.h>
 #include <sys/privregs.h>
 #include <sys/fsr.h>
 #include <sys/asi.h>
 #include "assym.h"
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 	ENTRY_NP(dtrace_getipl)
 	retl
