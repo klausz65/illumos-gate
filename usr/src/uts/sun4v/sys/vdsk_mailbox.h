@@ -27,8 +27,6 @@
 #ifndef	_VDSK_MAILBOX_H
 #define	_VDSK_MAILBOX_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

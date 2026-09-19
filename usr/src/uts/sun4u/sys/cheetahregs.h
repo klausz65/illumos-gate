@@ -26,8 +26,6 @@
 #ifndef _SYS_CHEETAHREGS_H
 #define	_SYS_CHEETAHREGS_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/machasi.h>
 #include <sys/cpu_impl.h>
 #ifdef _KERNEL

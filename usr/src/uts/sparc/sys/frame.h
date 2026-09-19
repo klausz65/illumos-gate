@@ -27,8 +27,6 @@
 #ifndef _SYS_FRAME_H
 #define	_SYS_FRAME_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"	/* sys4-3.2L 1.1 */
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

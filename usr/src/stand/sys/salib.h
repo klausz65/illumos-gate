@@ -26,8 +26,6 @@
 #ifndef	_SYS_SALIB_H
 #define	_SYS_SALIB_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/memlist.h>
 

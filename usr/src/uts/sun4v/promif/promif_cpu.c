@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/promif_impl.h>
 #include <sys/machsystm.h>
 #include <sys/hypervisor_api.h>

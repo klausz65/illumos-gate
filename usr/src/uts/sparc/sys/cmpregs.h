@@ -26,8 +26,6 @@
 #ifndef	_CMPREGS_H
 #define	_CMPREGS_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

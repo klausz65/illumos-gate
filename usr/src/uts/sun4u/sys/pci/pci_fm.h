@@ -26,8 +26,6 @@
 #ifndef	_PCI_FM_H
 #define	_PCI_FM_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/ddifm.h>
 
 #ifdef	__cplusplus

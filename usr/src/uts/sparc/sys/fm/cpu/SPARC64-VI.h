@@ -26,8 +26,6 @@
 #ifndef	_SYS_FM_SPARC64_VI_H
 #define	_SYS_FM_SPARC64_VI_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

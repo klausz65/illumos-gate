@@ -23,8 +23,6 @@
  *	Copyright (c) 1988-1991 by Sun Microsystems, Inc.
  */
 
-#ident	"%Z%%M%	%I%	%E% SMI"	/* From SunOS 4.1 1.6 */
-
 #include <sys/asm_linkage.h>
 #include <sys/trap.h>
 #include <sys/machtrap.h>

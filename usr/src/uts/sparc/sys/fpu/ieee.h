@@ -27,8 +27,6 @@
 #ifndef	_SYS_FPU_IEEE_H
 #define	_SYS_FPU_IEEE_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"	/* SunOS-4.0 1.4 */
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * "Virtual register" implementation for the bit error performance counters.
  * See n2piupc-biterr.h for a description of the registers.

@@ -27,8 +27,6 @@
 #ifndef	_PLAT_DATAPATH_H
 #define	_PLAT_DATAPATH_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -27,8 +27,6 @@
 #ifndef	_SYS_SCSI_ADAPTERS_FASREG_H
 #define	_SYS_SCSI_ADAPTERS_FASREG_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/note.h>
 
 #ifdef	__cplusplus

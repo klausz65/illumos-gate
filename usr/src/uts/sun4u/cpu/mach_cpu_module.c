@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/cpu_module.h>
 #include <vm/page.h>
 #include <vm/seg_map.h>

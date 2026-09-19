@@ -27,9 +27,6 @@
 #ifndef	_SYS_RMC_COMM_DP_H
 #define	_SYS_RMC_COMM_DP_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-
 #include <sys/rmc_comm_lproto.h>
 
 #ifdef	__cplusplus

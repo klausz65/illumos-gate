@@ -23,8 +23,6 @@
  * Copyright (c) 1991, by Sun Microsystems, Inc.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/promif.h>
 #include <sys/promimpl.h>
 

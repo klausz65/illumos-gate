@@ -27,8 +27,6 @@
 #ifndef _SA_CMN_ERR_H
 #define	_SA_CMN_ERR_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Exported interfaces for standalone's subset of kernel's <sys/cmn_err.h>.
  * Really all that is needed are the printf functions defined in stdio.h.

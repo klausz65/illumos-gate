@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * genconst generates datamodel-independent constants.  Such constants
  * are enum values and constants defined via preprocessor macros.

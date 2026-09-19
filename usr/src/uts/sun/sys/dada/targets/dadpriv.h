@@ -26,8 +26,6 @@
 #ifndef _SYS_DADA_TARGET_DADPRIV_H
 #define	_SYS_DADA_TARGET_DADPRIV_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

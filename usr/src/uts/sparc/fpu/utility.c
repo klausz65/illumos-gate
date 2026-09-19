@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /* Utility functions for Sparc FPU simulator. */
 
 #include <sys/fpu/fpu_simulator.h>

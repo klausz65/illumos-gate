@@ -26,8 +26,6 @@
 #ifndef	_SYS_FC_PLAT_H
 #define	_SYS_FC_PLAT_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/inttypes.h>
 #include <sys/obpdefs.h>
 

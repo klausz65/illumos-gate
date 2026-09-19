@@ -27,8 +27,6 @@
 #ifndef	_SYS_SAIO_H
 #define	_SYS_SAIO_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI" /* from SunOS 4.1 */
-
 /*
  * NOTE: This header file is a vestige from a previous era.  The RESOURCES
  *	 enum should be move somewhere more appropriate (with an accompanying

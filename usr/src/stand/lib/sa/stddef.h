@@ -26,8 +26,6 @@
 #ifndef _SA_STDDEF_H
 #define	_SA_STDDEF_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Exported interfaces for standalone's subset of libc's <stddef.h>.
  * All standalone code *must* use this header rather than libc's.

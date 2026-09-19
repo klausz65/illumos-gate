@@ -27,8 +27,6 @@
 #ifndef _BOOT_H
 #define	_BOOT_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Platform-independent declarations for the secondary bootloader
  * (in psm/stand/boot).

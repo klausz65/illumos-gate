@@ -26,8 +26,6 @@
 #ifndef	_SYS_PROM_PLAT_H
 #define	_SYS_PROM_PLAT_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/feature_tests.h>
 #include <sys/cpuvar.h>
 

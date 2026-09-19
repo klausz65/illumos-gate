@@ -30,8 +30,6 @@
 #ifndef _SA_CTYPE_H
 #define	_SA_CTYPE_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Exported interfaces for standalone's subset of libc's <ctype.h>.
  * All standalone code *must* use this header rather than libc's.

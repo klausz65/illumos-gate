@@ -27,8 +27,6 @@
 #ifndef	_SYS_ASYNC_H
 #define	_SYS_ASYNC_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/privregs.h>
 
 #ifdef	__cplusplus

@@ -27,8 +27,6 @@
 #ifndef	_TODBQ4802_H
 #define	_TODBQ4802_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

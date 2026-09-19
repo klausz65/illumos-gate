@@ -27,8 +27,6 @@
 #ifndef _SMBUS_H
 #define	_SMBUS_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

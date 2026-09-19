@@ -26,8 +26,6 @@
 #ifndef	_SYS_MACHCPUVAR_H
 #define	_SYS_MACHCPUVAR_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/intr.h>
 #include <sys/clock.h>
 #include <sys/machparam.h>

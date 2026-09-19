@@ -27,8 +27,6 @@
 #ifndef	_SYS_SAFARI_PCD_H
 #define	_SYS_SAFARI_PCD_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This file contains definitions of the structure spcd_t, Port Configuration
  * Descriptor, which is part of the information handed off to OBP and

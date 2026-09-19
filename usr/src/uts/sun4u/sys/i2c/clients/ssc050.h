@@ -27,8 +27,6 @@
 #ifndef	_SSC050_H
 #define	_SSC050_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

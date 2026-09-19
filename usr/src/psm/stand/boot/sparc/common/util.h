@@ -27,8 +27,6 @@
 #ifndef	_UTIL_H
 #define	_UTIL_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include "asm/sunddi.h"
 
 #endif	/* _UTIL_H */

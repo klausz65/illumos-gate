@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * CMU-CH nexus interrupt handling:
  *	PCI device interrupt handler wrapper

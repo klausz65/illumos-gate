@@ -27,8 +27,6 @@
 #ifndef	_TODM5819P_H
 #define	_TODM5819P_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

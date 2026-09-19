@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Ethernet routines. Includes ARP and Reverse ARP. Used for ethernet-like
  * media also - so be sure NOT to use ETHERMTU as a mtu limit. macinit()

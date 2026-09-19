@@ -30,8 +30,6 @@
 #ifndef _RPC_CLNT_H
 #define	_RPC_CLNT_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <rpc/clnt_stat.h>
 #include <rpc/auth.h>

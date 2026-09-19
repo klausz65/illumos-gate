@@ -27,8 +27,6 @@
 #ifndef _SYS_IOCACHE_H
 #define	_SYS_IOCACHE_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifndef _ASM
 #include <sys/sysiosbus.h>
 #endif

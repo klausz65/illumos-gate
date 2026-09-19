@@ -26,8 +26,6 @@
 #ifndef	_SYS_ERI_COMMON_H
 #define	_SYS_ERI_COMMON_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

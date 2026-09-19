@@ -27,8 +27,6 @@
 #ifndef	_SGSGN_H
 #define	_SGSGN_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
