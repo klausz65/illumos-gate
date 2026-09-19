@@ -53,6 +53,7 @@ typedef struct pcb {
 #endif /* ! _ASM */
 
 /* pcb_flags */
+#if defined(_KERNEL) || defined(_KMEMUSER)
 #define	PRSTOP_CALLED	0x01	/* prstop() has been called for this lwp */
 #define	INSTR_VALID	0x02	/* value in pcb_instr is valid (/proc) */
 #define	NORMAL_STEP	0x04	/* normal debugger requested single-step */
@@ -71,6 +72,7 @@ typedef struct pcb {
 #define	STEP_REQUESTED	1	/* arrange to single-step the lwp */
 #define	STEP_ACTIVE	2	/* actively patching addr, set active flag */
 #define	STEP_WASACTIVE	3	/* wrap up after taking single-step fault */
+#endif /* _KERNEL) || defined(_KMEMUSER */
 
 #ifdef	__cplusplus
 }
