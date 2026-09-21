@@ -24,6 +24,8 @@
  * Copyright 2016 Nexenta Systems, Inc.
  * Copyright (c) 2017, Joyent, Inc. All rights reserved.
  * Copyright 2022 Garrett D'Amore <garrett@damore.org>
+ * Copyright 2024 Oxide Computer Company
+ * Copyright 2026 Klaus Ziegler
  */
 
 #include "assym.h"
@@ -393,6 +395,8 @@ stubs_base:
 	WSTUB(keysock,	keysock_plumb_ipsec,	nomod_zero);
 	WSTUB(keysock,	keysock_extended_reg,	nomod_zero);
 	WSTUB(keysock,	keysock_next_seq,	nomod_zero);
+	WSTUB(keysock,	keysock_error,		nomod_zero);
+	WSTUB(keysock,	keysock_passup,		nomod_zero);
 	END_MODULE(keysock);
 #endif
 
@@ -435,6 +439,7 @@ stubs_base:
 	STUB(nfssrv,		nfs_getfh,	nomod_minus_one);
 	STUB(nfssrv,		nfsl_flush,	nomod_minus_one);
 	STUB(nfssrv,		rfs4_check_delegated, nomod_zero);
+	STUB(nfssrv,		rfs4_clear_client_state, nomod_zero);
 	STUB(nfssrv,		mountd_args,	nomod_minus_one);
 	NO_UNLOAD_STUB(nfssrv,	rdma_start,	nomod_zero);
 	NO_UNLOAD_STUB(nfssrv,	nfs_svc,	nomod_zero);
@@ -1125,6 +1130,7 @@ stubs_base:
 	STUB(dld, dld_init_ops, nomod_void);
 	STUB(dld, dld_fini_ops, nomod_void);
 	STUB(dld, dld_autopush, nomod_minus_one);
+	STUB(dld, dld_getinfo, nomod_minus_one);
 	STUB(dld, dld_devt_to_instance, nomod_minus_one);
 	STUB(dld, dld_ioc_register, nomod_einval);
 	STUB(dld, dld_ioc_unregister, nomod_void);
