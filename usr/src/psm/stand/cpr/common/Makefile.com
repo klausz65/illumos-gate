@@ -91,6 +91,7 @@ support.o: $(COMDIR)/support.c
 cprboot: $(CPRBOOT_MAPFILE) $(CPRBOOTOBJ) $(SALIBS)
 	$(LD) $(LDFLAGS) -o $@ $(CPRBOOTOBJ) $(LDLIBS)
 	$(POST_PROCESS)
+	$(CHK4UBINARY)
 
 $(SALIBS): FRC
 	@cd $(@D); $(MAKE)
