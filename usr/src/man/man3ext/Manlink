@@ -109,3 +109,5 @@ sha2.3ext
 	SHA512Final.3ext
 	SHA512Init.3ext
 	SHA512Update.3ext
+tsalarm_get.3ext
+	tsalarm_set.3ext

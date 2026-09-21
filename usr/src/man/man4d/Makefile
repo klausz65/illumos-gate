@@ -50,7 +50,6 @@ _MANFILES=	aac.4d		\
 		e1000g.4d	\
 		ee100x.4d	\
 		ehci.4d		\
-		ena.4d		\
 		fasttrap.4d	\
 		fbt.4d		\
 		fcip.4d		\
@@ -165,6 +164,40 @@ _MANFILES=	aac.4d		\
 		zcons.4d	\
 		zero.4d
 
+sparc_MANFILES=	audiocs.4d	\
+		bbc_beep.4d	\
+		cvc.4d		\
+		cvcredir.4d	\
+		dad.4d		\
+		dm2s.4d		\
+		dr.4d		\
+		eri.4d		\
+		fas.4d		\
+		gpio_87317.4d	\
+		grbeep.4d	\
+		mc-opl.4d	\
+		n2rng.4d	\
+		ntwdt.4d	\
+		nvme.4d		\
+		oplkmdrv.4d	\
+		oplmsu.4d	\
+		oplpanel.4d	\
+		pcicmu.4d	\
+		pcipsy.4d	\
+		pcisch.4d	\
+		schpc.4d	\
+		sf.4d		\
+		smbus.4d	\
+		socal.4d	\
+		ssd.4d		\
+		su.4d		\
+		todopl.4d	\
+		tsalarm.4d	\
+		vioscsi.4d	\
+		virtio.4d	\
+		zs.4d		\
+		zsh.4d
+
 i386_MANFILES=	ahci.4d		\
 		amd8111s.4d	\
 		amdnbtemp.4d	\
@@ -193,6 +226,7 @@ i386_MANFILES=	ahci.4d		\
 		dnet.4d		\
 		ecpp.4d		\
 		elxl.4d		\
+		ena.4d		\
 		i40e.4d		\
 		imc.4d		\
 		imcstub.4d	\

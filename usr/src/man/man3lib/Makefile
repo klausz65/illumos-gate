@@ -102,6 +102,7 @@ MANFILES=	libMPAPI.3lib		\
 		libsysevent.3lib	\
 		libtecla.3lib		\
 		libthread.3lib		\
+		libtsalarm.3lib		\
 		libtsnet.3lib		\
 		libtsol.3lib		\
 		libumem.3lib		\
