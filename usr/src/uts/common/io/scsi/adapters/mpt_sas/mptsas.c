@@ -127,7 +127,11 @@ static int mptsas_power(dev_info_t *dip, int component, int level);
  */
 static int mptsas_ioctl(dev_t dev, int cmd, intptr_t data, int mode,
 	cred_t *credp, int *rval);
+#ifdef __sparc
+static int mptsas_reset(dev_info_t *devi, ddi_reset_cmd_t cmd);
+#else  /* __sparc */
 static int mptsas_quiesce(dev_info_t *devi);
+#endif	/* __sparc */
 
 /*
  * ddi_ufm_ops
@@ -553,11 +557,19 @@ static struct dev_ops mptsas_ops = {
 	nulldev,		/* probe */
 	mptsas_attach,		/* attach */
 	mptsas_detach,		/* detach */
+#ifdef  __sparc
+	mptsas_reset,
+#else
 	nodev,			/* reset */
+#endif  /* __sparc */
 	&mptsas_cb_ops,		/* driver operations */
 	NULL,			/* bus operations */
 	mptsas_power,		/* power management */
+#ifdef	__sparc
+	ddi_quiesce_not_needed
+#else
 	mptsas_quiesce		/* quiesce */
+#endif	/* __sparc */
 };
 
 static ddi_ufm_ops_t mptsas_ufm_ops = {
@@ -1784,6 +1796,36 @@ mptsas_suspend(dev_info_t *devi)
 	return (DDI_SUCCESS);
 }
 
+#ifdef	__sparc
+/*ARGSUSED*/
+static int
+mptsas_reset(dev_info_t *devi, ddi_reset_cmd_t cmd)
+{
+	mptsas_t	*mpt;
+	scsi_hba_tran_t *tran;
+
+	/*
+	 * If this call is for iport, just return.
+	 */
+	if (scsi_hba_iport_unit_address(devi))
+		return (DDI_SUCCESS);
+
+	if ((tran = ddi_get_driver_private(devi)) == NULL)
+		return (DDI_SUCCESS);
+
+	if ((mpt = TRAN2MPT(tran)) == NULL)
+		return (DDI_SUCCESS);
+
+	/*
+	 * Send RAID action system shutdown to sync IR.  Disable HBA
+	 * interrupts in hardware first.
+	 */
+	MPTSAS_DISABLE_INTR(mpt);
+	mptsas_raid_action_system_shutdown(mpt);
+
+	return (DDI_SUCCESS);
+}
+#else /* __sparc */
 /*
  * quiesce(9E) entry point.
  *
@@ -1819,6 +1861,7 @@ mptsas_quiesce(dev_info_t *devi)
 
 	return (DDI_SUCCESS);
 }
+#endif	/* __sparc */
 
 /*
  * detach(9E).	Remove all device allocations and system resources;
