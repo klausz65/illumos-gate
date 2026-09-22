@@ -43,6 +43,8 @@ MAPFILEDIR =	../common
 
 CFLAGS +=	$(CCVERBOSE)
 
+CSTD =		$(CSTD_GNU99)
+
 CERRWARN +=	-_gcc=-Wno-type-limits
 CERRWARN +=	-_gcc=-Wno-parentheses
 CERRWARN +=	$(CNOWARN_UNINIT)
