@@ -36,6 +36,7 @@ include $(SRC)/cmd/Makefile.cmd
 include $(SRC)/cmd/stat/Makefile.stat
 
 LDLIBS += -lavl -lcmdutils -ldevinfo -lgen -lkstat
+CPPFLAGS += -I$(SRC)/uts/sfmmu
 CFLAGS += $(CCVERBOSE)
 CERRWARN += -_gcc=-Wno-switch
 CERRWARN += -_gcc=-Wno-parentheses
