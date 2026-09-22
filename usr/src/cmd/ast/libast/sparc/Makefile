@@ -39,4 +39,6 @@ include ../Makefile.com
 # (and on 32bit it is close to the barrier)
 sparc_C_PICFLAGS = $(C_BIGPICFLAGS)
 
+CERRWARN += -_gcc=-Wno-return-local-addr
+
 install: all $(ROOTLIBS) $(ROOTLINKS)

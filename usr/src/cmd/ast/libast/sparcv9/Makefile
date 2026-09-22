@@ -40,4 +40,6 @@ include $(SRC)/lib/Makefile.lib.64
 # (and on 32bit it is close to the barrier)
 sparcv9_C_PICFLAGS  = $(C_BIGPICFLAGS)
 
+CERRWARN += -_gcc=-Wno-return-local-addr
+
 install: all $(ROOTLIBS64) $(ROOTLINKS64)
