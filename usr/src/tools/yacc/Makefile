@@ -24,6 +24,8 @@ YACCPAR =	yaccpar
 
 include ../Makefile.tools
 
+CERRWARN +=	$(CNOWARN_UNINIT)
+
 CPPFLAGS =	-I$(SGSDIR)/include
 CSTD =		$(CSTD_GNU99)
 

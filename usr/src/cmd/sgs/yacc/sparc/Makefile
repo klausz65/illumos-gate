@@ -30,6 +30,7 @@ DEFLIST=	-DELF
 include		../../../Makefile.cmd
 include		../Makefile.com
 
+CERRWARN +=	$(CNOWARN_UNINIT)
 .KEEP_STATE:
 
 all:		$(PROG)
