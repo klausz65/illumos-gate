@@ -48,7 +48,7 @@
 			<service_fmri value='svc:/network/loopback' />
 	</dependency>
 
-	<!-- sckmd is only required on OPL -->
+	<!-- sckmd is required on OPL and Starcat but Not Starfile -->
 	<dependency
 		name='sckmd'
 		grouping='optional_all'
@@ -94,6 +94,13 @@
 		exec=':kill -9'
 		timeout_seconds='60'>
 	</exec_method>
+
+	<!-- these are passed to dcs in the method script -->
+	<property_group name='dcs' type='application'>
+		<propval name='ah_auth' type='astring' value='md5' />
+		<propval name='esp_encr' type='astring' value='none' />
+		<propval name='esp_auth' type='astring' value='none' />
+	</property_group>
 
 	<stability value='Unstable' />
 

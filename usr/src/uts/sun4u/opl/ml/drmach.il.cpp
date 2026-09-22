@@ -153,7 +153,7 @@ flush_instr_mem_il(caddr_t vaddr)
 /*
  * flush_instr_mem:
  *	Flush 1 page of the I-$ starting at vaddr
- * 	%o0 vaddr
+ *	%o0 vaddr
  *
  * SPARC64-VI maintains consistency of the on-chip Instruction Cache with
  * the stores from all processors so that a FLUSH instruction is only needed

@@ -1034,11 +1034,18 @@ Interface Stability	Stable
 .BR poll (2),
 .BR read (2),
 .BR write (2),
+.BR cvc (4D),
 .BR console (4D),
 .BR visual_io (4I),
+.BR cvcd (8)
 .BR eeprom (8)
 .SH WARNINGS
 The redirection ioctls block while there is I/O outstanding on the device
 instance being redirected. If you try to redirect the workstation console while
 there is a outstanding read, the workstation console will hang until the read
 completes.
+.SH NOTES
+.sp
+.LP
+The \fBcvc \fRfacility supersedes the SunOS \fBwscons \fRfacility and should
+not be used with \fBwscons\fR.

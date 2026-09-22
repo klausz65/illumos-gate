@@ -275,10 +275,15 @@ pci_fm_create(pci_t *pci_p)
 
 	/*
 	 * Initialize FMA support
+	 * The axq workaround prevents fault management of access errors
 	 */
-	pci_p->pci_fm_cap = DDI_FM_EREPORT_CAPABLE |
-	    DDI_FM_ACCCHK_CAPABLE | DDI_FM_DMACHK_CAPABLE |
-	    DDI_FM_ERRCB_CAPABLE;
+	if (pci_p->pci_pbm_p->pbm_pio_limit == 0)
+		pci_p->pci_fm_cap = DDI_FM_EREPORT_CAPABLE |
+			DDI_FM_ACCCHK_CAPABLE | DDI_FM_DMACHK_CAPABLE |
+			DDI_FM_ERRCB_CAPABLE;
+	else
+		pci_p->pci_fm_cap = DDI_FM_EREPORT_CAPABLE |
+			DDI_FM_DMACHK_CAPABLE | DDI_FM_ERRCB_CAPABLE;
 	/*
 	 * Call parent to get it's capablity
 	 */

@@ -32,10 +32,12 @@
 . /lib/svc/share/smf_include.sh
 
 platform=${_INIT_UTS_PLATFORM:-`/sbin/uname -i`}
+starcat="SUNW,Sun-Fire-15000"
 opl="SUNW,SPARC-Enterprise"
 sckmd="/usr/platform/sun4u/lib/sckmd"
 
-if [ ${platform} = "${opl}" ]; then
+if [ ${platform} = "${starcat}" -o \
+     ${platform} = "${opl}" ]; then
 	if [ -x ${sckmd} ]; then
 		${sckmd}
 		exit $SMF_EXIT_OK
