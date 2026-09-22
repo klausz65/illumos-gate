@@ -19,6 +19,18 @@
 # Copyright 2022 MNX Cloud, Inc.
 #
 
+$(i386_ONLY) dir  path=opt/os-tests/tests/saveargs
+$(i386_ONLY) dir  path=opt/os-tests/tests/saveargs/functional
+$(i386_ONLY) file path=opt/os-tests/tests/saveargs/functional/align mode=0555
+$(i386_ONLY) file path=opt/os-tests/tests/saveargs/functional/basic mode=0555
+$(i386_ONLY) file path=opt/os-tests/tests/saveargs/functional/big-struct-ret mode=0555
+$(i386_ONLY) file path=opt/os-tests/tests/saveargs/functional/big-struct-ret-and-spill mode=0555
+$(i386_ONLY) file path=opt/os-tests/tests/saveargs/functional/functional mode=0555
+$(i386_ONLY) file path=opt/os-tests/tests/saveargs/functional/small-struct-ret mode=0555
+$(i386_ONLY) file path=opt/os-tests/tests/saveargs/functional/small-struct-ret-and-spill mode=0555
+$(i386_ONLY) file path=opt/os-tests/tests/saveargs/functional/stack-spill mode=0555
+$(i386_ONLY) dir  path=opt/os-tests/tests/saveargs/testmatch
+$(i386_ONLY) file path=opt/os-tests/tests/saveargs/testmatch/testmatch mode=0555
 set name=pkg.fmri value=pkg:/system/test/ostest@$(PKGVERS)
 set name=pkg.summary value="OS Unit Test Suite"
 set name=pkg.description value="Miscellaneous OS Unit Tests"
@@ -234,20 +246,6 @@ file path=opt/os-tests/tests/portfs/file_assoc.64 mode=0555
 dir  path=opt/os-tests/tests/regression
 file path=opt/os-tests/tests/regression/illumos-15031 mode=0555
 file path=opt/os-tests/tests/regression/illumos-15036 mode=0555
-dir  path=opt/os-tests/tests/saveargs
-dir  path=opt/os-tests/tests/saveargs/functional
-file path=opt/os-tests/tests/saveargs/functional/align mode=0555
-file path=opt/os-tests/tests/saveargs/functional/basic mode=0555
-file path=opt/os-tests/tests/saveargs/functional/big-struct-ret mode=0555
-file path=opt/os-tests/tests/saveargs/functional/big-struct-ret-and-spill \
-    mode=0555
-file path=opt/os-tests/tests/saveargs/functional/functional mode=0555
-file path=opt/os-tests/tests/saveargs/functional/small-struct-ret mode=0555
-file path=opt/os-tests/tests/saveargs/functional/small-struct-ret-and-spill \
-    mode=0555
-file path=opt/os-tests/tests/saveargs/functional/stack-spill mode=0555
-dir  path=opt/os-tests/tests/saveargs/testmatch
-file path=opt/os-tests/tests/saveargs/testmatch/testmatch mode=0555
 dir  path=opt/os-tests/tests/sdevfs
 file path=opt/os-tests/tests/sdevfs/sdevfs_eisdir mode=0555
 dir  path=opt/os-tests/tests/secflags
