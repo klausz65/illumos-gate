@@ -3853,7 +3853,6 @@ got_mac_addr:
 
 		compute_macs = B_FALSE;
 		ddi_prop_free(prop_val);
-		goto got_mmac_info;
 	}
 #endif
 	/*

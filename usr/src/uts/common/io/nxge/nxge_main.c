@@ -2364,7 +2364,6 @@ nxge_alloc_rx_mem_pool(p_nxge_t nxgep)
 			    "==> nxge_alloc_rx_mem_pool: "
 			    " must be power of 2"));
 			status |= (NXGE_ERROR | NXGE_DDI_FAILED);
-			goto nxge_alloc_rx_mem_pool_exit;
 		}
 
 		if (rx_buf_alloc_size > (1 << 22)) {
@@ -2372,7 +2371,6 @@ nxge_alloc_rx_mem_pool(p_nxge_t nxgep)
 			    "==> nxge_alloc_rx_mem_pool: "
 			    " limit size to 4M"));
 			status |= (NXGE_ERROR | NXGE_DDI_FAILED);
-			goto nxge_alloc_rx_mem_pool_exit;
 		}
 
 		if (rx_cntl_alloc_size < 0x2000) {
