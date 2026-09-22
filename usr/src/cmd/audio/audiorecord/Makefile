@@ -30,7 +30,7 @@ include ../../Makefile.cmd
 
 INCLUDES += -I../include
 
-CPPFLAGS += $(INCLUDES)
+CPPFLAGS += $(INCLUDES) -D__BIG_ENDIAN
 
 LDLIBS += -laudio -lm
 

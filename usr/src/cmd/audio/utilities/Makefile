@@ -29,7 +29,7 @@ include ../../Makefile.cmd
 
 TARGETS		= library
 
-CPPFLAGS += -I../include
+CPPFLAGS += -I../include -D__BIG_ENDIAN
 
 CERRWARN += $(CNOWARN_UNINIT)
 CCERRWARN += -_gcc=-Wno-switch
