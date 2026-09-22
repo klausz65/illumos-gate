@@ -40,7 +40,7 @@ int
 _Q_set_exception(unsigned int ex)
 {
 	/* LINTED set but not used */
-	volatile double t;
+	volatile double t __unused;
 
 	if (ex == 0)
 		t = zero - zero;			/* clear cexc */
