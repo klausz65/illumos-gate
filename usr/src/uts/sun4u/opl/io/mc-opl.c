@@ -4035,7 +4035,7 @@ mc_ioctl_debug(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 
 	MC_LOG("mc_ioctl(cmd = %x, flags = %x)\n", cmd, flags);
 
-	if (arg != NULL) {
+	if (arg != 0) {
 		if (ddi_copyin((const void *)arg, (void *)&pa,
 		    sizeof (uint64_t), 0) < 0) {
 			rv = EFAULT;
