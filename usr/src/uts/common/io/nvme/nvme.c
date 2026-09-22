@@ -564,9 +564,6 @@
  */
 
 #include <sys/byteorder.h>
-#ifdef _BIG_ENDIAN
-#error nvme driver needs porting for big-endian platforms
-#endif
 
 #include <sys/modctl.h>
 #include <sys/conf.h>
