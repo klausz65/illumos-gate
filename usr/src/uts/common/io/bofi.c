@@ -47,10 +47,10 @@
 #include <sys/sunndi.h>
 #include <sys/debug.h>
 #include <sys/bofi.h>
-#include <sys/bofi_impl.h>
 
 #ifdef __sparc
 #include <sys/dvma.h>
+#include <sys/bofi_impl.h>
 #endif
 
 /*
