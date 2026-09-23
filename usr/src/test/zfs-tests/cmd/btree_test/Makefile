@@ -16,6 +16,7 @@
 PROG = btree_test
 
 include $(SRC)/cmd/Makefile.cmd
+include $(SRC)/cmd/Makefile.cmd.64
 
 CPPFLAGS += -I$(SRC)/uts/common/fs/zfs -DDEBUG
 LDLIBS += -lavl -lzpool -lumem
