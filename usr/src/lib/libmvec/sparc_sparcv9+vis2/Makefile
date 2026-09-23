@@ -11,6 +11,7 @@
 
 #
 # Copyright 2011 Nexenta Systems, Inc.  All rights reserved.
+# Copyright 2026 Klaus Ziegler  All rights reserved.
 #
 
 LIBRARY 	= libmvec_isa.a
@@ -22,7 +23,7 @@ OBJECTS		= $(mvecvis2COBJS) $(mvecvis2SOBJS)
 include ../Makefile.com
 
 CHIP		= vis
-XARCH		= sparcvis2
+sparc_XARCH	= -m32 -xarch=sparcvis2
 
 SRCS		= $(mvecvis2COBJS:%.o=../common/%.c)
 

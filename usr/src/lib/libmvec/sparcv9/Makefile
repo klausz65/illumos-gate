@@ -11,6 +11,7 @@
 
 #
 # Copyright 2011 Nexenta Systems, Inc.  All rights reserved.
+# Copyright 2026 Klaus Ziegler  All rights reserved.
 #
 
 TARGET_ARCH	= sparcv9
@@ -19,6 +20,8 @@ LIBRARY		= libmvec.a
 VERS		= .1
 
 OBJECTS		= $(mvecOBJS)
+pics/__vsin.o := sparcv9_COPTFLAG = -xO1
+pics/__vsincos.o := sparcv9_COPTFLAG = -xO1
 
 include ../Makefile.com
 include	$(SRC)/lib/Makefile.lib.64
