@@ -347,7 +347,6 @@ found:
 			}
 		}
 	}
-exit:
 	return (0);
 }
 
