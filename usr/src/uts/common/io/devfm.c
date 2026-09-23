@@ -49,8 +49,8 @@ extern int fm_get_paddr(nvlist_t *, uint64_t *);
 extern int fm_ioctl_physcpu_info(int, nvlist_t *, nvlist_t **);
 extern int fm_ioctl_cpu_retire(int, nvlist_t *, nvlist_t **);
 extern int fm_ioctl_gentopo_legacy(int, nvlist_t *, nvlist_t **);
-#endif /* __x86 */
 extern int fm_ioctl_cache_info(int, nvlist_t *, nvlist_t **);
+#endif /* __x86 */
 
 static int fm_ioctl_versions(int, nvlist_t *, nvlist_t **);
 static int fm_ioctl_page_retire(int, nvlist_t *, nvlist_t **);
@@ -103,9 +103,9 @@ static const fm_subr_t fm_subrs[] = {
 	    fm_ioctl_cpu_retire },
 	{ FM_IOC_GENTOPO_LEGACY, B_FALSE, FM_TOPO_LEGACY_VERSION,
 	    fm_ioctl_gentopo_legacy },
-#endif	/* __x86 */
 	{ FM_IOC_CACHE_INFO, B_FALSE, FM_CACHE_INFO_VERSION,
 	    fm_ioctl_cache_info },
+#endif	/* __x86 */
 	{ -1, B_FALSE, NULL, NULL },
 };
 
