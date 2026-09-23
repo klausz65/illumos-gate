@@ -99,6 +99,9 @@ MULTI_THR_LIBS=		-D_REENTRANT
 
 MULTI_PROC_LIBS=
 
+# for now we still need -m32 until fmd is 64 bit.
+LDFLAGS +=	-m32
+
 LDLIBS +=	$($(CONCURR_MODE)_LIBS) \
 		-lsocket \
 		-lcfgadm \
