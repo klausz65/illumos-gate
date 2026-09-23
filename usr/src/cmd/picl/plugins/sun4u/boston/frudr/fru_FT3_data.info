@@ -22,7 +22,6 @@
 /*
  * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
- * ident	"%Z%%M%	%I%	%E% SMI"
  *
  * This configuration file is parsed by PICL envmon plugin in response
  * to a PICL_FRU_ADDED event for FT3
@@ -57,15 +56,6 @@
  * the default is "name:"
  *
  */
-
-/*
- * define a macro to force a #ident line into the output stream
- * otherwise cpp removes it. Use #ifndef because of #included definitions.
- */
-#ifndef id
-#define	id(s)	#ident s
-#endif
-id("%Z%%M%	%I%	%E% SMI")
 
 #ifndef RMCLOMV
 #define	RMCLOMV	/platform/ebus@1f,464000/rmc-comm@0,c28000/SUNW,rmclomv

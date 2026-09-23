@@ -1828,7 +1828,7 @@ fru_read_segment(segment_hdl_t segment, void *buffer, size_t nbytes,
  *
  */
 /*ARGSUSED*/
-int
+ssize_t
 fru_write_segment(segment_hdl_t segment, const void *data, size_t nbytes,
     segment_hdl_t *newsegment, door_cred_t *cred)
 {

@@ -33,6 +33,7 @@ OBJECTS =	piclfrutree.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 ROOT_PLATFORM = $(USR_PLAT_DIR)/SUNW,Netra-T12
 
@@ -43,6 +44,8 @@ CPPFLAGS +=	-I$(SRC)/uts/sun4u/serengeti
 CPPFLAGS +=	-I$(SRC)/uts/sun4u/lw8
 CPPFLAGS +=	-I$(SRC)/uts/sun4u
 CPPFLAGS +=	-I$(SRC)/uts/common
+# just because I'm too dump.
+CERRWARN += 	-_gcc=-Wno-int-to-pointer-cast
 
 SRCS =		$(OBJECTS:%.o=%.c)
 
@@ -51,7 +54,7 @@ LIBS =		$(DYNLIB)
 ROOTLIBDIR	= $(ROOT_PLAT_PLUGINDIR)
 
 CPPFLAGS +=	-D_SGFRU
-CFLAGS +=	$(CCVERBOSE)
+CFLAGS64 +=	$(CCVERBOSE)
 DYNFLAGS +=	-R/usr/platform/\$$PLATFORM/lib/picl/plugins:/usr/platform/sun4u/lib/picl/plugins:/usr/lib/picl/plugins
 LDLIBS +=	-L$(DEVTREE_SRC_DIR)
 LDLIBS +=	-L$(SRC)/lib/libpicltree/$(MACH)

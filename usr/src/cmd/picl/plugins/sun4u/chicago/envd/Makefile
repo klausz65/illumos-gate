@@ -33,6 +33,7 @@ OBJECTS=	piclenvd.o piclenvsetup.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 ROOT_PLATFORM = $(USR_PLAT_DIR)/SUNW,A70
 
@@ -54,7 +55,7 @@ ROOTCONF=       $(CONF:%=$(ROOTLIBDIR)/%)
 $(ROOTCONF)	:= FILEMODE = 0644
 INFOS=          envmodel.info
 
-CFLAGS +=	$(CCVERBOSE)
+CFLAGS64 +=	$(CCVERBOSE)
 DYNFLAGS +=	-R/usr/platform/\$$PLATFORM/lib/picl/plugins:/usr/platform/sun4u/lib/picl/plugins:/usr/lib/picl/plugins
 LDLIBS +=	-L$(SRC)/lib/libpicltree/$(MACH)
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/common/devtree

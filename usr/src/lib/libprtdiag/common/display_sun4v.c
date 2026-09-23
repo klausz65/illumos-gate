@@ -927,7 +927,6 @@ sun4v_display_cpus(picl_nodehdl_t cpuh, void* args)
 		log_printf("%-7s", no_prop_value);
 	}
 
-clock_freq:
 	status = picl_get_propinfo_by_name(cpuh, "clock-frequency", &propinfo,
 	    &proph);
 	if (status == PICL_SUCCESS) {
@@ -1019,7 +1018,6 @@ state:
 	} else
 		log_printf("%-9s", no_prop_value);
 
-done:
 	log_printf("\n");
 	return (PICL_WALK_CONTINUE);
 }

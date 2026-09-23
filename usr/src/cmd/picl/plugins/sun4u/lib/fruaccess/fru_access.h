@@ -91,7 +91,7 @@ int fru_delete_segment(segment_hdl_t segment, section_hdl_t *newsection,
 							door_cred_t *cred);
 ssize_t fru_read_segment(segment_hdl_t segment, void *buffer, size_t nbytes,
 							door_cred_t *cred);
-int fru_write_segment(segment_hdl_t segment, const void *data, size_t nbytes,
+ssize_t fru_write_segment(segment_hdl_t segment, const void *data, size_t nbytes,
 				segment_hdl_t *newsegment, door_cred_t *cred);
 int fru_get_num_packets(segment_hdl_t segment, door_cred_t *cred);
 int fru_get_packets(segment_hdl_t segment, packet_t *packet,

@@ -32,6 +32,7 @@ OBJECTS=	fcal_leds.o fc_led_parse.o fcal_leds_thread.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 ROOT_PLATFORM = $(USR_PLAT_DIR)/SUNW,Netra-T4
 
@@ -50,6 +51,8 @@ $(ROOTCONF)	:= FILEMODE = 0644
 CPPFLAGS +=	-I$(SRC)/uts/sun4u/ -I$(SRC)/uts/common/
 CPPFLAGS +=	-D_POSIX_PTHREAD_SEMANTICS
 CPPFLAGS +=	-D_REENTRANT
+# just because I'm too dump.
+CERRWARN +=	-_gcc=-Wno-int-to-pointer-cast
 
 # Components of load time linker path.
 # These paths start at / on the target machine, so don't use $(ROOT).

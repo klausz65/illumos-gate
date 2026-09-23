@@ -32,6 +32,7 @@ OBJECTS=	piclmemcfg_comm.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 include $(SRC)/cmd/picl/plugins/Makefile.com
 
@@ -41,6 +42,10 @@ ROOTLIBDIR =	$(USR_LIB_PLUGINDIR)
 
 CPPFLAGS +=	-I$(SRC)/uts/sun4u/sys -I$(SRC)/cmd/picl/plugins/common/memcfg
 CFLAGS +=	$(CCVERBOSE) $(C_PICFLAGS)
+
+# just because I'm too dump.
+CERRWARN +=	-_gcc=-Wno-pointer-to-int-cast
+CERRWARN +=	-_gcc=-Wno-int-to-pointer-cast
 
 LDLIBS +=	-lc -lpicltree -lnvpair
 

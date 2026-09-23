@@ -33,6 +33,7 @@ OBJECTS=	piclenvd.o piclenvsetup.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 ROOT_PLATFORM = $(USR_PLAT_DIR)/SUNW,Sun-Blade-1500
 
@@ -56,7 +57,9 @@ INFOS=          envmodel.info
 
 CLEANFILES=	$(LINTOUT)
 
-CFLAGS +=	$(CCVERBOSE)
+CFLAGS64 +=	$(CCVERBOSE)
+# just because I'm too dump.
+CERRWARN +=	-_gcc=-Wno-pointer-to-int-cast
 DYNFLAGS +=	-R/usr/platform/\$$PLATFORM/lib/picl/plugins:/usr/platform/sun4u/lib/picl/plugins:/usr/lib/picl/plugins
 LDLIBS +=	-L$(SRC)/lib/libpicltree/$(MACH)
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/common/devtree

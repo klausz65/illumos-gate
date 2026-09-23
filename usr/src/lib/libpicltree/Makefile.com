@@ -29,12 +29,13 @@ VERS=		.1
 OBJECTS=	picltree.o
 
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 LIBS =		$(DYNLIB)
 LDLIBS +=	-lc
 
 CPPFLAGS +=	-D_REENTRANT -I.. -I../../libpicl -I$(SRC)/cmd/picl/plugins/inc
-CFLAGS +=	$(CCVERBOSE)
+CFLAGS64 +=	$(CCVERBOSE)
 
 CERRWARN +=	$(CNOWARN_UNINIT)
 

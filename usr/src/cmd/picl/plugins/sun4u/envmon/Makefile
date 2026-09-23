@@ -33,6 +33,7 @@ OBJECTS=	piclenvmon.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 ROOT_PLATFORM = $(USR_PLAT_DIR)/sun4u
 

@@ -20,8 +20,6 @@
 # CDDL HEADER END
 #
 #
-#ident	"%Z%%M%	%I%	%E% SMI"
-#
 # Copyright (c) 2001 by Sun Microsystems, Inc.
 # All rights reserved.
 #
@@ -32,6 +30,7 @@
 #
 
 include $(SRC)/cmd/Makefile.cmd
+include $(SRC)/cmd/Makefile.cmd.64
 include $(SRC)/cmd/syseventd/Makefile.com
 
 OBJS =		$(SRCS:%.c=%.o)

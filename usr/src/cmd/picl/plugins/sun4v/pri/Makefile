@@ -39,6 +39,7 @@ OBJECTS=	priplugin.o init.o \
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 include $(SRC)/Makefile.psm
 
 include $(SRC)/cmd/picl/plugins/Makefile.com
@@ -63,7 +64,7 @@ CPPFLAGS +=	-I$(SRC)/uts/common/sys
 CPPFLAGS +=	-I$(SRC)/lib/libpri/common
 CPPFLAGS +=	-D_REENTRANT
 
-CFLAGS +=	$(CCVERBOSE)
+CFLAGS64 +=	$(CCVERBOSE) -xarch=sparcvis2
 LDLIBS +=	-L$(SRC)/lib/libpicl/$(MACH) -L$(SRC)/lib/libpicltree/$(MACH)
 LDLIBS +=	-L$(ROOT)/usr/lib/picl/plugins -L$(ROOT)/usr/lib/sparcv9
 LDLIBS +=	-L$(ROOT)/usr/lib/libpri

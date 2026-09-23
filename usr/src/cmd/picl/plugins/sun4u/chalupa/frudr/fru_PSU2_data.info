@@ -23,8 +23,6 @@
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
- * #ident	"%Z%%M%	%I%	%E% SMI"
- *
  * This configuration file is parsed by PICL plugin envmon in response
  * to a PICL_FRU_ADDED event for PSU2
  *
@@ -58,15 +56,6 @@
  * the default is "name:"
  *
  */
-
-/*
- * define a macro to force a #ident line into the output stream
- * otherwise cpp removes it. Use #ifndef because of #included definitions.
- */
-#ifndef id
-#define	id(s)	#ident s
-#endif
-id("%Z%%M% %I%     %E% SMI")
 
 #ifndef RMCLOMV
 #define	RMCLOMV	/platform/pci@1e,600000/isa@7/rmc-comm@0,3e8/SUNW,rmclomv

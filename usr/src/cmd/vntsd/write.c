@@ -209,7 +209,7 @@ void*
 vntsd_write_thread(vntsd_cons_t *consp)
 {
 	char		buf[VNTSD_MAX_BUF_SIZE+1];
-	int		sz;
+	ssize_t		sz;
 	int		rv;
 	write_buf_t	write_buf;
 

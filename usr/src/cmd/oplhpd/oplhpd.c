@@ -21,6 +21,7 @@
 /*
  * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ * Copyright 2026 Klaus Ziegler
  */
 
 #include <sys/param.h>
@@ -130,7 +131,6 @@ init_daemon()
 {
 	int	i;
 	int	ret;
-	int	fd;
 	pid_t	pid;
 	char	pid_str[32];
 
@@ -252,8 +252,6 @@ oplhpd_fini()
 int
 main(int argc, char *argv[])
 {
-	int opt;
-
 	/* Get Program Name */
 	if ((oplhpd_prog_name = strrchr(argv[0], '/')) == NULL) {
 		oplhpd_prog_name = argv[0];

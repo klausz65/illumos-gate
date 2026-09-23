@@ -20,8 +20,6 @@
 # CDDL HEADER END
 #
 #
-#ident	"%Z%%M%	%I%	%E% SMI"
-#
 # Copyright (c) 1998-2001 by Sun Microsystems, Inc.
 # All rights reserved.
 #

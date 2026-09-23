@@ -30,6 +30,7 @@ OBJECTS=	psvcplugin.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 include $(SRC)/Makefile.psm
 
 include $(SRC)/cmd/picl/plugins/Makefile.com

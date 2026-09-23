@@ -22,7 +22,7 @@
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# ident	"%Z%%M%	%I%	%E% SMI"
+# Copyright 2026 Klaus Ziegler
 #
 # Platform specific Makefile for the prtdiag command.
 #
@@ -37,11 +37,10 @@ PLATLINKS	=
 
 include $(SRCDIR)/Makefile.com
 
-CFLAGS		+= -R /usr/platform/$(PLATFORM)/lib
+CFLAGS64	+= -R /usr/platform/$(PLATFORM)/lib
 
 LDLIBS		+= -L $(ROOT)/usr/platform/$(PLATFORM)/lib
 LDLIBS		+= -lprtdiag
-LINTFLAGS	+= -u
 
 .KEEP_STATE:
 

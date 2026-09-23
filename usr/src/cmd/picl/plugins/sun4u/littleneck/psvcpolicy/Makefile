@@ -31,6 +31,7 @@ OBJECTS=	psvcpolicy.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 include $(SRC)/Makefile.psm
 
 include $(SRC)/cmd/picl/plugins/Makefile.com
@@ -45,8 +46,11 @@ CPPFLAGS +=	-I$(SRC)/uts/sun4u
 CPPFLAGS +=	-I$(SRC)/cmd/picl/plugins/sun4u/psvc/psvcobj
 CPPFLAGS +=	-D_REENTRANT
 
+# just because I'm too dump.
+CERRWARN +=	-_gcc=-Wno-array-parameter
+
 ZDEFS  =
-CFLAGS +=	$(CCVERBOSE)
+CFLAGS64 +=	$(CCVERBOSE)
 LDLIBS +=	-L$(SRC)/lib/libpicl/$(MACH) -L$(SRC)/lib/libpicltree/$(MACH)
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/sun4u/psvc/psvcobj
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/sun4u/psvc/psvcplugin
