@@ -1080,6 +1080,8 @@ struct sfmmu_callback {
 extern int sfmmu_max_cb_id;
 extern struct sfmmu_callback *sfmmu_cb_table;
 
+extern int hat_kpr_enabled;
+
 struct pa_hment;
 
 /*
