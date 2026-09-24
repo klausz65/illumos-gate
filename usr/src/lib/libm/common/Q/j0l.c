@@ -154,7 +154,7 @@ GENERIC
 y0l(x) GENERIC x;{
 	GENERIC z, s,c,ss,cc,u,v;
 	int i;
-	volatile GENERIC d;
+	volatile GENERIC d __unused;
 
 	if (isnanl(x)) return x+x;
 	if (x <= zero) {
