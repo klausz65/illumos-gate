@@ -47,6 +47,8 @@ LDLIBS += -linet -lsock -lxdr
 CPPFLAGS += $(SOCKCPPFLAGS) $(DHCPCPPFLAGS) -I../../inet
 CPPFLAGS += -I$(STANDDIR)/lib/sa -I$(TOPDIR)/head
 
+CSTD	= $(CSTD_GNU99)
+
 #
 # This is really wrong, but we have no choice since <rpc/*.h> needs to
 # resolve types that are in <sys/stream.h>.  Thankfully, we don't use

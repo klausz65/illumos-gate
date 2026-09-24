@@ -22,6 +22,7 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+# Copyright 2026 Klaus Ziegler
 
 LIBRARY		= libsa.a
 LOCOBJS		= assert.o ctype.o errno.o libintl.o malloc.o memlist.o \
@@ -56,10 +57,14 @@ SRCS		= $(LOCOBJS:%.o=$(SRCDIR)/%.c) $(CMNOBJS:%.o=$(CMNDIR)/%.c) \
 LDLIBS += -lsock
 CPPFLAGS += $(SOCKCPPFLAGS)
 
+AS_CPPFLAGS += -D_ASM
+
+CSTD		= $(CSTD_GNU99)
+
 CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += $(CNOWARN_UNINIT)
 
-objs/%.o: $(MACH)/%.s
+objs/%.o: $(MACH)/%.S
 	  $(COMPILE.s) -o $@ $<
 	  $(POST_PROCESS_O)
 
