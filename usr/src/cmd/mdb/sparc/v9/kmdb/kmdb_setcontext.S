@@ -44,6 +44,10 @@ kmdb_setcontext(ucontext_t *ucp)
 }
 #else
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 	ENTRY(kmdb_setcontext)
 	flushw
 

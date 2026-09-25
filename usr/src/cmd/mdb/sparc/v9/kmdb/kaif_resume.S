@@ -60,6 +60,10 @@ kaif_resume(int work_required)
 }
 #else /* __lint */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 	/*
 	 * Used to start the world back up, as a whole or in part (single-step).
 	 * Arguments:
@@ -77,19 +81,19 @@ kaif_resume(int work_required)
 	 */
 
 	/* FP state */
-	add	%g6, KRS_FPREGS, %g4	! %g4 = &cpusave[this_cpuid].krs_fpregs
+	add	%g6, KRS_FPREGS, %g4	/* %g4 = &cpusave[this_cpuid].krs_fpregs */
 
 	ldx	[%g4 + FPU_FPRS], %g2
-	btst	FPRS_FEF, %g2		! was fp enabled?
-	bz,pt	%icc, 1f		! nope drive on...
-	wr	%g2, %fprs		! restore %fprs regardless
+	andcc	%g2, FPRS_FEF, %g0	/* was fp enabled? */
+	bz,pt	%icc, 1f		/* nope drive on... */
+	wr	%g2, %g0, %fprs		/* restore %fprs regardless */
 
 	LOAD_FPREGS(%g4)
 	ldx	[%g4 + FPU_FSR], %fsr
 
 1:
 	/* Register windows */
-	GET_NWIN(%g1, %g4);		! %g1 is scratch, %g4 set to nwin-1
+	GET_NWIN(%g1, %g4);		/* %g1 is scratch, %g4 set to nwin-1 */
 	wrpr	%g4, %cleanwin
 
 	sub	%g4, 1, %g1
@@ -100,7 +104,7 @@ kaif_resume(int work_required)
 	wrpr	%g0, %cwp
 	clr	%g2
 
-	ldx	[%g6 + KRS_RWINS], %g3	! %g3 = &cpusave[this_cpuid].krs_wins
+	ldx	[%g6 + KRS_RWINS], %g3	/* %g3 = &cpusave[this_cpuid].krs_wins */
 
 1:
 	RESTORE_V9WINDOW(%g3)
@@ -108,27 +112,27 @@ kaif_resume(int work_required)
 	add	%g3, RWIN_SIZE, %g3
 	cmp	%g2, %g4
 	ble	1b
-	wrpr	%g2, %cwp
+	wrpr	%g2, %g0, %cwp
 
 	/* Restore various privileged registers */
 	ldx	[%g5 + KREG_OFF(KREG_CWP)], %g4
-	wrpr	%g4, %cwp
+	wrpr	%g4, %g0, %cwp
 	ldx	[%g5 + KREG_OFF(KREG_OTHERWIN)], %g4
-	wrpr	%g4, %otherwin
+	wrpr	%g4, %g0, %otherwin
 	ldx	[%g5 + KREG_OFF(KREG_CLEANWIN)], %g4
-	wrpr	%g4, %cleanwin
+	wrpr	%g4, %g0, %cleanwin
 	ldx	[%g5 + KREG_OFF(KREG_CANSAVE)], %g4
-	wrpr	%g4, %cansave
+	wrpr	%g4, %g0, %cansave
 	ldx	[%g5 + KREG_OFF(KREG_CANRESTORE)], %g4
-	wrpr	%g4, %canrestore
+	wrpr	%g4, %g0, %canrestore
 	ldx	[%g5 + KREG_OFF(KREG_WSTATE)], %g4
-	wrpr	%g4, %wstate
+	wrpr	%g4, %g0, %wstate
 
 	ldx	[%g5 + KREG_OFF(KREG_Y)], %g4
-	wr	%g4, %y
+	wr	%g4, %g0, %y
 
 	ldx	[%g5 + KREG_OFF(KREG_PIL)], %g4
-	wrpr	%g4, %pil
+	wrpr	%g4, %g0, %pil
 
 	/* Set up the return from the trap */
 	wrpr	%g0, 1, %tl
@@ -143,13 +147,13 @@ kaif_resume(int work_required)
 	membar	#Sync
 
 	ldx	[%g6 + KRS_TSTATE], %g4
-	wrpr	%g4, %tstate
+	wrpr	%g4, %g0, %tstate
 
 	ldx	[%g5 + KREG_OFF(KREG_PC)], %g4
-	wrpr	%g4, %tpc
+	wrpr	%g4, %g0, %tpc
 	
 	ldx	[%g5 + KREG_OFF(KREG_NPC)], %g4
-	wrpr	%g4, %tnpc
+	wrpr	%g4, %g0, %tnpc
 
 	/*
 	 * If we're here because of the debugger trap (most likely from 
@@ -169,7 +173,7 @@ kaif_resume(int work_required)
 	ldx	[%g5 + KREG_OFF(KREG_G4)], %g4
 	ldx	[%g5 + KREG_OFF(KREG_G6)], %g6
 	ldx	[%g5 + KREG_OFF(KREG_G7)], %g7
-	be	%xcc, 1f			! the trap type check, above
+	be	%xcc, 1f			/* the trap type check, above */
 	ldx	[%g5 + KREG_OFF(KREG_G5)], %g5
 
 	retry

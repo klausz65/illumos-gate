@@ -46,6 +46,9 @@ kmdb_first_start(void)
 }
 #else	/* __lint */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+
 	ENTRY(kmdb_first_start)
 
 	GET_NWIN(%g1, %g2);	/* %g1 is scratch, %g2 set to nwin-1 */
