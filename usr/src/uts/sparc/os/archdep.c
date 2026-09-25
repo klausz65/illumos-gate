@@ -78,11 +78,19 @@ int
 getpcstack(pc_t *pcstack, int pcstack_limit)
 {
 	struct frame *fp, *minfp, *stacktop;
-	uintptr_t nextfp;
-	pc_t nextpc;
+	/*
+	 * FIX: nextfp and nextpc MUST be 8-byte aligned because
+	 * getpcstack_top utilizes 64-bit store instructions (stx/stn) on them.
+	 */
+	uintptr_t nextfp __attribute__((aligned(8)));
+	pc_t nextpc __attribute__((aligned(8)));
 	int depth;
 	int on_intr;
-	pc_t pcswin[MAXWIN];
+	/*
+	 * FIX: Explicitly align the local pcswin array to an 8-byte boundary
+	 * so that the assembler loop can safely write using 64-bit offsets.
+	 */
+	pc_t pcswin[MAXWIN] __attribute__((aligned(8)));
 	int npcwin = MIN(MAXWIN, pcstack_limit);
 
 	if ((on_intr = CPU_ON_INTR(CPU)) != 0)

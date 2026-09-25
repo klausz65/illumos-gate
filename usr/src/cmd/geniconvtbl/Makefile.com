@@ -67,6 +67,8 @@ $(LIB) :=	LDFLAGS += $(GSHARED) -Wl,-h$@ $(ZTEXT) $(ZDEFS) $(BDIRECT) \
 		$(MAPFILE.PGA:%=-Wl,-M%) $(MAPFILE.NED:%=-Wl,-M%)
 $(LIB) :=	CPPFLAGS += -D_REENTRANT
 $(LIB) :=	LDLIBS += -lc
+$(LIB) :=	sparc_CFLAGS += -xregs=no%appl
+$(LIB) :=	sparcv9_CFLAGS += -xregs=no%appl
 
 $(PROG) :=	LDLIBS += -lgen
 

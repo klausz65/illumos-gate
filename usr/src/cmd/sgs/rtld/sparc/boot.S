@@ -86,11 +86,11 @@ main()
 #include <sys/param.h>
 #include <link.h>
 
-	.file	"boot.s"
-	.seg	".text"
+	.file	"boot.S"
+	.text
 	.global	_rt_boot, _setup, atexit_fini
 	.type	_rt_boot, #function
-	.align	4
+	.balign	4
 
 ! Entry vector
 !	+0: normal start

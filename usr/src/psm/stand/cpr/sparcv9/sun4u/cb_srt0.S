@@ -25,7 +25,7 @@
  */
 
 /*
- * cb_srt0.s - cprboot startup code
+ * cb_srt0.S - cprboot startup code
  */
 #include <sys/asm_linkage.h>
 #include <sys/machthread.h>
@@ -42,6 +42,8 @@ caddr_t _end[1];
 
 #include "cprboot.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
 
 #if defined(lint)
 
@@ -52,21 +54,21 @@ _start(void *a, ...)
 
 #else	/* !lint */
 
-	.seg	".bss"
-	.align	MMU_PAGESIZE
+	.section	.bss
+	.balign	MMU_PAGESIZE
 	.skip	CB_SSS
-eslave_stack:				! top of slave cpu stack
+eslave_stack:				/* top of slave cpu stack */
 	.skip	CB_MSS
-estack:					! top of cprboot stack
+estack:					/* top of cprboot stack */
 	.global	estack
 
-	.seg	".data"
-	.align	8
+	.section	.data
+	.balign	8
 local_cif:
-	.xword	0			! space for prom cookie
+	.xword	0			/* space for prom cookie */
 
-	.seg	".text"
-	.align	8
+	.section	.text
+	.balign	8
 
 	!
 	! regs on entry:
@@ -82,7 +84,7 @@ local_cif:
 	set	_edata, %o0
 	set	_end, %g2
 	call	bzero
-	sub	%g2, %o0, %o1		! bss size = (_end - _edata)
+	sub	%g2, %o0, %o1		/* bss size = (_end - _edata) */
 
 	!
 	! Set pstate to a known state:
@@ -95,9 +97,9 @@ local_cif:
 	!
 	set	local_cif, %g2
 	stx	%i4, [%g2]
-	mov	%i4, %o0		! SPARCV9/CIF
-	call	main			! Mcprboot [tag]
-	mov	1, %o1			! first=true
+	mov	%i4, %o0		/* SPARCV9/CIF */
+	call	main			/* Mcprboot [tag] */
+	mov	1, %o1			/* first=true */
 
 	!
 	! switch to new stack
@@ -109,11 +111,11 @@ local_cif:
 	! second stage
 	!
 	set	local_cif, %g2
-	ldx	[%g2], %o0		! SPARCV9/CIF
-	call	main			! Mcprboot [tag]
-	mov	0, %o1			! first=false
+	ldx	[%g2], %o0		/* SPARCV9/CIF */
+	call	main			/* Mcprboot [tag] */
+	mov	0, %o1			/* first=false */
 
-	call	prom_exit_to_mon	! can't happen... :-)
+	call	prom_exit_to_mon	/* can't happen... :-) */
 	nop
 	SET_SIZE(_start)
 
@@ -143,24 +145,24 @@ exit_to_kernel(void *cookie, csu_md_t *mdp)
 	! setup temporary stack and adjust
 	! by the saved kernel stack bias
 	!
-	set	tmp_stack, %g1			! g1 = &tmp_stack
-	ldx	[%g1], %l2			! l2 =  tmp_stack
+	set	tmp_stack, %g1			/* g1 = &tmp_stack */
+	ldx	[%g1], %l2			/* l2 =  tmp_stack */
 	sub	%l2, SA(MINFRAME), %l2
-	ld	[%o1 + CPR_MD_KSB], %l4		! mdp->ksb
+	ld	[%o1 + CPR_MD_KSB], %l4		/* mdp->ksb */
 	sub	%l2, %l4, %sp
 
 	!
 	! set pstate and wstate from saved values
 	!
-	lduh	[%o1 + CPR_MD_KPSTATE], %l4	! l4 = mdp->kpstate
+	lduh	[%o1 + CPR_MD_KPSTATE], %l4	/* l4 = mdp->kpstate */
 	wrpr	%g0, %l4, %pstate
-	lduh	[%o1 + CPR_MD_KWSTATE], %l4	! l4 = mdp->kwstate
+	lduh	[%o1 + CPR_MD_KWSTATE], %l4	/* l4 = mdp->kwstate */
 	wrpr	%g0, %l4, %wstate
 
 	!
 	! jump to kernel with %o0 and %o1 unchanged
 	!
-	ldx	[%o1 + CPR_MD_FUNC], %l3	! l3 = mdp->func
+	ldx	[%o1 + CPR_MD_FUNC], %l3	/* l3 = mdp->func */
 	jmpl	%l3, %g0
 	nop
 
@@ -209,7 +211,7 @@ bzero(void *base, size_t len)
 	mov	%o0, %o2
 	mov	%o1, %o3
 1:
-	stub	%g0, [%o2]
+	stb	%g0, [%o2]
 	dec	%o3
 	brgz,pt	%o3, 1b
 	inc	%o2
@@ -237,15 +239,15 @@ phys_xcopy(physaddr_t phys_src, physaddr_t phys_dst, size_t len)
 	!
 	ENTRY(phys_xcopy)
 	brz,pn	%o2, 2f
-	mov	%o0, %o3			! %o3 = src
-	mov	%o1, %o4			! %o4 = dst
+	mov	%o0, %o3			/* %o3 = src */
+	mov	%o1, %o4			/* %o4 = dst */
 1:
-	ldxa	[%o3]ASI_MEM, %o5		! %o5  = *src
-	stxa	%o5, [%o4]ASI_MEM		! *dst = %o5
-	dec	8, %o2				! len  -= 8
-	inc	8, %o3				! src  += 8
-	brgz,pt	%o2, 1b				! branch when (len > 0)
-	inc	8, %o4				! dst  += 8
+	ldxa	[%o3]ASI_MEM, %o5		/* %o5  = *src */
+	stxa	%o5, [%o4]ASI_MEM		/* *dst = %o5 */
+	dec	8, %o2				/* len  -= 8 */
+	inc	8, %o3				/* src  += 8 */
+	brgz,pt	%o2, 1b				/* branch when (len > 0) */
+	inc	8, %o4				/* dst  += 8 */
 2:
 	retl
 	nop
@@ -290,7 +292,7 @@ set_dtlb_entry(int index, caddr_t vaddr, tte_t *tte)
 #else	/* lint */
 
 	ENTRY(set_dtlb_entry)
-	sllx    %o0, 3, %o0
+	sllx	%o0, 3, %o0
 	srlx	%o1, MMU_PAGESHIFT, %o1
 	sllx	%o1, MMU_PAGESHIFT, %o1
 	set	MMU_TAG_ACCESS, %o4
@@ -303,7 +305,7 @@ set_dtlb_entry(int index, caddr_t vaddr, tte_t *tte)
 	SET_SIZE(set_dtlb_entry)
 
 	ENTRY(set_itlb_entry)
-	sllx    %o0, 3, %o0
+	sllx	%o0, 3, %o0
 	srlx	%o1, MMU_PAGESHIFT, %o1
 	sllx	%o1, MMU_PAGESHIFT, %o1
 	set	MMU_TAG_ACCESS, %o4
@@ -383,17 +385,17 @@ cb_usec_wait(int usecs)
 
 #else
 
-	.align	32			! cache alignment for next 8 instr
+	.balign	32			/* cache alignment for next 8 instr */
 	ENTRY(cb_usec_wait)
 
 	sethi	%hi(cpu_delay), %o1
 	ld	[%o1 + %lo(cpu_delay)], %o1
 	mov	%o1, %o2
-1:	brnz,pt	%o2, 1b			! usec countdown loop
-	dec	%o2			! 2 instr in loop
+1:	brnz,pt	%o2, 1b			/* usec countdown loop */
+	dec	%o2			/* 2 instr in loop */
 
-	dec	%o0			! for each usec:
-	brgz,pt	%o0, 1b			! run the above loop
+	dec	%o0			/* for each usec: */
+	brgz,pt	%o0, 1b			/* run the above loop */
 	mov	%o1, %o2
 
 	retl

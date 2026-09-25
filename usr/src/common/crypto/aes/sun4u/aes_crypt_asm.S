@@ -22,6 +22,9 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 /*
  * Unified version for both position independent and non position independent
@@ -55,28 +58,14 @@
 
 #include <sys/stack.h>
 
-#if defined(lint) || defined(__lint)
-
-#include <sys/types.h>
-/* ARGSUSED */
-void aes_encrypt_impl(const uint32_t rk[], int Nr, const uint32_t pt[4],
-	uint32_t ct[4]) {
-}
-/* ARGSUSED */
-void aes_decrypt_impl(const uint32_t rk[], int Nr, const uint32_t ct[4],
-	uint32_t pt[4]) {
-}
-
-#else	/* lint || __lint */
-
 	.section	".text",#alloc,#execinstr
-	.file	"aes_crypt_asm.s"
+	.file		"aes_crypt_asm.S"
 
 	.register	%g2,#scratch
 	.register	%g3,#scratch
 
-	.section	".text",#alloc
-	.align	8192
+	.text
+	.balign	8192
 
 !
 ! CONSTANT POOL
@@ -2150,7 +2139,7 @@ Te3:
 	.word	369217888
 	.type	Te3,#object
 	.size	Te3,2048
-	.align	4
+	.balign	4
 !
 ! CONSTANT POOL
 !
@@ -2413,11 +2402,11 @@ Te4:
 	.word	370546198
 	.type	Te4,#object
 	.size	Te4,1024
-	.align	8
+	.balign	8
 
 
 	.section	".data",#alloc,#write
-	.align	8
+	.balign	8
 aes_const:
 
 #ifdef __sparcv9
@@ -2478,7 +2467,7 @@ aes_const:
 !
 ! OFFSET    SOURCE LINE	LABEL	INSTRUCTION
 
-        .global aes_encrypt_impl
+	.global aes_encrypt_impl
 	aes_encrypt_impl:
 
 #ifdef __sparcv9
@@ -2990,7 +2979,7 @@ aes_const:
 
 
 	.section	".text",#alloc,#execinstr
-	.align	8192
+	.balign	8192
 !
 ! SUBROUTINE aes_decrypt_impl
 !
@@ -2999,8 +2988,8 @@ aes_const:
 !
 ! OFFSET    SOURCE LINE	LABEL	INSTRUCTION
 
-        .global aes_decrypt_impl
-        aes_decrypt_impl:
+	.global aes_decrypt_impl
+	aes_decrypt_impl:
 
 #ifdef __sparcv9
 
@@ -3510,8 +3499,8 @@ aes_const:
 	.size	aes_decrypt_impl,(.-aes_decrypt_impl)
 
 
-	.section	".text",#alloc
-	.align	8
+	.text
+	.balign	8
 !
 ! CONSTANT POOL
 !
@@ -5584,7 +5573,7 @@ Td3:
 	.word	1459754624
 	.type	Td3,#object
 	.size	Td3,2048
-	.align	4
+	.balign	4
 !
 ! CONSTANT POOL
 !
@@ -5873,5 +5862,3 @@ rcon:
 	.ident	"cg: WorkShop Compilers 5.0 99/04/15 Compiler Common 5.0 Patch 107357-02"	! (NO SOURCE LINE)
 	.ident	"acomp: WorkShop Compilers 5.0 99/02/25 C 5.0 patch 107289-01"	! (/tmp/acompAAA5jaWsZ:4675)
 ! End Disassembling Ident
-
-#endif	/* lint || __lint */

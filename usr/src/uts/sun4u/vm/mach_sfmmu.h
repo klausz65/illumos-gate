@@ -22,6 +22,9 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 /*
  * VM - Hardware Address Translation management.
@@ -137,7 +140,7 @@ label##3:
 #define	SETUP_TSB_ASI(qlp, tmp)					\
 	movrz	qlp, ASI_N, tmp;				\
 	movrnz	qlp, ASI_MEM, tmp;				\
-	mov	tmp, %asi
+	wr	tmp, %g0, %asi
 
 /*
  * Macro to swtich to alternate global register on sun4u platforms

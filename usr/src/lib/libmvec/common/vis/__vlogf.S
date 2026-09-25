@@ -31,50 +31,50 @@
 #include "libm.h"
 
 	RO_DATA
-	.align	64
+	.balign	64
 !! CONST_TBL[2*i]   = 127*log(2) - log(1+i/32), i = [0, 32]
 !! CONST_TBL[2*i+1] = 2**(-23)/(1+i/32),        i = [0, 32]
 
 .CONST_TBL:
-	.word  	0x405601e6, 	0x78fc457b, 	0x3e800000, 	0x00000000,
-	.word  	0x4055ffee, 	0x4f4b5df8,	0x3e7f07c1,	0xf07c1f08,
-	.word	0x4055fe05,	0x32e4434f,	0x3e7e1e1e,	0x1e1e1e1e,
-	.word	0x4055fc2a,	0x44598c21,	0x3e7d41d4,	0x1d41d41d,
-	.word	0x4055fa5c,	0xb720babf,	0x3e7c71c7,	0x1c71c71c,
-	.word	0x4055f89b,	0xcf803581,	0x3e7bacf9,	0x14c1bad0,
-	.word	0x4055f6e6,	0xe0c3f1b1,	0x3e7af286,	0xbca1af28,
-	.word	0x4055f53d,	0x4badcb50,	0x3e7a41a4,	0x1a41a41a,
-	.word	0x4055f39e,	0x7d18782e,	0x3e799999,	0x9999999a,
-	.word	0x4055f209,	0xecc5965c,	0x3e78f9c1,	0x8f9c18fa,
-	.word	0x4055f07f,	0x1c5099d5,	0x3e786186,	0x18618618,
-	.word	0x4055eefd,	0x9641645e,	0x3e77d05f,	0x417d05f4,
-	.word	0x4055ed84,	0xed3a291d,	0x3e7745d1,	0x745d1746,
-	.word	0x4055ec14,	0xbb3ced72,	0x3e76c16c,	0x16c16c17,
-	.word	0x4055eaac,	0xa10589ab,	0x3e7642c8,	0x590b2164,
-	.word	0x4055e94c,	0x45758439,	0x3e75c988,	0x2b931057,
-	.word	0x4055e7f3,	0x550f85e3,	0x3e755555,	0x55555555,
-	.word	0x4055e6a1,	0x818078ec,	0x3e74e5e0,	0xa72f0539,
-	.word	0x4055e556,	0x8134aae1,	0x3e747ae1,	0x47ae147b,
-	.word	0x4055e412,	0x0ef783b7,	0x3e741414,	0x14141414,
-	.word	0x4055e2d3,	0xe99c9674,	0x3e73b13b,	0x13b13b14,
-	.word	0x4055e19b,	0xd3b0f9d9,	0x3e73521c,	0xfb2b78c1,
-	.word	0x4055e069,	0x9333fb26,	0x3e72f684,	0xbda12f68,
-	.word	0x4055df3c,	0xf1565bd0,	0x3e729e41,	0x29e4129e,
-	.word	0x4055de15,	0xba3f64fa,	0x3e724924,	0x92492492,
-	.word	0x4055dcf3,	0xbcd73219,	0x3e71f704,	0x7dc11f70,
-	.word	0x4055dbd6,	0xca95a75a,	0x3e71a7b9,	0x611a7b96,
-	.word	0x4055dabe,	0xb7559927,	0x3e715b1e,	0x5f75270d,
-	.word	0x4055d9ab,	0x592bb896,	0x3e711111,	0x11111111,
-	.word	0x4055d89c,	0x8840e4fe,	0x3e70c971,	0x4fbcda3b,
-	.word	0x4055d792,	0x1eaf8df0,	0x3e708421,	0x08421084,
-	.word	0x4055d68b,	0xf863da3d,	0x3e704104,	0x10410410,
-	.word	0x4055d589,	0xf2fe5107,	0x3e700000,	0x00000000,
-	.word	0xbfcffb16,	0xbfa3db6e,	! K3 = -2.49850123953105416108e-01
-	.word	0x3fd5561b,	0xa4b3110b,	! K2 =  3.33380614127478394992e-01
-	.word	0xbfe00000,	0x0b666d0b,	! K1 = -5.00000021234343492201e-01
-	.word	0x3fefffff,	0xff3fd118,	! K0 =  9.99999998601683029714e-01
-	.word	0x3fe62e42,	0xfefa39ef,	! LN2 = 6.931471805599452862e-01
-	.word	0xbf800000,	0x7f800000,	! MONE = -1.0f ;    INF
+	.word  	0x405601e6, 	0x78fc457b, 	0x3e800000, 	0x00000000
+	.word  	0x4055ffee, 	0x4f4b5df8,	0x3e7f07c1,	0xf07c1f08
+	.word	0x4055fe05,	0x32e4434f,	0x3e7e1e1e,	0x1e1e1e1e
+	.word	0x4055fc2a,	0x44598c21,	0x3e7d41d4,	0x1d41d41d
+	.word	0x4055fa5c,	0xb720babf,	0x3e7c71c7,	0x1c71c71c
+	.word	0x4055f89b,	0xcf803581,	0x3e7bacf9,	0x14c1bad0
+	.word	0x4055f6e6,	0xe0c3f1b1,	0x3e7af286,	0xbca1af28
+	.word	0x4055f53d,	0x4badcb50,	0x3e7a41a4,	0x1a41a41a
+	.word	0x4055f39e,	0x7d18782e,	0x3e799999,	0x9999999a
+	.word	0x4055f209,	0xecc5965c,	0x3e78f9c1,	0x8f9c18fa
+	.word	0x4055f07f,	0x1c5099d5,	0x3e786186,	0x18618618
+	.word	0x4055eefd,	0x9641645e,	0x3e77d05f,	0x417d05f4
+	.word	0x4055ed84,	0xed3a291d,	0x3e7745d1,	0x745d1746
+	.word	0x4055ec14,	0xbb3ced72,	0x3e76c16c,	0x16c16c17
+	.word	0x4055eaac,	0xa10589ab,	0x3e7642c8,	0x590b2164
+	.word	0x4055e94c,	0x45758439,	0x3e75c988,	0x2b931057
+	.word	0x4055e7f3,	0x550f85e3,	0x3e755555,	0x55555555
+	.word	0x4055e6a1,	0x818078ec,	0x3e74e5e0,	0xa72f0539
+	.word	0x4055e556,	0x8134aae1,	0x3e747ae1,	0x47ae147b
+	.word	0x4055e412,	0x0ef783b7,	0x3e741414,	0x14141414
+	.word	0x4055e2d3,	0xe99c9674,	0x3e73b13b,	0x13b13b14
+	.word	0x4055e19b,	0xd3b0f9d9,	0x3e73521c,	0xfb2b78c1
+	.word	0x4055e069,	0x9333fb26,	0x3e72f684,	0xbda12f68
+	.word	0x4055df3c,	0xf1565bd0,	0x3e729e41,	0x29e4129e
+	.word	0x4055de15,	0xba3f64fa,	0x3e724924,	0x92492492
+	.word	0x4055dcf3,	0xbcd73219,	0x3e71f704,	0x7dc11f70
+	.word	0x4055dbd6,	0xca95a75a,	0x3e71a7b9,	0x611a7b96
+	.word	0x4055dabe,	0xb7559927,	0x3e715b1e,	0x5f75270d
+	.word	0x4055d9ab,	0x592bb896,	0x3e711111,	0x11111111
+	.word	0x4055d89c,	0x8840e4fe,	0x3e70c971,	0x4fbcda3b
+	.word	0x4055d792,	0x1eaf8df0,	0x3e708421,	0x08421084
+	.word	0x4055d68b,	0xf863da3d,	0x3e704104,	0x10410410
+	.word	0x4055d589,	0xf2fe5107,	0x3e700000,	0x00000000
+	.word	0xbfcffb16,	0xbfa3db6e	! K3 = -2.49850123953105416108e-01
+	.word	0x3fd5561b,	0xa4b3110b	! K2 =  3.33380614127478394992e-01
+	.word	0xbfe00000,	0x0b666d0b	! K1 = -5.00000021234343492201e-01
+	.word	0x3fefffff,	0xff3fd118	! K0 =  9.99999998601683029714e-01
+	.word	0x3fe62e42,	0xfefa39ef	! LN2 = 6.931471805599452862e-01
+	.word	0xbf800000,	0x7f800000	! MONE = -1.0f ;    INF
 
 ! local storage indices
 #define tmp0		STACK_BIAS-0x8
@@ -496,7 +496,7 @@
 	ba	.main_loop
 	nop
 
-	.align	16
+	.balign	16
 .main_loop:
 	sra	ival2,14,ival2			! (Y2_1) i  = ival >> 14;
 	ldd	[LOGFTBL+ind0],%f42		! (Y0_0) ldtmp0 = *(double*)((char*)CONST_TBL+ind)
@@ -873,7 +873,7 @@
 	ret
 	restore	%g0,0,%o0
 
-	.align	16
+	.balign	16
 .update2:
 	cmp	counter,0
 	ble	.cont2
@@ -887,7 +887,7 @@
 	ba	.cont2
 	nop
 
-	.align	16
+	.balign	16
 .update3:
 	cmp	counter,0
 	ble	.cont3
@@ -901,7 +901,7 @@
 	ba	.cont3
 	nop
 
-	.align	16
+	.balign	16
 .update4:
 	cmp	counter,1
 	ble	.cont4
@@ -914,7 +914,7 @@
 	ba	.cont4
 	nop
 
-	.align	16
+	.balign	16
 .update5:
 	cmp	counter,1
 	ble	.cont5
@@ -927,7 +927,7 @@
 	ba	.cont5
 	nop
 
-	.align	16
+	.balign	16
 .update6:
 	cmp	counter,2
 	ble	.cont6
@@ -942,7 +942,7 @@
 	ba	.cont6
 	nop
 
-	.align	16
+	.balign	16
 .update7:
 	cmp	counter,2
 	ble	.cont7
@@ -957,7 +957,7 @@
 	ba	.cont7
 	nop
 
-	.align	16
+	.balign	16
 .update8:
 	cmp	counter,3
 	ble	.cont8
@@ -970,7 +970,7 @@
 	ba	.cont8
 	nop
 
-	.align	16
+	.balign	16
 .update9:
 	cmp	counter,3
 	ble	.cont9
@@ -983,7 +983,7 @@
 	ba	.cont9
 	nop
 
-	.align	16
+	.balign	16
 .update10:
 	cmp	counter,4
 	ble	.cont10
@@ -998,7 +998,7 @@
 	ba	.cont10
 	nop
 
-	.align	16
+	.balign	16
 .update11:
 	cmp	counter,4
 	ble	.cont11
@@ -1013,7 +1013,7 @@
 	ba	.cont11
 	nop
 
-	.align	16
+	.balign	16
 .update12:
 	cmp	counter,5
 	ble	.cont12
@@ -1026,7 +1026,7 @@
 	ba	.cont12
 	nop
 
-	.align	16
+	.balign	16
 .update13:
 	cmp	counter,5
 	ble	.cont13
@@ -1039,7 +1039,7 @@
 	ba	.cont13
 	nop
 
-	.align	16
+	.balign	16
 .update14:
 	cmp	counter,6
 	ble	.cont14
@@ -1054,7 +1054,7 @@
 	ba 	.cont14
 	nop
 
-	.align	16
+	.balign	16
 .update15:
 	cmp	counter,6
 	ble	.cont15
@@ -1069,7 +1069,7 @@
 	ba	.cont15
 	nop
 
-	.align	16
+	.balign	16
 .update16:
 	cmp	counter,0
 	ble,pt	%icc, .cont16
@@ -1081,7 +1081,7 @@
 	ba	.cont16
 	nop
 
-	.align	16
+	.balign	16
 .update17:
 	cmp	counter,0
 	ble,pt	%icc, .cont17
@@ -1093,7 +1093,7 @@
 	ba	.cont17
 	nop
 
-	.align	16
+	.balign	16
 .update18:
 	cmp	counter,1
 	ble,pt	%icc, .cont18
@@ -1108,7 +1108,7 @@
 	ba	.cont18
 	nop
 
-	.align	16
+	.balign	16
 .update19:
 	cmp	counter,1
 	ble,pt	%icc, .cont19
@@ -1123,7 +1123,7 @@
 	ba	.cont19
 	nop
 
-	.align	16
+	.balign	16
 .update20:
 	cmp	counter,2
 	ble,pt	%icc, .cont20
@@ -1136,7 +1136,7 @@
 	ba	.cont20
 	nop
 
-	.align	16
+	.balign	16
 .update21:
 	cmp	counter,2
 	ble,pt	%icc, .cont21
@@ -1149,7 +1149,7 @@
 	ba	.cont21
 	nop
 
-	.align	16
+	.balign	16
 .update22:
 	cmp	counter,3
 	ble,pt	%icc, .cont22
@@ -1164,7 +1164,7 @@
 	ba	.cont22
 	nop
 
-	.align	16
+	.balign	16
 .update23:
 	cmp	counter,3
 	ble,pt	%icc, .cont23
@@ -1179,7 +1179,7 @@
 	ba	.cont23
 	nop
 
-	.align	16
+	.balign	16
 .spec:
 	or	%g0,1,ind3			! ind3 = 1
 	sll	ind3,31,ind3			! ind3 = 0x8000000
@@ -1247,7 +1247,7 @@
 	ba	.begin1
 	st	%f4,[y]				! write into memory
 
-	.align	16
+	.balign	16
 .spec0:
 	ld	[%fp+tmp1],%f12			! value = *(float*) &ival
 	fzeros	%f2				! y[0] = (value < 0.0f?
@@ -1257,7 +1257,7 @@
 	ba	.begin1
 	st	%f2,[y]				! write into memory
 
-	.align	16
+	.balign	16
 .spec1:
 	cmp	iy0,0				! if ((ival & 0x7fffffff) == 0)
 	bne,pn	%icc,.spec2			! if ((ival & 0x7fffffff) == 0)
@@ -1267,7 +1267,7 @@
 	ba	.begin1
 	st	%f6,[y]				! write into memory
 
-	.align	16
+	.balign	16
 .spec2:
 	fdivs	ZERO,ZERO,%f6			! y[0] = 0f / 0f
 	ba	.begin1

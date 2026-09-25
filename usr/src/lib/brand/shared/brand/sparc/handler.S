@@ -21,6 +21,9 @@
 /*
  * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include <brand_misc.h>
 
@@ -59,6 +62,9 @@ brand_handler(void)
 #endif /* !__sparcv9 */
 
 	.section	".text"
+
+.register	%g2, #scratch
+.register	%g3, #scratch
 
 	/*
 	 * When we get here, %g1 should contain the system call and

@@ -34,11 +34,11 @@
 
 /*
  * WARNING: there is no check for forgetting to write END_MODULE,
- * and if you do, the kernel will most likely crash.  Be careful
+ * and if you do, the kernel will most likely crash. Be careful
  *
  * This file assumes that all of the contributions to the data segment
  * will be contiguous in the output file, even though they are separated
- * by pieces of text.  This is safe for all assemblers I know of now...
+ * by pieces of text. This is safe for all assemblers I know of now...
  */
 
 /*
@@ -56,7 +56,7 @@
  * (b) define '.pword' or equivalent, and use it (to mean .word or .xword).
  */
 #define	MODULE(module,namespace)		\
-	.seg	".data";			\
+	.section	.data;			\
 module##_modname:				\
 	.ascii	#namespace;			\
 	.ascii	"/";				\
@@ -72,7 +72,7 @@ module##_modinfo:				\
 	.word 0;
 
 #define	END_MODULE(module)		\
-	.align 8; .word 0; .word 0	/* FIXME: .xword 0 */
+	.balign 8; .word 0; .word 0	/* FIXME: .xword 0 */
 
 
 #define STUB(module, fcnname, retfcn)	\
@@ -106,8 +106,8 @@ module##_modinfo:				\
     STUB_NO_UNLOADABLE(module, fcnname, retfcn, retfcn, MODS_NOUNLOAD|MODS_WEAK)
 
 #define	STUB_DATA(module, fcnname, install_fcn, retfcn, weak)		\
-	.seg	".data";						\
-	.align	8;							\
+	.section	.data;						\
+	.balign	8;							\
 fcnname##_info:							\
 	.word	0;			/* 0 */				\
 	.word	install_fcn;		/* 4 */				\
@@ -121,7 +121,7 @@ fcnname##_info:							\
 
 /*
  * The flag MODS_INSTALLED is stored in the stub data and is used to
- * indicate if a module is installed and initialized.  This flag is used
+ * indicate if a module is installed and initialized. This flag is used
  * instead of the mod_stub_info->mods_modinfo->mod_installed flag
  * to minimize the number of pointer de-references for each function
  * call (and also to avoid possible TLB misses which could be induced
@@ -137,9 +137,9 @@ fcnname##_info:							\
 	be,a	1f;			/* not weak */			\
 	restore;							\
 	btst	MODS_INSTALLED, %l1;	/* installed?? */		\
- 	bne,a,pt %xcc, 1f;		/* yes, do mod_hold thing */	\
- 	restore;							\
- 	ldn	[%l5 + MODS_RETFCN], %g1;				\
+	bne,a,pt %xcc, 1f;		/* yes, do mod_hold thing */	\
+	restore;							\
+	ldn	[%l5 + MODS_RETFCN], %g1;				\
 	jmp	%g1;			/* no, just jump to retfcn */	\
 	restore;							\
 1:	sub	%sp, %fp, %g1;	/* get (-)size of callers stack */	\
@@ -182,7 +182,7 @@ fcnname##_info:							\
 	btst	MODS_INSTALLED, %l1;					\
 	be,a	%xcc, 1f;			/* no, load module */	\
 	restore;							\
- 	ldn	[%l5], %g1;						\
+	ldn	[%l5], %g1;						\
 	jmp	%g1;				/* yes, off we go */	\
 	restore;							\
 1:	save	%sp, -SA(MINFRAME), %sp;/* new frame */			\
@@ -193,7 +193,7 @@ fcnname##_info:							\
 	SET_SIZE(fcnname);						\
 	STUB_DATA(module, fcnname, install_fcn, retfcn, weak)
 
-	.section	".text"
+	.section	.text
 
 	/*
 	 * We branch here with the fcnname_info pointer in l5
@@ -210,11 +210,11 @@ fcnname##_info:							\
 1:
 	/* Copy stack frame */
 	ldn	[%l1 + STACK_BIAS], %l2
-	inc	8, %l1
 	stn	%l2, [%l0 + STACK_BIAS]
+	add	%l1, 8, %l1
 	deccc	8, %l4
 	bg,a	1b
-	inc	8, %l0
+	add	%l0, 8, %l0
 2:
 	call	mod_hold_stub		/* Hold the module */
 	mov	%l5, %o0
@@ -233,8 +233,15 @@ fcnname##_info:							\
 	mov	%i2, %o2
 	mov	%i3, %o3
 	mov	%i4, %o4
-	call	%g1		/* jump to the stub function */
+	/*
+	 * FIX: Do not load dirty stack leftovers in the delay slot.
+	 * Explicitly move %i5 to %o5 before the call, or zero out %o5
+	 * if the stub destination targets compact parameter schemes.
+	 */
 	mov	%i5, %o5
+	call	%g1		/* jump to the stub function */
+	nop			/* Safe delay slot to prevent speculative leakage */
+
 	mov	%o0, %i0	/* copy any return values */
 	mov	%o1, %i1
 	call	mod_release_stub	/* release hold on module */
@@ -244,7 +251,7 @@ fcnname##_info:							\
 	SET_SIZE(stubs_common_code)
 
 ! this is just a marker for the area of text that contains stubs
-	.seg ".text"
+	.section .text
 	.global stubs_base
 stubs_base:
 	nop
@@ -253,7 +260,7 @@ stubs_base:
  * WARNING WARNING WARNING!!!!!!
  *
  * On the MODULE macro you MUST NOT use any spaces!!! They are
- * significant to the preprocessor.  With ansi c there is a way around this
+ * significant to the preprocessor. With ansi c there is a way around this
  * but for some reason (yet to be investigated) ansi didn't work for other
  * reasons!
  *
@@ -297,17 +304,17 @@ stubs_base:
 
 #ifndef SPEC_MODULE
 	MODULE(specfs,fs);
-	NO_UNLOAD_STUB(specfs, common_specvp,  	nomod_zero);
+	NO_UNLOAD_STUB(specfs, common_specvp,		nomod_zero);
 	NO_UNLOAD_STUB(specfs, makectty,		nomod_zero);
-	NO_UNLOAD_STUB(specfs, makespecvp,      	nomod_zero);
-	NO_UNLOAD_STUB(specfs, smark,           	nomod_zero);
-	NO_UNLOAD_STUB(specfs, spec_segmap,     	nomod_einval);
-	NO_UNLOAD_STUB(specfs, specfind,        	nomod_zero);
-	NO_UNLOAD_STUB(specfs, specvp,          	nomod_zero);
+	NO_UNLOAD_STUB(specfs, makespecvp,		nomod_zero);
+	NO_UNLOAD_STUB(specfs, smark,			nomod_zero);
+	NO_UNLOAD_STUB(specfs, spec_segmap,		nomod_einval);
+	NO_UNLOAD_STUB(specfs, specfind,		nomod_zero);
+	NO_UNLOAD_STUB(specfs, specvp,			nomod_zero);
 	NO_UNLOAD_STUB(specfs, devi_stillreferenced,	nomod_zero);
 	NO_UNLOAD_STUB(specfs, spec_getvnodeops,	nomod_zero);
 	NO_UNLOAD_STUB(specfs, spec_char_map,		nomod_zero);
-	NO_UNLOAD_STUB(specfs, specvp_devfs,  		nomod_zero);
+	NO_UNLOAD_STUB(specfs, specvp_devfs,		nomod_zero);
 	NO_UNLOAD_STUB(specfs, spec_assoc_vp_with_devi,	nomod_void);
 	NO_UNLOAD_STUB(specfs, spec_hold_devi_by_vp,	nomod_zero);
 	NO_UNLOAD_STUB(specfs, spec_snode_walk,		nomod_void);
@@ -325,37 +332,37 @@ stubs_base:
  */
 #ifndef SOCK_MODULE
 	MODULE(sockfs, fs);
-	SCALL_NU_STUB(sockfs, so_socket,  	nomod_zero);
-	SCALL_NU_STUB(sockfs, so_socketpair,	nomod_zero);
-	SCALL_NU_STUB(sockfs, bind,  		nomod_zero);
-	SCALL_NU_STUB(sockfs, listen,  		nomod_zero);
-	SCALL_NU_STUB(sockfs, accept,  		nomod_zero);
-	SCALL_NU_STUB(sockfs, connect,  	nomod_zero);
-	SCALL_NU_STUB(sockfs, shutdown,  	nomod_zero);
-	SCALL_NU_STUB(sockfs, recv,  		nomod_zero);
-	SCALL_NU_STUB(sockfs, recvfrom,  	nomod_zero);
-	SCALL_NU_STUB(sockfs, recvmsg,  	nomod_zero);
-	SCALL_NU_STUB(sockfs, send,  		nomod_zero);
-	SCALL_NU_STUB(sockfs, sendmsg,  	nomod_zero);
-	SCALL_NU_STUB(sockfs, sendto, 		nomod_zero);
+	SCALL_NU_STUB(sockfs, so_socket,		nomod_zero);
+	SCALL_NU_STUB(sockfs, so_socketpair,		nomod_zero);
+	SCALL_NU_STUB(sockfs, bind,			nomod_zero);
+	SCALL_NU_STUB(sockfs, listen,			nomod_zero);
+	SCALL_NU_STUB(sockfs, accept,			nomod_zero);
+	SCALL_NU_STUB(sockfs, connect,			nomod_zero);
+	SCALL_NU_STUB(sockfs, shutdown,			nomod_zero);
+	SCALL_NU_STUB(sockfs, recv,			nomod_zero);
+	SCALL_NU_STUB(sockfs, recvfrom,			nomod_zero);
+	SCALL_NU_STUB(sockfs, recvmsg,			nomod_zero);
+	SCALL_NU_STUB(sockfs, send,			nomod_zero);
+	SCALL_NU_STUB(sockfs, sendmsg,			nomod_zero);
+	SCALL_NU_STUB(sockfs, sendto,			nomod_zero);
 #ifdef _SYSCALL32_IMPL
-	SCALL_NU_STUB(sockfs, recv32,  		nomod_zero);
-	SCALL_NU_STUB(sockfs, recvfrom32,  	nomod_zero);
-	SCALL_NU_STUB(sockfs, send32,  		nomod_zero);
-	SCALL_NU_STUB(sockfs, sendto32, 	nomod_zero);
+	SCALL_NU_STUB(sockfs, recv32,			nomod_zero);
+	SCALL_NU_STUB(sockfs, recvfrom32,		nomod_zero);
+	SCALL_NU_STUB(sockfs, send32,			nomod_zero);
+	SCALL_NU_STUB(sockfs, sendto32,			nomod_zero);
 #endif /* _SYSCALL32_IMPL */
-	SCALL_NU_STUB(sockfs, getpeername,  	nomod_zero);
-	SCALL_NU_STUB(sockfs, getsockname,  	nomod_zero);
-	SCALL_NU_STUB(sockfs, getsockopt,  	nomod_zero);
-	SCALL_NU_STUB(sockfs, setsockopt,  	nomod_zero);
-	SCALL_NU_STUB(sockfs, sockconfig,  	nomod_zero);
-	NO_UNLOAD_STUB(sockfs, sock_getmsg,  	nomod_zero);
-	NO_UNLOAD_STUB(sockfs, sock_putmsg,  	nomod_zero);
-	NO_UNLOAD_STUB(sockfs, sosendfile64,  	nomod_zero);
-	NO_UNLOAD_STUB(sockfs, snf_segmap,  	nomod_einval);
-	NO_UNLOAD_STUB(sockfs, sock_getfasync,  nomod_zero);
-	NO_UNLOAD_STUB(sockfs, sotpi_sototpi,  nomod_zero);
-	NO_UNLOAD_STUB(sockfs, socket_sendmblk,	nomod_zero);
+	SCALL_NU_STUB(sockfs, getpeername,		nomod_zero);
+	SCALL_NU_STUB(sockfs, getsockname,		nomod_zero);
+	SCALL_NU_STUB(sockfs, getsockopt,		nomod_zero);
+	SCALL_NU_STUB(sockfs, setsockopt,		nomod_zero);
+	SCALL_NU_STUB(sockfs, sockconfig,		nomod_zero);
+	NO_UNLOAD_STUB(sockfs, sock_getmsg,		nomod_zero);
+	NO_UNLOAD_STUB(sockfs, sock_putmsg,		nomod_zero);
+	NO_UNLOAD_STUB(sockfs, sosendfile64,		nomod_zero);
+	NO_UNLOAD_STUB(sockfs, snf_segmap,		nomod_einval);
+	NO_UNLOAD_STUB(sockfs, sock_getfasync,		nomod_zero);
+	NO_UNLOAD_STUB(sockfs, sotpi_sototpi,		nomod_zero);
+	NO_UNLOAD_STUB(sockfs, socket_sendmblk,		nomod_zero);
 	NO_UNLOAD_STUB(sockfs, socket_setsockopt,	nomod_zero);
 	END_MODULE(sockfs);
 #endif
@@ -426,7 +433,7 @@ stubs_base:
 #ifndef NFS_DLBOOT_MODULE
 	MODULE(nfs_dlboot,misc);
 	STUB(nfs_dlboot,	mount_root,	nomod_minus_one);
-	STUB(nfs_dlboot,        dhcpinit,       nomod_minus_one);
+	STUB(nfs_dlboot,	dhcpinit,	nomod_minus_one);
 	END_MODULE(nfs_dlboot);
 #endif
 
@@ -435,14 +442,14 @@ stubs_base:
  */
 #ifndef NFSSRV_MODULE
 	MODULE(nfssrv,misc);
-	STUB(nfssrv,		exportfs,	nomod_minus_one);
-	STUB(nfssrv,		nfs_getfh,	nomod_minus_one);
-	STUB(nfssrv,		nfsl_flush,	nomod_minus_one);
-	STUB(nfssrv,		rfs4_check_delegated, nomod_zero);
-	STUB(nfssrv,		rfs4_clear_client_state, nomod_zero);
-	STUB(nfssrv,		mountd_args,	nomod_minus_one);
-	NO_UNLOAD_STUB(nfssrv,	rdma_start,	nomod_zero);
-	NO_UNLOAD_STUB(nfssrv,	nfs_svc,	nomod_zero);
+	STUB(nfssrv,		exportfs,			nomod_minus_one);
+	STUB(nfssrv,		nfs_getfh,			nomod_minus_one);
+	STUB(nfssrv,		nfsl_flush,			nomod_minus_one);
+	STUB(nfssrv,		rfs4_check_delegated,		nomod_zero);
+	STUB(nfssrv,		rfs4_clear_client_state,	nomod_zero);
+	STUB(nfssrv,		mountd_args,			nomod_minus_one);
+	NO_UNLOAD_STUB(nfssrv,	rdma_start,			nomod_zero);
+	NO_UNLOAD_STUB(nfssrv,	nfs_svc,			nomod_zero);
 	END_MODULE(nfssrv);
 #endif
 
@@ -456,56 +463,56 @@ stubs_base:
 	NO_UNLOAD_STUB(klmmod, lm_unexport,	nomod_zero);
 	NO_UNLOAD_STUB(klmmod, lm_cprresume,	nomod_zero);
 	NO_UNLOAD_STUB(klmmod, lm_cprsuspend,	nomod_zero);
-	NO_UNLOAD_STUB(klmmod, lm_safelock, nomod_zero);
-	NO_UNLOAD_STUB(klmmod, lm_safemap, nomod_zero);
-	NO_UNLOAD_STUB(klmmod, lm_has_sleep, nomod_zero);
-	NO_UNLOAD_STUB(klmmod, lm_free_config, nomod_zero);
-	NO_UNLOAD_STUB(klmmod, lm_vp_active, nomod_zero);
-	NO_UNLOAD_STUB(klmmod, lm_get_sysid, nomod_zero);
-	NO_UNLOAD_STUB(klmmod, lm_rel_sysid, nomod_zero);
-	NO_UNLOAD_STUB(klmmod, lm_alloc_sysidt, nomod_minus_one);
-	NO_UNLOAD_STUB(klmmod, lm_free_sysidt, nomod_zero);
-	NO_UNLOAD_STUB(klmmod, lm_sysidt, nomod_minus_one);
+	NO_UNLOAD_STUB(klmmod, lm_safelock,	nomod_zero);
+	NO_UNLOAD_STUB(klmmod, lm_safemap,	nomod_zero);
+	NO_UNLOAD_STUB(klmmod, lm_has_sleep,	nomod_zero);
+	NO_UNLOAD_STUB(klmmod, lm_free_config,	nomod_zero);
+	NO_UNLOAD_STUB(klmmod, lm_vp_active,	nomod_zero);
+	NO_UNLOAD_STUB(klmmod, lm_get_sysid,	nomod_zero);
+	NO_UNLOAD_STUB(klmmod, lm_rel_sysid,	nomod_zero);
+	NO_UNLOAD_STUB(klmmod, lm_alloc_sysidt,	nomod_minus_one);
+	NO_UNLOAD_STUB(klmmod, lm_free_sysidt,	nomod_zero);
+	NO_UNLOAD_STUB(klmmod, lm_sysidt,	nomod_minus_one);
 	END_MODULE(klmmod);
 #endif
 
 #ifndef KLMOPS_MODULE
 	MODULE(klmops,misc);
-	NO_UNLOAD_STUB(klmops, lm_frlock,	nomod_zero);
-	NO_UNLOAD_STUB(klmops, lm4_frlock,	nomod_zero);
-	NO_UNLOAD_STUB(klmops, lm_shrlock,	nomod_zero);
-	NO_UNLOAD_STUB(klmops, lm4_shrlock,	nomod_zero);
-	NO_UNLOAD_STUB(klmops, lm_nlm_dispatch,	nomod_zero);
-	NO_UNLOAD_STUB(klmops, lm_nlm4_dispatch,	nomod_zero);
-	NO_UNLOAD_STUB(klmops, lm_nlm_reclaim,	nomod_zero);
-	NO_UNLOAD_STUB(klmops, lm_nlm4_reclaim,	nomod_zero);
-	NO_UNLOAD_STUB(klmops, lm_register_lock_locally, nomod_zero);
+	NO_UNLOAD_STUB(klmops, lm_frlock,			nomod_zero);
+	NO_UNLOAD_STUB(klmops, lm4_frlock,			nomod_zero);
+	NO_UNLOAD_STUB(klmops, lm_shrlock,			nomod_zero);
+	NO_UNLOAD_STUB(klmops, lm4_shrlock,			nomod_zero);
+	NO_UNLOAD_STUB(klmops, lm_nlm_dispatch,			nomod_zero);
+	NO_UNLOAD_STUB(klmops, lm_nlm4_dispatch,		nomod_zero);
+	NO_UNLOAD_STUB(klmops, lm_nlm_reclaim,			nomod_zero);
+	NO_UNLOAD_STUB(klmops, lm_nlm4_reclaim,			nomod_zero);
+	NO_UNLOAD_STUB(klmops, lm_register_lock_locally,	nomod_zero);
 	END_MODULE(klmops);
 #endif
 
 /*
  * Stubs for kernel TLI module
- *   XXX currently we never allow this to unload
+ * XXX currently we never allow this to unload
  */
 #ifndef TLI_MODULE
 	MODULE(tlimod,misc);
 	NO_UNLOAD_STUB(tlimod, t_kopen,		nomod_minus_one);
-	NO_UNLOAD_STUB(tlimod, t_kunbind,  	nomod_zero);
-	NO_UNLOAD_STUB(tlimod, t_kadvise,  	nomod_zero);
-	NO_UNLOAD_STUB(tlimod, t_krcvudata,  	nomod_zero);
-	NO_UNLOAD_STUB(tlimod, t_ksndudata,  	nomod_zero);
-	NO_UNLOAD_STUB(tlimod, t_kalloc,  	nomod_zero);
-	NO_UNLOAD_STUB(tlimod, t_kbind,  	nomod_zero);
-	NO_UNLOAD_STUB(tlimod, t_kclose,  	nomod_zero);
-	NO_UNLOAD_STUB(tlimod, t_kspoll,  	nomod_zero);
-	NO_UNLOAD_STUB(tlimod, t_kfree,  	nomod_zero);
+	NO_UNLOAD_STUB(tlimod, t_kunbind,	nomod_zero);
+	NO_UNLOAD_STUB(tlimod, t_kadvise,	nomod_zero);
+	NO_UNLOAD_STUB(tlimod, t_krcvudata,	nomod_zero);
+	NO_UNLOAD_STUB(tlimod, t_ksndudata,	nomod_zero);
+	NO_UNLOAD_STUB(tlimod, t_kalloc,	nomod_zero);
+	NO_UNLOAD_STUB(tlimod, t_kbind,		nomod_zero);
+	NO_UNLOAD_STUB(tlimod, t_kclose,	nomod_zero);
+	NO_UNLOAD_STUB(tlimod, t_kspoll,	nomod_zero);
+	NO_UNLOAD_STUB(tlimod, t_kfree,		nomod_zero);
 	NO_UNLOAD_STUB(tlimod, t_koptmgmt,	nomod_zero);
 	END_MODULE(tlimod);
 #endif
 
 /*
  * Stubs for kernel RPC module
- *   XXX currently we never allow this to unload
+ * XXX currently we never allow this to unload
  */
 #ifndef RPC_MODULE
 	MODULE(rpcmod,strmod);
@@ -524,8 +531,8 @@ stubs_base:
  */
 #ifndef DES_MODULE
 	MODULE(des,misc);
-	STUB(des, cbc_crypt, 	 	nomod_zero);
-	STUB(des, ecb_crypt, 		nomod_zero);
+	STUB(des, cbc_crypt,		nomod_zero);
+	STUB(des, ecb_crypt,		nomod_zero);
 	STUB(des, _des_crypt,		nomod_zero);
 	END_MODULE(des);
 #endif
@@ -552,28 +559,28 @@ stubs_base:
 	NO_UNLOAD_STUB(procfs, oprgetstatus,	nomod_zero);
 	NO_UNLOAD_STUB(procfs, oprgetpsinfo,	nomod_zero);
 #ifdef _SYSCALL32_IMPL
-	NO_UNLOAD_STUB(procfs, prgetstatus32,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, prgetlwpstatus32, nomod_zero);
-	NO_UNLOAD_STUB(procfs, prgetpsinfo32,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, prgetlwpsinfo32,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, oprgetstatus32,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, oprgetpsinfo32,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, psinfo_kto32,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, lwpsinfo_kto32,	nomod_zero);
+	NO_UNLOAD_STUB(procfs, prgetstatus32,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, prgetlwpstatus32,	nomod_zero);
+	NO_UNLOAD_STUB(procfs, prgetpsinfo32,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, prgetlwpsinfo32,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, oprgetstatus32,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, oprgetpsinfo32,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, psinfo_kto32,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, lwpsinfo_kto32,		nomod_zero);
 #endif	/* _SYSCALL32_IMPL */
-	NO_UNLOAD_STUB(procfs, prnotify,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, prexecstart,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, prexecend,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, prrelvm,		nomod_zero);
-	NO_UNLOAD_STUB(procfs, prbarrier,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, estimate_msacct,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, pr_getprot,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, pr_getprot_done,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, pr_getsegsize,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, pr_isobject,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, pr_isself,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, pr_allstopped,	nomod_zero);
-	NO_UNLOAD_STUB(procfs, pr_free_watched_pages, nomod_zero);
+	NO_UNLOAD_STUB(procfs, prnotify,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, prexecstart,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, prexecend,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, prrelvm,			nomod_zero);
+	NO_UNLOAD_STUB(procfs, prbarrier,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, estimate_msacct,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, pr_getprot,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, pr_getprot_done,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, pr_getsegsize,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, pr_isobject,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, pr_isself,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, pr_allstopped,		nomod_zero);
+	NO_UNLOAD_STUB(procfs, pr_free_watched_pages,	nomod_zero);
 	END_MODULE(procfs);
 #endif
 
@@ -582,7 +589,7 @@ stubs_base:
  */
 #ifndef FIFO_MODULE
 	MODULE(fifofs,fs);
-	NO_UNLOAD_STUB(fifofs, fifovp,      	nomod_zero);
+	NO_UNLOAD_STUB(fifofs, fifovp,		nomod_zero);
 	NO_UNLOAD_STUB(fifofs, fifo_getinfo,	nomod_zero);
 	NO_UNLOAD_STUB(fifofs, fifo_vfastoff,	nomod_zero);
 	END_MODULE(fifofs);
@@ -596,7 +603,7 @@ stubs_base:
  */
 #ifndef UFS_MODULE
 	MODULE(ufs,fs);
-	STUB(ufs, quotactl, nomod_minus_one);
+	STUB(ufs, quotactl,	nomod_minus_one);
 	END_MODULE(ufs);
 #endif
 
@@ -605,9 +612,9 @@ stubs_base:
  */
 #ifndef ZFS_MODULE
 	MODULE(zfs,fs);
-	STUB(zfs, dsl_prop_get, nomod_minus_one);
-	STUB(zfs, spa_boot_init, nomod_minus_one);
-	STUB(zfs, zfs_prop_to_name, nomod_zero);
+	STUB(zfs, dsl_prop_get,		nomod_minus_one);
+	STUB(zfs, spa_boot_init,	nomod_minus_one);
+	STUB(zfs, zfs_prop_to_name,	nomod_zero);
 	END_MODULE(zfs);
 #endif
 
@@ -616,7 +623,7 @@ stubs_base:
  */
 #ifndef DCFS_MODULE
 	MODULE(dcfs,fs);
-	STUB(dcfs, decompvp, 0);
+	STUB(dcfs, decompvp,		0);
 	END_MODULE(dcfs);
 #endif
 
@@ -625,7 +632,7 @@ stubs_base:
  */
 #ifndef NAMEFS_MODULE
 	MODULE(namefs,fs);
-	STUB(namefs, nm_unmountall, 	0);
+	STUB(namefs, nm_unmountall,	0);
 	END_MODULE(namefs);
 #endif
 
@@ -696,10 +703,10 @@ stubs_base:
  */
 #ifndef SWAPGENERIC_MODULE
 	MODULE(swapgeneric,misc);
-	STUB(swapgeneric, rootconf,     0);
-	STUB(swapgeneric, getrootdev,   0);
-	STUB(swapgeneric, getfsname,    0);
-	STUB(swapgeneric, loadrootmodules, 0);
+	STUB(swapgeneric, rootconf,		0);
+	STUB(swapgeneric, getrootdev,		0);
+	STUB(swapgeneric, getfsname,		0);
+	STUB(swapgeneric, loadrootmodules,	0);
 	END_MODULE(swapgeneric);
 #endif
 
@@ -708,9 +715,9 @@ stubs_base:
  */
 #ifndef BOOTDEV_MODULE
 	MODULE(bootdev,misc);
-	STUB(bootdev, i_devname_to_promname, 0);
-	STUB(bootdev, i_promname_to_devname, 0);
-	STUB(bootdev, i_convert_boot_device_name, 0);
+	STUB(bootdev, i_devname_to_promname,		0);
+	STUB(bootdev, i_promname_to_devname,		0);
+	STUB(bootdev, i_convert_boot_device_name,	0);
 	END_MODULE(bootdev);
 #endif
 
@@ -719,9 +726,9 @@ stubs_base:
  */
 #ifndef STRPLUMB_MODULE
 	MODULE(strplumb,misc);
-	STUB(strplumb, strplumb,     0);
-	STUB(strplumb, strplumb_load, 0);
-	STUB(strplumb, strplumb_get_netdev_path, 0)
+	STUB(strplumb, strplumb,			0);
+	STUB(strplumb, strplumb_load,			0);
+	STUB(strplumb, strplumb_get_netdev_path,	0)
 	END_MODULE(strplumb);
 #endif
 
@@ -730,7 +737,7 @@ stubs_base:
  */
 #ifndef CONSCONFIG_MODULE
 	MODULE(consconfig,misc);
-	STUB(consconfig, consconfig,	0);
+	STUB(consconfig, consconfig,			0);
 	STUB(consconfig, consconfig_get_usb_kb_path,	0);
 	STUB(consconfig, consconfig_get_usb_ms_path,	0);
 	STUB(consconfig, consconfig_console_is_ready,	0);
@@ -751,7 +758,7 @@ stubs_base:
  */
 #ifndef SYSACCT_MODULE
 	MODULE(sysacct,sys);
-	NO_UNLOAD_WSTUB(sysacct, acct,  		nomod_zero);
+	NO_UNLOAD_WSTUB(sysacct, acct,			nomod_zero);
 	NO_UNLOAD_WSTUB(sysacct, acct_fs_in_use,	nomod_zero);
 	END_MODULE(sysacct);
 #endif
@@ -839,7 +846,7 @@ stubs_base:
 #ifndef C2AUDIT_MODULE
 	MODULE(c2audit,sys);
 	NO_UNLOAD_STUB(c2audit, audit_init_module,	nomod_zero);
-	NO_UNLOAD_STUB(c2audit, audit_start, 		nomod_zero);
+	NO_UNLOAD_STUB(c2audit, audit_start,		nomod_zero);
 	NO_UNLOAD_STUB(c2audit, audit_finish,		nomod_zero);
 	NO_UNLOAD_STUB(c2audit, audit,			nomod_zero);
 	NO_UNLOAD_STUB(c2audit, auditdoor,		nomod_zero);
@@ -923,21 +930,21 @@ stubs_base:
  * Stubs for checkpoint-resume module
  */
 #ifndef CPR_MODULE
-        MODULE(cpr,misc);
-        STUB(cpr, cpr, 0);
-        END_MODULE(cpr);
+	MODULE(cpr,misc);
+	STUB(cpr, cpr, 0);
+	END_MODULE(cpr);
 #endif
 
 /*
  * Stubs for VIS module
  */
 #ifndef VIS_MODULE
-        MODULE(vis,misc);
-        STUB(vis, vis_fpu_simulator, 0);
-        STUB(vis, vis_fldst, 0);
-        STUB(vis, vis_rdgsr, 0);
-        STUB(vis, vis_wrgsr, 0);
-        END_MODULE(vis);
+	MODULE(vis,misc);
+	STUB(vis, vis_fpu_simulator,	0);
+	STUB(vis, vis_fldst,		0);
+	STUB(vis, vis_rdgsr,		0);
+	STUB(vis, vis_wrgsr,		0);
+	END_MODULE(vis);
 #endif
 
 /*
@@ -945,14 +952,14 @@ stubs_base:
  */
 #ifndef CL_BOOTSTRAP
 	MODULE(cl_bootstrap,misc);
-	NO_UNLOAD_WSTUB(cl_bootstrap, clboot_modload, nomod_minus_one);
-	NO_UNLOAD_WSTUB(cl_bootstrap, clboot_loadrootmodules, nomod_zero);
-	NO_UNLOAD_WSTUB(cl_bootstrap, clboot_rootconf, nomod_zero);
-	NO_UNLOAD_WSTUB(cl_bootstrap, clboot_mountroot, nomod_zero);
-	NO_UNLOAD_WSTUB(cl_bootstrap, clconf_init, nomod_zero);
-	NO_UNLOAD_WSTUB(cl_bootstrap, clconf_get_nodeid, nomod_zero);
-	NO_UNLOAD_WSTUB(cl_bootstrap, clconf_maximum_nodeid, nomod_zero);
-	NO_UNLOAD_WSTUB(cl_bootstrap, cluster, nomod_zero);
+	NO_UNLOAD_WSTUB(cl_bootstrap, clboot_modload,		nomod_minus_one);
+	NO_UNLOAD_WSTUB(cl_bootstrap, clboot_loadrootmodules,	nomod_zero);
+	NO_UNLOAD_WSTUB(cl_bootstrap, clboot_rootconf,		nomod_zero);
+	NO_UNLOAD_WSTUB(cl_bootstrap, clboot_mountroot,		nomod_zero);
+	NO_UNLOAD_WSTUB(cl_bootstrap, clconf_init,		nomod_zero);
+	NO_UNLOAD_WSTUB(cl_bootstrap, clconf_get_nodeid,	nomod_zero);
+	NO_UNLOAD_WSTUB(cl_bootstrap, clconf_maximum_nodeid,	nomod_zero);
+	NO_UNLOAD_WSTUB(cl_bootstrap, cluster,			nomod_zero);
 	END_MODULE(cl_bootstrap);
 #endif
 
@@ -970,9 +977,9 @@ stubs_base:
  */
 #ifndef PXFS_MODULE
 	MODULE(pxfs,fs);
-	NO_UNLOAD_WSTUB(pxfs, clpxfs_aio_read, nomod_zero);
-	NO_UNLOAD_WSTUB(pxfs, clpxfs_aio_write, nomod_zero);
-	NO_UNLOAD_WSTUB(pxfs, cl_flk_state_transition_notify, nomod_zero);
+	NO_UNLOAD_WSTUB(pxfs, clpxfs_aio_read,			nomod_zero);
+	NO_UNLOAD_WSTUB(pxfs, clpxfs_aio_write,			nomod_zero);
+	NO_UNLOAD_WSTUB(pxfs, cl_flk_state_transition_notify,	nomod_zero);
 	END_MODULE(pxfs);
 #endif
 
@@ -981,17 +988,17 @@ stubs_base:
  */
 #ifndef	PCICFG_MODULE
 	MODULE(pcicfg,misc);
-	STUB(pcicfg, pcicfg_configure, 0);
-	STUB(pcicfg, pcicfg_unconfigure, 0);
+	STUB(pcicfg, pcicfg_configure,		0);
+	STUB(pcicfg, pcicfg_unconfigure,	0);
 	END_MODULE(pcicfg);
 #endif
 
 #ifndef PCIHP_MODULE
 	MODULE(pcihp,misc);
-	WSTUB(pcihp, pcihp_init, nomod_minus_one);
-	WSTUB(pcihp, pcihp_uninit, nomod_minus_one);
-	WSTUB(pcihp, pcihp_info, nomod_minus_one);
-	WSTUB(pcihp, pcihp_get_cb_ops, nomod_zero);
+	WSTUB(pcihp, pcihp_init,	nomod_minus_one);
+	WSTUB(pcihp, pcihp_uninit,	nomod_minus_one);
+	WSTUB(pcihp, pcihp_info,	nomod_minus_one);
+	WSTUB(pcihp, pcihp_get_cb_ops,	nomod_zero);
 	END_MODULE(pcihp);
 #endif
 
@@ -1000,112 +1007,112 @@ stubs_base:
  */
 #ifndef KCF_MODULE
 	MODULE(kcf,misc);
-	NO_UNLOAD_STUB(kcf, crypto_mech2id, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_register_provider, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_unregister_provider, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_provider_notification, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_op_notification, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_kmflag, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_digest, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_digest_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_digest_init, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_digest_init_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_digest_update, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_digest_final, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_digest_key_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_encrypt, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_encrypt_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_encrypt_init, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_encrypt_init_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_encrypt_update, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_encrypt_final, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_decrypt, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_decrypt_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_decrypt_init, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_decrypt_init_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_decrypt_update, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_decrypt_final, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_get_all_mech_info, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_key_check, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_key_check_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_key_derive, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_key_generate, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_key_generate_pair, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_key_unwrap, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_key_wrap, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_verify, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_verify_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_init, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_init_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_update, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_final, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_decrypt, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_decrypt_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_verify_decrypt, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_verify_decrypt_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_decrypt_init, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_decrypt_init_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_decrypt_update, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_mac_decrypt_final, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_object_copy, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_object_create, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_object_destroy, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_object_find_final, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_object_find_init, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_object_find, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_object_get_attribute_value, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_object_get_size, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_object_set_attribute_value, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_session_close, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_session_login, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_session_logout, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_session_open, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_encrypt_mac, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_encrypt_mac_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_encrypt_mac_init, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_encrypt_mac_init_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_encrypt_mac_update, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_encrypt_mac_final, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_create_ctx_template, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_destroy_ctx_template, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_get_mech_list, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_free_mech_list, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_cancel_req, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_cancel_ctx, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_bufcall_alloc, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_bufcall_free, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_bufcall, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_unbufcall, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_notify_events, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_unnotify_events, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_get_provider, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_get_provinfo, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_release_provider, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_sign, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_sign_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_sign_init, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_sign_init_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_sign_update, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_sign_final, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_sign_recover, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_sign_recover_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_sign_recover_init_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_verify, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_verify_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_verify_init, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_verify_init_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_verify_update, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_verify_final, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_verify_recover, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_verify_recover_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, crypto_verify_recover_init_prov, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, random_add_entropy, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, random_add_pseudo_entropy, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, random_get_blocking_bytes, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, random_get_bytes, nomod_minus_one);
-	NO_UNLOAD_STUB(kcf, random_get_pseudo_bytes, nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mech2id,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_register_provider,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_unregister_provider,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_provider_notification,	nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_op_notification,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_kmflag,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_digest,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_digest_prov,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_digest_init,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_digest_init_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_digest_update,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_digest_final,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_digest_key_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_encrypt,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_encrypt_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_encrypt_init,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_encrypt_init_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_encrypt_update,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_encrypt_final,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_decrypt,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_decrypt_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_decrypt_init,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_decrypt_init_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_decrypt_update,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_decrypt_final,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_get_all_mech_info,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_key_check,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_key_check_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_key_derive,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_key_generate,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_key_generate_pair,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_key_unwrap,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_key_wrap,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac,				nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_prov,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_verify,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_verify_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_init,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_init_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_update,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_final,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_decrypt,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_decrypt_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_verify_decrypt,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_verify_decrypt_prov,	nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_decrypt_init,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_decrypt_init_prov,	nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_decrypt_update,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_mac_decrypt_final,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_object_copy,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_object_create,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_object_destroy,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_object_find_final,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_object_find_init,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_object_find,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_object_get_attribute_value,	nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_object_get_size,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_object_set_attribute_value,	nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_session_close,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_session_login,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_session_logout,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_session_open,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_encrypt_mac,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_encrypt_mac_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_encrypt_mac_init,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_encrypt_mac_init_prov,	nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_encrypt_mac_update,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_encrypt_mac_final,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_create_ctx_template,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_destroy_ctx_template,	nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_get_mech_list,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_free_mech_list,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_cancel_req,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_cancel_ctx,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_bufcall_alloc,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_bufcall_free,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_bufcall,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_unbufcall,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_notify_events,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_unnotify_events,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_get_provider,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_get_provinfo,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_release_provider,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_sign,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_sign_prov,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_sign_init,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_sign_init_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_sign_update,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_sign_final,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_sign_recover,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_sign_recover_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_sign_recover_init_prov,	nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_verify,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_verify_prov,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_verify_init,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_verify_init_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_verify_update,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_verify_final,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_verify_recover,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_verify_recover_prov,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, crypto_verify_recover_init_prov,	nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, random_add_entropy,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, random_add_pseudo_entropy,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, random_get_blocking_bytes,		nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, random_get_bytes,			nomod_minus_one);
+	NO_UNLOAD_STUB(kcf, random_get_pseudo_bytes,		nomod_minus_one);
 	END_MODULE(kcf);
 #endif
 
@@ -1114,9 +1121,9 @@ stubs_base:
  */
 #ifndef SHA1_MODULE
 	MODULE(sha1,crypto);
-	NO_UNLOAD_STUB(sha1, SHA1Init, nomod_void);
-	NO_UNLOAD_STUB(sha1, SHA1Update, nomod_void);
-	NO_UNLOAD_STUB(sha1, SHA1Final,	nomod_void);
+	NO_UNLOAD_STUB(sha1, SHA1Init,		nomod_void);
+	NO_UNLOAD_STUB(sha1, SHA1Update,	nomod_void);
+	NO_UNLOAD_STUB(sha1, SHA1Final,		nomod_void);
 	END_MODULE(sha1);
 #endif
 
@@ -1127,13 +1134,13 @@ stubs_base:
  */
 #ifndef	DLD_MODULE
 	MODULE(dld,drv);
-	STUB(dld, dld_init_ops, nomod_void);
-	STUB(dld, dld_fini_ops, nomod_void);
-	STUB(dld, dld_autopush, nomod_minus_one);
-	STUB(dld, dld_getinfo, nomod_minus_one);
-	STUB(dld, dld_devt_to_instance, nomod_minus_one);
-	STUB(dld, dld_ioc_register, nomod_einval);
-	STUB(dld, dld_ioc_unregister, nomod_void);
+	STUB(dld, dld_init_ops,		nomod_void);
+	STUB(dld, dld_fini_ops,		nomod_void);
+	STUB(dld, dld_autopush,		nomod_minus_one);
+	STUB(dld, dld_getinfo,		nomod_minus_one);
+	STUB(dld, dld_devt_to_instance,	nomod_minus_one);
+	STUB(dld, dld_ioc_register,	nomod_einval);
+	STUB(dld, dld_ioc_unregister,	nomod_void);
 	END_MODULE(dld);
 #endif
 
@@ -1144,31 +1151,31 @@ stubs_base:
  */
 #ifndef	DLS_MODULE
 	MODULE(dls,misc);
-	STUB(dls, dls_devnet_mac, nomod_zero);
-	STUB(dls, dls_devnet_hold_tmp, nomod_einval);
-	STUB(dls, dls_devnet_rele_tmp, nomod_void);
-	STUB(dls, dls_devnet_hold_link, nomod_einval);
-	STUB(dls, dls_devnet_rele_link, nomod_void);
-	STUB(dls, dls_devnet_prop_task_wait, nomod_void);
-	STUB(dls, dls_mgmt_get_linkid, nomod_einval);
-	STUB(dls, dls_devnet_macname2linkid, nomod_einval);
-	STUB(dls, dls_mgmt_get_linkinfo, nomod_einval);
+	STUB(dls, dls_devnet_mac,		nomod_zero);
+	STUB(dls, dls_devnet_hold_tmp,		nomod_einval);
+	STUB(dls, dls_devnet_rele_tmp,		nomod_void);
+	STUB(dls, dls_devnet_hold_link,		nomod_einval);
+	STUB(dls, dls_devnet_rele_link,		nomod_void);
+	STUB(dls, dls_devnet_prop_task_wait,	nomod_void);
+	STUB(dls, dls_mgmt_get_linkid,		nomod_einval);
+	STUB(dls, dls_devnet_macname2linkid,	nomod_einval);
+	STUB(dls, dls_mgmt_get_linkinfo,	nomod_einval);
 	END_MODULE(dls);
 #endif
 
 #ifndef SOFTMAC_MODULE
 	MODULE(softmac,drv);
-	STUB(softmac, softmac_hold_device, nomod_einval);
-	STUB(softmac, softmac_rele_device, nomod_void);
-	STUB(softmac, softmac_recreate, nomod_void);
+	STUB(softmac, softmac_hold_device,	nomod_einval);
+	STUB(softmac, softmac_rele_device,	nomod_void);
+	STUB(softmac, softmac_recreate,		nomod_void);
 	END_MODULE(softmac);
 #endif
 
 #ifndef IPTUN_MODULE
 	MODULE(iptun,drv);
-	STUB(iptun, iptun_create, nomod_einval);
-	STUB(iptun, iptun_delete, nomod_einval);
-	STUB(iptun, iptun_set_policy, nomod_einval);
+	STUB(iptun, iptun_create,	nomod_einval);
+	STUB(iptun, iptun_delete,	nomod_einval);
+	STUB(iptun, iptun_set_policy,	nomod_einval);
 	END_MODULE(iptun);
 #endif
 
@@ -1177,21 +1184,21 @@ stubs_base:
  */
 #ifndef DCOPY_MODULE
 	MODULE(dcopy,misc);
-	NO_UNLOAD_STUB(dcopy, dcopy_query, nomod_minus_one);
-	NO_UNLOAD_STUB(dcopy, dcopy_query_channel, nomod_minus_one);
-	NO_UNLOAD_STUB(dcopy, dcopy_alloc, nomod_minus_one);
-	NO_UNLOAD_STUB(dcopy, dcopy_free, nomod_minus_one);
-	NO_UNLOAD_STUB(dcopy, dcopy_cmd_alloc, nomod_minus_one);
-	NO_UNLOAD_STUB(dcopy, dcopy_cmd_free, nomod_void);
-	NO_UNLOAD_STUB(dcopy, dcopy_cmd_post, nomod_minus_one);
-	NO_UNLOAD_STUB(dcopy, dcopy_cmd_poll, nomod_minus_one);
+	NO_UNLOAD_STUB(dcopy, dcopy_query,		nomod_minus_one);
+	NO_UNLOAD_STUB(dcopy, dcopy_query_channel,	nomod_minus_one);
+	NO_UNLOAD_STUB(dcopy, dcopy_alloc,		nomod_minus_one);
+	NO_UNLOAD_STUB(dcopy, dcopy_free,		nomod_minus_one);
+	NO_UNLOAD_STUB(dcopy, dcopy_cmd_alloc,		nomod_minus_one);
+	NO_UNLOAD_STUB(dcopy, dcopy_cmd_free,		nomod_void);
+	NO_UNLOAD_STUB(dcopy, dcopy_cmd_post,		nomod_minus_one);
+	NO_UNLOAD_STUB(dcopy, dcopy_cmd_poll,		nomod_minus_one);
 	END_MODULE(dcopy);
 #endif
 
 #ifndef IPNET_MODULE
 	MODULE(ipnet,drv);
-	STUB(ipnet, ipnet_if_getdev, nomod_zero);
-	STUB(ipnet, ipnet_walk_if, nomod_zero);
+	STUB(ipnet, ipnet_if_getdev,	nomod_zero);
+	STUB(ipnet, ipnet_walk_if,	nomod_zero);
 	END_MODULE(ipnet);
 #endif
 
@@ -1200,27 +1207,27 @@ stubs_base:
  */
 #ifndef KSOCKET_MODULE
 	MODULE(ksocket, misc);
-	NO_UNLOAD_STUB(ksocket, ksocket_setsockopt, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_getsockopt, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_getpeername, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_getsockname, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_socket, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_bind, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_listen, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_accept, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_connect, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_recv, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_recvfrom, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_recvmsg, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_send, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_sendto, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_sendmsg, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_ioctl, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_setcallbacks, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_hold, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_rele, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_shutdown, nomod_minus_one);
-	NO_UNLOAD_STUB(ksocket, ksocket_close, nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_setsockopt,	nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_getsockopt,	nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_getpeername,	nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_getsockname,	nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_socket,		nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_bind,		nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_listen,		nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_accept,		nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_connect,	nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_recv,		nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_recvfrom,	nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_recvmsg,	nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_send,		nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_sendto,		nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_sendmsg,	nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_ioctl,		nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_setcallbacks,	nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_hold,		nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_rele,		nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_shutdown,	nomod_minus_one);
+	NO_UNLOAD_STUB(ksocket, ksocket_close,		nomod_minus_one);
 	END_MODULE(ksocket);
 #endif
 
@@ -1229,7 +1236,7 @@ stubs_base:
  */
 #ifndef ELFEXEC_MODULE
 	MODULE(elfexec,exec);
-	STUB(elfexec, elfexec,      	nomod_einval);
+	STUB(elfexec, elfexec,		nomod_einval);
 	STUB(elfexec, elf32exec,	nomod_einval);
 	STUB(elfexec, mapexec_brand,	nomod_einval);
 	STUB(elfexec, mapexec32_brand,	nomod_einval);
@@ -1237,7 +1244,7 @@ stubs_base:
 #endif
 
 ! this is just a marker for the area of text that contains stubs
-	.seg ".text"
+	.section .text
 	.global stubs_end
 stubs_end:
 	nop

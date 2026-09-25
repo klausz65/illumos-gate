@@ -24,6 +24,9 @@
  *
  * Assembly code support for the Olympus-C module
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include "assym.h"
 
@@ -48,6 +51,10 @@
 #ifdef TRAPTRACE
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * Macro that flushes the entire Ecache.
@@ -330,7 +337,7 @@
 	.global _dispatch_status_busy
 _dispatch_status_busy:
 	.asciz	"ASI_INTR_DISPATCH_STATUS error: busy"
-	.align	4
+	.balign	4
 
 /*
  * Setup interrupt dispatch data registers
@@ -338,7 +345,7 @@ _dispatch_status_busy:
  *	%o0 - function or inumber to call
  *	%o1, %o2 - arguments (2 uint64_t's)
  */
-	.seg "text"
+	.text
 
 	ENTRY(init_mondo)
 #ifdef DEBUG
@@ -721,12 +728,13 @@ label##1:
  * read always follows write that makes extra write to the
  * alternative globals unnecessary.
  */
+#undef	CLEAR_GEN_REGS
 #define	CLEAR_GEN_REGS(tmp1, label)				\
 	set	TSTATE_KERN, tmp1				;\
 	wrpr	%g0, tmp1, %tstate				;\
-	mov	%g0, %y						;\
-	mov	%g0, %asi					;\
-	mov	%g0, %ccr					;\
+	wr	%g0, %g0, %y					;\
+	wr	%g0, %g0, %asi					;\
+	wr	%g0, %g0, %ccr					;\
 	mov	%g0, %l0					;\
 	mov	%g0, %l1					;\
 	mov	%g0, %l2					;\
@@ -953,7 +961,7 @@ label##1:
  * it. Otherwise, panic.
  */
 
-	.align	128
+	.balign	128
 	ENTRY_NP(ce_err)
 	mov	AFSR_ECR, %g1
 	ldxa	[%g1]ASI_ECR, %g1
@@ -992,26 +1000,33 @@ label##1:
  * But if a IAE/DAE trap get generated before the handler
  * is patched, panic.
  */
+	.text
+	.balign	4
+
 	ENTRY_NP(async_err)
-	set	trap, %g1
+	setx	trap, %g2, %g1
 	rdpr	%tt, %g3
 	sethi	%hi(sys_trap), %g5
 	jmp	%g5 + %lo(sys_trap)
 	sub	%g0, 1, %g4
 	SET_SIZE(async_err)
 
-	.seg	".data"
+	.data
 	.global	opl_clr_freg
 	.global opl_cpu0_err_log
 
-	.align	16
+	.balign	16
 opl_clr_freg:
-	.word	0
-	.align	16
+	.type	opl_clr_freg, @object
+	.size	opl_clr_freg, 4
+	.long	0
+	.balign	16
 
-	.align	MMU_PAGESIZE
+	.balign	MMU_PAGESIZE
 opl_cpu0_err_log:
+	.type	opl_cpu0_err_log, @object
 	.skip	MMU_PAGESIZE
+	.size	opl_cpu0_err_log, MMU_PAGESIZE
 
 /*
  * Common synchronous error trap handler (tt=0xA, 0x32)
@@ -1506,7 +1521,7 @@ opl_uger_panic_resetskip:
 	sethi   %hi(opl_sync_trap), %g3
 	jmp	%g3 + %lo(opl_sync_trap)
 	 rdpr    %tt, %g1
-	.align  32
+	.balign  32
 	SET_SIZE(opl_serr_instr)
 
 /*
@@ -1516,7 +1531,7 @@ opl_uger_panic_resetskip:
 	sethi   %hi(opl_uger_trap), %g3
 	jmp	%g3 + %lo(opl_uger_trap)
 	 nop
-	.align  32
+	.balign  32
 	SET_SIZE(opl_ugerr_instr)
 
 /*
@@ -1526,7 +1541,7 @@ opl_uger_panic_resetskip:
 	sethi   %hi(opl_ta3_trap), %g3
 	jmp	%g3 + %lo(opl_ta3_trap)
 	 nop
-	.align  32
+	.balign  32
 	SET_SIZE(opl_ta3_instr)
 
 /*
@@ -1558,7 +1573,7 @@ opl_uger_panic_resetskip:
 	ba	1f			! cache align stick adj
 	wrpr	%g0, %g3, %pstate	! turn off interrupts
 
-	.align	16
+	.balign	16
 1:	nop
 
 	rd	STICK, %g4		! read stick reg
@@ -1731,7 +1746,7 @@ opl_uger_panic_resetskip:
 	mov	1, %g3			/* create mask */
 	sllx	%g3, 63, %g3		/*   for NPT bit */
 	ba,a,pt	%xcc, 2f
-	.align	8			/* Ensure rd/wr in same i$ line */
+	.balign	8			/* Ensure rd/wr in same i$ line */
 2:
 	rdpr	%tick, %g2		/* get tick register */
 	wrpr	%g3, %g2, %tick		/* write tick register, */
@@ -1742,7 +1757,7 @@ opl_uger_panic_resetskip:
 	mov	1, %g3			/* create mask */
 	sllx	%g3, 63, %g3		/*   for NPT bit */
 	ba,a,pt	%xcc, 4f
-	.align	8			/* Ensure rd/wr in same i$ line */
+	.balign	8			/* Ensure rd/wr in same i$ line */
 4:
 	rd	STICK, %g2		/* get stick register */
 	wr	%g3, %g2, STICK		/* write stick register, */
@@ -1758,8 +1773,11 @@ opl_uger_panic_resetskip:
 	 * The compiler/asm currently does not support this suspend
 	 * instruction mnemonic, use byte code for now.
 	 */
+	.text
+	.balign	4
+
 	ENTRY_NP(cpu_halt_cpu)
-	.word   0x81b01040
+	.long   0x81b01040
 	retl
 	nop
 	SET_SIZE(cpu_halt_cpu)
@@ -1770,7 +1788,7 @@ opl_uger_panic_resetskip:
 	 * instruction mnemonic, use byte code for now.
 	 */
 	ENTRY_NP(cpu_smt_pause)
-	.word   0x81b01060
+	.long   0x81b01060
 	retl
 	nop
 	SET_SIZE(cpu_smt_pause)

@@ -42,6 +42,10 @@
 #include <kmdb/kaif.h>
 #include <kmdb/kaif_asmutil.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 #define	KAIF_CPU_INDEX				\
 	set	mdb, %g1;			\
 	ldx	[%g1 + MDB_KDI], %g1;		\
@@ -66,11 +70,11 @@
 /*
  * Creates a new primary context register value by copying the nucleus page
  * size bits to the primary context page size bits and setting the primary
- * context to zero.  The updated value is stored in the ctx parameter.
+ * context to zero. The updated value is stored in the ctx parameter.
  */
 #define	KAIF_MAKE_NEW_CTXREG(ctx, tmp)		\
 	srlx	ctx, CTXREG_NEXT_SHIFT, ctx ;	\
-	sllx 	ctx, CTXREG_NEXT_SHIFT, ctx;	\
+	sllx	ctx, CTXREG_NEXT_SHIFT, ctx;	\
 	sllx	ctx, 3, tmp;			\
 	srlx	tmp, CTXREG_NEXT_SHIFT, tmp;	\
 	sllx	tmp, CTXREG_EXT_SHIFT, tmp;	\
@@ -85,8 +89,8 @@
 	/*
 	 * Calculate the address of the save area for the current CPU.  This
 	 * would be a macro, but for need to call platform-specific CPU ID
-	 * routines.  The kernel provides, via the KDI, a TL=1-safe "function"
-	 * for CPU ID retrieval, which we call here.  The retrieval code returns
+	 * routines. The kernel provides, via the KDI, a TL=1-safe "function"
+	 * for CPU ID retrieval, which we call here. The retrieval code returns
 	 * the ID in %g1, and is allowed to clobber %g2. It also assumes that
 	 * the return address is in %g7.
 	 *
@@ -99,15 +103,15 @@
 	 */
 	ENTRY_NP(kaif_cpusave_getaddr)
 
-	mov	%g7, %g5	! we'll need %g7 for the ID retriever
-	KAIF_CPU_INDEX		! index returned in %g1, clobbers %g2, %g7
+	mov	%g7, %g5	/* we'll need %g7 for the ID retriever */
+	KAIF_CPU_INDEX		/* index returned in %g1, clobbers %g2, %g7 */
 
 	set	KRS_SIZE, %g2
 	mulx	%g1, %g2, %g2
 	set	kaif_cpusave, %g6
 	ldx	[%g6], %g6
 
-	jmp	%g5		! return to caller-provided address
+	jmp	%g5		/* return to caller-provided address */
 	add	%g6, %g2, %g6
 
 	SET_SIZE(kaif_cpusave_getaddr)
@@ -141,7 +145,7 @@
 	stx	%g2, [%g5 + KREG_OFF(KREG_TT)]
 
 	/*
-	 * Switch over to the normal globals, so we can save them.  We'll need
+	 * Switch over to the normal globals, so we can save them. We'll need
 	 * our gregs pointer and the return %pstate value, so stash them in
 	 * registers that will be available to us on both sides.
 	 *
@@ -190,14 +194,14 @@
 	ADD_CRUMB(%g6, KRM_TT, %g4, %g1)
 
 	/*
-	 * The %tba is special.  With normal entry, we're on the same trap table
+	 * The %tba is special. With normal entry, we're on the same trap table
 	 * the kernel is using (this could be OBP's table if we're early enough
-	 * in the boot process).  We want to save it, but we don't want to
+	 * in the boot process). We want to save it, but we don't want to
 	 * switch to OBP's table just yet, as we need to ensure that only one
 	 * CPU uses OBP's table at a time. We do this by waiting until we've
 	 * selected the master before switching.
 	 *
-	 * Single-step is a bit different.  Everything about the CPU's state is
+	 * Single-step is a bit different. Everything about the CPU's state is
 	 * as it should be, with the exception of %tba. We need to step on
 	 * OBP's trap table, so we didn't restore %tba during resume. The save
 	 * state area still contains the real %tba value - the one we had when
@@ -240,7 +244,7 @@
 	rdpr	%wstate, %g4
 	stx	%g4, [%g5 + KREG_OFF(KREG_WSTATE)]
 
-	GET_NWIN(%g1, %g4);	! %g1 is scratch, %g4 set to nwin-1
+	GET_NWIN(%g1, %g4);	/* %g1 is scratch, %g4 set to nwin-1 */
 
 	wrpr	%g4, %cleanwin
 
@@ -266,9 +270,9 @@
 	add	%g6, KRS_FPREGS, %g4
 	rd	%fprs, %g1
 	stx	%g1, [%g4 + FPU_FPRS]
-	btst	FPRS_FEF, %g1		! is FP enabled?
-	bz	%icc, 1f		! if not, don't save FP regs
-	wr	%g0, FPRS_FEF, %fprs	! enable FP
+	andcc	%g1, FPRS_FEF, %g0	/* is FP enabled? */
+	bz	%icc, 1f		/* if not, don't save FP regs */
+	wr	%g0, (FPRS_FEF), %fprs	/* enable FP */
 
 	STORE_FPREGS(%g4)
 	stx	%fsr, [%g4 + FPU_FSR]
@@ -326,7 +330,7 @@
 	call	kaif_debugger_entry
 	mov	%l6, %o0
 
-	ba,a	kaif_resume	! expects valid %l5, %l6
+	ba,a	kaif_resume	/* expects valid %l5, %l6 */
 
 	/*NOTREACHED*/
 
@@ -341,7 +345,7 @@
 	 * the following cases:
 	 *
 	 * 1. (common case) - intentional entry by a CPU intending to be the
-	 *    master.  The CPU may have encountered a watchpoint, a breakpoint,
+	 *    master. The CPU may have encountered a watchpoint, a breakpoint,
 	 *    or a programmed entry trap, and is *NOT* coming from OBP. The CPU
 	 *    is allowed direct entry into the debugger.
 	 *
@@ -354,13 +358,13 @@
 	 *
 	 * The remaining cases deal with instances where OBP got in the way.
 	 * We can't allow a CPU into the debugger if it is currently executing
-	 * in OBP, as chaos would ensue (OBP isn't re-entrant).  As such, we
+	 * in OBP, as chaos would ensue (OBP isn't re-entrant). As such, we
 	 * have to ask the CPU to come back when it has finished with OBP (or
 	 * vice versa). Depending on the circumstances, we'll need to dance
 	 * around it.
 	 *
 	 * 3. A bystander CPU runs into the PROM-return trap described above
-	 *    before being cross-called.  We'll let it into the debugger now, as
+	 *    before being cross-called. We'll let it into the debugger now, as
 	 *    it would have ended up here anyway.
 	 *
 	 * 4. An innocent CPU encounters a watchpoint while executing in OBP.
@@ -441,7 +445,7 @@ main_not_in_obp:
 
 	/* A formality - we know we came from kernel context */
 	mov	MMU_PCONTEXT, %g3
-	ldxa	[%g3]ASI_MMU_CTX, %g2	! ASI_MMU_CTX == ASI_DMMU for sun4u
+	ldxa	[%g3]ASI_MMU_CTX, %g2	/* ASI_MMU_CTX == ASI_DMMU for sun4u */
 	stx	%g2, [%g6 + KRS_MMU_PCONTEXT]
 
 #ifndef	sun4v
@@ -454,24 +458,24 @@ main_not_in_obp:
 	sethi	%hi(kmdb_prom_preserve_kctx), %g4
 	ld	[%g4 + %lo(kmdb_prom_preserve_kctx)], %g4
 	brz	%g4, 1f
-	  nop
+	nop
 	/*
 	 * Move nucleus context page size bits into primary context page size
 	 * and set context to 0. Use %g4 as a temporary.
 	 */
-	KAIF_MAKE_NEW_CTXREG(%g2, %g4)		! new context reg in %g2
+	KAIF_MAKE_NEW_CTXREG(%g2, %g4)		/* new context reg in %g2 */
 
 	stxa	%g2, [%g3]ASI_MMU_CTX
 	membar	#Sync
 	ba	2f
-	  nop
+	nop
 1:
 #endif	/* sun4v */
 	/*
 	 * Flush TLBs and clear primary context register.
 	 */
 	KAIF_DEMAP_TLB_ALL(%g4)
-	stxa	%g0, [%g3]ASI_MMU_CTX	! ASI_MMU_CTX == ASI_DMMU for sun4u
+	stxa	%g0, [%g3]ASI_MMU_CTX	/* ASI_MMU_CTX == ASI_DMMU for sun4u */
 	membar	#Sync
 2:
 
@@ -501,7 +505,7 @@ main_obp_wapt:
 	rdpr	%tnpc, %g4
 	ld	[%g4], %g3
 	st	%g3, [%g6 + KRS_INSTR_SAVE]
-	set	0x91d0207d, %g3	! ta ST_KMDB_TRAP
+	set	0x91d0207d, %g3	/* ta ST_KMDB_TRAP */
 	st	%g3, [%g4]
 	flush	%g4
 	membar	#Sync
@@ -515,7 +519,7 @@ main_obp_progent:
 
 	rdpr	%tpc, %g4
 	ld	[%g6 + KRS_INSTR_SAVE], %g3
-	brz	%g3, main_obp_fail ! we don't have any open wapt steps
+	brz	%g3, main_obp_fail /* we don't have any open wapt steps */
 	nop
 
 	st	%g3, [%g4]
@@ -543,7 +547,7 @@ main_obp_fail:
 #endif	/* __lint */
 
 	/*
-	 * The target for slave-stopping cross calls. This routine is entered at
+	 * The target for slave-stopping cross calls.This routine is entered at
 	 * TL=1, on the kernel's trap table, with PSTATE.IG set. CPUs entering
 	 * this handler will fall into one of the following categories:
 	 *
@@ -552,7 +556,7 @@ main_obp_fail:
 	 *
 	 * 2. The CPU had already entered the debugger, and was spinning in the
 	 *    slave loop (at TL=0) when it was cross-called by the debugger's
-	 *    world-stopper.  This could happen if two CPUs encountered
+	 *    world-stopper. This could happen if two CPUs encountered
 	 *    breakpoints simultaneously, triggering a race to become master.
 	 *    One would lose, and would already be in the slave loop when the
 	 *    master started trying to stop the world. The CPU is already where
@@ -601,7 +605,7 @@ kaif_slave_entry(void)
 	 * and set context to 0. Use %g2 as a temporary.
 	 */
 	mov	%g4, %g2
-	KAIF_MAKE_NEW_CTXREG(%g2, %g1)		! new context reg in %g2
+	KAIF_MAKE_NEW_CTXREG(%g2, %g1)		/* new context reg in %g2 */
 
 	stxa	%g2, [%g3]ASI_MMU_CTX
 	membar	#Sync
@@ -619,7 +623,7 @@ kaif_slave_entry(void)
 
 	set	1f, %g7
 	set	kaif_cpusave_getaddr, %g6
-	jmp	%g6		! is not to alter %g4
+	jmp	%g6		/* is not to alter %g4 */
 	nop
 1:
 	/* CPU save area address is now in %g6 */
@@ -706,7 +710,7 @@ ivec_not_in_obp:
 	 *
 	 * 3. We took a trap while executing in the debugger. Before saving
 	 *    this CPU's state in the CPU-specific save area, we will let the
-	 *    debugger handle the trap.  If the trap resulted from a debugger
+	 *    debugger handle the trap. If the trap resulted from a debugger
 	 *    problem, and if the user decides to use the debugger to debug
 	 *    itself, we'll overwrite the existing state with the state saved
 	 *    by the Forth word, after which we'll let the CPU enter the
@@ -803,7 +807,7 @@ kaif_trap_obp(void)
 	call	kaif_prom_rearm
 	nop
 
-	KAIF_CPU_INDEX		! index returned in %g1, clobbers %g2, %g7
+	KAIF_CPU_INDEX		/* index returned in %g1, clobbers %g2, %g7 */
 	mov	%g1, %o4
 
 	set	kaif_cb_save, %g5
@@ -816,7 +820,7 @@ kaif_trap_obp(void)
 	/*
 	 * If we return from kmdb_dpi_handle_fault, the trap was due to a
 	 * problem in the debugger, and the user has elected to diagnose it
-	 * using the debugger.  When we pass back into the normal kaif_trap_obp
+	 * using the debugger. When we pass back into the normal kaif_trap_obp
 	 * flow, we'll save the debugger fault state over the state saved when
 	 * we initially entered the debugger. Debugger fault handling trashed
 	 * the out registers, so we'll need to restore them before returning
@@ -886,7 +890,7 @@ obp_normal_entry:
 	 * Move nucleus context page size bits into primary context page size
 	 * and set context to 0. Use %g4 as a temporary.
 	 */
-	KAIF_MAKE_NEW_CTXREG(%g2, %g4)		! new context reg in %g2
+	KAIF_MAKE_NEW_CTXREG(%g2, %g4)		/* new context reg in %g2 */
 
 	stxa	%g2, [%g3]ASI_MMU_CTX
 	membar	#Sync
@@ -898,7 +902,7 @@ obp_normal_entry:
 	 * Flush TLBs and clear primary context register.
 	 */
 	KAIF_DEMAP_TLB_ALL(%g4)
-	stxa	%g0, [%g3]ASI_MMU_CTX	! ASI_MMU_CTX == ASI_DMMU for sun4u
+	stxa	%g0, [%g3]ASI_MMU_CTX	/* ASI_MMU_CTX == ASI_DMMU for sun4u */
 	membar	#Sync
 2:
 

@@ -98,10 +98,10 @@ rdasi(uint32_t asi, uintptr_t va)
 
 	ENTRY_NP(rdasi)
 	rd	%asi, %o3
-	wr	%o0, %asi
-	ldxa	[%o1]%asi, %o0
+	wr	%o0, %g0, %asi
+	ldxa	[%o1] %asi, %o0
 	retl
-	wr	%o3, %asi
+	wr	%o3, %g0, %asi
 	SET_SIZE(rdasi)
 
 #endif
@@ -116,10 +116,10 @@ wrasi(uint32_t asi, uintptr_t va, uint64_t val)
 
 	ENTRY_NP(wrasi)
 	rd	%asi, %o3
-	wr	%o0, %asi
-	stxa	%o2, [%o1]%asi
+	wr	%o0, %g0, %asi
+	stxa	%o2, [%o1] %asi
 	retl
-	wr	%o3, %asi
+	wr	%o3, %g0, %asi
 	SET_SIZE(wrasi)
 
 #endif

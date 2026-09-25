@@ -23,8 +23,11 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
-	.file	"tls_get_addr.s"
+	.file	"tls_get_addr.S"
 
 #include "SYS.h"
 #include <../assym.h>
@@ -61,9 +64,9 @@
 #endif
 
 #if	defined(__sparcv9)
-#define	PN	,pn %xcc,
+#define	_PN(cmd, label)	cmd,pn %xcc, label
 #else
-#define	PN
+#define	_PN(cmd, label)	cmd label
 #endif
 
 	ENTRY(__tls_get_addr)
@@ -71,14 +74,14 @@
 	ldn	[%g7 + UL_TLSENT], %o2
 	ldn	[%g7 + UL_NTLSENT], %o3
 	cmp	%o1, %o3
-	bgeu PN	1f
+	_PN(bgeu, 1f)
 	slln	%o1, SHIFT, %o1
 #if TLS_DATA != 0
 	add	%o1, TLS_DATA, %o1
 #endif
 	ldn	[%o1 + %o2], %o2
 	cmp	%o2, 0
-	be PN	1f
+	_PN(be,	1f)
 	ldn	[%o0 + TI_TLSOFFSET], %o1
 	retl
 	add	%o1, %o2, %o0

@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	All Rights Reserved	*/
 
-	.file	"mmap.s"
+	.file	"mmap.S"
 
 #include <sys/asm_linkage.h>
 
@@ -51,6 +51,7 @@
 	ENTRY(mmap)
 #if defined(__sparc)
 	/* this depends upon the _MAP_NEW flag being in the top bits */
+#define	_MAP_NEW 0x80000000
 	sethi	%hi(_MAP_NEW), %g1
 	or	%g1, %o3, %o3
 #endif
@@ -70,6 +71,7 @@
 	ENTRY(mmap64)
 #if defined(__sparc)
 	/* this depends upon the _MAP_NEW flag being in the top bits */
+#define	_MAP_NEW 0x80000000
 	sethi	%hi(_MAP_NEW), %g1
 	or	%g1, %o3, %o3
 #endif

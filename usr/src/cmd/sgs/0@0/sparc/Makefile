@@ -32,5 +32,10 @@ include		$(SRC)/cmd/sgs/0@0/Makefile.com
 
 include		$(SRC)/cmd/sgs/0@0/Makefile.targ
 
+pics/crti.o:
+	$(CC) $(ASFLAGS) $(AS_CPPFLAGS) \
+	-c -o $@ $(CRTSRCS)/crti.S
+	$(POST_PROCESS_O)
+
 install:	all $(ROOTDYNLIB)
 

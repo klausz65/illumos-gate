@@ -22,6 +22,9 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include "assym.h"
 #include <sys/asm_linkage.h>
@@ -50,6 +53,10 @@
 #include <sys/intr.h>
 #include <sys/fpu/fpu_simulator.h>
 #include <vm/seg_spt.h>
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * WARNING: If you add a fast trap handler which can be invoked by a
@@ -122,7 +129,7 @@
 	rdpr	%tt, %g3	;\
 	ba,pt	%xcc, sys_trap	;\
 	sub	%g0, 1, %g4	;\
-	.align	32
+	.balign	32
 #define	NOT4	NOT; NOT; NOT; NOT
 /*
  * RED is for traps that use the red mode handler.
@@ -139,7 +146,7 @@
 
 #define	DONE			\
 	done;			\
-	.align	32
+	.balign	32
 
 /*
  * TRAP vectors to the trap() function.
@@ -152,7 +159,7 @@
 	mov	arg, %g3	;\
 	ba,pt	%xcc, sys_trap	;\
 	sub	%g0, 1, %g4	;\
-	.align	32
+	.balign	32
 
 /*
  * SYSCALL is used for unsupported syscall interfaces (with 'which'
@@ -161,8 +168,8 @@
  *
  * The SYSCALL_TRAP* macros are used for syscall entry points.
  * SYSCALL_TRAP is used to support LP64 syscalls and SYSCALL_TRAP32
- * is used to support ILP32.  Each macro can only be used once
- * since they each define a symbol.  The symbols are used as hot patch
+ * is used to support ILP32. Each macro can only be used once
+ * since they each define a symbol. The symbols are used as hot patch
  * points by the brand infrastructure to dynamically enable and disable
  * brand syscall interposition.  See the comments around BRAND_CALLBACK
  * and brand_plat_interposition_enable() for more information.
@@ -171,7 +178,7 @@
 	set	(which), %g1		;\
 	ba,pt	%xcc, sys_trap		;\
 	sub	%g0, 1, %g4		;\
-	.align	32
+	.balign	32
 
 #define	SYSCALL(which)			\
 	TT_TRACE(trace_gen)		;\
@@ -197,7 +204,7 @@ h_name:					;\
 	flushw				;\
 	restore				;\
 	FAST_TRAP_DONE			;\
-	.align	32
+	.balign	32
 
 /*
  * GOTO just jumps to a label.
@@ -207,11 +214,11 @@ h_name:					;\
 	.global	label		;\
 	ba,a	label		;\
 	.empty			;\
-	.align	32
+	.balign	32
 
 /*
  * GOTO_TT just jumps to a label.
- * correctable ECC error traps at  level 0 and 1 will use this macro.
+ * correctable ECC error traps at level 0 and 1 will use this macro.
  * It's used for things that can be fixed without going thru sys_trap.
  */
 #define	GOTO_TT(label, ttlabel)		\
@@ -219,7 +226,7 @@ h_name:					;\
 	TT_TRACE(ttlabel)	;\
 	ba,a	label		;\
 	.empty			;\
-	.align	32
+	.balign	32
 
 /*
  * Privileged traps
@@ -233,7 +240,7 @@ h_name:					;\
 	set	trap, %g1		;\
 	ba,pt	%xcc, sys_trap		;\
 	sub	%g0, 1, %g4		;\
-	.align	32
+	.balign	32
 
 
 /*
@@ -244,14 +251,14 @@ h_name:					;\
 	set	dtrace_pid_probe, %g1				;\
 	ba,pt	%xcc, user_trap					;\
 	sub	%g0, 1, %g4					;\
-	.align	32
+	.balign	32
 
 #define	DTRACE_RETURN			\
 	.global dtrace_return_probe				;\
 	set	dtrace_return_probe, %g1			;\
 	ba,pt	%xcc, user_trap					;\
 	sub	%g0, 1, %g4					;\
-	.align	32
+	.balign	32
 
 /*
  * REGISTER WINDOW MANAGEMENT MACROS
@@ -277,20 +284,20 @@ h_name:					;\
 /*
  * If we get an unresolved tlb miss while in a window handler, the fault
  * handler will resume execution at the last instruction of the window
- * hander, instead of delivering the fault to the kernel.  Spill handlers
+ * hander, instead of delivering the fault to the kernel. Spill handlers
  * use this to spill windows into the wbuf.
  *
  * The mixed handler works by checking %sp, and branching to the correct
- * handler.  This is done by branching back to label 1: for 32b frames,
+ * handler. This is done by branching back to label 1: for 32b frames,
  * or label 2: for 64b frames; which implies the handler order is: 32b,
- * 64b, mixed.  The 1: and 2: labels are offset into the routines to
+ * 64b, mixed. The 1: and 2: labels are offset into the routines to
  * allow the branchs' delay slots to contain useful instructions.
  */
 
 /*
- * SPILL_32bit spills a 32-bit-wide kernel register window.  It
+ * SPILL_32bit spills a 32-bit-wide kernel register window. It
  * assumes that the kernel context and the nucleus context are the
- * same.  The stack pointer is required to be eight-byte aligned even
+ * same. The stack pointer is required to be eight-byte aligned even
  * though this code only needs it to be four-byte aligned.
  */
 #define	SPILL_32bit(tail)					\
@@ -320,8 +327,8 @@ h_name:					;\
 
 /*
  * SPILL_32bit_asi spills a 32-bit-wide register window into a 32-bit
- * wide address space via the designated asi.  It is used to spill
- * non-kernel windows.  The stack pointer is required to be eight-byte
+ * wide address space via the designated asi. It is used to spill
+ * non-kernel windows. The stack pointer is required to be eight-byte
  * aligned even though this code only needs it to be four-byte
  * aligned.
  */
@@ -358,14 +365,14 @@ h_name:					;\
 
 /*
  * SPILL_32bit_tt1 spills a 32-bit-wide register window into a 32-bit
- * wide address space via the designated asi.  It is used to spill
+ * wide address space via the designated asi. It is used to spill
  * windows at tl>1 where performance isn't the primary concern and
- * where we don't want to use unnecessary registers.  The stack
+ * where we don't want to use unnecessary registers. The stack
  * pointer is required to be eight-byte aligned even though this code
  * only needs it to be four-byte aligned.
  */
 #define	SPILL_32bit_tt1(asi_num, tail)				\
-	mov	asi_num, %asi					;\
+	wr	%g0, asi_num, %asi				;\
 1:	srl	%sp, 0, %sp					;\
 	sta	%l0, [%sp + 0]%asi				;\
 	sta	%l1, [%sp + 4]%asi				;\
@@ -392,8 +399,8 @@ h_name:					;\
 
 
 /*
- * FILL_32bit fills a 32-bit-wide kernel register window.  It assumes
- * that the kernel context and the nucleus context are the same.  The
+ * FILL_32bit fills a 32-bit-wide kernel register window. It assumes
+ * that the kernel context and the nucleus context are the same. The
  * stack pointer is required to be eight-byte aligned even though this
  * code only needs it to be four-byte aligned.
  */
@@ -424,8 +431,8 @@ h_name:					;\
 
 /*
  * FILL_32bit_asi fills a 32-bit-wide register window from a 32-bit
- * wide address space via the designated asi.  It is used to fill
- * non-kernel windows.  The stack pointer is required to be eight-byte
+ * wide address space via the designated asi. It is used to fill
+ * non-kernel windows. The stack pointer is required to be eight-byte
  * aligned even though this code only needs it to be four-byte
  * aligned.
  */
@@ -462,14 +469,14 @@ h_name:					;\
 
 /*
  * FILL_32bit_tt1 fills a 32-bit-wide register window from a 32-bit
- * wide address space via the designated asi.  It is used to fill
+ * wide address space via the designated asi. It is used to fill
  * windows at tl>1 where performance isn't the primary concern and
- * where we don't want to use unnecessary registers.  The stack
+ * where we don't want to use unnecessary registers. The stack
  * pointer is required to be eight-byte aligned even though this code
  * only needs it to be four-byte aligned.
  */
 #define	FILL_32bit_tt1(asi_num, tail)				\
-	mov	asi_num, %asi					;\
+	wr	%g0, asi_num, %asi				;\
 1:	srl	%sp, 0, %sp					;\
 	TT_TRACE_L(trace_win)					;\
 	lda	[%sp + 0]%asi, %l0				;\
@@ -496,9 +503,9 @@ h_name:					;\
 
 
 /*
- * SPILL_64bit spills a 64-bit-wide kernel register window.  It
+ * SPILL_64bit spills a 64-bit-wide kernel register window. It
  * assumes that the kernel context and the nucleus context are the
- * same.  The stack pointer is required to be eight-byte aligned.
+ * same. The stack pointer is required to be eight-byte aligned.
  */
 #define	SPILL_64bit(tail)					\
 2:	stx	%l0, [%sp + V9BIAS64 + 0]			;\
@@ -526,8 +533,8 @@ h_name:					;\
 
 /*
  * SPILL_64bit_asi spills a 64-bit-wide register window into a 64-bit
- * wide address space via the designated asi.  It is used to spill
- * non-kernel windows.  The stack pointer is required to be eight-byte
+ * wide address space via the designated asi. It is used to spill
+ * non-kernel windows. The stack pointer is required to be eight-byte
  * aligned.
  */
 #define	SPILL_64bit_asi(asi_num, tail)				\
@@ -563,13 +570,13 @@ h_name:					;\
 
 /*
  * SPILL_64bit_tt1 spills a 64-bit-wide register window into a 64-bit
- * wide address space via the designated asi.  It is used to spill
+ * wide address space via the designated asi. It is used to spill
  * windows at tl>1 where performance isn't the primary concern and
- * where we don't want to use unnecessary registers.  The stack
+ * where we don't want to use unnecessary registers. The stack
  * pointer is required to be eight-byte aligned.
  */
 #define	SPILL_64bit_tt1(asi_num, tail)				\
-	mov	asi_num, %asi					;\
+	wr	%g0, asi_num, %asi				;\
 2:	stxa	%l0, [%sp + V9BIAS64 + 0]%asi			;\
 	stxa	%l1, [%sp + V9BIAS64 + 8]%asi			;\
 	stxa	%l2, [%sp + V9BIAS64 + 16]%asi			;\
@@ -595,8 +602,8 @@ h_name:					;\
 
 
 /*
- * FILL_64bit fills a 64-bit-wide kernel register window.  It assumes
- * that the kernel context and the nucleus context are the same.  The
+ * FILL_64bit fills a 64-bit-wide kernel register window. It assumes
+ * that the kernel context and the nucleus context are the same. The
  * stack pointer is required to be eight-byte aligned.
  */
 #define	FILL_64bit(tail)					\
@@ -625,8 +632,8 @@ h_name:					;\
 
 /*
  * FILL_64bit_asi fills a 64-bit-wide register window from a 64-bit
- * wide address space via the designated asi.  It is used to fill
- * non-kernel windows.  The stack pointer is required to be eight-byte
+ * wide address space via the designated asi. It is used to fill
+ * non-kernel windows. The stack pointer is required to be eight-byte
  * aligned.
  */
 #define	FILL_64bit_asi(asi_num, tail)				\
@@ -662,13 +669,13 @@ h_name:					;\
 
 /*
  * FILL_64bit_tt1 fills a 64-bit-wide register window from a 64-bit
- * wide address space via the designated asi.  It is used to fill
+ * wide address space via the designated asi. It is used to fill
  * windows at tl>1 where performance isn't the primary concern and
- * where we don't want to use unnecessary registers.  The stack
+ * where we don't want to use unnecessary registers. The stack
  * pointer is required to be eight-byte aligned.
  */
 #define	FILL_64bit_tt1(asi_num, tail)				\
-	mov	asi_num, %asi					;\
+	wr	%g0, asi_num, %asi				;\
 	TT_TRACE_L(trace_win)					;\
 	ldxa	[%sp + V9BIAS64 + 0]%asi, %l0			;\
 	ldxa	[%sp + V9BIAS64 + 8]%asi, %l1			;\
@@ -697,7 +704,7 @@ h_name:					;\
  * whether %sp is even or odd, to a 32-bit address space.
  * This may only be used in conjunction with SPILL_32bit/
  * SPILL_64bit. New versions of SPILL_mixed_{tt1,asi} would be
- * needed for use with SPILL_{32,64}bit_{tt1,asi}.  Particular
+ * needed for use with SPILL_{32,64}bit_{tt1,asi}. Particular
  * attention should be paid to the instructions that belong
  * in the delay slots of the branches depending on the type
  * of spill handler being branched to.
@@ -710,7 +717,7 @@ h_name:					;\
 	srl	%sp, 0, %sp					;\
 	ba,pt	%xcc, 2b					;\
 	nop							;\
-	.align	128
+	.balign	128
 
 /*
  * FILL_mixed(ASI) fills either size window, depending on
@@ -730,21 +737,21 @@ h_name:					;\
 	srl	%sp, 0, %sp					;\
 	ba,pt	%xcc, 2b					;\
 	nop							;\
-	.align	128
+	.balign	128
 
 
 /*
  * SPILL_32clean/SPILL_64clean spill 32-bit and 64-bit register windows,
- * respectively, into the address space via the designated asi.  The
+ * respectively, into the address space via the designated asi. The
  * unbiased stack pointer is required to be eight-byte aligned (even for
  * the 32-bit case even though this code does not require such strict
  * alignment).
  *
  * With SPARC v9 the spill trap takes precedence over the cleanwin trap
  * so when cansave == 0, canrestore == 6, and cleanwin == 6 the next save
- * will cause cwp + 2 to be spilled but will not clean cwp + 1.  That
+ * will cause cwp + 2 to be spilled but will not clean cwp + 1. That
  * window may contain kernel data so in user_rtt we set wstate to call
- * these spill handlers on the first user spill trap.  These handler then
+ * these spill handlers on the first user spill trap. These handler then
  * spill the appropriate window but also back up a window and clean the
  * window that didn't get a cleanwin trap.
  */
@@ -774,7 +781,7 @@ h_name:					;\
 	sta	%i7, [%g4 + %g3]asi_num				;\
 	TT_TRACE_L(trace_win)					;\
 	b	.spill_clean					;\
-	  mov	WSTATE_USER32, %g7				;\
+	mov	WSTATE_USER32, %g7				;\
 	SKIP(31-25-TT_TRACE_L_INS)				;\
 	ba,a,pt	%xcc, fault_32bit_##tail			;\
 	.empty
@@ -805,7 +812,7 @@ h_name:					;\
 	stxa	%i7, [%g5 + %g4]asi_num				;\
 	TT_TRACE_L(trace_win)					;\
 	b	.spill_clean					;\
-	  mov	WSTATE_USER64, %g7				;\
+	mov	WSTATE_USER64, %g7				;\
 	SKIP(31-25-TT_TRACE_L_INS)				;\
 	ba,a,pt	%xcc, fault_64bit_##tail			;\
 	.empty
@@ -818,7 +825,7 @@ h_name:					;\
 	TT_TRACE(trace_gen)		;\
 	ba,pt	%xcc,.fp_disabled	;\
 	nop				;\
-	.align	32
+	.balign	32
 
 /*
  * Floating point exceptions.
@@ -827,13 +834,13 @@ h_name:					;\
 	TT_TRACE(trace_gen)		;\
 	ba,pt	%xcc,.fp_ieee_exception	;\
 	nop				;\
-	.align	32
+	.balign	32
 
 #define	FP_TRAP				\
 	TT_TRACE(trace_gen)		;\
 	ba,pt	%xcc,.fp_exception	;\
 	nop				;\
-	.align	32
+	.balign	32
 
 /*
  * asynchronous traps at level 0 and level 1
@@ -849,7 +856,7 @@ table_name:			;\
 	TT_TRACE(ttlabel)	;\
 	ba	async_err	;\
 	mov	ttype, %g5	;\
-	.align	32
+	.balign	32
 
 /*
  * Defaults to BAD entry, but establishes label to be used for
@@ -863,50 +870,50 @@ table_name:				;\
 /*
  * illegal instruction trap
  */
-#define	ILLTRAP_INSTR			  \
-	membar	#Sync			  ;\
-	TT_TRACE(trace_gen)		  ;\
-	or	%g0, P_UTRAP4, %g2	  ;\
-	or	%g0, T_UNIMP_INSTR, %g3   ;\
-	sethi	%hi(.check_v9utrap), %g4  ;\
-	jmp	%g4 + %lo(.check_v9utrap) ;\
-	nop				  ;\
-	.align	32
+#define	ILLTRAP_INSTR				\
+	membar	#Sync				;\
+	TT_TRACE(trace_gen)			;\
+	or	%g0, P_UTRAP4, %g2		;\
+	or	%g0, T_UNIMP_INSTR, %g3		;\
+	sethi	%hi(.check_v9utrap), %g4	;\
+	jmpl	%g4 + %lo(.check_v9utrap), %g0	;\
+	nop					;\
+	.balign	32
 
 /*
  * tag overflow trap
  */
-#define	TAG_OVERFLOW			  \
-	TT_TRACE(trace_gen)		  ;\
-	or	%g0, P_UTRAP10, %g2	  ;\
-	or	%g0, T_TAG_OVERFLOW, %g3  ;\
-	sethi	%hi(.check_v9utrap), %g4  ;\
-	jmp	%g4 + %lo(.check_v9utrap) ;\
-	nop				  ;\
-	.align	32
+#define	TAG_OVERFLOW				\
+	TT_TRACE(trace_gen)			;\
+	or	%g0, P_UTRAP10, %g2		;\
+	or	%g0, T_TAG_OVERFLOW, %g3	;\
+	sethi	%hi(.check_v9utrap), %g4	;\
+	jmpl	%g4 + %lo(.check_v9utrap), %g0	;\
+	nop					;\
+	.balign	32
 
 /*
  * divide by zero trap
  */
-#define	DIV_BY_ZERO			  \
-	TT_TRACE(trace_gen)		  ;\
-	or	%g0, P_UTRAP11, %g2	  ;\
-	or	%g0, T_IDIV0, %g3	  ;\
-	sethi	%hi(.check_v9utrap), %g4  ;\
-	jmp	%g4 + %lo(.check_v9utrap) ;\
-	nop				  ;\
-	.align	32
+#define	DIV_BY_ZERO				\
+	TT_TRACE(trace_gen)			;\
+	or	%g0, P_UTRAP11, %g2		;\
+	or	%g0, T_IDIV0, %g3		;\
+	sethi	%hi(.check_v9utrap), %g4	;\
+	jmpl	%g4 + %lo(.check_v9utrap), %g0	;\
+	nop					;\
+	.balign	32
 
 /*
  * trap instruction for V9 user trap handlers
  */
-#define	TRAP_INSTR			  \
-	TT_TRACE(trace_gen)		  ;\
-	or	%g0, T_SOFTWARE_TRAP, %g3 ;\
-	sethi	%hi(.check_v9utrap), %g4  ;\
-	jmp	%g4 + %lo(.check_v9utrap) ;\
-	nop				  ;\
-	.align	32
+#define	TRAP_INSTR				\
+	TT_TRACE(trace_gen)			;\
+	or	%g0, T_SOFTWARE_TRAP, %g3	;\
+	sethi	%hi(.check_v9utrap), %g4	;\
+	jmpl	%g4 + %lo(.check_v9utrap), %g0	;\
+	nop					;\
+	.balign	32
 #define	TRP4	TRAP_INSTR; TRAP_INSTR; TRAP_INSTR; TRAP_INSTR
 
 /*
@@ -918,17 +925,17 @@ table_name:				;\
 tt_pil##level:			;\
 	ba,pt	%xcc, pil_interrupt	;\
 	mov	level, %g4		;\
-	.align	32
+	.balign	32
 
 #define	LEVEL14_INTERRUPT			\
 	ba	pil14_interrupt			;\
 	mov	PIL_14, %g4			;\
-	.align	32
+	.balign	32
 
-#define        LEVEL15_INTERRUPT                       \
-       ba      pil15_interrupt                 ;\
-       mov     PIL_15, %g4                     ;\
-       .align  32
+#define	LEVEL15_INTERRUPT	\
+	ba	pil15_interrupt	;\
+	mov	PIL_15, %g4	;\
+	.balign	32
 
 #define	VECTOR_INTERRUPT				\
 	ldxa	[%g0]ASI_INTR_RECEIVE_STATUS, %g1	;\
@@ -937,7 +944,7 @@ tt_pil##level:			;\
 	nop						;\
 	ba,a,pt	%xcc, vec_intr_spurious			;\
 	.empty						;\
-	.align	32
+	.balign	32
 
 /*
  * MMU Trap Handlers.
@@ -954,7 +961,7 @@ tt_pil##level:			;\
 	ldxa	[MMU_SFSR]%asi, %g3					;\
 	ba,pt	%xcc, .mmu_exception_end				;\
 	mov	T_INSTR_EXCEPTION, %g1					;\
-	.align	32
+	.balign	32
 
 #define	DMMU_EXCEPTION							\
 	SWITCH_GLOBALS							;\
@@ -963,21 +970,21 @@ tt_pil##level:			;\
 	ldxa	[MMU_SFSR]%asi, %g3					;\
 	ba,pt	%xcc, .mmu_exception_end				;\
 	mov	T_DATA_EXCEPTION, %g1					;\
-	.align	32
+	.balign	32
 
 #define	DMMU_EXC_AG_PRIV						\
 	wr	%g0, ASI_DMMU, %asi					;\
 	ldxa	[MMU_SFAR]%asi, %g2					;\
 	ba,pt	%xcc, .mmu_priv_exception				;\
 	ldxa	[MMU_SFSR]%asi, %g3					;\
-	.align	32
+	.balign	32
 
 #define	DMMU_EXC_AG_NOT_ALIGNED						\
 	wr	%g0, ASI_DMMU, %asi					;\
 	ldxa	[MMU_SFAR]%asi, %g2					;\
 	ba,pt	%xcc, .mmu_exception_not_aligned			;\
 	ldxa	[MMU_SFSR]%asi, %g3					;\
-	.align	32
+	.balign	32
 
 /*
  * SPARC V9 IMPL. DEP. #109(1) and (2) and #110(1) and (2)
@@ -989,7 +996,7 @@ tt_pil##level:			;\
 	ldxa	[MMU_SFAR]%asi, %g2					;\
 	ba,pt	%xcc, .mmu_exception_not_aligned			;\
 	ldxa	[MMU_SFSR]%asi, %g3					;\
-	.align	32
+	.balign	32
 
 #define	DMMU_EXC_STDF_NOT_ALIGNED					\
 	btst	1, %sp							;\
@@ -998,7 +1005,7 @@ tt_pil##level:			;\
 	ldxa	[MMU_SFAR]%asi, %g2					;\
 	ba,pt	%xcc, .mmu_exception_not_aligned			;\
 	ldxa	[MMU_SFSR]%asi, %g3					;\
-	.align	32
+	.balign	32
 
 /*
  * Flush the TLB using either the primary, secondary, or nucleus flush
@@ -1030,7 +1037,7 @@ tt_pil##level:			;\
 	and	%g6, %g4, %g6			/* &= CTXREG_CTX_MASK */ ;\
 	cmp	%g3, %g6						;\
 	be,a,pt	%xcc, 1f						;\
-	  or	%g1, DEMAP_SECOND, %g1					;\
+	or	%g1, DEMAP_SECOND, %g1					;\
 	or	%g1, DEMAP_NUCLEUS, %g1					;\
 1:	stxa	%g0, [%g1]ASI_DTLB_DEMAP	/* MMU_DEMAP_PAGE */	;\
 	membar	#Sync
@@ -1066,13 +1073,13 @@ table_name##_dtlbmiss:						;\
 	srlx	%g3, TAGACC_CTX_LSHIFT, %g3	/* g3 = ctx */		;\
 	cmp	%g3, INVALID_CONTEXT					;\
 	ble,pn	%xcc, sfmmu_kdtlb_miss					;\
-	  srax	%g2, PREDISM_BASESHIFT, %g6  /* g6 > 0 ISM predicted */ ;\
+	srax	%g2, PREDISM_BASESHIFT, %g6  /* g6 > 0 ISM predicted */ ;\
 	brgz,pn %g6, sfmmu_udtlb_slowpath_ismpred			;\
-	  srlx	%g2, TAG_VALO_SHIFT, %g7	/* g7 = tsb tag */	;\
+	srlx	%g2, TAG_VALO_SHIFT, %g7	/* g7 = tsb tag */	;\
 	ldda	[%g1]ASI_QUAD_LDD_PHYS, %g4	/* g4 = tag, %g5 data */;\
 	cmp	%g4, %g7						;\
 	bne,pn %xcc, sfmmu_udtlb_slowpath_noismpred			;\
-	  nop								;\
+	nop								;\
 	TT_TRACE(trace_tsbhit)		/* 2 instr ifdef TRAPTRACE */	;\
 	stxa	%g5, [%g0]ASI_DTLB_IN	/* trapstat expects TTE */	;\
 	retry				/* in %g5 */			;\
@@ -1090,7 +1097,7 @@ table_name##_dtlbmiss:						;\
 	unimp	0							;\
 	unimp	0							;\
 	unimp	0							;\
-	.align 128
+	.balign 128
 
 #else /* UTSB_PHYS */
 #define	DTLB_MISS(table_name)						;\
@@ -1103,13 +1110,13 @@ table_name##_dtlbmiss:						;\
 	srlx	%g3, TAGACC_CTX_LSHIFT, %g3	/* g3 = ctx */		;\
 	cmp	%g3, INVALID_CONTEXT					;\
 	ble,pn	%xcc, sfmmu_kdtlb_miss					;\
-	  srlx	%g2, TAG_VALO_SHIFT, %g7	/* g7 = tsb tag */	;\
+	srlx	%g2, TAG_VALO_SHIFT, %g7	/* g7 = tsb tag */	;\
 	brlz,pn %g1, sfmmu_udtlb_slowpath				;\
-	  nop								;\
+	nop								;\
 	ldda	[%g1]ASI_NQUAD_LD, %g4	/* g4 = tag, %g5 data */	;\
 	cmp	%g4, %g7						;\
 	bne,pn	%xcc, sfmmu_tsb_miss_tt		/* no 4M TSB, miss */	;\
-	  mov	-1, %g3		/* set 4M tsbe ptr to -1 */		;\
+	mov	-1, %g3		/* set 4M tsbe ptr to -1 */		;\
 	TT_TRACE(trace_tsbhit)		/* 2 instr ifdef TRAPTRACE */	;\
 	stxa	%g5, [%g0]ASI_DTLB_IN	/* trapstat expects TTE */	;\
 	retry				/* in %g5 */			;\
@@ -1118,16 +1125,16 @@ table_name##_dtlbmiss:						;\
 	unimp	0							;\
 	unimp	0							;\
 	unimp	0							;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-	.align 128
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	.balign 128
 #endif /* UTSB_PHYS */
 
 #if defined(cscope)
@@ -1149,41 +1156,41 @@ tt1_itlbmiss:
  * MUST be EXACTLY 32 instructions or we'll break.
  */
 #ifdef UTSB_PHYS
-#define ITLB_MISS(table_name)                                            \
-        .global table_name##_itlbmiss                                 ;\
-table_name##_itlbmiss:                                                ;\
-        mov     MMU_TAG_ACCESS, %g6             /* select tag acc */    ;\
-        ldxa    [%g0]ASI_IMMU_TSB_8K, %g1       /* g1 = tsbe ptr */     ;\
-        ldxa    [%g6]ASI_IMMU, %g2              /* g2 = tag access */   ;\
-        sllx    %g2, TAGACC_CTX_LSHIFT, %g3                             ;\
-        srlx    %g3, TAGACC_CTX_LSHIFT, %g3     /* g3 = ctx */          ;\
-        cmp     %g3, INVALID_CONTEXT                                    ;\
-        ble,pn  %xcc, sfmmu_kitlb_miss                                  ;\
-          srlx  %g2, TAG_VALO_SHIFT, %g7        /* g7 = tsb tag */      ;\
-        ldda    [%g1]ASI_QUAD_LDD_PHYS, %g4 /* g4 = tag, g5 = data */   ;\
-        cmp     %g4, %g7                                                ;\
-        bne,pn  %xcc, sfmmu_uitlb_slowpath                              ;\
-          andcc %g5, TTE_EXECPRM_INT, %g0 /* check execute bit */       ;\
-        bz,pn   %icc, exec_fault                                        ;\
-          nop                                                           ;\
-        TT_TRACE(trace_tsbhit)          /* 2 instr ifdef TRAPTRACE */   ;\
-        stxa    %g5, [%g0]ASI_ITLB_IN   /* trapstat expects %g5 */      ;\
-        retry                                                           ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        .align 128
+#define ITLB_MISS(table_name)						\
+	.global table_name##_itlbmiss					;\
+	table_name##_itlbmiss:						;\
+	mov	MMU_TAG_ACCESS, %g6		/* select tag acc */	;\
+	ldxa	[%g0]ASI_IMMU_TSB_8K, %g1	/* g1 = tsbe ptr */	;\
+	ldxa	[%g6]ASI_IMMU, %g2		/* g2 = tag access */	;\
+	sllx	%g2, TAGACC_CTX_LSHIFT, %g3				;\
+	srlx	%g3, TAGACC_CTX_LSHIFT, %g3	/* g3 = ctx */		;\
+	cmp	%g3, INVALID_CONTEXT					;\
+	ble,pn	%xcc, sfmmu_kitlb_miss					;\
+	srlx	%g2, TAG_VALO_SHIFT, %g7	/* g7 = tsb tag */	;\
+	ldda	[%g1]ASI_QUAD_LDD_PHYS, %g4 /* g4 = tag, g5 = data */	;\
+	cmp	%g4, %g7						;\
+	bne,pn	%xcc, sfmmu_uitlb_slowpath				;\
+	andcc	%g5, TTE_EXECPRM_INT, %g0 /* check execute bit */	;\
+	bz,pn	%icc, exec_fault					;\
+	nop								;\
+	TT_TRACE(trace_tsbhit)		/* 2 instr ifdef TRAPTRACE */	;\
+	stxa	%g5, [%g0]ASI_ITLB_IN	/* trapstat expects %g5 */	;\
+	retry								;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	.balign 128
 
 #else /* UTSB_PHYS */
 #define	ITLB_MISS(table_name)						 \
@@ -1196,16 +1203,16 @@ table_name##_itlbmiss:						;\
 	srlx	%g3, TAGACC_CTX_LSHIFT, %g3	/* g3 = ctx */		;\
 	cmp	%g3, INVALID_CONTEXT					;\
 	ble,pn	%xcc, sfmmu_kitlb_miss					;\
-	  srlx	%g2, TAG_VALO_SHIFT, %g7	/* g7 = tsb tag */	;\
+	srlx	%g2, TAG_VALO_SHIFT, %g7	/* g7 = tsb tag */	;\
 	brlz,pn	%g1, sfmmu_uitlb_slowpath	/* if >1 TSB branch */	;\
-	  nop								;\
+	nop								;\
 	ldda	[%g1]ASI_NQUAD_LD, %g4	/* g4 = tag, g5 = data */	;\
 	cmp	%g4, %g7						;\
 	bne,pn	%xcc, sfmmu_tsb_miss_tt	/* br if 8k ptr miss */		;\
-	  mov	-1, %g3		/* set 4M TSB ptr to -1 */		;\
+	mov	-1, %g3		/* set 4M TSB ptr to -1 */		;\
 	andcc	%g5, TTE_EXECPRM_INT, %g0 /* check execute bit */	;\
 	bz,pn	%icc, exec_fault					;\
-	  nop								;\
+	nop								;\
 	TT_TRACE(trace_tsbhit)		/* 2 instr ifdef TRAPTRACE */	;\
 	stxa	%g5, [%g0]ASI_ITLB_IN	/* trapstat expects %g5 */	;\
 	retry								;\
@@ -1214,20 +1221,20 @@ table_name##_itlbmiss:						;\
 	unimp	0							;\
 	unimp	0							;\
 	unimp	0							;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-        unimp   0                                                       ;\
-	.align 128
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	unimp	0							;\
+	.balign 128
 #endif /* UTSB_PHYS */
 
 
 /*
  * This macro is the first level handler for fast protection faults.
  * It first demaps the tlb entry which generated the fault and then
- * attempts to set the modify bit on the hash.  It needs to be
+ * attempts to set the modify bit on the hash. It needs to be
  * exactly 32 instructions.
  */
 #define	DTLB_PROT							 \
@@ -1243,7 +1250,7 @@ table_name##_itlbmiss:						;\
 					/* clobbers g1 and g6 */	;\
 	ldxa	[%g0]ASI_DMMU_TSB_8K, %g1	/* g1 = tsbe ptr */	;\
 	brnz,pt %g3, sfmmu_uprot_trap		/* user trap */		;\
-	  nop								;\
+	nop								;\
 	ba,a,pt	%xcc, sfmmu_kprot_trap		/* kernel trap */	;\
 	unimp	0							;\
 	unimp	0							;\
@@ -1251,18 +1258,18 @@ table_name##_itlbmiss:						;\
 	unimp	0							;\
 	unimp	0							;\
 	unimp	0							;\
-	.align 128
+	.balign 128
 
 #define	DMMU_EXCEPTION_TL1						;\
 	SWITCH_GLOBALS							;\
 	ba,a,pt	%xcc, mmu_trap_tl1					;\
-	  nop								;\
-	.align 32
+	nop								;\
+	.balign 32
 
 #define	MISALIGN_ADDR_TL1						;\
 	ba,a,pt	%xcc, mmu_trap_tl1					;\
-	  nop								;\
-	.align 32
+	nop								;\
+	.balign 32
 
 /*
  * Trace a tsb hit
@@ -1328,7 +1335,7 @@ table_name##_itlbmiss:						;\
  * =======================================================================
  */
 	.section ".text"
-	.align	4
+	.balign	4
 	.global trap_table, scb, trap_table0, trap_table1, etrap_table
 	.type	trap_table, #object
 	.type	scb, #object
@@ -1458,7 +1465,7 @@ trap_table0:
 	BAD;				/* 128	ST_SETV9STACK */
 	GOTO(.getlgrp);			/* 129  get lgrpid */
 	BAD; BAD; BAD4;			/* 12A - 12F unused */
-	BAD4; BAD4; 			/* 130 - 137 unused */
+	BAD4; BAD4;			/* 130 - 137 unused */
 	DTRACE_PID;			/* 138  dtrace pid tracing provider */
 	BAD;				/* 139  unused */
 	DTRACE_RETURN;			/* 13A	dtrace pid return probe */
@@ -1506,7 +1513,7 @@ trap_table1:
 	NOT4;				/* 020 - 023 unused */
 	CLEAN_WINDOW;			/* 024 - 027 clean window */
 	NOT4; NOT4;			/* 028 - 02F unused */
-	DMMU_EXCEPTION_TL1;		/* 030 	data access exception */
+	DMMU_EXCEPTION_TL1;		/* 030	data access exception */
 	NOT;				/* 031 unused */
 	ASYNC_TRAP(T_DATA_ERROR + T_TL1, trace_gen, tt1_dae);
 					/* 032	data access error */
@@ -1530,26 +1537,26 @@ trap_table1:
 	NOT;				/* 073  reserved */
 	NOT4; NOT4; NOT4;		/* 074 - 07F reserved */
 	NOT4;				/* 080	spill 0 normal */
-	SPILL_32bit_tt1(ASI_AIUP,sn1);	/* 084	spill 1 normal */
-	SPILL_64bit_tt1(ASI_AIUP,sn1);	/* 088	spill 2 normal */
-	SPILL_32bit_tt1(ASI_AIUP,sn1);	/* 08C	spill 3 normal */
-	SPILL_64bit_tt1(ASI_AIUP,sn1);	/* 090	spill 4 normal */
+	SPILL_32bit_tt1(ASI_AIUP,sn1)	/* 084	spill 1 normal */
+	SPILL_64bit_tt1(ASI_AIUP,sn1)	/* 088	spill 2 normal */
+	SPILL_32bit_tt1(ASI_AIUP,sn1)	/* 08C	spill 3 normal */
+	SPILL_64bit_tt1(ASI_AIUP,sn1)	/* 090	spill 4 normal */
 	SPILL_32bit(not);		/* 094	spill 5 normal */
 	SPILL_64bit(not);		/* 098	spill 6 normal */
 	SPILL_mixed;			/* 09C	spill 7 normal */
 	NOT4;				/* 0A0	spill 0 other */
-	SPILL_32bit_tt1(ASI_AIUS,so1);	/* 0A4	spill 1 other */
-	SPILL_64bit_tt1(ASI_AIUS,so1);	/* 0A8	spill 2 other */
-	SPILL_32bit_tt1(ASI_AIUS,so1);	/* 0AC	spill 3 other */
-	SPILL_64bit_tt1(ASI_AIUS,so1);	/* 0B0  spill 4 other */
+	SPILL_32bit_tt1(ASI_AIUS,so1)	/* 0A4	spill 1 other */
+	SPILL_64bit_tt1(ASI_AIUS,so1)	/* 0A8	spill 2 other */
+	SPILL_32bit_tt1(ASI_AIUS,so1)	/* 0AC	spill 3 other */
+	SPILL_64bit_tt1(ASI_AIUS,so1)	/* 0B0  spill 4 other */
 	NOT4;				/* 0B4  spill 5 other */
 	NOT4;				/* 0B8  spill 6 other */
 	NOT4;				/* 0BC  spill 7 other */
 	NOT4;				/* 0C0	fill 0 normal */
-	FILL_32bit_tt1(ASI_AIUP,fn1);	/* 0C4	fill 1 normal */
-	FILL_64bit_tt1(ASI_AIUP,fn1);	/* 0C8	fill 2 normal */
-	FILL_32bit_tt1(ASI_AIUP,fn1);	/* 0CC	fill 3 normal */
-	FILL_64bit_tt1(ASI_AIUP,fn1);	/* 0D0	fill 4 normal */
+	FILL_32bit_tt1(ASI_AIUP,fn1)	/* 0C4	fill 1 normal */
+	FILL_64bit_tt1(ASI_AIUP,fn1)	/* 0C8	fill 2 normal */
+	FILL_32bit_tt1(ASI_AIUP,fn1)	/* 0CC	fill 3 normal */
+	FILL_64bit_tt1(ASI_AIUP,fn1)	/* 0D0	fill 4 normal */
 	FILL_32bit(not);		/* 0D4	fill 5 normal */
 	FILL_64bit(not);		/* 0D8	fill 6 normal */
 	FILL_mixed;			/* 0DC	fill 7 normal */
@@ -1585,7 +1592,7 @@ etrap_table:
 	mov	T_INSTR_MMU_MISS, %g3			! arg2 = traptype
 	set	trap, %g1
 	ba,pt	%xcc, sys_trap
-	  mov	-1, %g4
+	mov	-1, %g4
 
 .mmu_exception_not_aligned:
 	rdpr	%tstate, %g1
@@ -1677,32 +1684,32 @@ etrap_table:
 	ldn	[%g1 + CPU_THREAD], %g1			! load thread pointer
 #ifdef SF_ERRATA_30 /* call causes fp-disabled */
 	brz,a,pn %g1, 2f
-	  nop
+	nop
 #endif
 	rdpr	%tstate, %g4
 	btst	TSTATE_PRIV, %g4
 #ifdef SF_ERRATA_30 /* call causes fp-disabled */
 	bnz,pn %icc, 2f
-	  nop
+	nop
 #else
 	bnz,a,pn %icc, ptl1_panic
-	  mov	PTL1_BAD_FPTRAP, %g1
+	mov	PTL1_BAD_FPTRAP, %g1
 #endif
 	ldn	[%g1 + T_PROCP], %g1			! load proc pointer
 	ldn	[%g1 + P_UTRAPS], %g5			! are there utraps?
 	brz,a,pt %g5, 2f
-	  nop
+	nop
 	ldn	[%g5 + P_UTRAP7], %g5			! fp_disabled utrap?
 	brz,a,pn %g5, 2f
-	  nop
+	nop
 	btst	1, %sp
 	bz,a,pt	%xcc, 1f				! 32 bit user program
-	  nop
+	nop
 	ba,a,pt	%xcc, .setup_v9utrap			! 64 bit user program
-	  nop
+	nop
 1:
 	ba,pt	%xcc, .setup_utrap
-	  or	%g0, %g0, %g7
+	or	%g0, %g0, %g7
 2:
 	set	fp_disabled, %g1
 	ba,pt	%xcc, sys_trap
@@ -1712,7 +1719,7 @@ etrap_table:
 	rdpr	%tstate, %g1
 	btst	TSTATE_PRIV, %g1
 	bnz,a,pn %icc, ptl1_panic
-	  mov	PTL1_BAD_FPTRAP, %g1
+	mov	PTL1_BAD_FPTRAP, %g1
 	CPU_ADDR(%g1, %g4)				! load CPU struct addr
 	stx	%fsr, [%g1 + CPU_TMP1]
 	ldx	[%g1 + CPU_TMP1], %g2
@@ -1720,14 +1727,14 @@ etrap_table:
 	ldn	[%g1 + T_PROCP], %g1			! load proc pointer
 	ldn	[%g1 + P_UTRAPS], %g5			! are there utraps?
 	brz,a,pt %g5, 1f
-	  nop
+	nop
 	ldn	[%g5 + P_UTRAP8], %g5
 	brnz,a,pt %g5, .setup_v9utrap
-	  nop
+	nop
 1:
 	set	_fp_ieee_exception, %g1
 	ba,pt	%xcc, sys_trap
-	  sub	%g0, 1, %g4
+	sub	%g0, 1, %g4
 
 /*
  * Register Inputs:
@@ -1773,7 +1780,7 @@ etrap_table:
 	rdpr	%tstate, %g1
 	btst	TSTATE_PRIV, %g1
 	bnz,a,pn %icc, 3f
-	  nop
+	nop
 	CPU_ADDR(%g4, %g1)				! load CPU struct addr
 	ldn	[%g4 + CPU_THREAD], %g5			! load thread pointer
 	ldn	[%g5 + T_PROCP], %g5			! load proc pointer
@@ -1781,21 +1788,21 @@ etrap_table:
 
 	cmp	%g3, T_SOFTWARE_TRAP
 	bne,a,pt %icc, 1f
-	  nop
+	nop
 
 	brz,pt %g5, 3f			! if p_utraps == NULL goto trap()
-	  rdpr	%tt, %g3		! delay - get actual hw trap type
+	rdpr	%tt, %g3		! delay - get actual hw trap type
 
 	sub	%g3, 254, %g1		! UT_TRAP_INSTRUCTION_16 = p_utraps[18]
 	ba,pt	%icc, 2f
-	  smul	%g1, CPTRSIZE, %g2
+	smul	%g1, CPTRSIZE, %g2
 1:
 	brz,a,pt %g5, 3f		! if p_utraps == NULL goto trap()
-	  nop
+	nop
 
 	cmp	%g3, T_UNIMP_INSTR
 	bne,a,pt %icc, 2f
-	  nop
+	nop
 
 	mov	1, %g1
 	st	%g1, [%g4 + CPU_TL1_HDLR] ! set CPU_TL1_HDLR
@@ -1806,7 +1813,7 @@ etrap_table:
 	sethi	%hi(0xc1c00000), %g4	! setup mask for illtrap instruction
 	andcc	%g1, %g4, %g4		! and instruction with mask
 	bnz,a,pt %icc, 3f		! if %g4 == zero, %g1 is an ILLTRAP
-	  nop				! fall thru to setup
+	nop				! fall thru to setup
 2:
 	ldn	[%g5 + %g2], %g5
 	brnz,a,pt %g5, .setup_v9utrap
@@ -1814,7 +1821,7 @@ etrap_table:
 3:
 	set	trap, %g1
 	ba,pt	%xcc, sys_trap
-	  sub	%g0, 1, %g4
+	sub	%g0, 1, %g4
 	/* NOTREACHED */
 
 /*
@@ -1856,12 +1863,12 @@ etrap_table:
 	ldn	[%g4 + A_USERLIMIT], %g4	! load as userlimit
 	cmp	%l7, %g4			! check for single-step set
 	bne,pt	%xcc, 4f
-	  nop
+	nop
 	ldn	[%g1 + T_LWP], %g1		! load klwp pointer
 	ld	[%g1 + PCB_STEP], %g4		! load single-step flag
 	cmp	%g4, STEP_ACTIVE		! step flags set in pcb?
 	bne,pt	%icc, 4f
-	  nop
+	nop
 	stn	%g5, [%g1 + PCB_TRACEPC]	! save trap handler addr in pcb
 	mov	%l7, %g4			! on entry to precise user trap
 	add	%l6, 4, %l7			! handler, %l6 == pc, %l7 == npc
@@ -1906,7 +1913,7 @@ etrap_table:
 	sethi	%hi(fpu_exists), %g7
 	ld	[%g7 + %lo(fpu_exists)], %g7
 	brz,pn %g7, .fp_exception_cont
-	  nop
+	nop
 #endif
 	rdpr	%tstate, %g7			! branch if in privileged mode
 	btst	TSTATE_PRIV, %g7
@@ -1916,9 +1923,9 @@ etrap_table:
 	cmp	%g7, FTT_UNFIN
 	set	FSR_TEM_NX, %g5
 	bne,pn	%xcc, .fp_exception_cont	! branch if NOT unfinished_FPop
-	  andcc	%g2, %g5, %g0
+	andcc	%g2, %g5, %g0
 	bne,pn	%xcc, .fp_exception_cont	! branch if FSR_TEM_NX enabled
-	  rdpr	%tpc, %g5			! get faulting PC
+	rdpr	%tpc, %g5			! get faulting PC
 
 	or	%g0, 1, %g7
 	st	%g7, [%g1 + CPU_TL1_HDLR]	! set tl1_hdlr flag
@@ -1930,7 +1937,7 @@ etrap_table:
 	set	FITOS_INSTR, %g5
 	cmp	%g7, %g5
 	bne,pn	%xcc, .fp_exception_cont	! branch if not FITOS_INSTR
-	 nop
+	nop
 
 	/*
 	 * This is unfinished FPops trap for "fitos" instruction. We
@@ -1955,42 +1962,42 @@ etrap_table:
 	set	_fitos_fitod_table, %g4
 	sllx	%g7, 2, %g7
 	jmp	%g4 + %g7
-	  ba,pt	%xcc, _fitos_fitod_done
+	ba,pt	%xcc, _fitos_fitod_done
 	.empty
 
 _fitos_fitod_table:
-	  fitod	%f0, %d62
-	  fitod	%f1, %d62
-	  fitod	%f2, %d62
-	  fitod	%f3, %d62
-	  fitod	%f4, %d62
-	  fitod	%f5, %d62
-	  fitod	%f6, %d62
-	  fitod	%f7, %d62
-	  fitod	%f8, %d62
-	  fitod	%f9, %d62
-	  fitod	%f10, %d62
-	  fitod	%f11, %d62
-	  fitod	%f12, %d62
-	  fitod	%f13, %d62
-	  fitod	%f14, %d62
-	  fitod	%f15, %d62
-	  fitod	%f16, %d62
-	  fitod	%f17, %d62
-	  fitod	%f18, %d62
-	  fitod	%f19, %d62
-	  fitod	%f20, %d62
-	  fitod	%f21, %d62
-	  fitod	%f22, %d62
-	  fitod	%f23, %d62
-	  fitod	%f24, %d62
-	  fitod	%f25, %d62
-	  fitod	%f26, %d62
-	  fitod	%f27, %d62
-	  fitod	%f28, %d62
-	  fitod	%f29, %d62
-	  fitod	%f30, %d62
-	  fitod	%f31, %d62
+	fitod	%f0, %d62
+	fitod	%f1, %d62
+	fitod	%f2, %d62
+	fitod	%f3, %d62
+	fitod	%f4, %d62
+	fitod	%f5, %d62
+	fitod	%f6, %d62
+	fitod	%f7, %d62
+	fitod	%f8, %d62
+	fitod	%f9, %d62
+	fitod	%f10, %d62
+	fitod	%f11, %d62
+	fitod	%f12, %d62
+	fitod	%f13, %d62
+	fitod	%f14, %d62
+	fitod	%f15, %d62
+	fitod	%f16, %d62
+	fitod	%f17, %d62
+	fitod	%f18, %d62
+	fitod	%f19, %d62
+	fitod	%f20, %d62
+	fitod	%f21, %d62
+	fitod	%f22, %d62
+	fitod	%f23, %d62
+	fitod	%f24, %d62
+	fitod	%f25, %d62
+	fitod	%f26, %d62
+	fitod	%f27, %d62
+	fitod	%f28, %d62
+	fitod	%f29, %d62
+	fitod	%f30, %d62
+	fitod	%f31, %d62
 _fitos_fitod_done:
 
 	/*
@@ -2001,42 +2008,42 @@ _fitos_fitod_done:
 	set	_fitos_fdtos_table, %g4
 	sllx	%g7, 2, %g7
 	jmp	%g4 + %g7
-	  ba,pt	%xcc, _fitos_fdtos_done
+	ba,pt	%xcc, _fitos_fdtos_done
 	.empty
 
 _fitos_fdtos_table:
-	  fdtos	%d62, %f0
-	  fdtos	%d62, %f1
-	  fdtos	%d62, %f2
-	  fdtos	%d62, %f3
-	  fdtos	%d62, %f4
-	  fdtos	%d62, %f5
-	  fdtos	%d62, %f6
-	  fdtos	%d62, %f7
-	  fdtos	%d62, %f8
-	  fdtos	%d62, %f9
-	  fdtos	%d62, %f10
-	  fdtos	%d62, %f11
-	  fdtos	%d62, %f12
-	  fdtos	%d62, %f13
-	  fdtos	%d62, %f14
-	  fdtos	%d62, %f15
-	  fdtos	%d62, %f16
-	  fdtos	%d62, %f17
-	  fdtos	%d62, %f18
-	  fdtos	%d62, %f19
-	  fdtos	%d62, %f20
-	  fdtos	%d62, %f21
-	  fdtos	%d62, %f22
-	  fdtos	%d62, %f23
-	  fdtos	%d62, %f24
-	  fdtos	%d62, %f25
-	  fdtos	%d62, %f26
-	  fdtos	%d62, %f27
-	  fdtos	%d62, %f28
-	  fdtos	%d62, %f29
-	  fdtos	%d62, %f30
-	  fdtos	%d62, %f31
+	fdtos	%d62, %f0
+	fdtos	%d62, %f1
+	fdtos	%d62, %f2
+	fdtos	%d62, %f3
+	fdtos	%d62, %f4
+	fdtos	%d62, %f5
+	fdtos	%d62, %f6
+	fdtos	%d62, %f7
+	fdtos	%d62, %f8
+	fdtos	%d62, %f9
+	fdtos	%d62, %f10
+	fdtos	%d62, %f11
+	fdtos	%d62, %f12
+	fdtos	%d62, %f13
+	fdtos	%d62, %f14
+	fdtos	%d62, %f15
+	fdtos	%d62, %f16
+	fdtos	%d62, %f17
+	fdtos	%d62, %f18
+	fdtos	%d62, %f19
+	fdtos	%d62, %f20
+	fdtos	%d62, %f21
+	fdtos	%d62, %f22
+	fdtos	%d62, %f23
+	fdtos	%d62, %f24
+	fdtos	%d62, %f25
+	fdtos	%d62, %f26
+	fdtos	%d62, %f27
+	fdtos	%d62, %f28
+	fdtos	%d62, %f29
+	fdtos	%d62, %f30
+	fdtos	%d62, %f31
 _fitos_fdtos_done:
 
 	ldd	[%g1 + CPU_TMP1], %d62		! restore %d62
@@ -2053,7 +2060,7 @@ _fitos_fdtos_done:
 	casxa	[%g7] ASI_N, %g5, %g6
 	cmp	%g5, %g6
 	bne,a,pn %xcc, 1b
-	  or	%g0, %g6, %g5
+	or	%g0, %g6, %g5
 
 	/*
 	 * Update fpu_sim_fitos kstat
@@ -2066,7 +2073,7 @@ _fitos_fdtos_done:
 	casxa	[%g7] ASI_N, %g5, %g6
 	cmp	%g5, %g6
 	bne,a,pn %xcc, 1b
-	  or	%g0, %g6, %g5
+	or	%g0, %g6, %g5
 #endif /* DEBUG */
 
 	FAST_TRAP_DONE
@@ -2095,7 +2102,7 @@ opl_cleanw_patch:
 	CPU_ADDR(%g4, %g5)
 	ldn	[%g4 + CPU_MPCB], %g4
 	brz,a,pn %g4, 1f
-	  nop
+	nop
 	ld	[%g4 + MPCB_WSTATE], %g5
 	add	%g5, WSTATE_CLEAN_OFFSET, %g5
 	wrpr	%g0, %g5, %wstate
@@ -2139,142 +2146,142 @@ opl_cleanw_patch:
 	sll	REG, 3, REG			;\
 mark1:	set	start1, TMP			;\
 	jmp	REG + TMP			;\
-	  nop					;\
+	nop					;\
 start1:	ba,pt	%xcc, done1			;\
-	  std	%f0, [ADDR + CPU_TMP1]		;\
+	std	%f0, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f32, [ADDR + CPU_TMP1]		;\
+	std	%f32, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f2, [ADDR + CPU_TMP1]		;\
+	std	%f2, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f34, [ADDR + CPU_TMP1]		;\
+	std	%f34, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f4, [ADDR + CPU_TMP1]		;\
+	std	%f4, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f36, [ADDR + CPU_TMP1]		;\
+	std	%f36, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f6, [ADDR + CPU_TMP1]		;\
+	std	%f6, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f38, [ADDR + CPU_TMP1]		;\
+	std	%f38, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f8, [ADDR + CPU_TMP1]		;\
+	std	%f8, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f40, [ADDR + CPU_TMP1]		;\
+	std	%f40, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f10, [ADDR + CPU_TMP1]		;\
+	std	%f10, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f42, [ADDR + CPU_TMP1]		;\
+	std	%f42, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f12, [ADDR + CPU_TMP1]		;\
+	std	%f12, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f44, [ADDR + CPU_TMP1]		;\
+	std	%f44, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f14, [ADDR + CPU_TMP1]		;\
+	std	%f14, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f46, [ADDR + CPU_TMP1]		;\
+	std	%f46, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f16, [ADDR + CPU_TMP1]		;\
+	std	%f16, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f48, [ADDR + CPU_TMP1]		;\
+	std	%f48, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f18, [ADDR + CPU_TMP1]		;\
+	std	%f18, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f50, [ADDR + CPU_TMP1]		;\
+	std	%f50, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f20, [ADDR + CPU_TMP1]		;\
+	std	%f20, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f52, [ADDR + CPU_TMP1]		;\
+	std	%f52, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f22, [ADDR + CPU_TMP1]		;\
+	std	%f22, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f54, [ADDR + CPU_TMP1]		;\
+	std	%f54, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f24, [ADDR + CPU_TMP1]		;\
+	std	%f24, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f56, [ADDR + CPU_TMP1]		;\
+	std	%f56, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f26, [ADDR + CPU_TMP1]		;\
+	std	%f26, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f58, [ADDR + CPU_TMP1]		;\
+	std	%f58, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f28, [ADDR + CPU_TMP1]		;\
+	std	%f28, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f60, [ADDR + CPU_TMP1]		;\
+	std	%f60, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f30, [ADDR + CPU_TMP1]		;\
+	std	%f30, [ADDR + CPU_TMP1]		;\
 	ba,pt	%xcc, done1			;\
-	  std	%f62, [ADDR + CPU_TMP1]		;\
+	std	%f62, [ADDR + CPU_TMP1]		;\
 done1:
 
 #define	LDDF_REG(REG, ADDR, TMP)		\
 	sll	REG, 3, REG			;\
 mark2:	set	start2, TMP			;\
 	jmp	REG + TMP			;\
-	  nop					;\
+	nop					;\
 start2:	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f0		;\
+	ldd	[ADDR + CPU_TMP1], %f0		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f32		;\
+	ldd	[ADDR + CPU_TMP1], %f32		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f2		;\
+	ldd	[ADDR + CPU_TMP1], %f2		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f34		;\
+	ldd	[ADDR + CPU_TMP1], %f34		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f4		;\
+	ldd	[ADDR + CPU_TMP1], %f4		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f36		;\
+	ldd	[ADDR + CPU_TMP1], %f36		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f6		;\
+	ldd	[ADDR + CPU_TMP1], %f6		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f38		;\
+	ldd	[ADDR + CPU_TMP1], %f38		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f8		;\
+	ldd	[ADDR + CPU_TMP1], %f8		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f40		;\
+	ldd	[ADDR + CPU_TMP1], %f40		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f10		;\
+	ldd	[ADDR + CPU_TMP1], %f10		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f42		;\
+	ldd	[ADDR + CPU_TMP1], %f42		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f12		;\
+	ldd	[ADDR + CPU_TMP1], %f12		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f44		;\
+	ldd	[ADDR + CPU_TMP1], %f44		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f14		;\
+	ldd	[ADDR + CPU_TMP1], %f14		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f46		;\
+	ldd	[ADDR + CPU_TMP1], %f46		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f16		;\
+	ldd	[ADDR + CPU_TMP1], %f16		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f48		;\
+	ldd	[ADDR + CPU_TMP1], %f48		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f18		;\
+	ldd	[ADDR + CPU_TMP1], %f18		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f50		;\
+	ldd	[ADDR + CPU_TMP1], %f50		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f20		;\
+	ldd	[ADDR + CPU_TMP1], %f20		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f52		;\
+	ldd	[ADDR + CPU_TMP1], %f52		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f22		;\
+	ldd	[ADDR + CPU_TMP1], %f22		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f54		;\
+	ldd	[ADDR + CPU_TMP1], %f54		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f24		;\
+	ldd	[ADDR + CPU_TMP1], %f24		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f56		;\
+	ldd	[ADDR + CPU_TMP1], %f56		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f26		;\
+	ldd	[ADDR + CPU_TMP1], %f26		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f58		;\
+	ldd	[ADDR + CPU_TMP1], %f58		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f28		;\
+	ldd	[ADDR + CPU_TMP1], %f28		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f60		;\
+	ldd	[ADDR + CPU_TMP1], %f60		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f30		;\
+	ldd	[ADDR + CPU_TMP1], %f30		;\
 	ba,pt	%xcc, done2			;\
-	  ldd	[ADDR + CPU_TMP1], %f62		;\
+	ldd	[ADDR + CPU_TMP1], %f62		;\
 done2:
 
 .lddf_exception_not_aligned:
@@ -2287,7 +2294,7 @@ done2:
 	sethi	%hi(fpu_exists), %g2		! check fpu_exists
 	ld	[%g2 + %lo(fpu_exists)], %g2
 	brz,a,pn %g2, 4f
-	  nop
+	nop
 #endif
 	CPU_ADDR(%g1, %g4)
 	or	%g0, 1, %g4
@@ -2298,27 +2305,27 @@ done2:
 	srl	%g6, 23, %g1		! using ldda or not?
 	and	%g1, 1, %g1
 	brz,a,pt %g1, 2f		! check for ldda instruction
-	  nop
+	nop
 	srl	%g6, 13, %g1		! check immflag
 	and	%g1, 1, %g1
 	rdpr	%tstate, %g2		! %tstate in %g2
 	brnz,a,pn %g1, 1f
-	  srl	%g2, 31, %g1		! get asi from %tstate
+	srl	%g2, 31, %g1		! get asi from %tstate
 	srl	%g6, 5, %g1		! get asi from instruction
 	and	%g1, 0xFF, %g1		! imm_asi field
 1:
 	cmp	%g1, ASI_P		! primary address space
 	be,a,pt %icc, 2f
-	  nop
+	nop
 	cmp	%g1, ASI_PNF		! primary no fault address space
 	be,a,pt %icc, 2f
-	  nop
+	nop
 	cmp	%g1, ASI_S		! secondary address space
 	be,a,pt %icc, 2f
-	  nop
+	nop
 	cmp	%g1, ASI_SNF		! secondary no fault address space
 	bne,a,pn %icc, 3f
-	  nop
+	nop
 2:
 	lduwa	[%g5]ASI_USER, %g7	! get first half of misaligned data
 	add	%g5, 4, %g5		! increment misaligned data address
@@ -2345,7 +2352,7 @@ done2:
 	mov	%g5, %g2		! misaligned vaddr in %g2
 	set	fpu_trap, %g1		! goto C for the little and
 	ba,pt	%xcc, sys_trap		! no fault little asi's
-	  sub	%g0, 1, %g4
+	sub	%g0, 1, %g4
 
 .stdf_exception_not_aligned:
 	/*
@@ -2369,21 +2376,21 @@ done2:
 	srl	%g6, 23, %g1		! using stda or not?
 	and	%g1, 1, %g1
 	brz,a,pt %g1, 2f		! check for stda instruction
-	  nop
+	nop
 	srl	%g6, 13, %g1		! check immflag
 	and	%g1, 1, %g1
 	rdpr	%tstate, %g2		! %tstate in %g2
 	brnz,a,pn %g1, 1f
-	  srl	%g2, 31, %g1		! get asi from %tstate
+	srl	%g2, 31, %g1		! get asi from %tstate
 	srl	%g6, 5, %g1		! get asi from instruction
 	and	%g1, 0xFF, %g1		! imm_asi field
 1:
 	cmp	%g1, ASI_P		! primary address space
 	be,a,pt %icc, 2f
-	  nop
+	nop
 	cmp	%g1, ASI_S		! secondary address space
 	bne,a,pn %icc, 3f
-	  nop
+	nop
 2:
 	srl	%g6, 25, %g6
 	and	%g6, 0x1F, %g6		! %g6 has rd
@@ -2408,7 +2415,7 @@ done2:
 	mov	%g5, %g2		! misaligned vaddr in %g2
 	set	fpu_trap, %g1		! goto C for the little and
 	ba,pt	%xcc, sys_trap		! nofault little asi's
-	  sub	%g0, 1, %g4
+	sub	%g0, 1, %g4
 
 #ifdef DEBUG_USER_TRAPTRACECTL
 
@@ -2502,7 +2509,7 @@ done2:
 .setpsr:
 	rdpr	%tstate, %g1			! get tstate
 !	setx	TSTATE_V8_UBITS, %g2
-	or 	%g0, CCR_ICC, %g3
+	or	%g0, CCR_ICC, %g3
 	sllx	%g3, TSTATE_CCR_SHIFT, %g2
 
 	andn	%g1, %g2, %g1			! zero current user bits
@@ -2642,11 +2649,11 @@ mmu_trap_tl1:
 	GET_CPU_IMPL(%g5)
 	cmp	%g5, PANTHER_IMPL
 	bne	mmu_trap_tl1_4
-	  nop
+	nop
 	rdpr	%tt, %g5
 	cmp	%g5, T_DATA_EXCEPTION
 	bne	mmu_trap_tl1_4
-	  nop
+	nop
 	wr	%g0, ASI_DMMU, %asi
 	ldxa	[MMU_SFSR]%asi, %g5
 	mov	1, %g6
@@ -2664,36 +2671,36 @@ mmu_trap_tl1:
 
 mmu_trap_tl1_4:
 	CPU_PADDR(%g7, %g6);
-	add     %g7, CPU_TL1_HDLR, %g7		! %g7 = &cpu_m.tl1_hdlr (PA)
+	add	%g7, CPU_TL1_HDLR, %g7		! %g7 = &cpu_m.tl1_hdlr (PA)
 	/*
 	 * AM is cleared on trap, so addresses are 64 bit
 	 */
 	lda     [%g7]ASI_MEM, %g6
 	brz,a,pt %g6, 1f
-	  nop
+	nop
 	/*
 	 * We are going to update cpu_m.tl1_hdlr using physical address.
 	 * Flush the D$ line, so that stale data won't be accessed later.
 	 */
 	CPU_ADDR(%g6, %g5)
-	add     %g6, CPU_TL1_HDLR, %g6		! %g6 = &cpu_m.tl1_hdlr (VA)
+	add	%g6, CPU_TL1_HDLR, %g6		! %g6 = &cpu_m.tl1_hdlr (VA)
 	GET_CPU_IMPL(%g5)
 	cmp	%g5, CHEETAH_IMPL
 	bl,pt	%icc, 3f
-	 cmp	%g5, SPITFIRE_IMPL
+	cmp	%g5, SPITFIRE_IMPL
 	stxa	%g0, [%g7]ASI_DC_INVAL
 	membar	#Sync
 	ba,pt	%xcc, 2f
-	 nop
+	nop
 3:
 	bl,pt	%icc, 2f
-	 sethi	%hi(dcache_line_mask), %g5
+	sethi	%hi(dcache_line_mask), %g5
 	ld	[%g5 + %lo(dcache_line_mask)], %g5
 	and	%g6, %g5, %g5
 	stxa	%g0, [%g5]ASI_DC_TAG
 	membar	#Sync
 2:
-	sta     %g0, [%g7]ASI_MEM
+	sta	%g0, [%g7]ASI_MEM
 	SWITCH_GLOBALS				! back to mmu globals
 	ba,a,pt	%xcc, sfmmu_mmu_trap		! handle page faults
 1:
@@ -2712,11 +2719,11 @@ mmu_trap_tl1_4:
 	set	trap_table, %g6
 	cmp	%g7, %g6
 	blt,a,pn %xcc, ptl1_panic
-	  mov	PTL1_BAD_MMUTRAP, %g1
+	mov	PTL1_BAD_MMUTRAP, %g1
 	set	etrap_table, %g6
 	cmp	%g7, %g6
 	bge,a,pn %xcc, ptl1_panic
-	  mov	PTL1_BAD_MMUTRAP, %g1
+	mov	PTL1_BAD_MMUTRAP, %g1
 	cmp	%g5, T_ALIGNMENT
 	move	%icc, MMU_SFAR, %g6
 	movne	%icc, MMU_TAG_ACCESS, %g6
@@ -2734,14 +2741,14 @@ mmu_trap_tl1_4:
  * debugger entry points.
  */
 	.global	kmdb_trap
-	.align	8
+	.balign	8
 kmdb_trap:
 	ba,a	trap_table0
 	jmp	%g1 + 0
 	nop
 
 	.global	kmdb_trap_tl1
-	.align	8
+	.balign	8
 kmdb_trap_tl1:
 	ba,a	trap_table0
 	jmp	%g1 + 0
@@ -2751,7 +2758,7 @@ kmdb_trap_tl1:
  * This entry is copied from OBP's trap table during boot.
  */
 	.global	obp_bpt
-	.align	8
+	.balign	8
 obp_bpt:
 	NOT
 
@@ -2768,11 +2775,11 @@ kctx_obp_bpt:
 	ldxa	[%g1]ASI_DMMU, %g1
 	srlx	%g1, CTXREG_NEXT_SHIFT, %g3
 	brz,pt	%g3, 3f			! nucleus pgsz is 0, no problem
-	  sllx	%g3, CTXREG_NEXT_SHIFT, %g3
+	sllx	%g3, CTXREG_NEXT_SHIFT, %g3
 	set	CTXREG_CTX_MASK, %g4	! check Pcontext
 	btst	%g4, %g1
 	bz,a,pt	%xcc, 2f
-	  clr	%g3			! kernel:  PCONTEXT=0
+	clr	%g3			! kernel:  PCONTEXT=0
 	xor	%g3, %g1, %g3		! user:	clr N_pgsz0/1 bits
 2:
 	set	DEMAP_ALL_TYPE, %g1
@@ -2780,13 +2787,13 @@ kctx_obp_bpt:
 	stxa	%g0, [%g1]ASI_ITLB_DEMAP
 	mov	MMU_PCONTEXT, %g1
 	stxa	%g3, [%g1]ASI_DMMU
-        membar  #Sync
+	membar	#Sync
 	sethi	%hi(FLUSH_ADDR), %g1
 	flush	%g1			! flush required by immu
 #endif /* _OPL */
 3:
 	jmp	%g2
-	  nop
+	nop
 
 
 #ifdef	TRAPTRACE
@@ -2871,7 +2878,7 @@ trace_tsbmiss:
 	stha	%g4, [%g5 + TRAP_ENT_TT]%asi
 	cmp	%g6, FAST_IMMU_MISS_TT
 	be,a	%icc, 1f
-	  ldxa	[%g0]ASI_IMMU, %g6
+	ldxa	[%g0]ASI_IMMU, %g6
 	ldxa	[%g0]ASI_DMMU, %g6
 1:	stxa	%g6, [%g5 + TRAP_ENT_TSTATE]%asi	! tag target
 	stxa	%g3, [%g5 + TRAP_ENT_TR]%asi		! tsb4m pointer
@@ -2910,12 +2917,12 @@ trace_dataprot:
 
 #endif /* TRAPTRACE */
 
-       .align  32
-       .global pil15_epilogue
+	.balign	32
+	.global	pil15_epilogue
 pil15_epilogue:
-       ba      pil_interrupt_common
-       nop
-       .align  32
+	ba	pil_interrupt_common
+	nop
+	.balign	32
 
 /*
  * fast_trap_done, fast_trap_done_chk_intr:
@@ -2953,8 +2960,8 @@ pil15_epilogue:
  * any pending interrupts via fast_frap_done_chk_intr entry point.
  *
  * Entry Conditions:
- * 	%pstate		am:0 priv:1 ie:0
- * 			globals are AG (not normal globals)
+ *	%pstate		am:0 priv:1 ie:0
+ *			globals are AG (not normal globals)
  */
 
 	.global	fast_trap_done, fast_trap_done_chk_intr
@@ -2963,7 +2970,7 @@ fast_trap_done:
 	sethi	%hi(0xffffc000), %g6	! 1's complement of 0x3fff
 	andncc	%g5, %g6, %g0		! check lower 14 bits of %tpc
 	bz,a,pn	%icc, 1f		! branch if zero (lower 32 bits only)
-	  ldxa	[%g0]ASI_INTR_RECEIVE_STATUS, %g5
+	ldxa	[%g0]ASI_INTR_RECEIVE_STATUS, %g5
 	done
 
 	ALTENTRY(fast_trap_done_check_interrupts)
@@ -2993,7 +3000,7 @@ fast_trap_done_chk_intr:
 	 */
 	set	fast_trap_dummy_call, %g1
 	ba,pt	%xcc, sys_trap
-	  mov	-1, %g4
+	mov	-1, %g4
 
 fast_trap_dummy_call:
 	retl
@@ -3005,36 +3012,26 @@ fast_trap_dummy_call:
  * infrastructure will patch the trap table so that the syscall
  * entry points are redirected to syscall_wrapper32 and syscall_wrapper
  * for ILP32 and LP64 syscalls respectively.  this is done in
- * brand_plat_interposition_enable().  Note that the syscall wrappers
+ * brand_plat_interposition_enable(). Note that the syscall wrappers
  * below do not collect any trap trace data since the syscall hot patch
  * points are reached after trap trace data has already been collected.
  */
-#define	BRAND_CALLBACK(callback_id)					    \
-	CPU_ADDR(%g2, %g1)		/* load CPU struct addr to %g2	*/ ;\
-	ldn	[%g2 + CPU_THREAD], %g3	/* load thread pointer		*/ ;\
-	ldn	[%g3 + T_PROCP], %g3	/* get proc pointer		*/ ;\
-	ldn	[%g3 + P_BRAND], %g3	/* get brand pointer		*/ ;\
-	brz	%g3, 1f			/* No brand?  No callback. 	*/ ;\
-	nop 								   ;\
-	ldn	[%g3 + B_MACHOPS], %g3	/* get machops list		*/ ;\
-	ldn	[%g3 + (callback_id << 3)], %g3 			   ;\
-	brz	%g3, 1f							   ;\
-	/*								    \
-	 * This isn't pretty.  We want a low-latency way for the callback   \
-	 * routine to decline to do anything.  We just pass in an address   \
-	 * the routine can directly jmp back to, pretending that nothing    \
-	 * has happened.						    \
-	 * 								    \
-	 * %g1: return address (where the brand handler jumps back to)	    \
-	 * %g2: address of CPU structure				    \
-	 * %g3: address of brand handler (where we will jump to)	    \
-	 */								    \
-	mov	%pc, %g1						   ;\
-	add	%g1, 16, %g1						   ;\
-	jmp	%g3							   ;\
-	nop								   ;\
+#define	BRAND_CALLBACK(callback_id)	\
+	CPU_ADDR(%g2, %g1)		;\
+	ldn	[%g2 + CPU_THREAD], %g3	;\
+	ldn	[%g3 + T_PROCP], %g3	;\
+	ldn	[%g3 + P_BRAND], %g3	;\
+	brz	%g3, 1f			;\
+	nop				;\
+	ldn	[%g3 + B_MACHOPS], %g3	;\
+	set	(callback_id << 3), %g1	;\
+	ldn	[%g3 + %g1], %g3	;\
+	brz	%g3, 1f			;\
+	rd	%pc, %g1		;\
+	add	%g1, 16, %g1		;\
+	jmp	%g3			;\
+	nop				;\
 1:
-
 	ENTRY_NP(syscall_wrapper32)
 	BRAND_CALLBACK(BRAND_CB_SYSCALL32)
 	SYSCALL_NOTT(syscall_trap32)

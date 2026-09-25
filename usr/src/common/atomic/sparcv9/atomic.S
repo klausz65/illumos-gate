@@ -23,10 +23,17 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
-	.file	"atomic.s"
+	.file	"atomic.S"
 
 #include <sys/asm_linkage.h>
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * ATOMIC_BO_ENABLE_SHIFT can be selectively defined by processors
@@ -54,8 +61,8 @@
 #ifdef ATOMIC_BO_ENABLE_SHIFT
 
 #if !defined(lint)
-	.weak   cpu_atomic_delay
-	.type   cpu_atomic_delay, #function
+	.weak	cpu_atomic_delay
+	.type	cpu_atomic_delay, @function
 #endif  /* lint */
 
 /*
@@ -93,17 +100,17 @@ label##1:
  * ATOMIC_BO_ENABLE_SHIFT w.r.t. the number of online cpus to
  * obtain the actual final limit to use.
  */
-#define ATOMIC_BACKOFF_CPU(val, limit, ncpu, cas_cnt, label)		\
-	brnz,pt	ncpu, label##0					; \
-	  inc	cas_cnt							; \
-	sethi	%hi(ncpus_online), ncpu					; \
-	ld	[ncpu + %lo(ncpus_online)], ncpu			; \
-label##0:								; \
-	cmp	cas_cnt, ncpu						; \
-	blu,pt	%xcc, label##1					; \
-	  sllx	ncpu, ATOMIC_BO_ENABLE_SHIFT, limit			; \
-	mov	%g0, cas_cnt						; \
-	mov	1, val							; \
+#define ATOMIC_BACKOFF_CPU(val, limit, ncpu, cas_cnt, label)	\
+	brnz,pt	ncpu, label##0 ;				\
+	inc	cas_cnt ;					\
+	set	ncpus_online, ncpu ;				\
+	ld	[ncpu], ncpu ;					\
+	label##0: ;						\
+	cmp	cas_cnt, ncpu ;					\
+	blu,pt	%xcc, label##1 ;				\
+	sllx	ncpu, ATOMIC_BO_ENABLE_SHIFT, limit ; 		\
+	mov	%g0, cas_cnt ;					\
+	mov	1, val ;					\
 label##1:
 #endif	/* ATOMIC_BO_ENABLE_SHIFT */
 
@@ -117,7 +124,7 @@ label##1:
 #define	DELAY_SPIN(label, tmp1, tmp2)	\
 label##0:
 
-#define ATOMIC_BACKOFF_CPU(val, limit, ncpu, cas_cnt, label)  \
+#define ATOMIC_BACKOFF_CPU(val, limit, ncpu, cas_cnt, label) \
 	set	1 << ATOMIC_BO_ENABLE_SHIFT, limit
 #endif	/* ATOMIC_BO_ENABLE_SHIFT */
 #endif	/* _KERNEL */
@@ -145,13 +152,13 @@ label##0:
 	ATOMIC_BACKOFF_CPU(val, limit, ncpu, cas_cnt, label##_0)	; \
 	cmp	val, limit						; \
 	blu,a,pt %xcc, label##_1					; \
-	  mov	val, limit						; \
+	mov	val, limit						; \
 label##_1:								; \
 	mov	limit, val						; \
 	DELAY_SPIN(label##_2, %g2, %g3)				; \
 	deccc	limit							; \
 	bgu,pn	%xcc, label##_20 /* branch to middle of DELAY_SPIN */	; \
-	  nop								; \
+	nop								; \
 	ba	retlabel						; \
 	sllx	val, 1, val
 
@@ -175,7 +182,7 @@ label##_1:								; \
 	ALTENTRY(atomic_inc_uchar)
 	ALTENTRY(atomic_inc_uchar_nv)
 	ba	add_8
-	  add	%g0, 1, %o1
+	add	%g0, 1, %o1
 	SET_SIZE(atomic_inc_uchar_nv)
 	SET_SIZE(atomic_inc_uchar)
 	SET_SIZE(atomic_inc_8_nv)
@@ -192,7 +199,7 @@ label##_1:								; \
 	ALTENTRY(atomic_dec_uchar)
 	ALTENTRY(atomic_dec_uchar_nv)
 	ba	add_8
-	  sub	%g0, 1, %o1
+	sub	%g0, 1, %o1
 	SET_SIZE(atomic_dec_uchar_nv)
 	SET_SIZE(atomic_dec_uchar)
 	SET_SIZE(atomic_dec_8_nv)
@@ -226,11 +233,12 @@ add_8:
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		! %o2 = old value
 	add	%o2, %o1, %o5
 	and	%o5, %o3, %o5
+	srl	%o5, %g1, %o0		! pull logical shift out off the delay slot
 	retl
-	srl	%o5, %g1, %o0		! %o0 = new value
+	sra	%o0, 0, %o0		! arithmetic sign-extend output to 64-bit
 	SET_SIZE(atomic_add_char_nv)
 	SET_SIZE(atomic_add_char)
 	SET_SIZE(atomic_add_8_nv)
@@ -247,7 +255,7 @@ add_8:
 	ALTENTRY(atomic_inc_ushort)
 	ALTENTRY(atomic_inc_ushort_nv)
 	ba	add_16
-	  add	%g0, 1, %o1
+	add	%g0, 1, %o1
 	SET_SIZE(atomic_inc_ushort_nv)
 	SET_SIZE(atomic_inc_ushort)
 	SET_SIZE(atomic_inc_16_nv)
@@ -264,7 +272,7 @@ add_8:
 	ALTENTRY(atomic_dec_ushort)
 	ALTENTRY(atomic_dec_ushort_nv)
 	ba	add_16
-	  sub	%g0, 1, %o1
+	sub	%g0, 1, %o1
 	SET_SIZE(atomic_dec_ushort_nv)
 	SET_SIZE(atomic_dec_ushort)
 	SET_SIZE(atomic_dec_16_nv)
@@ -300,7 +308,7 @@ add_16:
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		! %o2 = old value
 	add	%o1, %o2, %o5
 	and	%o5, %o3, %o5
 	retl
@@ -321,7 +329,7 @@ add_16:
 	ALTENTRY(atomic_inc_uint)
 	ALTENTRY(atomic_inc_uint_nv)
 	ba	add_32
-	  add	%g0, 1, %o1
+	add	%g0, 1, %o1
 	SET_SIZE(atomic_inc_uint_nv)
 	SET_SIZE(atomic_inc_uint)
 	SET_SIZE(atomic_inc_32_nv)
@@ -338,7 +346,7 @@ add_16:
 	ALTENTRY(atomic_dec_uint)
 	ALTENTRY(atomic_dec_uint_nv)
 	ba	add_32
-	  sub	%g0, 1, %o1
+	sub	%g0, 1, %o1
 	SET_SIZE(atomic_dec_uint_nv)
 	SET_SIZE(atomic_dec_uint)
 	SET_SIZE(atomic_dec_32_nv)
@@ -363,7 +371,7 @@ add_32:
 	cas	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%icc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
 	add	%o2, %o1, %o0		! return new value
 2:
@@ -384,7 +392,7 @@ add_32:
 	ALTENTRY(atomic_inc_ulong)
 	ALTENTRY(atomic_inc_ulong_nv)
 	ba	add_64
-	  add	%g0, 1, %o1
+	add	%g0, 1, %o1
 	SET_SIZE(atomic_inc_ulong_nv)
 	SET_SIZE(atomic_inc_ulong)
 	SET_SIZE(atomic_inc_64_nv)
@@ -401,7 +409,7 @@ add_32:
 	ALTENTRY(atomic_dec_ulong)
 	ALTENTRY(atomic_dec_ulong_nv)
 	ba	add_64
-	  sub	%g0, 1, %o1
+	sub	%g0, 1, %o1
 	SET_SIZE(atomic_dec_ulong_nv)
 	SET_SIZE(atomic_dec_ulong)
 	SET_SIZE(atomic_dec_64_nv)
@@ -428,7 +436,7 @@ add_64:
 	casx	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%xcc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
 	add	%o2, %o1, %o0		! return new value
 2:
@@ -464,7 +472,7 @@ add_64:
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		! %o2 = old value
 	or	%o2, %o1, %o5
 	and	%o5, %o3, %o5
 	retl
@@ -500,7 +508,7 @@ add_64:
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		! %o2 = old value
 	or	%o2, %o1, %o5		! or in the new value
 	and	%o5, %o3, %o5
 	retl
@@ -528,7 +536,7 @@ add_64:
 	cas	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%icc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
 	or	%o2, %o1, %o0		! return new value
 2:
@@ -556,7 +564,7 @@ add_64:
 	casx	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%xcc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
 	or	%o2, %o1, %o0		! return new value
 2:
@@ -590,7 +598,7 @@ add_64:
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		! %o2 = old value
 	and	%o2, %o1, %o5
 	and	%o5, %o3, %o5
 	retl
@@ -626,7 +634,7 @@ add_64:
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		! %o2 = old value
 	and	%o2, %o1, %o5
 	and	%o5, %o3, %o5
 	retl
@@ -654,7 +662,7 @@ add_64:
 	cas	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%icc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
 	and	%o2, %o1, %o0		! return new value
 2:
@@ -682,7 +690,7 @@ add_64:
 	casx	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%xcc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
 	and	%o2, %o1, %o0		! return new value
 2:
@@ -712,13 +720,14 @@ add_64:
 	cas	[%o0], %o4, %o5
 	cmp	%o4, %o5		! did we succeed?
 	be,pt	%icc, 2f
-	  and	%o5, %o3, %o4		! isolate the old value
+	and	%o5, %o3, %o4		! isolate the old value
 	cmp	%o1, %o4		! should we have succeeded?
 	be,a,pt	%icc, 1b		! yes, try again
-	  mov	%o5, %o4		! %o4 = old value
+	mov	%o5, %o4		! %o4 = old value
 2:
+	srl	%o4, %g1, %o0		! pull the shift before retl
 	retl
-	srl	%o4, %g1, %o0		! %o0 = old value
+	sra	%o0, 0, %o0		! enforce full 64-bit sign-extension
 	SET_SIZE(atomic_cas_uchar)
 	SET_SIZE(atomic_cas_8)
 
@@ -744,7 +753,7 @@ add_64:
 	cas	[%o0], %o4, %o5
 	cmp	%o4, %o5		! did we succeed?
 	be,pt	%icc, 2f
-	  and	%o5, %o3, %o4		! isolate the old value
+	and	%o5, %o3, %o4		! isolate the old value
 	cmp	%o1, %o4		! should we have succeeded?
 	be,a,pt	%icc, 1b		! yes, try again
 	  mov	%o5, %o4		! %o4 = old value
@@ -789,7 +798,7 @@ add_64:
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		! %o2 = old value
 	and	%o5, %o3, %o5
 	retl
 	srl	%o5, %g1, %o0		! %o0 = old value
@@ -815,7 +824,7 @@ add_64:
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		! %o2 = old value
 	and	%o5, %o3, %o5
 	retl
 	srl	%o5, %g1, %o0		! %o0 = old value
@@ -832,7 +841,7 @@ add_64:
 	cas	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%icc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
 	mov	%o3, %o0
 2:
@@ -851,7 +860,7 @@ add_64:
 	casx	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%xcc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
 	mov	%o3, %o0
 2:
@@ -868,13 +877,13 @@ add_64:
 	ldn	[%o0], %o2
 1:
 	andcc	%o2, %o3, %g0		! test if the bit is set
-	bnz,a,pn %ncc, 2f		! if so, then fail out
-	  mov	-1, %o0
+	bnz,a,pn %xcc, 2f		! CHANGED: %ncc -> %xcc
+	mov	-1, %o0
 	or	%o2, %o3, %o4		! set the bit, and try to commit it
-	casn	[%o0], %o2, %o4
+	casx	[%o0], %o2, %o4		! CHANGED: casn -> casx
 	cmp	%o2, %o4
-	ATOMIC_BACKOFF_BRANCH(%ncc, 5f, 1b)
-	  mov	%o4, %o2
+	ATOMIC_BACKOFF_BRANCH(%xcc, 5f, 1b)	! CHANGED: %ncc -> %xcc
+	mov	%o4, %o2
 	mov	%g0, %o0
 2:
 	retl
@@ -891,13 +900,13 @@ add_64:
 	ldn	[%o0], %o2
 1:
 	andncc	%o3, %o2, %g0		! test if the bit is clear
-	bnz,a,pn %ncc, 2f		! if so, then fail out
-	  mov	-1, %o0
+	bnz,a,pn %xcc, 2f		! if so, then fail out
+	mov	-1, %o0
 	andn	%o2, %o3, %o4		! clear the bit, and try to commit it
-	casn	[%o0], %o2, %o4
+	casx	[%o0], %o2, %o4
 	cmp	%o2, %o4
-	ATOMIC_BACKOFF_BRANCH(%ncc, 5f, 1b)
-	  mov	%o4, %o2
+	ATOMIC_BACKOFF_BRANCH(%xcc, 5f, 1b)
+	mov	%o4, %o2
 	mov	%g0, %o0
 2:
 	retl
@@ -910,7 +919,7 @@ add_64:
 
 	/*
 	 * Spitfires and Blackbirds have a problem with membars in the
-	 * delay slot (SF_ERRATA_51).  For safety's sake, we assume
+	 * delay slot (SF_ERRATA_51). For safety's sake, we assume
 	 * that the whole world needs the workaround.
 	 */
 	ENTRY(membar_enter)

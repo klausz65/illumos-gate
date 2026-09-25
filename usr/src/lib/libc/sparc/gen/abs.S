@@ -25,9 +25,7 @@
  * Use is subject to license terms.
  */
 
-.ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.5	*/
-
-	.file	"abs.s"
+	.file	"abs.S"
 
 #include <sys/asm_linkage.h>
 

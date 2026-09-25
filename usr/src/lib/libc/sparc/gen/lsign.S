@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"lsign.s"
+	.file	"lsign.S"
 
 /*
  * Determine the sign of a double-long number.
@@ -42,8 +42,8 @@
 
 	ENTRY(lsign)
 
-	ld	[%o0],%o0		! fetch op (high word only)
-	jmp	%o7+8			! return
-	srl	%o0,31,%o0		! shift letf logical to isolate sign
+	ld	[%o0],%o0		/* fetch op (high word only) */
+	jmp	%o7+8			/* return */
+	srl	%o0,31,%o0		/* shift letf logical to isolate sign */
 
 	SET_SIZE(lsign)

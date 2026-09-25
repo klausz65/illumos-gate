@@ -41,13 +41,15 @@ struct _kthread;
 extern __GNU_INLINE struct _kthread *
 threadp(void)
 {
-	void *__value;
+	struct _kthread *__value;
 
 #if defined(__sparcv9)
 	__asm__ __volatile__(
 	    ".register %%g7, #scratch\n\t"
 	    "mov %%g7, %0"
-	    : "=r" (__value));
+	    : "=r" (__value)
+	    : /* no inputs */
+	    : "memory");
 #else
 #error	"port me"
 #endif
@@ -62,7 +64,9 @@ caller(void)
 #if defined(__sparcv9)
 	__asm__ __volatile__(
 	    "mov %%i7, %0"
-	    : "=r" (__value));
+	    : "=r" (__value)
+	    : /* no inputs */
+	    : "memory");
 #else
 #error	"port me"
 #endif

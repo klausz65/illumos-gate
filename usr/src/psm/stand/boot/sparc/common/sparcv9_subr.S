@@ -30,8 +30,8 @@
 
 #if !defined(lint)
 
-	.seg	".text"
-	.align	4
+	.section	.text
+	.balign	4
 
 #define	PSR_PIL_BIT	0x8
 
@@ -65,14 +65,14 @@
 	 * Note, for the machine specific priorities there are
 	 * examples listed for devices that use a particular priority.
 	 * It should not be construed that all devices of that
-	 * type should be at that priority.  It is currently were
+	 * type should be at that priority. It is currently were
 	 * the current devices fit into the priority scheme based
 	 * upon time criticalness.
 	 *
 	 * The underlying assumption of these assignments is that
 	 * SPARC9 IPL 10 is the highest level from which a device
 	 * routine can call wakeup.  Devices that interrupt from higher
-	 * levels are restricted in what they can do.  If they need
+	 * levels are restricted in what they can do. If they need
 	 * kernels services they should schedule a routine at a lower
 	 * level (via software interrupt) to do the required
 	 * processing.
@@ -222,7 +222,7 @@ splx(int level)
 #else	/* lint */
 
 	ENTRY(splx)
-	rdpr	%pil, %o1	! get current pil
+	rdpr	%pil, %o1	/* get current pil */
 	wrpr	%o0, %pil
 	retl
 	mov	%o1, %o0
@@ -258,13 +258,14 @@ splr(int level)
  */
 
 	ENTRY(splr)
-	rdpr	%pil, %o1	! get current pil
+	rdpr	%pil, %o1	/* get current pil */
 	cmp	%o0, %o1
 	ble	1f
 	nop
 	wrpr	%o0, %pil
-1:	retl
-	mov	%o1, %o0	! return the old pil
+1:
+	retl
+	mov	%o1, %o0	/* return the old pil */
 	SET_SIZE(splr)
 
 #endif	/* lint */
@@ -285,7 +286,7 @@ get_ticks(void)
 	rdpr	%tick, %o0
 	sllx	%o0, 1, %o0
 	retl
-	srlx	%o0, 1, %o0		! shake off npt bit
+	srlx	%o0, 1, %o0		/* shake off npt bit */
 	SET_SIZE(get_ticks)
 
 #endif	/* lint */

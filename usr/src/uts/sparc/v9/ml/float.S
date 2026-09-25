@@ -32,6 +32,10 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * Floating point trap handling.
  *
@@ -77,21 +81,26 @@
  *		that appear to be a kaos bug, so don't use them!
  */
 
-	.section ".data"
-	.align	8
+	.section .data
+	.balign	8
 fsrholder:
-	.word	0			! dummy place to write fsr
-	.word	0
+	.xword	0			/* dummy place to write fsr */
+	.type	fsrholder, @object
+	.size	fsrholder, 8
 
-	DGDEF(fpu_exists)		! always exists for V9
+	DGDEF(fpu_exists)		/* always exists for V9 */
+	.type	fpu_exists, @object
+	.size	fpu_exists, 4
 #ifdef FP_DISABLED
-	.word	0
+	.long	0
 #else
-	.word	1			! sundiag (gack) uses this variable
+	.long	1			/* sundiag (gack) uses this variable */
 #endif
 
 	DGDEF(fpu_version)
-	.word	-1
+	.type	fpu_version, @object
+	.size	fpu_version, 4
+	.long	-1
 
 /*
  * FPU probe - read the %fsr and get fpu_version.
@@ -101,22 +110,23 @@ fsrholder:
  */
 
 	ENTRY_NP(fpu_probe)
-	wr	%g0, FPRS_FEF, %fprs	! enable fpu in fprs
-	rdpr	%pstate, %g2		! read pstate, save value in %g2
-	or	%g2, PSTATE_PEF, %g1	! new pstate with fpu enabled
-	wrpr	%g1, %g0, %pstate	! write pstate
+	wr	%g0, FPRS_FEF, %fprs	/* enable fpu in fprs */
+	rdpr	%pstate, %g2		/* read pstate, save value in %g2 */
+	or	%g2, PSTATE_PEF, %g1	/* new pstate with fpu enabled */
+	wrpr	%g1, %g0, %pstate	/* write pstate */
 
 	sethi	%hi(fsrholder), %g2
 	stx	%fsr, [%g2 + %lo(fsrholder)]
-	ldx	[%g2 + %lo(fsrholder)], %g2	! snarf the FSR
+	ldx	[%g2 + %lo(fsrholder)], %g2	/* snarf the FSR */
 	set	FSR_VER, %g1
-	and	%g2, %g1, %g2			! get version
-	srl	%g2, FSR_VER_SHIFT, %g2		! and shift it down
-	sethi	%hi(fpu_version), %g3		! save the FPU version
+	and	%g2, %g1, %g2			/* get version */
+	srl	%g2, FSR_VER_SHIFT, %g2		/* and shift it down */
+	sethi	%hi(fpu_version), %g3		/* save the FPU version */
 	st	%g2, [%g3 + %lo(fpu_version)]
 
-	ba	fp_kstat_init		! initialize the fpu_kstat
-	wr	%g0, %g0, %fprs		! disable fpu and clear fprs
+	ba	fp_kstat_init		/* initialize the fpu_kstat */
+	wr	%g0, %g0, %fprs		/* disable fpu and clear fprs */
+	nop
 	SET_SIZE(fpu_probe)
 
 /*
@@ -130,10 +140,10 @@ fsrholder:
  */
 
 	ENTRY_NP(fp_clearregs)
-	ldx	[%o0 + FPU_FSR], %fsr		! load fsr
+	ldx	[%o0 + FPU_FSR], %fsr		/* load fsr */
 
-	mov	-1, %g2				! -1 is NaN
-	stx	%g2, [%o0]			! initialize %f0
+	mov	-1, %g2				/* -1 is NaN */
+	stx	%g2, [%o0]			/* initialize %f0 */
 	ldd	[%o0], %d0
 	ldd	[%o0], %d2
 	ldd	[%o0], %d4
@@ -189,16 +199,16 @@ fsrholder:
  */
 
 	ENTRY_NP(_fp_read_pfreg)
-	sll	%o1, 3, %o1		! Table entries are 8 bytes each.
-	set	.stable, %g1		! g1 gets base of table.
-	jmp	%g1 + %o1		! Jump into table
-	nop				! Can't follow CTI by CTI.
+	sll	%o1, 3, %o1		/* Table entries are 8 bytes each. */
+	set	.stable, %g1		/* g1 gets base of table. */
+	jmp	%g1 + %o1		/* Jump into table */
+	nop				/* Can't follow CTI by CTI. */
 
 	ENTRY_NP(_fp_write_pfreg)
-	sll	%o1, 3, %o1		! Table entries are 8 bytes each.
-	set	.ltable, %g1		! g1 gets base of table.
-	jmp	%g1 + %o1		! Jump into table
-	nop				! Can't follow CTI by CTI.
+	sll	%o1, 3, %o1		/* Table entries are 8 bytes each. */
+	set	.ltable, %g1		/* g1 gets base of table. */
+	jmp	%g1 + %o1		/* Jump into table */
+	nop				/* Can't follow CTI by CTI. */
 
 #define STOREFP(n) jmp %o7+8 ; st %f##n, [%o0]
 
@@ -294,16 +304,16 @@ fsrholder:
  */
 
 	ENTRY_NP(_fp_read_pdreg)
-	sll	%o1, 3, %o1		! Table entries are 8 bytes each.
-	set	.dstable, %g1		! g1 gets base of table.
-	jmp	%g1 + %o1		! Jump into table
-	nop				! Can't follow CTI by CTI.
+	sll	%o1, 3, %o1		/* Table entries are 8 bytes each. */
+	set	.dstable, %g1		/* g1 gets base of table. */
+	jmp	%g1 + %o1		/* Jump into table */
+	nop				/* Can't follow CTI by CTI. */
 
 	ENTRY_NP(_fp_write_pdreg)
-	sll	%o1, 3, %o1		! Table entries are 8 bytes each.
-	set	.dltable, %g1		! g1 gets base of table.
-	jmp	%g1 + %o1		! Jump into table
-	nop				! Can't follow CTI by CTI.
+	sll	%o1, 3, %o1		/* Table entries are 8 bytes each. */
+	set	.dltable, %g1		/* g1 gets base of table. */
+	jmp	%g1 + %o1		/* Jump into table */
+	nop				/* Can't follow CTI by CTI. */
 
 #define STOREDP(n) jmp %o7+8 ; std %d##n, [%o0]
 
@@ -391,18 +401,18 @@ fsrholder:
 
 	ENTRY_NP(_fp_write_fprs)
 	retl
-	wr	%o0, %g0, %fprs			! write fprs
+	wr	%o0, %g0, %fprs			/* write fprs */
 	SET_SIZE(_fp_write_fprs)
 
 	ENTRY_NP(_fp_read_fprs)
 	retl
-	rd	%fprs, %o0			! save fprs
+	rd	%fprs, %o0			/* save fprs */
 	SET_SIZE(_fp_read_fprs)
 
 	ENTRY_NP(_fp_subcc_ccr)
 	subcc	%o0, %o1, %g0
 	retl
-	rd	%ccr, %o0			! save ccr
+	rd	%ccr, %o0			/* save ccr */
 	SET_SIZE(_fp_subcc_ccr)
 
 /*
@@ -425,25 +435,25 @@ fsrholder:
  */
 
 	ENTRY_NP(_fp_exception)
-	mov	%o7, %l0		! saved return address
-	mov	%o0, %l1		! saved *rp
-	set     FSR_FTT, %o4		! put FSR_FTT in %o4
-	xor	%o4, 0xffffffffffffffff, %o3 ! xor FSR_FTT to get
-	and     %o1, %o3, %o2		! an fsr with a zero'd ftt
-	ldn	[THREAD_REG + T_LWP], %o3 ! get lwp
-	ldn	[%o3 + LWP_FPU], %l3	! get lwp_fpu
-	stx	%o2, [%l3 + FPU_FSR]	! save floating point status
-	and	%o1, %o4, %g2		! get the ftt trap type
+	mov	%o7, %l0			/* saved return address */
+	mov	%o0, %l1			/* saved *rp */
+	set	FSR_FTT, %o4			/* put FSR_FTT in %o4 */
+	xor	%o4, 0xffffffffffffffff, %o3	/* xor FSR_FTT to get */
+	and	%o1, %o3, %o2			/* an fsr with a zero'd ftt */
+	ldn	[THREAD_REG + T_LWP], %o3 	/* get lwp */
+	ldn	[%o3 + LWP_FPU], %l3		/* get lwp_fpu */
+	stx	%o2, [%l3 + FPU_FSR]		/* save floating point status */
+	and	%o1, %o4, %g2			/* get the ftt trap type */
 #ifdef  DEBUG
 	brnz,a,pt %g2, fttok
-	  nop
-	set	.badfpfttmsg, %o0	! panic message
-	call	panic			! %o1 has the fsr w/ftt value
+	nop
+	set	.badfpfttmsg, %o0	/* panic message */
+	call	panic			/* %o1 has the fsr w/ftt value */
 	nop
 fttok:
 #endif  /* DEBUG */
-	srl	%g2, FSR_FTT_SHIFT, %o4	! check ftt
-	cmp	%o4, FTT_SEQ		! sanity check for bogus exceptions
+	srl	%g2, FSR_FTT_SHIFT, %o4	/* check ftt */
+	cmp	%o4, FTT_SEQ		/* sanity check for bogus exceptions */
 	!
 	! traps are already enabled to allow other
 	! interrupts while emulating floating point instructions
@@ -454,25 +464,25 @@ fttok:
 	! Sequence error or unknown ftt exception.
 	!
 seq_error:
-	set	.badfpexcpmsg, %o0	! panic if bad ftt
+	set	.badfpexcpmsg, %o0	/* panic if bad ftt */
 	call	panic
-	sra	%o4, 0, %o1		! mov ftt to o1 for panic message
+	sra	%o4, 0, %o1		/* mov ftt to o1 for panic message */
 
 fpeok:
-	call	fp_kstat_update		! fp_kstat_update(ftt)
-	mov	%o4, %o0		! ftt
+	call	fp_kstat_update		/* fp_kstat_update(ftt) */
+	mov	%o4, %o0		/* ftt */
 	!
 	! Get the floating point instruction, and run the floating
 	! point simulator. There is no floating point queue, so we fake one.
 	!
-	call	fp_precise		! fp_precise(&regs)
-	mov	%l1, %o0		! saved *rp
+	call	fp_precise		/* fp_precise(&regs) */
+	mov	%l1, %o0		/* saved *rp */
 
 fp_ret:
-	rd	%fprs, %g1		! read fprs, save value in %g1
-	st	%g1, [%l3 + FPU_FPRS]	! save fprs
-	jmp	%l0 + 8			! jump to saved return address
-	stx	%fsr, [%l3 + FPU_FSR]	! save fsr
+	rd	%fprs, %g1		/* read fprs, save value in %g1 */
+	st	%g1, [%l3 + FPU_FPRS]	/* save fprs */
+	jmp	%l0 + 8			/* jump to saved return address */
+	stx	%fsr, [%l3 + FPU_FSR]	/* save fsr */
 	SET_SIZE(_fp_exception)
 
 .badfpexcpmsg:
@@ -495,27 +505,27 @@ fp_ret:
  */
 
 	ENTRY_NP(_fp_ieee_exception)
-	mov	%o7, %l0		! saved return address
-	mov	%o0, %l1		! saved *rp
-	mov	%o1, %l2		! saved fsr
-	set	FSR_FTT, %o4		! put FSR_FTT in %o4
-	xor	%o4, 0xffffffffffffffff, %o3 ! ! xor FSR_FTT to get
-	and	%o1, %o3, %o2		! an fsr with a zero'd ftt
-	ldn	[THREAD_REG + T_LWP], %o3 ! get lwp
-	ldn	[%o3 + LWP_FPU], %l3	! get lwp_fpu
-	stx	%o2, [%l3 + FPU_FSR]	! save floating point status
-	stub	%g0, [%l3 + FPU_QCNT]	! clear fpu_qcnt
-	and	%o1, %o4, %g2		! mask out trap type
+	mov	%o7, %l0			/* saved return address */
+	mov	%o0, %l1			/* saved *rp */
+	mov	%o1, %l2			/* saved fsr */
+	set	FSR_FTT, %o4			/* put FSR_FTT in %o4 */
+	xor	%o4, 0xffffffffffffffff, %o3	/* ! xor FSR_FTT to get */
+	and	%o1, %o3, %o2			/* an fsr with a zero'd ftt */
+	ldn	[THREAD_REG + T_LWP], %o3	/* get lwp */
+	ldn	[%o3 + LWP_FPU], %l3		/* get lwp_fpu */
+	stx	%o2, [%l3 + FPU_FSR]		/* save floating point status */
+	st	%g0, [%l3 + FPU_QCNT]		/* FIXED: changed stub to st */
+	and	%o1, %o4, %g2			/* mask out trap type */
 #ifdef  DEBUG
 	brnz,a,pt %g2, fttgd
-	  nop
-	set	.badfpfttmsg, %o0	! panic message
-	call	panic			! %o1 has the fsr w/ftt value
+	nop
+	set	.badfpfttmsg, %o0	/* panic message */
+	call	panic			/* %o1 has the fsr w/ftt value */
 	nop
 fttgd:
 #endif	/* DEBUG */
-	srl	%g2, FSR_FTT_SHIFT, %o4	! check ftt
-	cmp	%o4, FTT_SEQ		! sanity check for bogus exceptions
+	srl	%g2, FSR_FTT_SHIFT, %o4	/* check ftt */
+	cmp	%o4, FTT_SEQ		/* sanity check for bogus exceptions */
 	!
 	! traps are already enabled to allow other
 	! interrupts while emulating floating point instructions
@@ -526,55 +536,55 @@ fttgd:
 	! Sequence error or unknown ftt exception.
 	!
 seq_err:
-	set	.badfpexcpmsg, %o0	! panic if bad ftt
+	set	.badfpexcpmsg, %o0	/* panic if bad ftt */
 	call	panic
-	sra	%o4, 0, %o1		! mov ftt to o1 for panic message
+	sra	%o4, 0, %o1		/* mov ftt to o1 for panic message */
 
 fpegd:
-	call	fp_kstat_update		! fp_kstat_update(ftt)
-	mov	%o4, %o0		! ftt
+	call	fp_kstat_update		/* fp_kstat_update(ftt) */
+	mov	%o4, %o0		/* ftt */
 	!
 	! Call fpu_trap directly, don't bother to run the fp simulator.
 	! The *rp is already in %o0. Clear fpu_qcnt.
 	!
-	set	(T_FP_EXCEPTION_IEEE), %o2	! trap type
+	set	(T_FP_EXCEPTION_IEEE), %o2	/* trap type */
 
 	set	FSR_CEXC, %o3
-	and	%l2, %o3, %g2		! mask out cexc
+	and	%l2, %o3, %g2		/* mask out cexc */
 
-	andcc	%g2, FSR_CEXC_NX, %g0	! check for inexact
+	andcc	%g2, FSR_CEXC_NX, %g0	/* check for inexact */
 	bnz,a,pt %xcc, fpok
-	or	%g0, FPE_FLTRES, %o3	! fp inexact code
+	or	%g0, FPE_FLTRES, %o3	/* fp inexact code */
 
-	andcc	%g2, FSR_CEXC_DZ, %g0	! check for divide-by-zero
+	andcc	%g2, FSR_CEXC_DZ, %g0	/* check for divide-by-zero */
 	bnz,a,pt %xcc, fpok
-	or	%g0, FPE_FLTDIV, %o3	! fp divide by zero code
+	or	%g0, FPE_FLTDIV, %o3	/* fp divide by zero code */
 
-	andcc	%g2, FSR_CEXC_UF, %g0	! check for underflow
+	andcc	%g2, FSR_CEXC_UF, %g0	/* check for underflow */
 	bnz,a,pt %xcc, fpok
-	or	%g0, FPE_FLTUND, %o3	! fp underflow code
+	or	%g0, FPE_FLTUND, %o3	/* fp underflow code */
 
-	andcc	%g2, FSR_CEXC_OF, %g0	! check for overflow
+	andcc	%g2, FSR_CEXC_OF, %g0	/* check for overflow */
 	bnz,a,pt %xcc, fpok
-	or	%g0, FPE_FLTOVF, %o3	! fp overflow code
+	or	%g0, FPE_FLTOVF, %o3	/* fp overflow code */
 
-	andcc	%g2, FSR_CEXC_NV, %g0	! check for invalid
+	andcc	%g2, FSR_CEXC_NV, %g0	/* check for invalid */
 	bnz,a,pn %xcc, fpok
-	or	%g0, FPE_FLTINV, %o3	! fp invalid code
+	or	%g0, FPE_FLTINV, %o3	/* fp invalid code */
 
 cexec_err:
-	set	.badfpcexcmsg, %o0	! panic message
-	call	panic			! panic if no cexc bit set
+	set	.badfpcexcmsg, %o0	/* panic message */
+	call	panic			/* panic if no cexc bit set */
 	mov	%g1, %o1
 fpok:
-	mov	%l1, %o0		! saved *rp
-	call	fpu_trap		! fpu_trap(&regs, addr, type, code)
-	ldn	[%o0 + PC_OFF], %o1 	! address of trapping instruction
+	mov	%l1, %o0		/* saved *rp */
+	call	fpu_trap		/* fpu_trap(&regs, addr, type, code) */
+	ldn	[%o0 + PC_OFF], %o1 	/* address of trapping instruction */
 
-	rd	%fprs, %g1		! read fprs, save value in %g1
-	st	%g1, [%l3 + FPU_FPRS]	! save fprs
-	jmp	%l0 + 8			! jump to saved return address
-	stx	%fsr, [%l3 + FPU_FSR]	! save fsr
+	rd	%fprs, %g1		/* read fprs, save value in %g1 */
+	st	%g1, [%l3 + FPU_FPRS]	/* save fprs */
+	jmp	%l0 + 8			/* jump to saved return address */
+	stx	%fsr, [%l3 + FPU_FSR]	/* save fsr */
 	SET_SIZE(_fp_ieee_exception)
 
 .badfpcexcmsg:

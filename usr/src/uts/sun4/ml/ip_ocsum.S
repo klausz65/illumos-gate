@@ -23,6 +23,9 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include <sys/param.h>
 #include <sys/errno.h>
@@ -33,25 +36,29 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * Prefetch considerations
  *
- * We prefetch one cacheline ahead.  This may not be enough on Serengeti
+ * We prefetch one cacheline ahead. This may not be enough on Serengeti
  * systems - see default_copyout() etc which prefetch 5 lines ahead.
  * On the other hand, we expect most of the source buffers to be
  * recently used enough to be cached.
  *
- * On US-I the prefetches are inoperative.  On US-II they preload the E$;
+ * On US-I the prefetches are inoperative. On US-II they preload the E$;
  * the mainloop unrolling and load-buffer should cover loads from E$.
  * The stores appear to be the slow point on US-II.
  *
  * On US-IIICu the prefetch preloads the L2$ too, but there is no load
- * buffer so the loads will stall for D$ miss, L2$ hit.  The hardware
- * auto-prefetch is not activated by integer loads.  No solution
+ * buffer so the loads will stall for D$ miss, L2$ hit. The hardware
+ * auto-prefetch is not activated by integer loads. No solution
  * in sight for this, barring odd games with FP read, write, integer read.
  *
  * US-IV (Panther) appears similar to US-IIICu, except that a strong
- * variant of prefetch is available which can take TLB traps.  We don't
+ * variant of prefetch is available which can take TLB traps. We don't
  * use this.  The h/w prefetch stride can be set to 64, 128 or 192,
  * and they only reach to the L2$ (we don't use these either).
  * L2$ load-to-use latency is 15 cycles (best).
@@ -73,7 +80,7 @@
 
 /*
  * On ttcp transmits, called once per ocsum_copyin but with a small
- * block ( >99.9% ).  Could be the tx hdrs?  How many acks/seg are we rxing?
+ * block ( >99.9% ). Could be the tx hdrs? How many acks/seg are we rxing?
  * On ttcp receives, called more than once per ocsum_copyout. Rx hdrs
  * and tx acks?
  *
@@ -132,7 +139,7 @@
 	andn	%o3, %o5, %o3	! select hw's from src
 
 	srlx	%o3, 32, %o4	! hi32
-	b	9f
+	ba,pt	%icc, 9f	! FIXED: changed ba 9f into ba,pt %icc, 9f
 	sub	%o1, %g2, %o1	! delay: decr count, 1-4 halfwords
 
 .short_dw:			! max 7 iters of 4 clocks; 1 mispred of 4
@@ -152,7 +159,7 @@
 
 .short_hw:			! trailing dw: 0-3 hwords
 	tst	%o1		! 0 seems fairly common...
-	bz,a	.short_fold
+	bz,a,pt	%icc, .short_fold	! FIXED: added ,pt %icc,
 	srlx	%o2, 32, %o4	! delay: hi32
 				! mispredict 4 + 7 clocks for 1-3
 	ldx	[%o0], %o3
@@ -190,7 +197,7 @@
 
 .tiny:				! almost never: less than 4 halfwords total.
 	tst	%o1
-	bz,a	.short_fold
+	bz,a,pt	%icc, .short_fold	! FIXED: added ,pt %icc,
 
 	srlx	%o2, 32, %o4	! delay: hi32
 
@@ -207,7 +214,7 @@
 
 	! at this point the 64-bit accumulator
 	! has the result that needs to be returned in 16-bits
-	b	.short_fold
+	ba	.short_fold
 	srlx	%o2, 32, %o4	! hi32
 
 	SET_SIZE(ip_ocsum)	! 64-bit version
@@ -355,7 +362,7 @@
 	inc	64, %i0		! increment source address
 
 	add	%o0, %i2, %i2	! accumulator
-	ba	5b
+	ba,pt	%icc, 5b	! FIXED: added ,pt %icc,
 	prefetch [%i0], #n_reads	! next cacheline
 				! end of main loop
 .looptidy:	! compute remaining partial sum - 8 clocks

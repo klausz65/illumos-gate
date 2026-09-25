@@ -408,8 +408,8 @@ LDSTACKPROTECT= $(STACKPROTECT_LD_$(STACKPROTECT))
 #
 # compiler '-xarch' flag. This is here to centralize it and make it
 # overridable for testing.
-sparc_XARCH=	-m32
-sparcv9_XARCH=	-m64
+sparc_XARCH=	-m32 -xarch=sparcvis
+sparcv9_XARCH=	-m64 -xarch=sparcvis
 i386_XARCH=	-m32
 amd64_XARCH=	-m64 -Ui386 -U__i386
 
@@ -529,6 +529,12 @@ OFFSETS_CREATE = $(GENOFFSETS) -s $(CTFSTABS) -r $(CTFCONVERT) \
 OFFSETS_CREATE64 = $(GENOFFSETS) -s $(CTFSTABS) -r $(CTFCONVERT) \
 	$(CW) --noecho $(CW_CC_COMPILERS) -- $(GENOFFSETS_FLAGS) \
 	$(CFLAGS64) $(CPPFLAGS)
+
+# without these SPARC kernels will bail out: ERROR: Last Trap: Fast Data Access MMU Miss
+sparc_XREGSFLAG		= -xregs=no%appl
+sparcv9_XREGSFLAG	= -xregs=no%appl
+XREGSFLAG		= $($(MACH)_XREGSFLAG)
+XREGSFLAG64		= $($(MACH64)_XREGSFLAG)
 
 # dmake SOURCEDEBUG=yes ... enables source-level debugging information, and
 # avoids stripping it.

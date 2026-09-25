@@ -37,4 +37,7 @@ include ../Makefile.com
 
 include $(TOPDIR)/psm/Makefile.psm.64
 
-CFLAGS64	+= -xchip=ultra
+CSTD		= $(CSTD_GNU99)
+
+CFLAGS64	+= -xchip=ultra -Wc,-xcode=abs32
+CFLAGS64	+= -xregs=no%appl

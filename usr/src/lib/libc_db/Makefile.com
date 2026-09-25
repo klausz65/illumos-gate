@@ -41,7 +41,7 @@ LIBS = $(DYNLIB)
 SRCDIR =	../common
 SRCS = $(CMNOBJS:%.o=$(SRCDIR)/%.c)
 
-ASFLAGS +=	-D__STDC__ -D_ASM -DPIC
+ASFLAGS +=	-D_ASM -DPIC
 CPPFLAGS +=	-I../../libc/inc -D_REENTRANT
 CFLAGS +=	$(CCVERBOSE)
 LDLIBS +=	-lc
@@ -60,5 +60,9 @@ all: $(LIBS)
 include	../../Makefile.targ
 
 pics/%.o: $(CRTSRCS)/%.s
+	$(COMPILE.s) -o $@ $<
+	$(POST_PROCESS_S_O)
+
+pics/%.o: $(CRTSRCS)/%.S
 	$(COMPILE.s) -o $@ $<
 	$(POST_PROCESS_S_O)

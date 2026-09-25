@@ -23,6 +23,9 @@
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include <sys/param.h>
 #include <sys/errno.h>
@@ -37,6 +40,9 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 /*
  * Pseudo-code to aid in understanding the control flow of the
  * bcopy/copyin/copyout routines.
@@ -731,8 +737,8 @@ label2:
  * Returns errno value on pagefault error, 0 if all ok
  */
 
-	.seg	".text"
-	.align	4
+	.text
+	.balign	4
 
 	ENTRY(kcopy)
 
@@ -873,7 +879,7 @@ label2:
 fp_panic_msg:
 	.asciz	"Unable to restore fp state after copy operation"
 
-	.align	4
+	.balign	4
 .copyerr2:
 	set	fp_panic_msg, %o0
 	call	panic
@@ -964,7 +970,7 @@ fp_panic_msg:
 	ba,pt	%ncc, .bcopy_more		! otherwise go to large copy
 	  nop
 
-	.align	16
+	.balign	16
 .bcopy_small:
 	ldn	[THREAD_REG + T_LOFAULT], %o4	! save t_lofault
 	tst	%o4
@@ -1017,7 +1023,7 @@ fp_panic_msg:
 	stn	%o4, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
 	retl
 	  mov	%g0, %o0		! return 0
-	.align	16
+	.balign	16
 	nop				! instruction alignment
 					! see discussion at start of file
 .bc_sm_words:
@@ -1077,7 +1083,7 @@ fp_panic_msg:
 	retl
 	  mov	%g0, %o0		! return 0
 
-	.align 16
+	.balign 16
 .bc_med:
 	xor	%o0, %o1, %o3		! setup alignment check
 	btst	1, %o3
@@ -1147,7 +1153,7 @@ fp_panic_msg:
 	ba,pt	%ncc, .bc_sm_half
 	  nop
 
-	.align 16
+	.balign 16
 .bc_med_word:
 	btst	3, %o0			! check for
 	bz,pt	%ncc, .bc_med_word1	! word alignment
@@ -1197,7 +1203,7 @@ fp_panic_msg:
 	ba,pt	%ncc, .bc_sm_half
 	  nop
 
-	.align 16
+	.balign 16
 .bc_med_half:
 	btst	1, %o0			! check for
 	bz,pt	%ncc, .bc_med_half1	! half word alignment
@@ -1367,7 +1373,7 @@ fp_panic_msg:
 	add	REALSRC, VIS_BLOCKSIZE, REALSRC
 	ba,a,pt	%ncc, 1f
 	  nop
-	.align	16
+	.balign	16
 1:
 	ldd	[SRC + 0x08], %f2
 	faligndata %f12, %f14, %f44
@@ -1588,7 +1594,7 @@ fp_panic_msg:
 	add	SRC, VIS_BLOCKSIZE, SRC
 	ba,a,pt	%ncc, 2f
 	  nop
-	.align	16
+	.balign	16
 2:
 	ldd	[SRC + 0x08], %f2
 	fsrc1	%f12, %f44
@@ -1839,7 +1845,7 @@ fp_panic_msg:
 	ba,pt	%ncc, .copyout_more		! otherwise go to large copy
 	  nop
 
-	.align	16
+	.balign	16
 	nop				! instruction alignment
 					! see discussion at start of file
 .copyout_small:
@@ -1898,7 +1904,7 @@ fp_panic_msg:
 	stn	%o4, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
 	retl
 	  mov	%g0, %o0		! return 0
-	.align	16
+	.balign	16
 .co_sm_words:
 	lduw	[%o0], %o3		! read word
 .co_sm_wordx:
@@ -1932,7 +1938,7 @@ fp_panic_msg:
 	stn	%o4, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
 	retl
 	  mov	%g0, %o0		! return 0
-	.align 16
+	.balign 16
 .co_sm_word:
 	subcc	%o2, 4, %o2		! update count
 	bgt,pt	%ncc, .co_sm_wordx
@@ -1959,7 +1965,7 @@ fp_panic_msg:
 	retl
 	  mov	%g0, %o0		! return 0
 
-	.align 16
+	.balign 16
 .co_med:
 	xor	%o0, %o1, %o3		! setup alignment check
 	btst	1, %o3
@@ -2035,7 +2041,7 @@ fp_panic_msg:
 	ba,pt	%ncc, .co_sm_half
 	  nop
 
-	.align 16
+	.balign 16
 	nop				! instruction alignment
 					! see discussion at start of file
 .co_med_word:
@@ -2090,7 +2096,7 @@ fp_panic_msg:
 	ba,pt	%ncc, .co_sm_half
 	  nop
 
-	.align 16
+	.balign 16
 	nop				! instruction alignment
 	nop				! see discussion at start of file
 	nop
@@ -2199,7 +2205,7 @@ fp_panic_msg:
 	or	%l6, FPUSED_FLAG, %l6
 
 	andcc	DST, VIS_BLOCKSIZE - 1, TMP
-	mov	ASI_USER, %asi
+	wr	%g0, ASI_USER, %asi
 	bz,pt	%ncc, 2f
 	  neg	TMP
 	add	TMP, VIS_BLOCKSIZE, TMP
@@ -2276,7 +2282,7 @@ fp_panic_msg:
 	add	REALSRC, VIS_BLOCKSIZE, REALSRC
 	ba,a,pt	%ncc, 1f
 	  nop
-	.align	16
+	.balign	16
 1:
 	ldd	[SRC + 0x08], %f18
 	faligndata %f28, %f30, %f60
@@ -2601,7 +2607,7 @@ fp_panic_msg:
 	ba,pt	%ncc, .copyin_more		! otherwise go to large copy
 	  nop
 
-	.align	16
+	.balign	16
 	nop				! instruction alignment
 					! see discussion at start of file
 .copyin_small:
@@ -2660,7 +2666,7 @@ fp_panic_msg:
 	stn	%o4, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
 	retl
 	  mov	%g0, %o0		! return 0
-	.align	16
+	.balign	16
 .ci_sm_words:
 	lduwa	[%o0]ASI_USER, %o3		! read word
 .ci_sm_wordx:
@@ -2694,7 +2700,7 @@ fp_panic_msg:
 	stn	%o4, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
 	retl
 	  mov	%g0, %o0		! return 0
-	.align	16
+	.balign	16
 .ci_sm_word:
 	subcc	%o2, 4, %o2		! update count
 	bgt,pt	%ncc, .ci_sm_wordx
@@ -2721,7 +2727,7 @@ fp_panic_msg:
 	retl
 	  mov	%g0, %o0		! return 0
 
-	.align 16
+	.balign 16
 .ci_med:
 	xor	%o0, %o1, %o3		! setup alignment check
 	btst	1, %o3
@@ -2794,7 +2800,7 @@ fp_panic_msg:
 	ba,pt	%ncc, .ci_sm_half
 	  nop
 
-	.align 16
+	.balign 16
 	nop				! instruction alignment
 					! see discussion at start of file
 .ci_med_word:
@@ -2849,7 +2855,7 @@ fp_panic_msg:
 	ba,pt	%ncc, .ci_sm_half
 	  nop
 
-	.align 16
+	.balign 16
 	nop				! instruction alignment
 					! see discussion at start of file
 .ci_med_half:
@@ -2954,7 +2960,7 @@ fp_panic_msg:
 	or	%l6, FPUSED_FLAG, %l6
 
 	andcc	DST, VIS_BLOCKSIZE - 1, TMP
-	mov	ASI_USER, %asi
+	wr	%g0, ASI_USER, %asi
 	bz,pt	%ncc, 2f
 	  neg	TMP
 	add	TMP, VIS_BLOCKSIZE, TMP
@@ -3031,7 +3037,7 @@ fp_panic_msg:
 	add	REALSRC, VIS_BLOCKSIZE, REALSRC
 	ba,a,pt	%ncc, 1f
 	  nop
-	.align	16
+	.balign	16
 1:
 	ldda	[SRC + 0x08]%asi, %f18
 	faligndata %f28, %f30, %f60
@@ -3585,6 +3591,9 @@ fp_panic_msg:
 	 * Copy 32 bytes of data from src (%o0) to dst (%o1)
 	 * using physical addresses.
 	 */
+	.text
+	.balign	4
+
 	ENTRY_NP(hw_pa_bcopy32)
 	rdpr	%pstate, %g1
 	andn	%g1, PSTATE_IE, %g2
@@ -3615,18 +3624,32 @@ fp_panic_msg:
 
 	SET_SIZE(hw_pa_bcopy32)
 
+	.data
+	.balign	4
 	DGDEF(use_hw_bcopy)
-	.word	1
+	.type	use_hw_bcopy, @object
+	.size	use_hw_bcopy, 4
+	.long	1
 	DGDEF(use_hw_bzero)
-	.word	1
+	.type	use_hw_bzero, @object
+	.size	use_hw_bzero, 4
+	.long	1
 	DGDEF(hw_copy_limit_1)
-	.word	0
+	.type	hw_copy_limit_1, @object
+	.size	hw_copy_limit_1, 4
+	.long	0
 	DGDEF(hw_copy_limit_2)
-	.word	0
+	.type	hw_copy_limit_2, @object
+	.size	hw_copy_limit_2, 4
+	.long	0
 	DGDEF(hw_copy_limit_4)
-	.word	0
+	.type	hw_copy_limit_4, @object
+	.size	hw_copy_limit_4, 4
+	.long	0
 	DGDEF(hw_copy_limit_8)
-	.word	0
+	.type	hw_copy_limit_8, @object
+	.size	hw_copy_limit_8, 4
+	.long	0
 
-	.align	64
-	.section ".text"
+	.text
+	.balign	64

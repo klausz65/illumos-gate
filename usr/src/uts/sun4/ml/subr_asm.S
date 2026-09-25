@@ -22,6 +22,9 @@
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 /*
  * General machine architecture & implementation specific
@@ -34,6 +37,9 @@
 #include <sys/machthread.h>
 #include <sys/vis.h>
 #include <sys/machsig.h>
+
+	/* GNU assembler */
+	.register	%g2, #scratch
 
 	ENTRY(set_trap_table)
 	set	trap_table, %o1
@@ -267,7 +273,7 @@
 
 	ENTRY_NP(_fp_write_pgsr)
 	retl
-	mov	%o0, %gsr
+	wr	%g0, %o0, %gsr
 	SET_SIZE(_fp_write_pgsr)
 
 /*

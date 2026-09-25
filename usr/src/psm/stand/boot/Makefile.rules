@@ -21,6 +21,8 @@
 # Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+# Copyright 2026 Klaus Ziegler.
+#
 # psm/stand/boot/Makefile.rules
 
 #CPPFLAGS += -DDEBUG=1
@@ -48,7 +50,7 @@
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-%.o: $(MACH_DIR)/%.s
+%.o: $(MACH_DIR)/%.S
 	$(COMPILE.s) -o $@ $<
 	$(POST_PROCESS_O)
 

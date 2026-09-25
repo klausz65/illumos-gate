@@ -44,6 +44,8 @@ get_nwin(void)
 	return (0);	/* wouldn't that be amusing */
 }
 #else
+	/* GNU assembler */
+	.register	%g3, #scratch
 
 	ENTRY(get_nwin)
 	GET_NWIN(%g4, %g3);	/* %g4 is scratch, %g3 set to nwin-1 */

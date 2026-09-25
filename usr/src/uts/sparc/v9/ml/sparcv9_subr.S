@@ -49,9 +49,12 @@
 
 #include "assym.h"
 
-	.seg	".text"
-	.align	4
+	.section .text
+	.balign	4
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 /*
  * Macro to raise processor priority level.
  * Avoid dropping processor priority if already at high level.
@@ -69,7 +72,7 @@
 	ldn	[THREAD_REG + T_CPU], %o2;				\
 	ld	[%o2 + CPU_BASE_SPL], %o2;				\
 	cmp	%o2, level;		/* compare new to base */	\
-	movl	%xcc, level, %o2;	/* use new if base lower */	\
+	movle	%xcc, level, %o2;	/* changed movl to movle */	\
 	wrpr	%g0, %o2, %pil;						\
 1:									\
 	retl;								\
@@ -104,7 +107,7 @@
 	ldn	[THREAD_REG + T_CPU], %o2;				\
 	ld	[%o2 + CPU_BASE_SPL], %o2;				\
 	cmp	%o2, level;		/* compare new to base */	\
-	movl	%xcc, level, %o2;	/* use new if base lower */	\
+	movle	%xcc, level, %o2;	/* changed movl to movle */	\
 	wrpr	%g0, %o2, %pil;						\
 	retl;								\
 	mov	%o1, %o0		/* return old PIL */
@@ -131,14 +134,14 @@
 	 * Note, for the machine specific priorities there are
 	 * examples listed for devices that use a particular priority.
 	 * It should not be construed that all devices of that
-	 * type should be at that priority.  It is currently were
+	 * type should be at that priority. It is currently were
 	 * the current devices fit into the priority scheme based
 	 * upon time criticalness.
 	 *
 	 * The underlying assumption of these assignments is that
 	 * SPARC9 IPL 10 is the highest level from which a device
-	 * routine can call wakeup.  Devices that interrupt from higher
-	 * levels are restricted in what they can do.  If they need
+	 * routine can call wakeup. Devices that interrupt from higher
+	 * levels are restricted in what they can do. If they need
 	 * kernels services they should schedule a routine at a lower
 	 * level (via software interrupt) to do the required
 	 * processing.
@@ -231,19 +234,19 @@
  */
 
 	ENTRY(on_fault)
-	membar	#Sync			! sync error barrier (see copy.s)
+	membar	#Sync				/* sync error barrier (see copy.s) */
 	stn	%o0, [THREAD_REG + T_ONFAULT]
 	set	catch_fault, %o1
-	b	setjmp			! let setjmp do the rest
-	stn	%o1, [THREAD_REG + T_LOFAULT]	! put catch_fault in t_lofault
+	b	setjmp				/* let setjmp do the rest */
+	stn	%o1, [THREAD_REG + T_LOFAULT]	/* put catch_fault in t_lofault */
 
 catch_fault:
-	save	%sp, -SA(WINDOWSIZE), %sp ! goto next window so that we can rtn
+	save	%sp, -SA(WINDOWSIZE), %sp	/* goto next window so that we can rtn */
 	ldn	[THREAD_REG + T_ONFAULT], %o0
-	membar	#Sync				! sync error barrier
-	stn	%g0, [THREAD_REG + T_ONFAULT]	! turn off onfault
-	b	longjmp			! let longjmp do the rest
-	stn	%g0, [THREAD_REG + T_LOFAULT]	! turn off lofault
+	membar	#Sync				/* sync error barrier */
+	stn	%g0, [THREAD_REG + T_ONFAULT]	/* turn off onfault */
+	b	longjmp				/* let longjmp do the rest */
+	stn	%g0, [THREAD_REG + T_LOFAULT]	/* turn off lofault */
 	SET_SIZE(on_fault)
 
 /*
@@ -252,14 +255,14 @@ catch_fault:
  */
 
 	ENTRY(no_fault)
-	membar	#Sync				! sync error barrier
+	membar	#Sync				/* sync error barrier */
 	stn	%g0, [THREAD_REG + T_ONFAULT]
 	retl
-	stn	%g0, [THREAD_REG + T_LOFAULT]	! turn off lofault
+	stn	%g0, [THREAD_REG + T_LOFAULT]	/* turn off lofault */
 	SET_SIZE(no_fault)
 
 /*
- * Default trampoline code for on_trap() (see <sys/ontrap.h>).  On sparcv9,
+ * Default trampoline code for on_trap() (see <sys/ontrap.h>). On sparcv9,
  * the trap code will complete trap processing but reset the return %pc to
  * ot_trampoline, which will by default be set to the address of this code.
  * We longjmp(&curthread->t_ontrap->ot_jmpbuf) to return back to on_trap().
@@ -272,33 +275,33 @@ catch_fault:
 	SET_SIZE(on_trap_trampoline)
 
 /*
- * Push a new element on to the t_ontrap stack.  Refer to <sys/ontrap.h> for
- * more information about the on_trap() mechanism.  If the on_trap_data is the
+ * Push a new element on to the t_ontrap stack. Refer to <sys/ontrap.h> for
+ * more information about the on_trap() mechanism. If the on_trap_data is the
  * same as the topmost stack element, we just modify that element.
  * On UltraSPARC, we need to issue a membar #Sync before modifying t_ontrap.
  * The issue barrier is defined to force all deferred errors to complete before
- * we go any further.  We want these errors to be processed before we modify
+ * we go any further. We want these errors to be processed before we modify
  * our current error protection.
  */
 
 	ENTRY(on_trap)
-	membar	#Sync				! force error barrier
-	sth	%o1, [%o0 + OT_PROT]		! ot_prot = prot
-	sth	%g0, [%o0 + OT_TRAP]		! ot_trap = 0
-	set	on_trap_trampoline, %o2		! %o2 = &on_trap_trampoline
-	stn	%o2, [%o0 + OT_TRAMPOLINE]	! ot_trampoline = %o2
-	stn	%g0, [%o0 + OT_HANDLE]		! ot_handle = NULL
-	ldn	[THREAD_REG + T_ONTRAP], %o2	! %o2 = curthread->t_ontrap
-	cmp	%o0, %o2			! if (otp == %o2)
-	be	0f				!    don't modify t_ontrap
-	stn	%g0, [%o0 + OT_PAD1]		! delay - ot_pad1 = NULL
+	membar	#Sync				/* force error barrier */
+	sth	%o1, [%o0 + OT_PROT]		/* ot_prot = prot */
+	sth	%g0, [%o0 + OT_TRAP]		/* ot_trap = 0 */
+	set	on_trap_trampoline, %o2		/* %o2 = &on_trap_trampoline */
+	stn	%o2, [%o0 + OT_TRAMPOLINE]	/* ot_trampoline = %o2 */
+	stn	%g0, [%o0 + OT_HANDLE]		/* ot_handle = NULL */
+	ldn	[THREAD_REG + T_ONTRAP], %o2	/* %o2 = curthread->t_ontrap */
+	cmp	%o0, %o2			/* if (otp == %o2) */
+	be	0f				/*    don't modify t_ontrap */
+	stn	%g0, [%o0 + OT_PAD1]		/* delay - ot_pad1 = NULL */
 
-	stn	%o2, [%o0 + OT_PREV]		! ot_prev = t_ontrap
-	membar	#Sync				! force error barrier
-	stn	%o0, [THREAD_REG + T_ONTRAP]	! t_ontrap = otp
+	stn	%o2, [%o0 + OT_PREV]		/* ot_prev = t_ontrap */
+	membar	#Sync				/* force error barrier */
+	stn	%o0, [THREAD_REG + T_ONTRAP]	/* t_ontrap = otp */
 
-0:	b	setjmp				! let setjmp do the rest
-	add	%o0, OT_JMPBUF, %o0		! %o0 = &ot_jmpbuf
+0:	b	setjmp				/* let setjmp do the rest */
+	add	%o0, OT_JMPBUF, %o0		/* %o0 = &ot_jmpbuf */
 	SET_SIZE(on_trap)
 
 /*
@@ -307,30 +310,30 @@ catch_fault:
  */
 
 	ENTRY(setjmp)
-	stn	%o7, [%o0 + L_PC]	! save return address
-	stn	%sp, [%o0 + L_SP]	! save stack ptr
+	stn	%o7, [%o0 + L_PC]	/* save return address */
+	stn	%sp, [%o0 + L_SP]	/* save stack ptr */
 	retl
-	clr	%o0			! return 0
+	clr	%o0			/* return 0 */
 	SET_SIZE(setjmp)
 
 
 	ENTRY(longjmp)
 	!
-        ! The following save is required so that an extra register
-        ! window is flushed.  Flushw flushes nwindows-2
-        ! register windows.  If setjmp and longjmp are called from
-        ! within the same window, that window will not get pushed
-        ! out onto the stack without the extra save below.  Tail call
-        ! optimization can lead to callers of longjmp executing
-        ! from a window that could be the same as the setjmp,
-        ! thus the need for the following save.
-        !
-	save    %sp, -SA(MINFRAME), %sp
-	flushw				! flush all but this window
-	ldn	[%i0 + L_PC], %i7	! restore return addr
-	ldn	[%i0 + L_SP], %fp	! restore sp for dest on foreign stack
-	ret				! return 1
-	restore	%g0, 1, %o0		! takes underflow, switches stacks
+	! The following save is required so that an extra register
+	! window is flushed. Flushw flushes nwindows-2
+	! register windows. If setjmp and longjmp are called from
+	! within the same window, that window will not get pushed
+	! out onto the stack without the extra save below. Tail call
+	! optimization can lead to callers of longjmp executing
+	! from a window that could be the same as the setjmp,
+	! thus the need for the following save.
+	!
+	save	%sp, -SA(MINFRAME), %sp
+	flushw				/* flush all but this window */
+	ldn	[%i0 + L_PC], %i7	/* restore return addr */
+	ldn	[%i0 + L_SP], %fp	/* restore sp for dest on foreign stack */
+	ret				/* return 1 */
+	restore	%g0, 1, %o0		/* takes underflow, switches stacks */
 	SET_SIZE(longjmp)
 
 /*
@@ -340,27 +343,27 @@ catch_fault:
  */
 
 	ENTRY(movtuc)
-	tst     %o0
-	ble,pn	%ncc, 2f		! check length
-	clr     %o4
+	tst	%o0
+	ble,pn	%icc, 2f		/* changed %ncc to %icc for GAS */
+	clr	%o4
 
-	ldub    [%o1 + %o4], %g1        ! get next byte in string
+	ldub	[%o1 + %o4], %g1	/* get next byte in string */
 0:
-	ldub    [%o3 + %g1], %g1        ! get corresponding table entry
-	tst     %g1                     ! escape char?
-	bnz     1f
-	stb     %g1, [%o2 + %o4]        ! delay slot, store it
+	ldub	[%o3 + %g1], %g1	/* get corresponding table entry */
+	tst	%g1			/* escape char? */
+	bnz	1f
+	stb	%g1, [%o2 + %o4]	/* delay slot, store it */
 
-	retl                            ! return (bytes moved)
-	mov     %o4, %o0
+	retl				/* return (bytes moved) */
+	mov	%o4, %o0
 1:
-	inc     %o4                     ! increment index
-	cmp     %o4, %o0                ! index < length ?
-	bl,a,pt	%ncc, 0b
-	ldub    [%o1 + %o4], %g1        ! delay slot, get next byte in string
+	inc	%o4			/* increment index */
+	cmp	%o4, %o0		/* index < length ? */
+	bl,a,pt	%icc, 0b
+	ldub	[%o1 + %o4], %g1	/* changed %ncc to %icc for GAS */
 2:
-	retl                            ! return (bytes moved)
-	mov     %o4, %o0
+	retl				/* return (bytes moved) */
+	mov	%o4, %o0
 	SET_SIZE(movtuc)
 
 /*
@@ -371,18 +374,18 @@ catch_fault:
 
 	ENTRY(scanc)
 	tst	%o0
-	ble,pn	%ncc, 1f		! check length
+	ble,pn	%icc, 1f		/* changed %ncc to %icc for GAS */
 	clr	%o4
 0:
-	ldub	[%o1 + %o4], %g1	! get next byte in string
-	cmp	%o4, %o0		! interlock slot, index < length ?
-	ldub	[%o2 + %g1], %g1	! get corresponding table entry
-	bge,pn	%ncc, 1f		! interlock slot
-	btst	%o3, %g1		! apply the mask
+	ldub	[%o1 + %o4], %g1	/* get next byte in string */
+	cmp	%o4, %o0		/* interlock slot, index < length ? */
+	ldub	[%o2 + %g1], %g1	/* get corresponding table entry */
+	bge,pn	%icc, 1f		/* changed %ncc to %icc for GAS */
+	btst	%o3, %g1		/* apply the mask */
 	bz,a	0b
-	inc	%o4			! delay slot, increment index
+	inc	%o4			/* delay slot, increment index */
 1:
-	retl				! return(length - index)
+	retl				/* return(length - index) */
 	sub	%o0, %o4, %o0
 	SET_SIZE(scanc)
 
@@ -432,15 +435,15 @@ catch_fault:
  */
 
 	ENTRY(getpsr)
-	rd	%ccr, %o1			! get ccr
-        sll	%o1, PSR_ICC_SHIFT, %o0		! move icc to V8 psr.icc
-	rd	%fprs, %o1			! get fprs
-	and	%o1, FPRS_FEF, %o1		! mask out dirty upper/lower
-	sllx	%o1, PSR_FPRS_FEF_SHIFT, %o1	! shift fef to V8 psr.ef
-        or	%o0, %o1, %o0			! or into psr.ef
-        set	V9_PSR_IMPLVER, %o1		! SI assigned impl/ver: 0xef
-        retl
-        or	%o0, %o1, %o0			! or into psr.impl/ver
+	rd	%ccr, %o1			/* get ccr */
+	sll	%o1, PSR_ICC_SHIFT, %o0		/* move icc to V8 psr.icc */
+	rd	%fprs, %o1			/* get fprs */
+	and	%o1, FPRS_FEF, %o1		/* mask out dirty upper/lower */
+	sllx	%o1, PSR_FPRS_FEF_SHIFT, %o1	/* shift fef to V8 psr.ef */
+	or	%o0, %o1, %o0			/* or into psr.ef */
+	set	V9_PSR_IMPLVER, %o1		/* SI assigned impl/ver: 0xef */
+	retl
+	or	%o0, %o1, %o0			/* or into psr.impl/ver */
 	SET_SIZE(getpsr)
 
 /*
@@ -465,12 +468,12 @@ catch_fault:
  */
 
 	ENTRY(_insque)
-	ldn	[%o1], %g1		! predp->forw
-	stn	%o1, [%o0 + CPTRSIZE]	! entryp->back = predp
-	stn	%g1, [%o0]		! entryp->forw = predp->forw
-	stn	%o0, [%o1]		! predp->forw = entryp
+	ldn	[%o1], %g1		/* predp->forw */
+	stn	%o1, [%o0 + CPTRSIZE]	/* entryp->back = predp */
+	stn	%g1, [%o0]		/* entryp->forw = predp->forw */
+	stn	%o0, [%o1]		/* predp->forw = entryp */
 	retl
-	stn	%o0, [%g1 + CPTRSIZE]	! predp->forw->back = entryp
+	stn	%o0, [%g1 + CPTRSIZE]	/* predp->forw->back = entryp */
 	SET_SIZE(_insque)
 
 /*
@@ -480,11 +483,11 @@ catch_fault:
  */
 
 	ENTRY(_remque)
-	ldn	[%o0], %g1		! entryp->forw
-	ldn	[%o0 + CPTRSIZE], %g2	! entryp->back
-	stn	%g1, [%g2]		! entryp->back->forw = entryp->forw
+	ldn	[%o0], %g1		/* entryp->forw */
+	ldn	[%o0 + CPTRSIZE], %g2	/* entryp->back */
+	stn	%g1, [%g2]		/* entryp->back->forw = entryp->forw */
 	retl
-	stn	%g2, [%g1 + CPTRSIZE]	! entryp->forw->back = entryp->back
+	stn	%g2, [%g1 + CPTRSIZE]	/* entryp->forw->back = entryp->back */
 	SET_SIZE(_remque)
 
 
@@ -499,30 +502,30 @@ catch_fault:
 
 	ENTRY(strlen)
 	mov	%o0, %o1
-	andcc	%o1, 3, %o3		! is src word aligned
+	andcc	%o1, 3, %o3		/* is src word aligned */
 	bz	$nowalgnd
-	clr	%o0			! length of non-zero bytes
-	cmp	%o3, 2			! is src half-word aligned
+	clr	%o0			/* length of non-zero bytes */
+	cmp	%o3, 2			/* is src half-word aligned */
 	be	$s2algn
-	cmp	%o3, 3			! src is byte aligned
-	ldub	[%o1], %o3		! move 1 or 3 bytes to align it
-	inc	1, %o1			! in either case, safe to do a byte
+	cmp	%o3, 3			/* src is byte aligned */
+	ldub	[%o1], %o3		/* move 1 or 3 bytes to align it */
+	inc	1, %o1			/* in either case, safe to do a byte */
 	be	$s3algn
 	tst	%o3
 $s1algn:
-	bnz,a	$s2algn			! now go align dest
+	bnz,a	$s2algn			/* now go align dest*/
 	inc	1, %o0
 	b,a	$done
 
 $s2algn:
-	lduh	[%o1], %o3		! know src is half-byte aligned
+	lduh	[%o1], %o3		/* know src is half-byte aligned*/
 	inc	2, %o1
 	srl	%o3, 8, %o4
-	tst	%o4			! is the first byte zero
+	tst	%o4			/* is the first byte zero*/
 	bnz,a	1f
 	inc	%o0
 	b,a	$done
-1:	andcc	%o3, 0xff, %o3		! is the second byte zero
+1:	andcc	%o3, 0xff, %o3		/* is the second byte zero*/
 	bnz,a	$nowalgnd
 	inc	%o0
 	b,a	$done
@@ -541,12 +544,12 @@ $nowalgnd:
 	set	0x7efefeff, %o3
 	set	0x81010100, %o4
 
-3:	ld	[%o1], %o2		! main loop
+3:	ld	[%o1], %o2		/* main loop*/
 	inc	4, %o1
-	add	%o2, %o3, %o5		! generate byte-carries
-	xor	%o5, %o2, %o5		! see if orignal bits set
+	add	%o2, %o3, %o5		/* generate byte-carries*/
+	xor	%o5, %o2, %o5		/* see if orignal bits set*/
 	and	%o5, %o4, %o5
-	cmp	%o5, %o4		! if ==,  no zero bytes
+	cmp	%o5, %o4		/* if ==,  no zero bytes*/
 	be,a	3b
 	inc	4, %o0
 
@@ -555,27 +558,27 @@ $nowalgnd:
 	! was set (very rare), if this is the rare condition,
 	! return to the main loop again
 
-	sethi	%hi(0xff000000), %o5	! mask used to test for terminator
-	andcc	%o2, %o5, %g0		! check if first byte was zero
+	sethi	%hi(0xff000000), %o5	/* mask used to test for terminator*/
+	andcc	%o2, %o5, %g0		/* check if first byte was zero*/
 	bnz	1f
 	srl	%o5, 8, %o5
 $done:
 	retl
 	nop
-1:	andcc	%o2, %o5, %g0		! check if second byte was zero
+1:	andcc	%o2, %o5, %g0		/* check if second byte was zero*/
 	bnz	1f
 	srl	%o5, 8, %o5
 $done1:
 	retl
 	inc	%o0
-1:	andcc 	%o2, %o5, %g0		! check if third byte was zero
+1:	andcc 	%o2, %o5, %g0		/* check if third byte was zero*/
 	bnz	1f
-	andcc	%o2, 0xff, %g0		! check if last byte is zero
+	andcc	%o2, 0xff, %g0		/* check if last byte is zero*/
 $done2:
 	retl
 	inc	2, %o0
 1:	bnz,a	3b
-	inc	4, %o0			! count of bytes
+	inc	4, %o0			/* count of bytes*/
 $done3:
 	retl
 	inc	3, %o0
@@ -816,7 +819,7 @@ $done3:
 	ENTRY(rdtick)
 	retl
 	rd	%tick, %o0
-        SET_SIZE(rdtick)
+	SET_SIZE(rdtick)
 
 #endif /* !sun4v */
 
@@ -860,7 +863,7 @@ $done3:
 	SET_SIZE(dtrace_interrupt_enable)
 
 #ifdef SF_ERRATA_51
-	.align 32
+	.balign 32
 	ENTRY(dtrace_membar_return)
 	retl
 	nop
@@ -907,52 +910,53 @@ $done3:
 
 	rdpr	%pstate, %o5
 	andn	%o5, PSTATE_IE, %g1
-	wrpr	%g0, %g1, %pstate	! disable interrupts
+	wrpr	%g0, %g1, %pstate	/* disable interrupts */
 
-	mov	%o0, %g1		! we need the pcstack pointer while
-					! we're visiting other windows
+	mov	%o0, %g1		/* we need the pcstack pointer while */
+					/* we're visiting other windows */
 
-	rdpr	%canrestore, %g2	! number of available windows
-	sub	%g2, 1, %g2		! account for skipped frame
-	cmp	%g2, %o1		! compare with limit
-	movg	%icc, %o1, %g2		! %g2 = min(%canrestore-1, limit)
+	rdpr	%canrestore, %g2	/* number of available windows */
+	sub	%g2, 1, %g2		/* account for skipped frame */
+	cmp	%g2, %o1		/* compare with limit */
+	movg	%icc, %o1, %g2		/* %g2 = min(%canrestore-1, limit) */
 
-	brlez,a,pn %g2, 3f		! Use slow path if count <= 0 --
-	clr	%o0			! return zero.
+	brlez,a,pn %g2, 3f		/* Use slow path if count <= 0 -- */
+	clr	%o0			/* return zero. */
 
-	mov	%g2, %o0		! set up return value
+	mov	%g2, %o0		/* set up return value */
 
-	rdpr	%cwp, %g5		! remember the register window state
-	rdpr	%cansave, %o1		! 'restore' changes, so we can undo
-	rdpr	%canrestore, %o4	! its effects when we finish.
+	rdpr	%cwp, %g5		/* remember the register window state */
+	rdpr	%cansave, %o1		/* 'restore' changes, so we can undo */
+	rdpr	%canrestore, %o4	/* its effects when we finish. */
 
-	restore				! skip caller's frame
+	restore				/* skip caller's frame */
 1:
-	st	%i7, [%g1]		! stash return address in pcstack
-	restore				! go to the next frame
-	subcc	%g2, 1, %g2		! decrement the count
-	bnz,pt	%icc, 1b		! loop until count reaches 0
-	add	%g1, 4, %g1		! increment pcstack
+	stx	%i7, [%g1]		/* FIXED: Store full 64-bit address pointer */
 
-	mov	%i6, %g3		! copy the final %fp and return PC
-	mov	%i7, %g4		! aside so we can return them to our
-					! caller
+	restore				/* go to the next frame */
+	subcc	%g2, 1, %g2		/* decrement the count */
+	bnz,pt	%icc, 1b		/* loop until count reaches 0 */
+	add	%g1, 8, %g1		/* increment pcstack for 64 bit */
 
-	wrpr	%g0, %g5, %cwp		! jump back to the original window
-	wrpr	%g0, %o1, %cansave	! and restore the original register
-	wrpr	%g0, %o4, %canrestore	! window state.
+	mov	%i6, %g3		/* copy the final %fp and return PC */
+	mov	%i7, %g4		/* aside so we can return them to our */
+					/* caller */
+
+	wrpr	%g0, %g5, %cwp		/* jump back to the original window */
+	wrpr	%g0, %o1, %cansave	/* and restore the original register */
+	wrpr	%g0, %o4, %canrestore	/* window state. */
 2:
-	stn	%g3, [%o2]		! store the frame pointer and pc
-	st	%g4, [%o3]		! so our caller can continue the trace
+	stn	%g3, [%o2]		/* store the frame pointer and pc */
+	stx	%g4, [%o3]		/* FIXED: Store full 64-bit address pointer */
 
-	retl				! return to caller
-	wrpr	%g0, %o5, %pstate	! restore interrupts
+	retl				/* return to caller */
+	wrpr	%g0, %o5, %pstate	/* restore interrupts */
 
 3:
-	flushw				! flush register windows, then
-	ldn	[%fp + STACK_BIAS + 14*CLONGSIZE], %g3	! load initial fp
+	flushw				/* flush register windows, then */
+	ldn	[%fp + STACK_BIAS + 14*CLONGSIZE], %g3	/* load initial fp */
 	ba	2b
-	ldn	[%fp + STACK_BIAS + 15*CLONGSIZE], %g4	! and pc
+	ldn	[%fp + STACK_BIAS + 15*CLONGSIZE], %g4	/* and pc */
 	SET_SIZE(getpcstack_top)
 
 	ENTRY_NP(setwstate)
@@ -971,44 +975,44 @@ $done3:
  * int panic_trigger(int *tp)
  *
  * A panic trigger is a word which is updated atomically and can only be set
- * once.  We atomically store 0xFF into the high byte and load the old value.
+ * once. We atomically store 0xFF into the high byte and load the old value.
  * If the byte was 0xFF, the trigger has already been activated and we fail.
- * If the previous value was 0 or not 0xFF, we succeed.  This allows a
- * partially corrupt trigger to still trigger correctly.  DTrace has its own
+ * If the previous value was 0 or not 0xFF, we succeed. This allows a
+ * partially corrupt trigger to still trigger correctly. DTrace has its own
  * version of this function to allow it to panic correctly from probe context.
  */
 
 	ENTRY_NP(panic_trigger)
-	ldstub	[%o0], %o0		! store 0xFF, load byte into %o0
-	cmp	%o0, 0xFF		! compare %o0 to 0xFF
-	set	1, %o1			! %o1 = 1
-	be,a	0f			! if (%o0 == 0xFF) goto 0f (else annul)
-	set	0, %o1			! delay - %o1 = 0
+	ldstub	[%o0], %o0		/* store 0xFF, load byte into %o0 */
+	cmp	%o0, 0xFF		/* compare %o0 to 0xFF */
+	set	1, %o1			/* %o1 = 1 */
+	be,a	0f			/* if (%o0 == 0xFF) goto 0f (else annul) */
+	set	0, %o1			/* delay - %o1 = 0 */
 0:	retl
-	mov	%o1, %o0		! return (%o1);
+	mov	%o1, %o0		/* return (%o1); */
 	SET_SIZE(panic_trigger)
 
 	ENTRY_NP(dtrace_panic_trigger)
-	ldstub	[%o0], %o0		! store 0xFF, load byte into %o0
-	cmp	%o0, 0xFF		! compare %o0 to 0xFF
-	set	1, %o1			! %o1 = 1
-	be,a	0f			! if (%o0 == 0xFF) goto 0f (else annul)
-	set	0, %o1			! delay - %o1 = 0
+	ldstub	[%o0], %o0		/* store 0xFF, load byte into %o0 */
+	cmp	%o0, 0xFF		/* compare %o0 to 0xFF */
+	set	1, %o1			/* %o1 = 1 */
+	be,a	0f			/* if (%o0 == 0xFF) goto 0f (else annul) */
+	set	0, %o1			/* delay - %o1 = 0 */
 0:	retl
-	mov	%o1, %o0		! return (%o1);
+	mov	%o1, %o0		/* return (%o1); */
 	SET_SIZE(dtrace_panic_trigger)
 
 /*
  * void vpanic(const char *format, va_list alist)
  *
  * The panic() and cmn_err() functions invoke vpanic() as a common entry point
- * into the panic code implemented in panicsys().  vpanic() is responsible
+ * into the panic code implemented in panicsys(). vpanic() is responsible
  * for passing through the format string and arguments, and constructing a
  * regs structure on the stack into which it saves the current register
- * values.  If we are not dying due to a fatal trap, these registers will
- * then be preserved in panicbuf as the current processor state.  Before
+ * values. If we are not dying due to a fatal trap, these registers will
+ * then be preserved in panicbuf as the current processor state. Before
  * invoking panicsys(), vpanic() activates the first panic trigger (see
- * common/os/panic.c) and switches to the panic_stack if successful.  Note that
+ * common/os/panic.c) and switches to the panic_stack if successful. Note that
  * DTrace takes a slightly different panic path if it must panic from probe
  * context.  Instead of calling panic, it calls into dtrace_vpanic(), which
  * sets up the initial stack as vpanic does, calls dtrace_panic_trigger(), and
@@ -1017,29 +1021,29 @@ $done3:
 
 	ENTRY_NP(vpanic)
 
-	save	%sp, -SA(MINFRAME + REGSIZE), %sp	! save and allocate regs
+	save	%sp, -SA(MINFRAME + REGSIZE), %sp	/* save and allocate regs */
 
 	!
 	! The v9 struct regs has a 64-bit r_tstate field, which we use here
 	! to store the %ccr, %asi, %pstate, and %cwp as they would appear
-	! in %tstate if a trap occurred.  We leave it up to the debugger to
+	! in %tstate if a trap occurred. We leave it up to the debugger to
 	! realize what happened and extract the register values.
 	!
-	rd	%ccr, %l0				! %l0 = %ccr
-	sllx	%l0, TSTATE_CCR_SHIFT, %l0		! %l0 <<= CCR_SHIFT
-	rd	%asi, %l1				! %l1 = %asi
-	sllx	%l1, TSTATE_ASI_SHIFT, %l1		! %l1 <<= ASI_SHIFT
-	or	%l0, %l1, %l0				! %l0 |= %l1
-	rdpr	%pstate, %l1				! %l1 = %pstate
-	sllx	%l1, TSTATE_PSTATE_SHIFT, %l1		! %l1 <<= PSTATE_SHIFT
-	or	%l0, %l1, %l0				! %l0 |= %l1
-	rdpr	%cwp, %l1				! %l1 = %cwp
-	sllx	%l1, TSTATE_CWP_SHIFT, %l1		! %l1 <<= CWP_SHIFT
-	or	%l0, %l1, %l0				! %l0 |= %l1
+	rd	%ccr, %l0				/* %l0 = %ccr */
+	sllx	%l0, TSTATE_CCR_SHIFT, %l0		/* %l0 <<= CCR_SHIFT */
+	rd	%asi, %l1				/* %l1 = %asi */
+	sllx	%l1, TSTATE_ASI_SHIFT, %l1		/* %l1 <<= ASI_SHIFT */
+	or	%l0, %l1, %l0				/* %l0 |= %l1 */
+	rdpr	%pstate, %l1				/* %l1 = %pstate */
+	sllx	%l1, TSTATE_PSTATE_SHIFT, %l1		/* %l1 <<= PSTATE_SHIFT */
+	or	%l0, %l1, %l0				/* %l0 |= %l1 */
+	rdpr	%cwp, %l1				/* %l1 = %cwp */
+	sllx	%l1, TSTATE_CWP_SHIFT, %l1		/* %l1 <<= CWP_SHIFT */
+	or	%l0, %l1, %l0				/* %l0 |= %l1 */
 
-	set	vpanic, %l1				! %l1 = %pc (vpanic)
-	add	%l1, 4, %l2				! %l2 = %npc (vpanic+4)
-	rd	%y, %l3					! %l3 = %y
+	set	vpanic, %l1				/* %l1 = %pc (vpanic) */
+	add	%l1, 4, %l2				/* %l2 = %npc (vpanic+4) */
+	rd	%y, %l3					/* %l3 = %y */
 	!
 	! Flush register windows before panic_trigger() in order to avoid a
 	! problem that a dump hangs if flush_windows() causes another panic.
@@ -1049,20 +1053,20 @@ $done3:
 
 	sethi	%hi(panic_quiesce), %o0
 	call	panic_trigger
-	or	%o0, %lo(panic_quiesce), %o0		! if (!panic_trigger(
+	or	%o0, %lo(panic_quiesce), %o0		/* if (!panic_trigger( */
 
 vpanic_common:
-	tst	%o0					!     &panic_quiesce))
-	be	0f					!   goto 0f;
-	mov	%o0, %l4				!   delay - %l4 = %o0
+	tst	%o0					/*     &panic_quiesce)) */
+	be	0f					/*   goto 0f; */
+	mov	%o0, %l4				/*   delay - %l4 = %o0 */
 
 	!
 	! If panic_trigger() was successful, we are the first to initiate a
 	! panic: switch to the panic_stack.
 	!
-	set	panic_stack, %o0			! %o0 = panic_stack
-	set	PANICSTKSIZE, %o1			! %o1 = size of stack
-	add	%o0, %o1, %o0				! %o0 = top of stack
+	set	panic_stack, %o0			/* %o0 = panic_stack */
+	set	PANICSTKSIZE, %o1			/* %o1 = size of stack */
+	add	%o0, %o1, %o0				/* %o0 = top of stack */
 
 	sub	%o0, SA(MINFRAME + REGSIZE) + STACK_BIAS, %sp
 
@@ -1093,11 +1097,11 @@ vpanic_common:
 	stn	%l2, [%sp + STACK_BIAS + SA(MINFRAME) + NPC_OFF]
 	st	%l3, [%sp + STACK_BIAS + SA(MINFRAME) + Y_OFF]
 
-	mov	%l4, %o3				! %o3 = on_panic_stack
-	add	%sp, STACK_BIAS + SA(MINFRAME), %o2	! %o2 = &regs
-	mov	%i1, %o1				! %o1 = alist
-	call	panicsys				! panicsys();
-	mov	%i0, %o0				! %o0 = format
+	mov	%l4, %o3				/* %o3 = on_panic_stack */
+	add	%sp, STACK_BIAS + SA(MINFRAME), %o2	/* %o2 = &regs */
+	mov	%i1, %o1				/* %o1 = alist */
+	call	panicsys				/* panicsys(); */
+	mov	%i0, %o0				/* %o0 = format */
 	ret
 	restore
 
@@ -1105,29 +1109,29 @@ vpanic_common:
 
 	ENTRY_NP(dtrace_vpanic)
 
-	save	%sp, -SA(MINFRAME + REGSIZE), %sp	! save and allocate regs
+	save	%sp, -SA(MINFRAME + REGSIZE), %sp	/* save and allocate regs */
 
 	!
 	! The v9 struct regs has a 64-bit r_tstate field, which we use here
 	! to store the %ccr, %asi, %pstate, and %cwp as they would appear
-	! in %tstate if a trap occurred.  We leave it up to the debugger to
+	! in %tstate if a trap occurred. We leave it up to the debugger to
 	! realize what happened and extract the register values.
 	!
-	rd	%ccr, %l0				! %l0 = %ccr
-	sllx	%l0, TSTATE_CCR_SHIFT, %l0		! %l0 <<= CCR_SHIFT
-	rd	%asi, %l1				! %l1 = %asi
-	sllx	%l1, TSTATE_ASI_SHIFT, %l1		! %l1 <<= ASI_SHIFT
-	or	%l0, %l1, %l0				! %l0 |= %l1
-	rdpr	%pstate, %l1				! %l1 = %pstate
-	sllx	%l1, TSTATE_PSTATE_SHIFT, %l1		! %l1 <<= PSTATE_SHIFT
-	or	%l0, %l1, %l0				! %l0 |= %l1
-	rdpr	%cwp, %l1				! %l1 = %cwp
-	sllx	%l1, TSTATE_CWP_SHIFT, %l1		! %l1 <<= CWP_SHIFT
-	or	%l0, %l1, %l0				! %l0 |= %l1
+	rd	%ccr, %l0				/* %l0 = %ccr */
+	sllx	%l0, TSTATE_CCR_SHIFT, %l0		/* %l0 <<= CCR_SHIFT */
+	rd	%asi, %l1				/* %l1 = %asi */
+	sllx	%l1, TSTATE_ASI_SHIFT, %l1		/* %l1 <<= ASI_SHIFT */
+	or	%l0, %l1, %l0				/* %l0 |= %l1 */
+	rdpr	%pstate, %l1				/* %l1 = %pstate */
+	sllx	%l1, TSTATE_PSTATE_SHIFT, %l1		/* %l1 <<= PSTATE_SHIFT */
+	or	%l0, %l1, %l0				/* %l0 |= %l1 */
+	rdpr	%cwp, %l1				/* %l1 = %cwp */
+	sllx	%l1, TSTATE_CWP_SHIFT, %l1		/* %l1 <<= CWP_SHIFT */
+	or	%l0, %l1, %l0				/* %l0 |= %l1 */
 
-	set	dtrace_vpanic, %l1			! %l1 = %pc (vpanic)
-	add	%l1, 4, %l2				! %l2 = %npc (vpanic+4)
-	rd	%y, %l3					! %l3 = %y
+	set	dtrace_vpanic, %l1			/* %l1 = %pc (vpanic) */
+	add	%l1, 4, %l2				/* %l2 = %npc (vpanic+4) */
+	rd	%y, %l3					/* %l3 = %y */
 	!
 	! Flush register windows before panic_trigger() in order to avoid a
 	! problem that a dump hangs if flush_windows() causes another panic.
@@ -1137,16 +1141,16 @@ vpanic_common:
 
 	sethi	%hi(panic_quiesce), %o0
 	call	dtrace_panic_trigger
-	or	%o0, %lo(panic_quiesce), %o0		! if (!panic_trigger(
+	or	%o0, %lo(panic_quiesce), %o0		/* if (!panic_trigger( */
 
 	ba,a	vpanic_common
 	SET_SIZE(dtrace_vpanic)
 
 	ENTRY(get_subcc_ccr)
-	wr	%g0, %ccr	! clear condition codes
+	wr	%g0, %g0, %ccr	/* clear condition codes */
 	subcc	%o0, %o1, %g0
 	retl
-	rd	%ccr, %o0	! return condition codes
+	rd	%ccr, %o0	/* return condition codes */
 	SET_SIZE(get_subcc_ccr)
 
 	ENTRY_NP(ftrace_interrupt_disable)

@@ -22,29 +22,21 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-#if defined(lint) || defined(__lint)
-
-#include "arcfour.h"
-
-/* ARGSUSED */
-void
-arcfour_crypt_aligned(ARCFour_key *key, size_t len, uchar_t *in, uchar_t *out)
-{}
-
-#else	/* lint || __lint */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 	.register	%g2,#scratch
 	.register	%g3,#scratch
 
-	.section	".text",#alloc,#execinstr
-	.file	"arcfour_crypt_asm.s"
+	.section	.text, #alloc, #execinstr
+	.file	"arcfour_crypt_asm.S"
 
-	.section	".text",#alloc
-	.align	32
+	.section	.text
+	.balign	32
 
-	.section	".text",#alloc,#execinstr
-	.align	32
+	.section	.text, #alloc, #execinstr
+	.balign	32
 	.skip	32
 
 /*
@@ -518,5 +510,3 @@ arcfour_crypt_aligned:
 
 	.type	arcfour_crypt_aligned,2
 	.size	arcfour_crypt_aligned,(. - arcfour_crypt_aligned)
-
-#endif	/* lint || __lint */

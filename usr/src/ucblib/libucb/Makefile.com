@@ -104,7 +104,7 @@ CERRWARN +=	-_gcc=-Wno-uninitialized
 # not linted
 SMATCH=off
 
-ASFLAGS= -D__STDC__ -DLOCORE -D_SYS_SYS_S -D_ASM $(CPPFLAGS)
+ASFLAGS= -DLOCORE -D_SYS_SYS_S -D_ASM $(CPPFLAGS)
 
 pics/%.o:= ASFLAGS += $(AS_PICFLAGS)
 
@@ -133,8 +133,8 @@ pics/%.o: sys/%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
 
-pics/%.o: ../$(MACH)/sys/%.s
-	$(BUILD.s)
+pics/%.o: ../$(MACH)/sys/%.S
+	$(AS) $(AS_PICFLAGS) -D_ASM $(ARCH) -I$(SRC)/uts/$(MACH) $< -c -o $@
 	$(POST_PROCESS_S_O)
 
 #

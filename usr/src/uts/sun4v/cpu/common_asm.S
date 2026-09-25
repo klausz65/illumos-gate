@@ -20,6 +20,7 @@
  */
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2026 Klaus Ziegler.
  */
 
 #include "assym.h"
@@ -58,6 +59,10 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 #define	ICACHE_FLUSHSZ	0x20
 
 /*
@@ -77,12 +82,12 @@
 
 	cmp	%o2, %o0		! If the value we wrote was in the
 	bg,pt	%xcc, 2f		!   future, then blow out of here.
-	  sllx	%o3, 1, %o3		! If not, then double our step size,
+	sllx	%o3, 1, %o3		! If not, then double our step size,
 	ba,pt	%xcc, 1b		!   and take another lap.
-	  add	%o0, %o3, %o2		!
+	add	%o0, %o3, %o2		!
 2:
 	retl
-	  nop
+	nop
 	SET_SIZE(tickcmpr_set)
 
 	ENTRY_NP(tickcmpr_disable)
@@ -90,10 +95,10 @@
 	sllx	%g1, TICKINT_DIS_SHFT, %o0
 	WR_TICKCMPR(%o0,%o4,%o5,__LINE__)	! Write to TICK_CMPR
 	retl
-	  nop
+	nop
 	SET_SIZE(tickcmpr_disable)
 
-	.seg	".text"
+	.section	.text
 tick_write_delta_panic:
 	.asciz	"tick_write_delta: not supported, delta: 0x%lx"
 
@@ -110,18 +115,18 @@ tick_write_delta_panic:
  */
 	ENTRY_NP(tick_write_delta)
 	sethi	%hi(tick_write_delta_panic), %o1
-        save    %sp, -SA(MINFRAME), %sp ! get a new window to preserve caller
+	save	%sp, -SA(MINFRAME), %sp ! get a new window to preserve caller
 	mov	%i0, %o1
 	call	panic
-	  or	%i1, %lo(tick_write_delta_panic), %o0
+	or	%i1, %lo(tick_write_delta_panic), %o0
 	/*NOTREACHED*/
 	retl
-	  nop
+	nop
 
 	ENTRY_NP(tickcmpr_disabled)
 	RD_TICKCMPR(%g1,%o0,%o1,__LINE__)
 	retl
-	  srlx	%g1, TICKINT_DIS_SHFT, %o0
+	srlx	%g1, TICKINT_DIS_SHFT, %o0
 	SET_SIZE(tickcmpr_disabled)
 
 /*
@@ -132,7 +137,7 @@ tick_write_delta_panic:
 	ALTENTRY(randtick)
 	GET_NATIVE_TIME(%o0,%o2,%o3,__LINE__)
 	retl
-	  nop
+	nop
 	SET_SIZE(randtick)
 	SET_SIZE(gettick)
 
@@ -176,13 +181,13 @@ tick_write_delta_panic:
 	GET_HRTIME(%g1,%o0,%o1,%o2,%o3,%o4,%o5,%g2,__LINE__)
 							! %g1 = hrtime
 	retl
-	  mov	%g1, %o0
+	mov	%g1, %o0
 	SET_SIZE(gethrtime)
 
 	ENTRY_NP(gethrtime_unscaled)
 	GET_NATIVE_TIME(%g1,%o2,%o3,__LINE__)	! %g1 = native time
 	retl
-	  mov	%g1, %o0
+	mov	%g1, %o0
 	SET_SIZE(gethrtime_unscaled)
 
 	ENTRY_NP(gethrtime_waitfree)
@@ -190,7 +195,7 @@ tick_write_delta_panic:
 	GET_NATIVE_TIME(%g1,%o2,%o3,__LINE__)	! %g1 = native time
 	NATIVE_TIME_TO_NSEC(%g1, %o2, %o3)
 	retl
-	  mov	%g1, %o0
+	mov	%g1, %o0
 	SET_SIZE(dtrace_gethrtime)
 	SET_SIZE(gethrtime_waitfree)
 
@@ -201,22 +206,22 @@ tick_write_delta_panic:
 	! hrtime_t's are signed, max hrtime_t must be positive
 	mov	-1, %o2
 	brlz,a	%g1, 1f
-	  srlx	%o2, 1, %g1
+	srlx	%o2, 1, %g1
 1:
 	retl
-	  mov	%g1, %o0
+	mov	%g1, %o0
 	SET_SIZE(gethrtime_max)
 
 	ENTRY(scalehrtime)
 	ldx	[%o0], %o1
 	NATIVE_TIME_TO_NSEC(%o1, %o2, %o3)
 	retl
-	  stx	%o1, [%o0]
+	stx	%o1, [%o0]
 	SET_SIZE(scalehrtime)
 
 /*
  * Fast trap to return a timestamp, uses trap window, leaves traps
- * disabled.  Returns a 64-bit nanosecond timestamp in %o0 and %o1.
+ * disabled. Returns a 64-bit nanosecond timestamp in %o0 and %o1.
  *
  * This is the handler for the ST_GETHRTIME trap.
  */
@@ -239,18 +244,18 @@ tick_write_delta_panic:
 	brz,pt	adj, 3f;		/* no adjustments, it's easy */	\
 	add	hrestnsec, nslt, hrestnsec; /* hrest.tv_nsec += nslt */	\
 	brlz,pn	adj, 2f;		/* if hrestime_adj negative */	\
-	  srlx	nslt, ADJ_SHIFT, nslt;	/* delay: nslt >>= 4 */		\
+	srlx	nslt, ADJ_SHIFT, nslt;	/* delay: nslt >>= 4 */		\
 	subcc	adj, nslt, %g0;		/* hrestime_adj - nslt/16 */	\
 	movg	%xcc, nslt, adj;	/* adj by min(adj, nslt/16) */	\
 	ba	3f;			/* go convert to sec/nsec */	\
-	  add	hrestnsec, adj, hrestnsec; /* delay: apply adjustment */ \
+	add	hrestnsec, adj, hrestnsec; /* delay: apply adjustment */ \
 2:	addcc	adj, nslt, %g0;		/* hrestime_adj + nslt/16 */	\
 	bge,a,pt %xcc, 3f;		/* is adj less negative? */	\
-	  add	hrestnsec, adj, hrestnsec; /* yes: hrest.nsec += adj */	\
+	add	hrestnsec, adj, hrestnsec; /* yes: hrest.nsec += adj */	\
 	sub	hrestnsec, nslt, hrestnsec; /* no: hrest.nsec -= nslt/16 */ \
 3:	cmp	hrestnsec, nano;	/* more than a billion? */	\
 	bl,pt	%xcc, 4f;		/* if not, we're done */	\
-	  nop;				/* delay: do nothing :( */	\
+	nop;				/* delay: do nothing :( */	\
 	add	hrestsec, 1, hrestsec;	/* hrest.tv_sec++; */		\
 	sub	hrestnsec, nano, hrestnsec; /* hrest.tv_nsec -= NANOSEC; */	\
 	ba,a	3b;			/* check >= billion again */	\
@@ -261,7 +266,7 @@ tick_write_delta_panic:
 	CONV_HRESTIME(%o1, %o2, %o3, %o4, %o5)
 	stn	%o1, [%o0]
 	retl
-	  stn	%o2, [%o0 + CLONGSIZE]
+	stn	%o2, [%o0 + CLONGSIZE]
 	SET_SIZE(gethrestime)
 
 /*
@@ -272,14 +277,14 @@ tick_write_delta_panic:
 	GET_HRESTIME(%o0,%o2,%o3,%o4,%o5,%g1,%g2,%g3,%g4,__LINE__)
 	CONV_HRESTIME(%o0, %o2, %o3, %o4, %o5)
 	retl					! %o0 current hrestime seconds
-	  nop
+	nop
 	SET_SIZE(gethrestime_sec)
 
 /*
- * Returns the hrestime on the last tick.  This is simpler than gethrestime()
- * and gethrestime_sec():  no conversion is required.  gethrestime_lasttick()
+ * Returns the hrestime on the last tick. This is simpler than gethrestime()
+ * and gethrestime_sec():  no conversion is required. gethrestime_lasttick()
  * follows the same locking algorithm as GET_HRESTIME and GET_HRTIME,
- * outlined in detail in clock.h.  (Unlike GET_HRESTIME/GET_HRTIME, we don't
+ * outlined in detail in clock.h. (Unlike GET_HRESTIME/GET_HRTIME, we don't
  * rely on load dependencies to effect the membar #LoadLoad, instead declaring
  * it explicitly.)
  */
@@ -296,13 +301,13 @@ tick_write_delta_panic:
 	lduw	[%o1 + %lo(hres_lock)], %o3	! Reload lock value
 	cmp	%o3, %o2			! If lock is locked or has
 	bne	0b				!   changed, retry.
-	  stn	%g1, [%o0]			! Delay: store seconds
+	stn	%g1, [%o0]			! Delay: store seconds
 	retl
-	  stn	%g2, [%o0 + CLONGSIZE]		! Delay: store nanoseconds
+	stn	%g2, [%o0 + CLONGSIZE]		! Delay: store nanoseconds
 	SET_SIZE(gethrestime_lasttick)
 
 /*
- * Fast trap for gettimeofday().  Returns a timestruc_t in %o0 and %o1.
+ * Fast trap for gettimeofday(). Returns a timestruc_t in %o0 and %o1.
  *
  * This is the handler for the ST_GETHRESTIME trap.
  */
@@ -315,17 +320,17 @@ tick_write_delta_panic:
 
 /*
  * Fast trap to return lwp virtual time, uses trap window, leaves traps
- * disabled.  Returns a 64-bit number in %o0:%o1, which is the number
+ * disabled. Returns a 64-bit number in %o0:%o1, which is the number
  * of nanoseconds consumed.
  *
  * This is the handler for the ST_GETHRVTIME trap.
  *
  * Register usage:
  *	%o0, %o1 = return lwp virtual time
- * 	%o2 = CPU/thread
- * 	%o3 = lwp
- * 	%g1 = scratch
- * 	%g5 = scratch
+ *	%o2 = CPU/thread
+ *	%o3 = lwp
+ *	%g1 = scratch
+ *	%g5 = scratch
  */
 	ENTRY_NP(get_virtime)
 	GET_NATIVE_TIME(%g5,%g1,%g2,__LINE__)	! %g5 = native time in ticks
@@ -355,7 +360,7 @@ tick_write_delta_panic:
 
 
 
-	.seg	".text"
+	.section	.text
 hrtime_base_panic:
 	.asciz	"hrtime_base stepping back"
 
@@ -367,13 +372,13 @@ hrtime_base_panic:
 	ldstub	[%l4 + %lo(hres_lock + HRES_LOCK_OFFSET)], %l5	! try locking
 7:	tst	%l5
 	bz,pt	%xcc, 8f			! if we got it, drive on
-	  ld	[%l4 + %lo(nsec_scale)], %l5	! delay: %l5 = scaling factor
+	ld	[%l4 + %lo(nsec_scale)], %l5	! delay: %l5 = scaling factor
 	ldub	[%l4 + %lo(hres_lock + HRES_LOCK_OFFSET)], %l5
 9:	tst	%l5
 	bz,a,pn	%xcc, 7b
-	  ldstub	[%l4 + %lo(hres_lock + HRES_LOCK_OFFSET)], %l5
+	ldstub	[%l4 + %lo(hres_lock + HRES_LOCK_OFFSET)], %l5
 	ba,pt	%xcc, 9b
-	  ldub	[%l4 + %lo(hres_lock + HRES_LOCK_OFFSET)], %l5
+	ldub	[%l4 + %lo(hres_lock + HRES_LOCK_OFFSET)], %l5
 8:
 	membar	#StoreLoad|#StoreStore
 
@@ -391,7 +396,7 @@ hrtime_base_panic:
 	ldx	[%l4 + %lo(hrtime_base)], %l1
 	cmp	%l1, %l0
 	bg,pn	%xcc, 9f
-	  nop
+	nop
 
 	stx	%l0, [%l4 + %lo(hrtime_base)]	! update hrtime_base
 
@@ -402,20 +407,20 @@ hrtime_base_panic:
 	brz	%l0, 2f
 						! hrestime_adj == 0 ?
 						! yes, skip adjustments
-	  clr	%l5				! delay: set adj to zero
+	clr	%l5				! delay: set adj to zero
 	tst	%l0				! is hrestime_adj >= 0 ?
 	bge,pt	%xcc, 1f			! yes, go handle positive case
-	  srl	%i1, ADJ_SHIFT, %l5		! delay: %l5 = adj
+	srl	%i1, ADJ_SHIFT, %l5		! delay: %l5 = adj
 
 	addcc	%l0, %l5, %g0			! hrestime_adj < -adj ?
 	bl,pt	%xcc, 2f			! yes, use current adj
-	  neg	%l5				! delay: %l5 = -adj
+	neg	%l5				! delay: %l5 = -adj
 	ba,pt	%xcc, 2f
-	  mov	%l0, %l5			! no, so set adj = hrestime_adj
+	mov	%l0, %l5			! no, so set adj = hrestime_adj
 1:
 	subcc	%l0, %l5, %g0			! hrestime_adj < adj ?
 	bl,a,pt	%xcc, 2f			! yes, set adj = hrestime_adj
-	  mov	%l0, %l5			! delay: adj = hrestime_adj
+	mov	%l0, %l5			! delay: adj = hrestime_adj
 2:
 	ldx	[%l4 + %lo(timedelta)], %l0	! %l0 = timedelta
 	sub	%l0, %l5, %l0			! timedelta -= adj
@@ -432,7 +437,7 @@ hrtime_base_panic:
 	set	NANOSEC, %l5			! %l5 = NANOSEC
 	cmp	%i3, %l5
 	bl,pt	%xcc, 5f			! if hrestime.tv_nsec < NANOSEC
-	  sethi	%hi(one_sec), %i1		! delay
+	sethi	%hi(one_sec), %i1		! delay
 	add	%i2, 0x1, %i2			! hrestime.tv_sec++
 	sub	%i3, %l5, %i3			! hrestime.tv_nsec - NANOSEC
 	mov	0x1, %l5
@@ -460,11 +465,11 @@ hrtime_base_panic:
 
 	sethi	%hi(hrtime_base_panic), %o0
 	call	panic
-	  or	%o0, %lo(hrtime_base_panic), %o0
+	or	%o0, %lo(hrtime_base_panic), %o0
 
 	SET_SIZE(hres_tick)
 
-	.seg	".text"
+	.section	.text
 kstat_q_panic_msg:
 	.asciz	"kstat_q_exit: qlen == 0"
 
@@ -472,7 +477,7 @@ kstat_q_panic_msg:
 	save	%sp, -SA(MINFRAME), %sp
 	sethi	%hi(kstat_q_panic_msg), %o0
 	call	panic
-	  or	%o0, %lo(kstat_q_panic_msg), %o0
+	or	%o0, %lo(kstat_q_panic_msg), %o0
 	/*NOTREACHED*/
 	SET_SIZE(kstat_q_panic)
 
@@ -519,13 +524,13 @@ QRETURN;								\
 	stx	%g1, [%o0 + QTYPE##LASTUPDATE]; /* lastupdate = now */
 #endif
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_waitq_enter)
 	GET_NATIVE_TIME(%g1,%g2,%g3,__LINE__)
 	KSTAT_Q_UPDATE(add, BRZPT, 1f, 1:retl, KSTAT_IO_W)
 	SET_SIZE(kstat_waitq_enter)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_waitq_exit)
 	GET_NATIVE_TIME(%g1,%g2,%g3,__LINE__)
 #if defined(DEBUG)
@@ -535,13 +540,13 @@ QRETURN;								\
 #endif
 	SET_SIZE(kstat_waitq_exit)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_runq_enter)
 	GET_NATIVE_TIME(%g1,%g2,%g3,__LINE__)
 	KSTAT_Q_UPDATE(add, BRZPT, 1f, 1:retl, KSTAT_IO_R)
 	SET_SIZE(kstat_runq_enter)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_runq_exit)
 	GET_NATIVE_TIME(%g1,%g2,%g3,__LINE__)
 #if defined(DEBUG)
@@ -551,7 +556,7 @@ QRETURN;								\
 #endif
 	SET_SIZE(kstat_runq_exit)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_waitq_to_runq)
 	GET_NATIVE_TIME(%g1,%g2,%g3,__LINE__)
 #if defined(DEBUG)
@@ -562,7 +567,7 @@ QRETURN;								\
 	KSTAT_Q_UPDATE(add, BRZPT, 1f, 1:retl, KSTAT_IO_R)
 	SET_SIZE(kstat_waitq_to_runq)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_runq_back_to_waitq)
 	GET_NATIVE_TIME(%g1,%g2,%g3,__LINE__)
 #if defined(DEBUG)
@@ -582,13 +587,27 @@ QRETURN;								\
 	 * assumes that they all have the same high 22 address bits (so
 	 * there's only one sethi).
 	 */
-	.seg	".data"
+	.section	.data
 	.global	timedelta, hres_last_tick, hrestime, hrestime_adj
 	.global	hres_lock, nsec_scale, hrtime_base, traptrace_use_stick
 	.global	nsec_shift, adj_shift, native_tick_offset, native_stick_offset
 
 	/* XXX - above comment claims 128-bytes is necessary */
-	.align	64
+#if defined(__GNUC__)
+	.type timedelta, @object
+	.type hres_last_tick, @object
+	.type hrestime, @object
+	.type hrestime_adj, @object
+	.type hres_lock, @object
+	.type nsec_scale, @object
+	.type hrtime_base, @object
+	.type traptrace_use_stick, @object
+	.type nsec_shift, @object
+	.type adj_shift, @object
+	.type native_tick_offset, @object
+	.type native_stick_offset, @object
+#endif
+	.balign	64
 timedelta:
 	.word	0, 0		/* int64_t */
 hres_last_tick:
@@ -609,20 +628,34 @@ nsec_shift:
 	.word	NSEC_SHIFT
 adj_shift:
 	.word	ADJ_SHIFT
-	.align	8
+	.balign	8
 native_tick_offset:
 	.word	0, 0
-	.align	8
+	.balign	8
 native_stick_offset:
 	.word	0, 0
 
+#if defined(__GNUC__)
+	.size timedelta, 8
+	.size hres_last_tick, 8
+	.size hrestime, 16
+	.size hrestime_adj, 8
+	.size hres_lock, 4
+	.size nsec_scale, 4
+	.size hrtime_base, 8
+	.size traptrace_use_stick, 4
+	.size nsec_shift, 4
+	.size adj_shift, 4
+	.size native_tick_offset, 8
+	.size native_stick_offset, 8
+#endif
 
 /*
  * drv_usecwait(clock_t n)	[DDI/DKI - section 9F]
  * usec_delay(int n)		[compatibility - should go one day]
  * Delay by spinning.
  *
- * delay for n microseconds.  numbers <= 0 delay 1 usec
+ * delay for n microseconds. numbers <= 0 delay 1 usec
  *
  * With UltraSPARC-III the combination of supporting mixed-speed CPUs
  * and variable clock rate for power management requires that we
@@ -632,7 +665,7 @@ native_stick_offset:
 	ENTRY(drv_usecwait)
 	ALTENTRY(usec_delay)
 	brlez,a,pn %o0, 0f
-	  mov	1, %o0
+	mov	1, %o0
 0:
 	sethi	%hi(sticks_per_usec), %o1
 	lduw	[%o1 + %lo(sticks_per_usec)], %o1
@@ -644,9 +677,9 @@ native_stick_offset:
 1:	cmp	%o1, %o2
 	GET_NATIVE_TIME(%o2,%o3,%o4,__LINE__)
 	bgeu,pt	%xcc, 1b
-	  nop
+	nop
 	retl
-	  nop
+	nop
 	SET_SIZE(usec_delay)
 	SET_SIZE(drv_usecwait)
 
@@ -661,21 +694,21 @@ native_stick_offset:
 	rdpr	%tpc, %g5
 	btst	TSTATE_PRIV, %g6		! trap from supervisor mode?
 	bnz,a,pt %xcc, 1f
-	  stn	%g5, [%g1 + CPU_PROFILE_PC]	! if so, record kernel PC
+	stn	%g5, [%g1 + CPU_PROFILE_PC]	! if so, record kernel PC
 	stn	%g5, [%g1 + CPU_PROFILE_UPC]	! if not, record user PC
 	ba	pil_interrupt_common		! must be large-disp branch
-	  stn	%g0, [%g1 + CPU_PROFILE_PC]	! zero kernel PC
+	stn	%g0, [%g1 + CPU_PROFILE_PC]	! zero kernel PC
 1:	ba	pil_interrupt_common		! must be large-disp branch
-	  stn	%g0, [%g1 + CPU_PROFILE_UPC]	! zero user PC
+	stn	%g0, [%g1 + CPU_PROFILE_UPC]	! zero user PC
 	SET_SIZE(pil14_interrupt)
 
 	ENTRY_NP(tick_rtt)
 	!
 	! Load TICK_COMPARE into %o5; if bit 63 is set, then TICK_COMPARE is
-	! disabled.  If TICK_COMPARE is enabled, we know that we need to
-	! reenqueue the interrupt request structure.  We'll then check TICKINT
+	! disabled. If TICK_COMPARE is enabled, we know that we need to
+	! reenqueue the interrupt request structure. We'll then check TICKINT
 	! in SOFTINT; if it's set, then we know that we were in a TICK_COMPARE
-	! interrupt.  In this case, TICK_COMPARE may have been rewritten
+	! interrupt. In this case, TICK_COMPARE may have been rewritten
 	! recently; we'll compare %o5 to the current time to verify that it's
 	! in the future.
 	!
@@ -685,36 +718,36 @@ native_stick_offset:
 	RD_TICKCMPR(%o5,%g1,%g2,__LINE__)
 	srlx	%o5, TICKINT_DIS_SHFT, %g1
 	brnz,pt	%g1, 2f
-	  nop
+	nop
 
-	rdpr 	%pstate, %g5
+	rdpr	%pstate, %g5
 	andn	%g5, PSTATE_IE, %g1
 	wrpr	%g0, %g1, %pstate		! Disable vec interrupts
 
 	sethi	%hi(cbe_level14_inum), %o1
 	ldx	[%o1 + %lo(cbe_level14_inum)], %o1
 	call	intr_enqueue_req ! preserves %o5 and %g5
-	  mov	PIL_14, %o0
+	mov	PIL_14, %o0
 
 	! Check SOFTINT for TICKINT/STICKINT
 	rd	SOFTINT, %o4
 	set	(TICK_INT_MASK | STICK_INT_MASK), %o0
 	andcc	%o4, %o0, %g0
 	bz,a,pn	%icc, 2f
-	  wrpr	%g0, %g5, %pstate		! Enable vec interrupts
+	wrpr	%g0, %g5, %pstate		! Enable vec interrupts
 
 	! clear TICKINT/STICKINT
 	wr	%o0, CLEAR_SOFTINT
 
 	!
 	! Now that we've cleared TICKINT, we can reread %tick and confirm
-	! that the value we programmed is still in the future.  If it isn't,
+	! that the value we programmed is still in the future. If it isn't,
 	! we need to reprogram TICK_COMPARE to fire as soon as possible.
 	!
 	GET_NATIVE_TIME(%o0,%g1,%g2,__LINE__)	! %o0 = tick
 	cmp	%o5, %o0			! In the future?
 	bg,a,pt	%xcc, 2f			! Yes, drive on.
-	  wrpr	%g0, %g5, %pstate		!   delay: enable vec intr
+	wrpr	%g0, %g5, %pstate		!   delay: enable vec intr
 
 	!
 	! If we're here, then we have programmed TICK_COMPARE with a %tick
@@ -727,45 +760,45 @@ native_stick_offset:
 	GET_NATIVE_TIME(%o0,%g1,%g2,__LINE__)	! %o0 = tick
 	cmp	%o5, %o0			! In the future?
 	bg,a,pt	%xcc, 2f			! Yes, drive on.
-	  wrpr	%g0, %g5, %pstate		!    delay: enable vec intr
+	wrpr	%g0, %g5, %pstate		!    delay: enable vec intr
 	ba	1b				! No, try again.
-	  sllx	%o4, 1, %o4			!    delay: double step size
+	sllx	%o4, 1, %o4			!    delay: double step size
 
 2:	ba	current_thread_complete
-	  nop
+	nop
 	SET_SIZE(tick_rtt)
 
 /*
  * Level-15 interrupt prologue.
  */
-       ENTRY_NP(pil15_interrupt)
-       CPU_ADDR(%g1, %g2)
-       rdpr    %tstate, %g6
-       rdpr    %tpc, %g5
-       btst    TSTATE_PRIV, %g6                ! trap from supervisor mode?
-       bnz,a,pt %xcc, 1f
-       stn     %g5, [%g1 + CPU_CPCPROFILE_PC]  ! if so, record kernel PC
-       stn     %g5, [%g1 + CPU_CPCPROFILE_UPC] ! if not, record user PC
-       ba      pil15_epilogue                  ! must be large-disp branch
-       stn     %g0, [%g1 + CPU_CPCPROFILE_PC]  ! zero kernel PC
-1:     ba      pil15_epilogue                  ! must be large-disp branch
-       stn     %g0, [%g1 + CPU_CPCPROFILE_UPC] ! zero user PC
-       SET_SIZE(pil15_interrupt)
+	ENTRY_NP(pil15_interrupt)
+	CPU_ADDR(%g1, %g2)
+	rdpr	%tstate, %g6
+	rdpr	%tpc, %g5
+	btst	TSTATE_PRIV, %g6		! trap from supervisor mode?
+	bnz,a,pt %xcc, 1f
+	stn	%g5, [%g1 + CPU_CPCPROFILE_PC]	! if so, record kernel PC
+	stn	%g5, [%g1 + CPU_CPCPROFILE_UPC]	! if not, record user PC
+	ba	pil15_epilogue			! must be large-disp branch
+	stn	%g0, [%g1 + CPU_CPCPROFILE_PC]	! zero kernel PC
+1:	ba	pil15_epilogue			! must be large-disp branch
+	stn	%g0, [%g1 + CPU_CPCPROFILE_UPC]	! zero user PC
+	SET_SIZE(pil15_interrupt)
 
 /*
  * Prefetch a page_t for write or read, this assumes a linear
  * scan of sequential page_t's.
  */
 /* XXXQ These should be inline templates, not functions */
-        ENTRY(prefetch_page_w)
-        retl
-	  nop
-        SET_SIZE(prefetch_page_w)
+	ENTRY(prefetch_page_w)
+	retl
+	nop
+	SET_SIZE(prefetch_page_w)
 
-        ENTRY(prefetch_page_r)
-        retl
-	  nop
-        SET_SIZE(prefetch_page_r)
+	ENTRY(prefetch_page_r)
+	retl
+	nop
+	SET_SIZE(prefetch_page_r)
 
 /*
  * Prefetch struct smap for write.
@@ -773,7 +806,7 @@ native_stick_offset:
 /* XXXQ These should be inline templates, not functions */
 	ENTRY(prefetch_smap_w)
 	retl
-	  nop
+	nop
 	SET_SIZE(prefetch_smap_w)
 
 /*
@@ -787,18 +820,18 @@ native_stick_offset:
 	 * %o0 = vaddr
 	 * %o1 = sfmmup
 	 */
-	SFMMU_CPU_CNUM(%o1, %g1, %g2)   /* %g1 = sfmmu cnum on this CPU */
+	SFMMU_CPU_CNUM(%o1, %g1, %g2)		/* %g1 = sfmmu cnum on this CPU */
 
 	mov	%g1, %o1
 	mov	MAP_ITLB | MAP_DTLB, %o2
 	ta	MMU_UNMAP_ADDR
 	brz,pt	%o0, 1f
-	  nop
+	nop
 	ba	panic_bad_hcall
 	  mov	MMU_UNMAP_ADDR, %o1
 1:
- 	retl
-	  nop
+	retl
+	nop
 	SET_SIZE(vtag_flushpage)
 
 	ENTRY_NP(vtag_flushall)
@@ -808,12 +841,12 @@ native_stick_offset:
 	mov	MMU_DEMAP_ALL, %o5
 	ta	FAST_TRAP
 	brz,pt	%o0, 1f
-	  nop
+	nop
 	ba	panic_bad_hcall
 	  mov	MMU_DEMAP_ALL, %o1
 1:
 	retl
-	  nop
+	nop
 	SET_SIZE(vtag_flushall)
 
 	ENTRY_NP(vtag_unmap_perm_tl1)
@@ -873,7 +906,7 @@ native_stick_offset:
 	ta	MMU_UNMAP_ADDR
 	brz,pt	%o0, 1f
 	nop
-	  ba	ptl1_panic
+	ba	ptl1_panic
 	mov	PTL1_BAD_HCALL, %g1
 1:
 	mov	%g5, %o2
@@ -907,9 +940,9 @@ native_stick_offset:
 	and	%g2, SFMMU_PGCNT_MASK, %g7	/* g7 = pgcnt - 1 */
 	add	%g7, 1, %g7			/* g7 = pgcnt */
 
-        andn    %g2, SFMMU_PGCNT_MASK, %o0      /* %o0 = sfmmup */
+	andn	%g2, SFMMU_PGCNT_MASK, %o0	/* %o0 = sfmmup */
 
-	SFMMU_CPU_CNUM(%o0, %g2, %g6)    /* %g2 = sfmmu cnum on this CPU */
+	SFMMU_CPU_CNUM(%o0, %g2, %g6)		/* %g2 = sfmmu cnum on this CPU */
 
 	set	MMU_PAGESIZE, %g6		/* g6 = pgsize */
 
@@ -919,13 +952,13 @@ native_stick_offset:
 	mov	MAP_ITLB | MAP_DTLB, %o2
 	ta	MMU_UNMAP_ADDR
 	brz,pt	%o0, 2f
-	  nop
+	nop
 	ba	ptl1_panic
-	  mov	PTL1_BAD_HCALL, %g1
+	mov	PTL1_BAD_HCALL, %g1
 2:
 	deccc	%g7				/* decr pgcnt */
 	bnz,pt	%icc,1b
-	  add	%g1, %g6, %g1			/* go to nextpage */
+	add	%g1, %g6, %g1			/* go to nextpage */
 
 	mov	%g5, %o2
 	mov	%g4, %o1
@@ -947,7 +980,7 @@ native_stick_offset:
 	mov	MMU_DEMAP_ALL, %o5
 	ta	FAST_TRAP
 	brz,pt	%o0, 1f
-	  nop
+	nop
 	ba	ptl1_panic
 	  mov	PTL1_BAD_HCALL, %g1
 1:
@@ -960,9 +993,9 @@ native_stick_offset:
 	SET_SIZE(vtag_flushall_tl1)
 
 /*
- * flush_instr_mem:
+ *	flush_instr_mem:
  *	Flush a portion of the I-$ starting at vaddr
- * 	%o0 vaddr
+ *	%o0 vaddr
  *	%o1 bytes to be flushed
  */
 
@@ -973,10 +1006,10 @@ native_stick_offset:
 	flush	%o0
 	subcc	%o1, ICACHE_FLUSHSZ, %o1		! bytes = bytes-0x20
 	bgu,pt	%ncc, 1b
-	  add	%o0, ICACHE_FLUSHSZ, %o0		! vaddr = vaddr+0x20
+	add	%o0, ICACHE_FLUSHSZ, %o0		! vaddr = vaddr+0x20
 
 	retl
-	  nop
+	nop
 	SET_SIZE(flush_instr_mem)
 
 #if !defined(CUSTOM_FPZERO)
@@ -986,7 +1019,7 @@ native_stick_offset:
  */
 
 .global	fp_zero_zero
-.align 8
+.balign 8
 fp_zero_zero:
 	.xword	0
 

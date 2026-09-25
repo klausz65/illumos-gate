@@ -22,6 +22,9 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 /*
  * Routines for manipulating the UltraSPARC performance
@@ -32,7 +35,7 @@
 
 	ENTRY(ultra_setpcr)
 	retl
-	wr	%o0, %pcr
+	wr	%g0, %o0, %pcr
 	SET_SIZE(ultra_setpcr)
 
 	ENTRY(ultra_getpcr)
@@ -44,14 +47,14 @@
 #if defined(BB_ERRATA_1)	/* Writes to %pic may fail */
 	ba	1f
 	nop
-	.align	16
-1:	wr	%o0, %pic
+	.balign	16
+1:	wr	%g0, %o0, %pic
 	rd	%pic, %g0
 	retl
 	nop
 #else
 	retl
-	wr	%o0, %pic
+	wr	%g0, %o0, %pic
 #endif	/* BB_ERRATA_1 */
 	SET_SIZE(ultra_setpic)
 

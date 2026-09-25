@@ -48,8 +48,10 @@ ALL = cprboot
 
 include ../../common/Makefile.com
 include $(TOPDIR)/psm/Makefile.psm.64
-CFLAGS64 += -xchip=ultra
+CFLAGS64 += -xchip=ultra -Wc,-xcode=abs32
+CFLAGS64 += -xregs=no%appl
 CERRWARN += $(CNOWARN_UNINIT)
+CERRWARN += -_gcc=-Wno-dangling-pointer
 
 .KEEP_STATE:
 

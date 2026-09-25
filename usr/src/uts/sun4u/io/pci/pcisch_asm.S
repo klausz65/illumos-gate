@@ -23,6 +23,9 @@
  * Copyright 2003 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include <sys/asm_linkage.h>
 #include <sys/machthread.h>
@@ -32,8 +35,8 @@
 
 #define	VIS_BLOCKSIZE	64
 
-	.seg    ".data"
-	.align  VIS_BLOCKSIZE
+	.data
+	.balign  VIS_BLOCKSIZE
 	.type   sync_buf, #object
 sync_buf:
 	.skip   VIS_BLOCKSIZE

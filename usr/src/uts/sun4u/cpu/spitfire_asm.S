@@ -22,6 +22,9 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include "assym.h"
 
@@ -43,6 +46,10 @@
 #ifdef TRAPTRACE
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /* BEGIN CSTYLED */
 #define	DCACHE_FLUSHPAGE(arg1, arg2, tmp1, tmp2, tmp3)			\
@@ -409,7 +416,7 @@ lbl##1:                                                       ;\
 	  wrpr	%g0, %o5, %pstate		/* enable interrupts */
 	SET_SIZE(vtag_flushpage)
 
-        .seg    ".text"
+        .text
 .flushallmsg:
         .asciz  "sfmmu_asm: unimplemented flush operation"
 
@@ -537,13 +544,16 @@ lbl##1:                                                       ;\
  *		the tag created from the pfnum. If the tags match we flush
  *		the line.
  */
-	.seg	".data"
-	.align	8
+	.data
+	.balign	8
 	.global	dflush_type
+	.type	dflush_type, @object
+	.size	dflush_type, 4
 dflush_type:
-	.word	FLUSHPAGE_TYPE
-	.seg	".text"
+	.long	FLUSHPAGE_TYPE
+	.text
 
+	.balign	4
 	ENTRY(vac_flushpage)
 	/*
 	 * flush page from the d$
@@ -586,7 +596,7 @@ dflush_type:
 	.global _dispatch_status_busy
 _dispatch_status_busy:
 	.asciz	"ASI_INTR_DISPATCH_STATUS error: busy"
-	.align	4
+	.balign	4
 
 /*
  * Determine whether or not the IDSR is busy.
@@ -610,7 +620,7 @@ _dispatch_status_busy:
  *	%o0 - function or inumber to call
  *	%o1, %o2 - arguments (2 uint64_t's)
  */
-	.seg "text"
+	.text
 
 	ENTRY(init_mondo)
 #ifdef DEBUG
@@ -1174,7 +1184,7 @@ dis_err_panic1_resetskip:
 	mov	1, %g3			/* create mask */
 	sllx	%g3, 63, %g3		/*   for NPT bit */
 	ba,a,pt	%xcc, 2f
-	.align	64			/* Align to I$ boundary */
+	.balign	64			/* Align to I$ boundary */
 2:
 	rdpr	%tick, %g2		/* get tick register */
 	wrpr	%g3, %g2, %tick		/* write tick register, */
@@ -1739,7 +1749,7 @@ dis_err_panic1_resetskip:
          * Align on the ecache boundary in order to force
          * ciritical code section onto the same ecache line.
          */
-         .align 64
+         .balign 64
 
 1:
         set     S_EC_PARITY, %o3         	! clear tag, state invalid
@@ -1778,7 +1788,7 @@ dis_err_panic1_resetskip:
          * Align on the ecache boundary in order to force
          * ciritical code section onto the same ecache line.
          */
-         .align 64
+         .balign 64
 1:
 #ifdef HUMMINGBIRD
         set     HB_EC_PARITY, %o3         	! clear tag, state invalid

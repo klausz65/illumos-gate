@@ -23,6 +23,9 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include "assym.h"
 
@@ -37,6 +40,10 @@
 #include <sys/cpr_impl.h>
 #include <sys/intreg.h>
 #include <sys/clock.h>
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * resume kernel entry point from cprboot
@@ -60,33 +67,46 @@
 	! reserve 4k for cpr tmp stack; tstack should be first,
 	! any new data symbols should be added after tstack.
 	!
-	.seg	".data"
+	.data
 	.global	i_cpr_data_page, i_cpr_tstack_size
 	.global	i_cpr_orig_cif
 
-	.align	MMU_PAGESIZE
+	.balign	MMU_PAGESIZE
 i_cpr_data_page:
 	.skip	4096
 i_cpr_tstack:
-	.word	0
-i_cpr_tstack_size:
-	.word	4096
+	.type	i_cpr_tstack, @object
+	.size	i_cpr_tstack, 8
+	.xword	0
 
-	.align	8
+i_cpr_tstack_size:
+	.type	i_cpr_tstack_size, @object
+	.size	i_cpr_tstack_size, 4
+	.long	4096
+
+	.balign	8
 prom_tba:
-	.word	0, 0
+	.type	prom_tba, @object
+	.size	prom_tba, 8
+	.xword	0
+
 i_cpr_orig_cif:
-	.nword	0
+	.type	i_cpr_orig_cif, @object
+	.size	i_cpr_orig_cif, 8
+	.xword	0
+
 i_cpr_tmp_cif:
-	.nword	0
+	.type	i_cpr_tmp_cif, @object
+	.size	i_cpr_tmp_cif, 8
+	.xword	0
 
 
 	!
 	! set text to begin at a page boundary so we can
 	! map this one page and jump to it from cprboot
 	!
-	.seg	".text"
-	.align	MMU_PAGESIZE
+	.text
+	.balign	MMU_PAGESIZE
 
 	ENTRY(i_cpr_resume_setup)
 	!

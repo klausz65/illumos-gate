@@ -22,6 +22,7 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+# Copyright 2026 Klaus Ziegler.
 
 TOPDIR =	../../../../..
 SPARCDIR =	..
@@ -47,7 +48,7 @@ BOOTLSTOBJ = srt0.o
 
 ALL = bootlst
 
-%.o: $(SPARCDIR)/%.s
+%.o: $(SPARCDIR)/%.S
 	$(COMPILE.s) -o $@ $<
 
 %.ln: $(SPARCDIR)/%.s
@@ -57,6 +58,7 @@ ALL = bootlst
 include ../../common/Makefile.com
 include $(TOPDIR)/psm/Makefile.psm.64
 CFLAGS64 += -xchip=ultra
+CFLAGS64 += -xregs=no%appl
 CERRWARN += -_gcc=-Wno-char-subscripts
 .KEEP_STATE:
 

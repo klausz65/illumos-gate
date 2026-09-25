@@ -47,7 +47,7 @@ BOOTLSTOBJ = srt0.o
 
 ALL = bootlst
 
-%.o: $(SPARCDIR)/%.s
+%.o: $(SPARCDIR)/%.S
 	$(COMPILE.s) -o $@ $<
 
 %.ln: $(SPARCDIR)/%.s
@@ -57,6 +57,7 @@ ALL = bootlst
 include ../../common/Makefile.com
 include $(TOPDIR)/psm/Makefile.psm.64
 CFLAGS64 += -xchip=ultra
+CFLAGS64 += -xregs=no%appl
 CERRWARN += -_gcc=-Wno-char-subscripts
 
 POST_PROCESS +=	; $(CHK4UBINARY)

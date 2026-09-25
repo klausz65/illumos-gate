@@ -21,6 +21,9 @@
 /*
  * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 /*
  * This is an assembly file that gets #include-ed into the brand-specific
@@ -37,6 +40,10 @@
 #include "assym.h"
 
 #ifdef _ASM	/* The remainder of this file is only for assembly files */
+
+/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 #if defined(sun4v)
 

@@ -24,9 +24,7 @@
  * Use is subject to license terms.
  */
 
-.ident	"%Z%%M%	%I%	%E% SMI"
-
-	.file	"_getsp.s"
+	.file	"_getsp.S"
 
 #include <sys/asm_linkage.h>
 

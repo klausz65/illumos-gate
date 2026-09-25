@@ -66,6 +66,7 @@ include		$(SRC)/lib/Makefile.lib.64
 # Add any machine specific flags.
 
 CPPFLAGS +=	-I../../../../uts/sparc/krtld
+CFLAGS +=	-xregs=no%appl
 ASFLAGS +=	-s $(AS_PICFLAGS) -D__sparcv9 -D_ELF64 $(sparcv9_XARCH)
 ADBGENFLAGS +=	-mlp64
 ADBSUB=		$(ADBSUB64)
@@ -83,6 +84,11 @@ CONVLIBDIR =	$(CONVLIBDIR64)
 
 
 .KEEP_STATE:
+
+pics/crti.o:
+	$(CC) $(ASFLAGS64) $(AS_CPPFLAGS) \
+	-c -o $@ $(CRTSRCS)/crti.S
+	$(POST_PROCESS_O)
 
 all:		$(RTLD)
 

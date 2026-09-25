@@ -21,6 +21,8 @@
 # Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+# Copyright 2026 Klaus Ziegler.
+#
 # psm/stand/boot/sparcv9/Makefile.com
 
 
@@ -61,14 +63,14 @@ CONF_L_OBJS	= $(CONF_OBJS:%.o=%.ln)
 MISC_OBJS	= $(MISC_SRC:%.c=%.o)
 MISC_L_OBJS	= $(MISC_OBJS:%.o=%.ln)
 
-SRT0_OBJ	= $(SRT0_S:%.s=%.o)
+SRT0_OBJ	= $(SRT0_S:%.S=%.o)
 SRT0_L_OBJ	= $(SRT0_OBJ:%.o=%.ln)
 
 C_SRC		= $(TOP_CMN_C_SRC) $(CMN_C_SRC) $(MACH_C_SRC) $(ARCH_C_SRC)
 C_SRC		+= $(PLAT_C_SRC)
 S_SRC		= $(MACH_S_SRC) $(ARCH_S_SRC) $(PLAT_S_SRC)
 
-OBJS		= $(C_SRC:%.c=%.o) $(S_SRC:%.s=%.o)
+OBJS		= $(C_SRC:%.c=%.o) $(S_SRC:%.S=%.o)
 L_OBJS		= $(OBJS:%.o=%.ln)
 
 CPPDEFS		= $(ARCHOPTS) -D$(PLATFORM) -D_BOOT -D_KERNEL -D_MACHDEP
@@ -91,7 +93,7 @@ CPPINCS		+= -I$(SRC)/common/net/dhcp
 CPPINCS		+= -I$(BOOT_DIR)/sparc/common
 CPPFLAGS	= $(CPPDEFS) $(CPPINCS)
 CPPFLAGS	+= $(CCYFLAG)$(STANDDIR)
-ASFLAGS		+= $(CPPDEFS) -D_ASM $(CPPINCS)
+ASFLAGS64	+= $(CPPDEFS) -D_ASM $(CPPINCS)
 
 #
 # Where to look for libraries.

@@ -31,19 +31,22 @@
 #include <sys/asm_linkage.h>
 #include <sys/hypervisor_api.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+
 /*
  * NIU HV API v1.1 definitions
  */
 #define	N2NIU_VR_GETINFO	0x148
 #define	N2NIU_VR_GET_RX_MAP	0x14d
 #define	N2NIU_VR_GET_TX_MAP	0x14e
-#define N2NIU_VRRX_SET_INO	0x150
-#define N2NIU_VRTX_SET_INO	0x151
+#define	N2NIU_VRRX_SET_INO	0x150
+#define	N2NIU_VRTX_SET_INO	0x151
 
 
 	/*
 	 * vdds_hv_niu_vr_getinfo(uint32_t cookie, uint64_t &real_start,
-	 *     uint64_t &size)
+	 *	uint64_t &size)
 	 */
 	ENTRY(vdds_hv_niu_vr_getinfo)
 	mov	%o1, %g1
@@ -51,8 +54,9 @@
 	mov	N2NIU_VR_GETINFO, %o5
 	ta	FAST_TRAP
 	stx	%o1, [%g1]
-	retl
 	stx	%o2, [%g2]
+	retl
+	nop
 	SET_SIZE(vdds_hv_niu_vr_getinfo)
 
 	/*
@@ -62,8 +66,9 @@
 	mov	%o1, %g1
 	mov	N2NIU_VR_GET_RX_MAP, %o5
 	ta	FAST_TRAP
-	retl
 	stx	%o1, [%g1]
+	retl
+	nop
 	SET_SIZE(vdds_hv_niu_vr_get_rxmap)
 
 	/*
@@ -73,8 +78,9 @@
 	mov	%o1, %g1
 	mov	N2NIU_VR_GET_TX_MAP, %o5
 	ta	FAST_TRAP
-	retl
 	stx	%o1, [%g1]
+	retl
+	nop
 	SET_SIZE(vdds_hv_niu_vr_get_txmap)
 
 	/*

@@ -21,8 +21,15 @@
 /*
  * Copyright (c) 1999, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include "assym.h"
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * General assembly language routines.
@@ -198,7 +205,7 @@
  */
 #define WR_TICKCMPR(cmpr,scr1,scr2,label)	\
 	ba,a	.bb_errata_1.label		;\
-	.align	64				;\
+	.balign	64				;\
 .bb_errata_1.label:				;\
 	wr	cmpr, TICK_COMPARE		;\
 	rd	TICK_COMPARE, %g0
@@ -230,6 +237,19 @@
 	retl
 	nop
 	SET_SIZE(get_impl)
+
+/* GNU assembler fix for spitfire and others */
+#undef	WR_TICKCMPR
+#undef GET_NATIVE_TIME
+.macro WR_TICKCMPR in, scr1, scr2, label
+	wr	\in, %g0, %tick_cmpr
+.endm
+
+.macro GET_NATIVE_TIME out, scr1, scr2
+	rd	%tick, \out
+.endm
+#define	WR_TICKCMPR(a,b,c,d)	WR_TICKCMPR a, b, c, d
+#define	GET_NATIVE_TIME(a,b,c)	GET_NATIVE_TIME a, b, c
 
 /*
  * Softint generated when counter field of tick reg matches value field
@@ -265,7 +285,7 @@
 	SET_SIZE(tickcmpr_disable)
 
 #ifdef DEBUG
-	.seg	".text"
+	.text
 tick_write_panic:
 	.asciz	"tick_write_delta: interrupts already disabled on entry"
 #endif	/* DEBUG */
@@ -292,7 +312,7 @@ tick_write_panic:
 	mov	%o0, %o2
 	ba	0f			! Branch to cache line-aligned instr.
 	nop
-	.align	16
+	.balign	16
 0:	nop				! The next 3 instructions are now hot.
 	DELTA_NATIVE_TIME(%o2, %o3, %o4, %o5, %g2)	! read/inc/write %tick
 
@@ -516,7 +536,7 @@ tick_write_panic:
 
 
 
-	.seg	".text"
+	.text
 hrtime_base_panic:
 	.asciz	"hrtime_base stepping back"
 
@@ -625,7 +645,7 @@ hrtime_base_panic:
 
 	SET_SIZE(hres_tick)
 
-	.seg	".text"
+	.text
 kstat_q_panic_msg:
 	.asciz	"kstat_q_exit: qlen == 0"
 
@@ -680,13 +700,13 @@ QRETURN;								\
 	stx	%g1, [%o0 + QTYPE##LASTUPDATE]; /* lastupdate = now */
 #endif
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_waitq_enter)
 	GET_NATIVE_TIME(%g1, %g2, %g3)
 	KSTAT_Q_UPDATE(add, BRZPT, 1f, 1:retl, KSTAT_IO_W)
 	SET_SIZE(kstat_waitq_enter)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_waitq_exit)
 	GET_NATIVE_TIME(%g1, %g2, %g3)
 #if defined(DEBUG)
@@ -696,13 +716,13 @@ QRETURN;								\
 #endif
 	SET_SIZE(kstat_waitq_exit)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_runq_enter)
 	GET_NATIVE_TIME(%g1, %g2, %g3)
 	KSTAT_Q_UPDATE(add, BRZPT, 1f, 1:retl, KSTAT_IO_R)
 	SET_SIZE(kstat_runq_enter)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_runq_exit)
 	GET_NATIVE_TIME(%g1, %g2, %g3)
 #if defined(DEBUG)
@@ -712,7 +732,7 @@ QRETURN;								\
 #endif
 	SET_SIZE(kstat_runq_exit)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_waitq_to_runq)
 	GET_NATIVE_TIME(%g1, %g2, %g3)
 #if defined(DEBUG)
@@ -723,7 +743,7 @@ QRETURN;								\
 	KSTAT_Q_UPDATE(add, BRZPT, 1f, 1:retl, KSTAT_IO_R)
 	SET_SIZE(kstat_waitq_to_runq)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_runq_back_to_waitq)
 	GET_NATIVE_TIME(%g1, %g2, %g3)
 #if defined(DEBUG)
@@ -743,33 +763,53 @@ QRETURN;								\
 	 * assumes that they all have the same high 22 address bits (so
 	 * there's only one sethi).
 	 */
-	.seg	".data"
+	.data
 	.global	timedelta, hres_last_tick, hrestime, hrestime_adj
 	.global	hres_lock, nsec_scale, hrtime_base, traptrace_use_stick
 	.global	nsec_shift, adj_shift
 
-	/* XXX - above comment claims 128-bytes is necessary */
-	.align	64
+	/* force 128-byte aligment, and make sure upper 22 bit are indentical */
+	.balign	128
 timedelta:
-	.word	0, 0		/* int64_t */
+	.type	timedelta, @object
+	.size	timedelta, 8
+	.xword	0		/* int64_t */
 hres_last_tick:
-	.word	0, 0		/* hrtime_t */
+	.type	hres_last_tick, @object
+	.size	hres_last_tick, 8
+	.xword	0		/* hrtime_t */
 hrestime:
+	.type	hrestime, @object
+	.size	hrestime, 16
 	.nword	0, 0		/* 2 longs */
 hrestime_adj:
-	.word	0, 0		/* int64_t */
+	.type	hrestime_adj, @object
+	.size	hrestime_adj, 8
+	.xword	0, 0		/* int64_t */
 hres_lock:
-	.word	0
+	.type	hres_lock, @object
+	.size	hres_lock, 4
+	.long	0
 nsec_scale:
-	.word	0
+	.type	nsec_scale, @object
+	.size	nsec_scale, 4
+	.long	0
 hrtime_base:
-	.word	0, 0
+	.type	hrtime_base, @object
+	.size	hrtime_base, 8
+	.xword	0, 0
 traptrace_use_stick:
-	.word	0
+	.type	traptrace_use_stick, @object
+	.size	traptrace_use_stick, 4
+	.long	0
 nsec_shift:
-	.word	NSEC_SHIFT
+	.type	nsec_shift, @object
+	.size	nsec_shift, 4
+	.long	NSEC_SHIFT
 adj_shift:
-	.word	ADJ_SHIFT
+	.type	adj_shift, @object
+	.size	adj_shift, 4
+	.long	ADJ_SHIFT
 
 
 /*
@@ -791,6 +831,8 @@ adj_shift:
  * We chose less code duplication for this.
  */
 
+	.text
+	.balign	4
 	ENTRY(drv_usecwait)
 	ALTENTRY(usec_delay)
 	brlez,a,pn %o0, 0f
@@ -805,8 +847,8 @@ adj_shift:
 
 1:
 #ifdef	_OPL
-	.word 0x81b01060		! insert "sleep" instruction
-#endif /* _OPL */			! use byte code for now
+	.long 0x81b01060		! insert "sleep" instruction
+#endif
 	cmp	%o1, %o2
 	GET_NATIVE_TIME(%o2, %o3, %o4)
 	bgeu,pt	%xcc, 1b
@@ -923,7 +965,7 @@ adj_shift:
        SET_SIZE(pil15_interrupt)
 
 #ifdef DEBUG
-	.seg	".text"
+	.text
 find_cpufreq_panic:
 	.asciz	"find_cpufrequency: interrupts already disabled on entry"
 #endif	/* DEBUG */

@@ -48,7 +48,7 @@ $(OBJS_DIR)/%.o:		$(UTSBASE)/sun4u/starcat/os/%.c
 	$(COMPILE.c) -o $@ $<
 	$(CTFCONVERT_O)
 
-$(OBJS_DIR)/%.o:		$(UTSBASE)/sun4u/starcat/ml/%.s
+$(OBJS_DIR)/%.o:		$(UTSBASE)/sun4u/starcat/ml/%.S
 	$(COMPILE.s) -o $@ $<
 
 STARCAT_IO=$(UTSBASE)/sun4u/starcat/io

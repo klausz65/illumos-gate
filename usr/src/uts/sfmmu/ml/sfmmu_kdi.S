@@ -23,6 +23,9 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include <sys/asm_linkage.h>
 #include "assym.h"
@@ -30,6 +33,10 @@
 #include <sys/sun4asi.h>
 #include <sys/machparam.h>
 #include <vm/hat_sfmmu.h>
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * This file contains a kmdb-support function which retrieves the TTE for a
@@ -80,7 +87,7 @@
 	mulx	%g4, HMEBUCK_SIZE, %g4; /* g4 = off from hash_pa */	\
 	set	uhme_hash_pa, %g5;					\
 	ldx	[%g5], %g5;						\
-	ba	hash_done;						\
+	ba,pt	%xcc, hash_done;					\
 	add	%g4, %g5, %g4;						\
 									\
 is_khat: /* sfmmup == KHATID */						\
@@ -159,24 +166,24 @@ bspage:	/* TTE_PAGE_SHIFT in %g5 */				\
 #define	KDI_HME_HASH_TABLE_SEARCH \
 	add	%g4, HMEBUCK_NEXTPA, %g4; /* %g4 is hmebucket PA */	\
 search_loop:								\
-	ldxa	[%g4]ASI_MEM, %g4;					\
+	ldxa	[%g4] ASI_MEM, %g4;					\
 	cmp	%g4, HMEBLK_ENDPA;					\
 	be,a,pn	%xcc, search_done;					\
 	clr 	%g4;							\
 									\
 	add	%g4, HMEBLK_TAG, %g4;	/* %g4 is now hmeblk PA */	\
-	ldxa	[%g4]ASI_MEM, %g6;					\
+	ldxa	[%g4] ASI_MEM, %g6;					\
 	sub	%g4, HMEBLK_TAG, %g4;					\
 	cmp	%g5, %g6;						\
-	bne,a	%xcc, search_loop;					\
+	bne,a,pt %xcc, search_loop;					\
 	add	%g4, HMEBLK_NEXTPA, %g4;				\
 									\
 	/* Found a match.  Is it in the right address space? */		\
 	add	%g4, (HMEBLK_TAG + 8), %g4;				\
-	ldxa	[%g4]ASI_MEM, %g6;					\
+	ldxa	[%g4] ASI_MEM, %g6;					\
 	sub	%g4, (HMEBLK_TAG + 8), %g4;				\
 	cmp	%g6, %g2;						\
-	bne,a	%xcc, search_loop;					\
+	bne,a,pt %xcc, search_loop;					\
 	add	%g4, HMEBLK_NEXTPA, %g4;				\
 									\
 search_done:
@@ -206,7 +213,7 @@ search_done:
 
 #define	KDI_HBLK_TO_TTEP \
 	add	%g4, HMEBLK_MISC, %g3;				\
-	lda	[%g3]ASI_MEM, %g3;				\
+	lda	[%g3] ASI_MEM, %g3;				\
 	and	%g3, HBLK_SZMASK, %g3;	/* ttesz in %g3 */	\
 								\
 	cmp	%g3, TTE8K;					\
@@ -287,10 +294,10 @@ ttep_calc:	/* idx in %g1 */				\
 
 	cmp	%g2, KCONTEXT		/* make sure called in kernel ctx */
 	bne,a,pn %icc, 6f
-	  clr	%g1
+	clr	%g1
 
-	sethi   %hi(ksfmmup), %g2
-        ldx     [%g2 + %lo(ksfmmup)], %g2
+	sethi	%hi(ksfmmup), %g2
+	ldx	[%g2 + %lo(ksfmmup)], %g2
 
 	mov	1, %g3			/* VA %g1, ksfmmup %g2, idx %g3 */
 	mov	HBLK_RANGE_SHIFT, %g4
@@ -308,10 +315,10 @@ ttep_calc:	/* idx in %g1 */				\
 	nop
 
 	KDI_HBLK_TO_TTEP		/* %g1, %g4 => TTE PA in %g2 */
-	ldxa	[%g2]ASI_MEM, %g1
+	ldxa	[%g2] ASI_MEM, %g1
 	brgez,a	%g1, 4f
 	clr	%g1
-4:	ba,a	6f
+4:	ba,pt	%xcc, 6f
 
 5:	add	%g3, 1, %g3
 	set	mmu_hashcnt, %g4

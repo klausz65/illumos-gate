@@ -31,41 +31,41 @@
 #include "libm.h"
 
 	RO_DATA
-	.align	64
+	.balign	64
 
 .CONST_TBL:
-	.word	0x7fe00000, 0x7fdfc07f, 0x7fdf81f8, 0x7fdf4465,
-	.word	0x7fdf07c1, 0x7fdecc07, 0x7fde9131, 0x7fde573a,
-	.word	0x7fde1e1e, 0x7fdde5d6, 0x7fddae60, 0x7fdd77b6,
-	.word	0x7fdd41d4, 0x7fdd0cb5, 0x7fdcd856, 0x7fdca4b3,
-	.word	0x7fdc71c7, 0x7fdc3f8f, 0x7fdc0e07, 0x7fdbdd2b,
-	.word	0x7fdbacf9, 0x7fdb7d6c, 0x7fdb4e81, 0x7fdb2036,
-	.word	0x7fdaf286, 0x7fdac570, 0x7fda98ef, 0x7fda6d01,
-	.word	0x7fda41a4, 0x7fda16d3, 0x7fd9ec8e, 0x7fd9c2d1,
-	.word	0x7fd99999, 0x7fd970e4, 0x7fd948b0, 0x7fd920fb,
-	.word	0x7fd8f9c1, 0x7fd8d301, 0x7fd8acb9, 0x7fd886e5,
-	.word	0x7fd86186, 0x7fd83c97, 0x7fd81818, 0x7fd7f405,
-	.word	0x7fd7d05f, 0x7fd7ad22, 0x7fd78a4c, 0x7fd767dc,
-	.word	0x7fd745d1, 0x7fd72428, 0x7fd702e0, 0x7fd6e1f7,
-	.word	0x7fd6c16c, 0x7fd6a13c, 0x7fd68168, 0x7fd661ec,
-	.word	0x7fd642c8, 0x7fd623fa, 0x7fd60581, 0x7fd5e75b,
-	.word	0x7fd5c988, 0x7fd5ac05, 0x7fd58ed2, 0x7fd571ed,
-	.word	0x7fd55555, 0x7fd53909, 0x7fd51d07, 0x7fd50150,
-	.word	0x7fd4e5e0, 0x7fd4cab8, 0x7fd4afd6, 0x7fd49539,
-	.word	0x7fd47ae1, 0x7fd460cb, 0x7fd446f8, 0x7fd42d66,
-	.word	0x7fd41414, 0x7fd3fb01, 0x7fd3e22c, 0x7fd3c995,
-	.word	0x7fd3b13b, 0x7fd3991c, 0x7fd38138, 0x7fd3698d,
-	.word	0x7fd3521c, 0x7fd33ae4, 0x7fd323e3, 0x7fd30d19,
-	.word	0x7fd2f684, 0x7fd2e025, 0x7fd2c9fb, 0x7fd2b404,
-	.word	0x7fd29e41, 0x7fd288b0, 0x7fd27350, 0x7fd25e22,
-	.word	0x7fd24924, 0x7fd23456, 0x7fd21fb7, 0x7fd20b47,
-	.word	0x7fd1f704, 0x7fd1e2ef, 0x7fd1cf06, 0x7fd1bb4a,
-	.word	0x7fd1a7b9, 0x7fd19453, 0x7fd18118, 0x7fd16e06,
-	.word	0x7fd15b1e, 0x7fd1485f, 0x7fd135c8, 0x7fd12358,
-	.word	0x7fd11111, 0x7fd0fef0, 0x7fd0ecf5, 0x7fd0db20,
-	.word	0x7fd0c971, 0x7fd0b7e6, 0x7fd0a681, 0x7fd0953f,
-	.word	0x7fd08421, 0x7fd07326, 0x7fd0624d, 0x7fd05197,
-	.word	0x7fd04104, 0x7fd03091, 0x7fd02040, 0x7fd01010,
+	.word	0x7fe00000, 0x7fdfc07f, 0x7fdf81f8, 0x7fdf4465
+	.word	0x7fdf07c1, 0x7fdecc07, 0x7fde9131, 0x7fde573a
+	.word	0x7fde1e1e, 0x7fdde5d6, 0x7fddae60, 0x7fdd77b6
+	.word	0x7fdd41d4, 0x7fdd0cb5, 0x7fdcd856, 0x7fdca4b3
+	.word	0x7fdc71c7, 0x7fdc3f8f, 0x7fdc0e07, 0x7fdbdd2b
+	.word	0x7fdbacf9, 0x7fdb7d6c, 0x7fdb4e81, 0x7fdb2036
+	.word	0x7fdaf286, 0x7fdac570, 0x7fda98ef, 0x7fda6d01
+	.word	0x7fda41a4, 0x7fda16d3, 0x7fd9ec8e, 0x7fd9c2d1
+	.word	0x7fd99999, 0x7fd970e4, 0x7fd948b0, 0x7fd920fb
+	.word	0x7fd8f9c1, 0x7fd8d301, 0x7fd8acb9, 0x7fd886e5
+	.word	0x7fd86186, 0x7fd83c97, 0x7fd81818, 0x7fd7f405
+	.word	0x7fd7d05f, 0x7fd7ad22, 0x7fd78a4c, 0x7fd767dc
+	.word	0x7fd745d1, 0x7fd72428, 0x7fd702e0, 0x7fd6e1f7
+	.word	0x7fd6c16c, 0x7fd6a13c, 0x7fd68168, 0x7fd661ec
+	.word	0x7fd642c8, 0x7fd623fa, 0x7fd60581, 0x7fd5e75b
+	.word	0x7fd5c988, 0x7fd5ac05, 0x7fd58ed2, 0x7fd571ed
+	.word	0x7fd55555, 0x7fd53909, 0x7fd51d07, 0x7fd50150
+	.word	0x7fd4e5e0, 0x7fd4cab8, 0x7fd4afd6, 0x7fd49539
+	.word	0x7fd47ae1, 0x7fd460cb, 0x7fd446f8, 0x7fd42d66
+	.word	0x7fd41414, 0x7fd3fb01, 0x7fd3e22c, 0x7fd3c995
+	.word	0x7fd3b13b, 0x7fd3991c, 0x7fd38138, 0x7fd3698d
+	.word	0x7fd3521c, 0x7fd33ae4, 0x7fd323e3, 0x7fd30d19
+	.word	0x7fd2f684, 0x7fd2e025, 0x7fd2c9fb, 0x7fd2b404
+	.word	0x7fd29e41, 0x7fd288b0, 0x7fd27350, 0x7fd25e22
+	.word	0x7fd24924, 0x7fd23456, 0x7fd21fb7, 0x7fd20b47
+	.word	0x7fd1f704, 0x7fd1e2ef, 0x7fd1cf06, 0x7fd1bb4a
+	.word	0x7fd1a7b9, 0x7fd19453, 0x7fd18118, 0x7fd16e06
+	.word	0x7fd15b1e, 0x7fd1485f, 0x7fd135c8, 0x7fd12358
+	.word	0x7fd11111, 0x7fd0fef0, 0x7fd0ecf5, 0x7fd0db20
+	.word	0x7fd0c971, 0x7fd0b7e6, 0x7fd0a681, 0x7fd0953f
+	.word	0x7fd08421, 0x7fd07326, 0x7fd0624d, 0x7fd05197
+	.word	0x7fd04104, 0x7fd03091, 0x7fd02040, 0x7fd01010
 
 	.word	0x42300000, 0		! D2ON36 = 2**36
 	.word	0xffffff00, 0		! DA0
@@ -971,7 +971,7 @@
 	ba	.main_loop
 	sub	counter,8,counter
 
-	.align	16
+	.balign	16
 .main_loop:
 	fsqrtd	%f48,%f14		! (0_1) res0 = sqrt ( res0 );
 	add	%o4,TBL,%o4		! (4_1) (char*)dll1 + iarr
@@ -2089,7 +2089,7 @@
 	ba	.begin
 	add	%i5,stridez,%i5
 
-	.align	16
+	.balign	16
 .spec0:
 	cmp	%o7,_0x7ff00000		! hx0 ? 0x7ff00000
 	bne	1f			! if ( hx0 != 0x7ff00000 )
@@ -2135,7 +2135,7 @@
 	ba	.begin1
 	sub	counter,1,counter
 
-	.align	16
+	.balign	16
 .spec1:
 	and	%o1,%o3,%o1		! (7_0) j0 &= diff0;
 
@@ -2208,7 +2208,7 @@
 	ba	.cont_spec1
 	stx	%g1,[%fp+dtmp0]		! D2ON1022
 
-	.align	16
+	.balign	16
 .update0:
 	cmp	counter,1
 	ble	1f
@@ -2228,7 +2228,7 @@
 	ba	.cont1
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update1:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont0		! (0_0) if ( hy0 < 0x00100000 )
@@ -2250,7 +2250,7 @@
 	ba	.cont1
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update2:
 	cmp	counter,2
 	ble	1f
@@ -2278,7 +2278,7 @@
 	ba	.cont4
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update3:
 	cmp	counter,2
 	ble	1f
@@ -2304,7 +2304,7 @@
 	ba	.cont4
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update4:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,a,pn	%icc,.cont4	! (0_0) if ( hy0 < 0x00100000 )
@@ -2327,7 +2327,7 @@
 	ba	.cont4
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update5:
 	cmp	counter,3
 	ble	1f
@@ -2360,7 +2360,7 @@
 	ba	.cont8
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update6:
 	cmp	counter,3
 	ble	1f
@@ -2388,7 +2388,7 @@
 	ba	.cont8
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update7:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont7		! (0_0) if ( hy0 < 0x00100000 )
@@ -2412,7 +2412,7 @@
 	ba	.cont8
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update9:
 	cmp	counter,4
 	ble	1f
@@ -2448,7 +2448,7 @@
 	ba	.cont12
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update10:
 	cmp	counter,4
 	ble	1f
@@ -2479,7 +2479,7 @@
 	ba	.cont12
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update11:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont11		! (0_0) if ( hy0 < 0x00100000 )
@@ -2503,7 +2503,7 @@
 	ba	.cont12
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update13:
 	cmp	counter,5
 	ble	1f
@@ -2537,7 +2537,7 @@
 	ba	.cont16
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update14:
 	cmp	counter,5
 	ble	1f
@@ -2567,7 +2567,7 @@
 	ba	.cont16
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update15:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont15		! (0_0) if ( hy0 < 0x00100000 )
@@ -2591,7 +2591,7 @@
 	ba	.cont16
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update17:
 	cmp	counter,6
 	ble	1f
@@ -2635,7 +2635,7 @@
 	ba	.cont20
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update18:
 	cmp	counter,6
 	ble	1f
@@ -2677,7 +2677,7 @@
 	ba	.cont20
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update19:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont19a		! (0_0) if ( hy0 < 0x00100000 )
@@ -2702,7 +2702,7 @@
 	ba	.cont19b
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update21:
 	cmp	counter,7
 	ble	1f
@@ -2746,7 +2746,7 @@
 	ba	.cont24
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update22:
 	cmp	counter,7
 	ble	1f
@@ -2788,7 +2788,7 @@
 	ba	.cont24
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update23:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont23a		! (0_0) if ( hy0 < 0x00100000 )
@@ -2813,7 +2813,7 @@
 	ba	.cont23b
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update25:
 	cmp	counter,8
 	ble	1f
@@ -2857,7 +2857,7 @@
 	ba	.cont28
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update26:
 	cmp	counter,8
 	ble	1f
@@ -2899,7 +2899,7 @@
 	ba	.cont28
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update27:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont27a		! (0_0) if ( hy0 < 0x00100000 )
@@ -2924,7 +2924,7 @@
 	ba	.cont27b
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update29:
 	cmp	counter,1
 	ble	1f
@@ -2962,7 +2962,7 @@
 	ba	.cont32
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update30:
 	cmp	counter,1
 	ble	1f
@@ -2998,7 +2998,7 @@
 	ba	.cont32
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update31:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont31		! (0_0) if ( hy0 < 0x00100000 )
@@ -3030,7 +3030,7 @@
 	ba	.cont32
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update33:
 	cmp	counter,2
 	ble	1f
@@ -3077,7 +3077,7 @@
 	ba	.cont36
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update34:
 	cmp	counter,2
 	ble	1f
@@ -3118,7 +3118,7 @@
 	ba	.cont36
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update35:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont35a		! (0_0) if ( hy0 < 0x00100000 )
@@ -3143,7 +3143,7 @@
 	ba	.cont35b
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update37:
 	cmp	counter,3
 	ble	1f
@@ -3190,7 +3190,7 @@
 	ba	.cont40
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update38:
 	cmp	counter,3
 	ble	1f
@@ -3231,7 +3231,7 @@
 	ba	.cont40
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update39:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont39a		! (0_0) if ( hy0 < 0x00100000 )
@@ -3256,7 +3256,7 @@
 	ba	.cont39b
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update41:
 	cmp	counter,4
 	ble	1f
@@ -3303,7 +3303,7 @@
 	ba	.cont44
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update42:
 	cmp	counter,4
 	ble	1f
@@ -3344,7 +3344,7 @@
 	ba	.cont44
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update43:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont43a		! (0_0) if ( hy0 < 0x00100000 )
@@ -3369,7 +3369,7 @@
 	ba	.cont43b
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update45:
 	cmp	counter,5
 	ble	1f
@@ -3416,7 +3416,7 @@
 	ba	.cont48
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update46:
 	cmp	counter,5
 	ble	1f
@@ -3461,7 +3461,7 @@
 	ba	.cont48
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update47:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont47a		! (0_0) if ( hy0 < 0x00100000 )
@@ -3494,7 +3494,7 @@
 	ba	.cont47b
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update49:
 	cmp	counter,6
 	ble	1f
@@ -3541,7 +3541,7 @@
 	ba	.cont52
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update50:
 	cmp	counter,6
 	ble	1f
@@ -3586,7 +3586,7 @@
 	ba	.cont52
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update51:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont51a		! (0_0) if ( hy0 < 0x00100000 )
@@ -3619,7 +3619,7 @@
 	ba	.cont51b
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update53:
 	cmp	counter,7
 	ble	1f
@@ -3666,7 +3666,7 @@
 	ba	.cont56
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update54:
 	cmp	counter,7
 	ble	1f
@@ -3711,7 +3711,7 @@
 	ba	.cont56
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update55:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont55a		! (0_0) if ( hy0 < 0x00100000 )
@@ -3744,7 +3744,7 @@
 	ba	.cont55b
 	add	TBL,TBL_SHIFT+24,%o0
 
-	.align	16
+	.balign	16
 .update57:
 	cmp	counter,8
 	ble	1f
@@ -3792,7 +3792,7 @@
 	ba	.cont60
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update58:
 	cmp	counter,8
 	ble	1f
@@ -3838,7 +3838,7 @@
 	ba	.cont60
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .update59:
 	cmp	%l7,_0x00100000		! (0_0) hy0 ? 0x00100000
 	bge,pn	%icc,.cont59a		! (0_0) if ( hy0 < 0x00100000 )
@@ -3871,7 +3871,7 @@
 	ba	.cont59b
 	add	TBL,TBL_SHIFT+24,%i3
 
-	.align	16
+	.balign	16
 .exit:
 	ret
 	restore

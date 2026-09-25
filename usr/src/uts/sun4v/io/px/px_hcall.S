@@ -72,7 +72,8 @@
 	ta	FAST_TRAP
 	brz,a	%o0, 1f
 	stuw	%o1, [%o3]
-1:	retl
+1:
+	retl
 	nop
 	SET_SIZE(hvio_iommu_demap)
 
@@ -112,7 +113,8 @@
 	ta	FAST_TRAP
 	brz,a	%o0, 1f
 	stx	%o1, [%o3]
-1:	retl
+1:
+	retl
 	nop
 	SET_SIZE(hvio_iommu_getbypass)
 
@@ -176,7 +178,8 @@
 	ta	FAST_TRAP
 	brz,a	%o0, 1f
 	stx	%o1, [%o4]
-1:	retl
+1:
+	retl
 	nop
 	SET_SIZE(hvio_dma_sync)
 
@@ -204,13 +207,13 @@
 	 * ret1 - nentries
 	 */
 	ENTRY(hvio_msiq_info)
-	mov     %o2, %o4
-	mov     HVIO_MSIQ_INFO, %o5
-	ta      FAST_TRAP
+	mov	%o2, %o4
+	mov	HVIO_MSIQ_INFO, %o5
+	ta	FAST_TRAP
 	brnz	%o0, 1f
 	nop
-	stx     %o1, [%o4]
-	stuw    %o2, [%o3]
+	stx	%o1, [%o4]
+	stuw	%o2, [%o3]
 1:      retl
 	nop
 	SET_SIZE(hvio_msiq_info)
@@ -227,7 +230,8 @@
 	ta	FAST_TRAP
 	brz,a	%o0, 1f
 	stuw	%o1, [%o2]
-1:	retl
+1:
+	retl
 	nop
 	SET_SIZE(hvio_msiq_getvalid)
 
@@ -257,7 +261,8 @@
 	ta	FAST_TRAP
 	brz,a	%o0, 1f
 	stuw	%o1, [%o2]
-1:	retl
+1:
+	retl
 	nop
 	SET_SIZE(hvio_msiq_getstate)
 
@@ -287,7 +292,8 @@
 	ta	FAST_TRAP
 	brz,a	%o0, 1f
 	stx	%o1, [%o2]
-1:	retl
+1:
+	retl
 	nop
 	SET_SIZE(hvio_msiq_gethead)
 
@@ -317,7 +323,8 @@
 	ta	FAST_TRAP
 	brz,a	%o0, 1f
 	stx	%o1, [%o2]
-1:	retl
+1:
+	retl
 	nop
 	SET_SIZE(hvio_msiq_gettail)
 
@@ -333,7 +340,8 @@
 	ta	FAST_TRAP
 	brz,a	%o0, 1f
 	stuw	%o1, [%o2]
-1:	retl
+1:
+	retl
 	nop
 	SET_SIZE(hvio_msi_getmsiq)
 
@@ -503,7 +511,7 @@
 	! ATTN: Be sure that the alignment value is larger than the size of
 	! the px_phys_acc_4v function.
 	!
-	.align	0x40
+	.balign	0x40
 
 	ENTRY(px_phys_acc_4v)
 

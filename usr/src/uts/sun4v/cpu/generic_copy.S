@@ -22,8 +22,9 @@
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-# ident	"%Z%%M%	%I%	%E% SMI"
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include <sys/param.h>
 #include <sys/errno.h>
@@ -37,6 +38,9 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * Less then or equal this number of bytes we will always copy byte-for-byte
@@ -58,8 +62,8 @@
 
 
 
-	.seg	".text"
-	.align	4
+	.section	.text
+	.balign	4
 
 	ENTRY(kcopy)
 
@@ -80,10 +84,11 @@
 	! into %o5 to indicate it has set t_lofault handler. Need to clear
 	! LOFAULT_SET flag before restoring the error handler.
 	andn	%o5, LOFAULT_SET, %o5
-	membar	#Sync			! sync error barrier
+	membar	#Sync				! sync error barrier
 	stn	%o5, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
-	ret
 	restore	%g1, 0, %o0
+	ret
+	nop
 
 	SET_SIZE(kcopy)
 
@@ -98,13 +103,13 @@
 	clr	%o5			! flag LOFAULT_SET is not set for bcopy
 
 .do_copy:
-        mov     %i1, %g5                ! save dest addr start
+	mov	%i1, %g5		! save dest addr start
 
-        mov     %i2, %l6                ! save size
+	mov	%i2, %l6		! save size
 
 	cmp	%i2, 12			! for small counts
 	blu	%ncc, .bytecp		! just copy bytes
-	  .empty
+	.empty
 
 	!
 	! use aligned transfers where possible
@@ -330,15 +335,15 @@
 	andn	%o5, LOFAULT_SET, %o5
 	stn	%o5, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
 1:
-        mov     %g5, %o0                ! copy dest address
-        call    sync_icache
-        mov     %l6, %o1                ! saved size
+	mov	%g5, %o0		! copy dest address
+	call	sync_icache
+	mov	%l6, %o1		! saved size
 	ret
-	restore %g0, 0, %o0		! return (0)
+	restore	%g0, 0, %o0		! return (0)
 
 /*
  * Common code used to align transfers on word and doubleword
- * boudaries.  Aligns source and destination and returns a count
+ * boudaries. Aligns source and destination and returns a count
  * of aligned bytes to transfer in %i3
  */
 1:
@@ -404,7 +409,7 @@
 /*
  * hwblkpagecopy()
  *
- * Copies exactly one page.  This routine assumes the caller (ppcopy)
+ * Copies exactly one page. This routine assumes the caller (ppcopy)
  * has already disabled kernel preemption and has checked
  * use_hw_bcopy.
  */
@@ -484,7 +489,7 @@
  * Sigh.
  *
  * So there's two extremely similar routines - xcopyin() and xcopyout()
- * which return the errno that we've faithfully computed.  This
+ * which return the errno that we've faithfully computed. This
  * allows other callers (e.g. uiomove(9F)) to work correctly.
  * Given that these are used pretty heavily, we expand the calling
  * sequences inline for all flavours (rather than making wrappers).
@@ -514,10 +519,10 @@
  * always do a byte for byte copy.
  *
  * If count is > SMALL_LIMIT, we check the alignment of the input
- * and output pointers.  We store -count in %o3, we store the number
+ * and output pointers. We store -count in %o3, we store the number
  * of chunks (8, 4, 2 or 1 byte) operated on in our basic copy loop
  * in %o2. Following this we branch to the appropriate copy loop and
- * copy that many chunks.  Since we've been adding the chunk size
+ * copy that many chunks. Since we've been adding the chunk size
  * to %o3 each time through as well as decrementing %o2, we can tell
  * if any data is is left to be copied by examining %o3. If that is
  * zero, we're done and can go home. If not, we figure out what the
@@ -526,10 +531,10 @@
  * branching to code that stores it just before we return.
  *
  * Fault handlers are invoked if we reference memory that has no
- * current mapping.  All forms share the same copyio_fault handler.
+ * current mapping. All forms share the same copyio_fault handler.
  * This routine handles fixing up the stack and general housecleaning.
  * Each copy operation has a simple fault handler that is then called
- * to do the work specific to the invidual operation.  The handler
+ * to do the work specific to the invidual operation. The handler
  * for copyOP and xcopyOP are found at the end of individual function.
  * The handlers for xcopyOP_little are found at the end of xcopyin_little.
  * The handlers for copyOP_noerr are found at the end of copyin_noerr.
@@ -541,9 +546,9 @@
 
 /*
  * We save the arguments in the following registers in case of a fault:
- * 	kaddr - %g2
- * 	uaddr - %g3
- * 	count - %g4
+ *	kaddr - %g2
+ *	uaddr - %g3
+ *	count - %g4
  */
 #define	SAVE_SRC	%g2
 #define	SAVE_DST	%g3
@@ -553,14 +558,14 @@
 #define	SAVED_LOFAULT		%g6
 
 /*
- * Generic copyio fault handler.  This is the first line of defense when a
- * fault occurs in (x)copyin/(x)copyout.  In order for this to function
+ * Generic copyio fault handler. This is the first line of defense when a
+ * fault occurs in (x)copyin/(x)copyout. In order for this to function
  * properly, the value of the 'real' lofault handler should be in REAL_LOFAULT.
  * This allows us to share common code for all the flavors of the copy
  * operations, including the _noerr versions.
  *
  * Note that this function will restore the original input parameters before
- * calling REAL_LOFAULT.  So the real handler can vector to the appropriate
+ * calling REAL_LOFAULT. So the real handler can vector to the appropriate
  * member of the t_copyop structure, if needed.
  */
 	ENTRY(copyio_fault)
@@ -570,7 +575,7 @@
 	mov	SAVE_SRC, %o0
 	mov	SAVE_DST, %o1
 	jmp	REAL_LOFAULT
-	  mov	SAVE_COUNT, %o2
+	mov	SAVE_COUNT, %o2
 	SET_SIZE(copyio_fault)
 
 	ENTRY(copyout)
@@ -583,9 +588,9 @@
 	!
 	tst	%o2
 	bnz,pt	%ncc, 1f
-	  nop
+	nop
 	retl
-	  clr	%o0
+	clr	%o0
 1:
 	sethi	%hi(copyio_fault), %o3
 	ldn	[THREAD_REG + T_LOFAULT], SAVED_LOFAULT
@@ -619,9 +624,9 @@
 	! through both buffers without having to bump each buffer's
 	! pointer. A very fast 4 instruction loop.
 	!
-	.align 16
+	.balign 16
 .dcocl:
-	stba	%o4, [%o1 + %o3]ASI_USER
+	stba	%o4, [%o1 + %o3] ASI_USER
 	inccc	%o3
 	bl,a,pt	%ncc, .dcocl
 	ldub	[%o0 + %o3], %o4
@@ -698,7 +703,7 @@
 .dodebc:
 	ldx	[%o0 + %o3], %o4
 	deccc	%o2
-	stxa	%o4, [%o1 + %o3]ASI_USER
+	stxa	%o4, [%o1 + %o3] ASI_USER
 	bg,pt	%ncc, .dodebc
 	addcc	%o3, 8, %o3
 	!
@@ -715,11 +720,11 @@
 	!
 	! Four byte copy loop. %o2 is the number of 4 byte chunks to copy.
 	!
-	.align 32
+	.balign 32
 .dodfbc:
 	lduw	[%o0 + %o3], %o4
 	deccc	%o2
-	sta	%o4, [%o1 + %o3]ASI_USER
+	sta	%o4, [%o1 + %o3] ASI_USER
 	bg,pt	%ncc, .dodfbc
 	addcc	%o3, 4, %o3
 	!
@@ -737,11 +742,11 @@
 	! two byte aligned copy loop. %o2 is the number of 2 byte chunks to
 	! copy.
 	!
-	.align 32
+	.balign 32
 .dodtbc:
 	lduh	[%o0 + %o3], %o4
 	deccc	%o2
-	stha	%o4, [%o1 + %o3]ASI_USER
+	stha	%o4, [%o1 + %o3] ASI_USER
 	bg,pt	%ncc, .dodtbc
 	addcc	%o3, 2, %o3
 	!
@@ -753,7 +758,7 @@
 	! Deal with the last byte
 	!
 	ldub	[%o0 + %o3], %o4
-	stba	%o4, [%o1 + %o3]ASI_USER
+	stba	%o4, [%o1 + %o3] ASI_USER
 .dcofh:
 	membar	#Sync
 	stn	SAVED_LOFAULT, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
@@ -768,15 +773,16 @@
 	jmp	%g2
 	nop
 2:
-	retl
 	mov	-1, %o0
+	retl
+	nop
 	SET_SIZE(copyout)
 
 
 	ENTRY(xcopyout)
 	sethi	%hi(.xcopyout_err), REAL_LOFAULT
 	b	.do_copyout
-	  or	REAL_LOFAULT, %lo(.xcopyout_err), REAL_LOFAULT
+	or	REAL_LOFAULT, %lo(.xcopyout_err), REAL_LOFAULT
 .xcopyout_err:
 	ldn	[THREAD_REG + T_COPYOPS], %o4
 	brz	%o4, 2f
@@ -804,11 +810,11 @@
 	add	%o1, %o2, %o1
 	ldub	[%o0+%o3], %o4
 
-1:	stba	%o4, [%o1+%o3]ASI_AIUSL
+1:	stba	%o4, [%o1+%o3] ASI_AIUSL
 	inccc	%o3
 	sub	%o0, 2, %o0		! get next byte
 	bcc,a,pt %ncc, 1b
-	  ldub	[%o0+%o3], %o4
+	ldub	[%o0+%o3], %o4
 
 2:	membar	#Sync			! sync error barrier
 	stn	%o5, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
@@ -830,9 +836,9 @@
 	!
 	tst	%o2
 	bnz,pt	%ncc, 1f
-	  nop
+	nop
 	retl
-	  clr	%o0
+	clr	%o0
 1:
 	sethi	%hi(copyio_fault), %o3
 	ldn	[THREAD_REG + T_LOFAULT], SAVED_LOFAULT
@@ -856,7 +862,7 @@
 	add	%o0, %o2, %o0
 	add	%o1, %o2, %o1
 	ba,pt	%ncc, .dcicl
-	lduba	[%o0 + %o3]ASI_USER, %o4
+	lduba	[%o0 + %o3] ASI_USER, %o4
 	!
 	! %o0 and %o1 point at the end and remain pointing at the end
 	! of their buffers. We pull things out by adding %o3 (which is
@@ -865,12 +871,12 @@
 	! through both buffers without having to bump each buffer's
 	! pointer. A very fast 4 instruction loop.
 	!
-	.align 16
+	.balign 16
 .dcicl:
 	stb	%o4, [%o1 + %o3]
 	inccc	%o3
 	bl,a,pt %ncc, .dcicl
-	lduba	[%o0 + %o3]ASI_USER, %o4
+	lduba	[%o0 + %o3] ASI_USER, %o4
 	!
 	! We're done. Go home.
 	!
@@ -935,7 +941,7 @@
 	srl	%o2, 1, %o2		! Number of 2 byte chunks to copy
 
 .didebc:
-	ldxa	[%o0 + %o3]ASI_USER, %o4
+	ldxa	[%o0 + %o3] ASI_USER, %o4
 	deccc	%o2
 	stx	%o4, [%o1 + %o3]
 	bg,pt	%ncc, .didebc
@@ -949,13 +955,13 @@
 	! Something is left. Do it byte for byte.
 	!
 	ba,pt	%ncc, .dcicl
-	lduba	[%o0 + %o3]ASI_USER, %o4
+	lduba	[%o0 + %o3] ASI_USER, %o4
 	!
 	! 4 byte copy loop. %o2 is number of 4 byte chunks to copy.
 	!
-	.align 32
+	.balign 32
 .didfbc:
-	lduwa	[%o0 + %o3]ASI_USER, %o4
+	lduwa	[%o0 + %o3] ASI_USER, %o4
 	deccc	%o2
 	st	%o4, [%o1 + %o3]
 	bg,pt	%ncc, .didfbc
@@ -969,14 +975,14 @@
 	! Something is left. Do it byte for byte.
 	!
 	ba,pt	%ncc, .dcicl
-	lduba	[%o0 + %o3]ASI_USER, %o4
+	lduba	[%o0 + %o3] ASI_USER, %o4
 	!
 	! 2 byte aligned copy loop. %o2 is number of 2 byte chunks to
 	! copy.
 	!
-	.align 32
+	.balign 32
 .didtbc:
-	lduha	[%o0 + %o3]ASI_USER, %o4
+	lduha	[%o0 + %o3] ASI_USER, %o4
 	deccc	%o2
 	sth	%o4, [%o1 + %o3]
 	bg,pt	%ncc, .didtbc
@@ -989,11 +995,11 @@
 	!
 	! Deal with the last byte
 	!
-	lduba	[%o0 + %o3]ASI_USER, %o4
+	lduba	[%o0 + %o3] ASI_USER, %o4
 	stb	%o4, [%o1 + %o3]
 .dcifh:
 	membar	#Sync
-	stn     SAVED_LOFAULT, [THREAD_REG + T_LOFAULT]   ! restore old t_lofault
+	stn	SAVED_LOFAULT, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
 	retl
 	clr	%o0
 
@@ -1012,7 +1018,7 @@
 	ENTRY(xcopyin)
 	sethi	%hi(.xcopyin_err), REAL_LOFAULT
 	b	.do_copyin
-	  or	REAL_LOFAULT, %lo(.xcopyin_err), REAL_LOFAULT
+	or	REAL_LOFAULT, %lo(.xcopyin_err), REAL_LOFAULT
 .xcopyin_err:
 	ldn	[THREAD_REG + T_COPYOPS], %o4
 	brz	%o4, 2f
@@ -1038,13 +1044,13 @@
 	sub	%o2, 1, %o4
 	add	%o0, %o4, %o0		! start w/last byte
 	add	%o1, %o2, %o1
-	lduba	[%o0+%o3]ASI_AIUSL, %o4
+	lduba	[%o0+%o3] ASI_AIUSL, %o4
 
 1:	stb	%o4, [%o1+%o3]
 	inccc	%o3
 	sub	%o0, 2, %o0		! get next byte
 	bcc,a,pt %ncc, 1b
-	  lduba	[%o0+%o3]ASI_AIUSL, %o4
+	lduba	[%o0+%o3] ASI_AIUSL, %o4
 
 2:	membar	#Sync				! sync error barrier
 	stn	%o5, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
@@ -1067,7 +1073,7 @@
 	ENTRY(copyin_noerr)
 	sethi	%hi(.copyio_noerr), REAL_LOFAULT
 	b	.do_copyin
-	  or	REAL_LOFAULT, %lo(.copyio_noerr), REAL_LOFAULT
+	or	REAL_LOFAULT, %lo(.copyio_noerr), REAL_LOFAULT
 .copyio_noerr:
 	jmp	SAVED_LOFAULT
 	  nop
@@ -1078,20 +1084,26 @@
  * No fault handler installed (to be called under on_fault())
  */
 
+	.section	.text
 	ENTRY(copyout_noerr)
 	sethi	%hi(.copyio_noerr), REAL_LOFAULT
 	b	.do_copyout
-	  or	REAL_LOFAULT, %lo(.copyio_noerr), REAL_LOFAULT
+	or	REAL_LOFAULT, %lo(.copyio_noerr), REAL_LOFAULT
 	SET_SIZE(copyout_noerr)
 
-	.align	4
+	.section	.data
+	.balign	4
 	DGDEF(use_hw_bcopy)
-	.word	1
+	.type	use_hw_bcopy, @object
+	.size	use_hw_bcopy, 4
+	.long	1
 	DGDEF(use_hw_bzero)
-	.word	1
+	.type	use_hw_bzero, @object
+	.size	use_hw_bzero, 4
+	.long	1
 
-	.align	64
-	.section ".text"
+	.section	.text
+	.balign	64
 
 
 /*
@@ -1111,7 +1123,7 @@
 	! Simply call bzero and notify the caller that bzero was used
 	mov	%i0, %o0
 	call	bzero
-	  mov	%i1, %o1
+	mov	%i1, %o1
 	ret
 	restore	%g0, 1, %o0	! return (1) - did not use block operations
 
@@ -1122,28 +1134,28 @@
 	 * using physical addresses.
 	 */
 	ENTRY_NP(hw_pa_bcopy32)
-	rdpr    %pstate, %g1
-	andn    %g1, PSTATE_IE, %g2
-	wrpr    %g0, %g2, %pstate
+	rdpr	%pstate, %g1
+	andn	%g1, PSTATE_IE, %g2
+	wrpr	%g0, %g2, %pstate
 
-	ldxa    [%o0]ASI_MEM, %o2
-	add     %o0, 8, %o0
-	ldxa    [%o0]ASI_MEM, %o3
-	add     %o0, 8, %o0
-	ldxa    [%o0]ASI_MEM, %o4
-	add     %o0, 8, %o0
-	ldxa    [%o0]ASI_MEM, %o5
-	stxa    %o2, [%o1]ASI_MEM
-	add     %o1, 8, %o1
-	stxa    %o3, [%o1]ASI_MEM
-	add     %o1, 8, %o1
-	stxa    %o4, [%o1]ASI_MEM
-	add     %o1, 8, %o1
-	stxa    %o5, [%o1]ASI_MEM
+	ldxa	[%o0] ASI_MEM, %o2
+	add	%o0, 8, %o0
+	ldxa	[%o0] ASI_MEM, %o3
+	add	%o0, 8, %o0
+	ldxa	[%o0] ASI_MEM, %o4
+	add	%o0, 8, %o0
+	ldxa	[%o0] ASI_MEM, %o5
+	stxa	%o2, [%o1] ASI_MEM
+	add	%o1, 8, %o1
+	stxa	%o3, [%o1] ASI_MEM
+	add	%o1, 8, %o1
+	stxa	%o4, [%o1] ASI_MEM
+	add	%o1, 8, %o1
+	stxa	%o5, [%o1] ASI_MEM
 
 	membar	#Sync
 	retl
-	  wrpr    %g0, %g1, %pstate
+	wrpr	%g0, %g1, %pstate
 	SET_SIZE(hw_pa_bcopy32)
 
 /*
@@ -1191,7 +1203,7 @@
 .zeroerr:
 	!
 	! Undo asi register setting. Just set it to be the
-        ! kernel default without checking.
+	! kernel default without checking.
 	!
 	wr	%g0, ASI_P, %asi
 
@@ -1221,7 +1233,7 @@
 	be	%ncc, 2b
 	stn	%o5, [THREAD_REG + T_LOFAULT]
 	jmp	%o5			! goto real handler
-	  nop
+	nop
 	SET_SIZE(kzero)
 	SET_SIZE(uzero)
 

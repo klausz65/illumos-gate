@@ -26,6 +26,9 @@
  *
  * Assembly code support for Cheetah/Cheetah+ modules
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include "assym.h"
 
@@ -50,6 +53,10 @@
 #ifdef TRAPTRACE
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /* BEGIN CSTYLED */
 
@@ -395,12 +402,16 @@
  *		The cheetah dcache is a 64k psuedo 4 way accaociative cache.
  *		It is virtual indexed, physically tagged cache.
  */
-	.seg	".data"
-	.align	8
+	.data
+	.balign	8
 	.global	dflush_type
+	.type	dflush_type, @object
+	.size	dflush_type, 4
 dflush_type:
-	.word	FLUSHPAGE_TYPE
+	.long	FLUSHPAGE_TYPE
 
+	.text
+	.balign	4
 	ENTRY(vac_flushpage)
 	/*
 	 * flush page from the d$
@@ -413,6 +424,8 @@ dflush_type:
 	SET_SIZE(vac_flushpage)
 
 
+	.text
+	.balign	4
 	ENTRY_NP(vac_flushpage_tl1)
 	/*
 	 * x-trap to flush page from the d$
@@ -467,7 +480,7 @@ dflush_type:
 	.global _dispatch_status_busy
 _dispatch_status_busy:
 	.asciz	"ASI_INTR_DISPATCH_STATUS error: busy"
-	.align	4
+	.balign	4
 
 /*
  * Setup interrupt dispatch data registers
@@ -654,7 +667,7 @@ flush_icache_1:
  * structure (see cheetahregs.h):
  * The Dcache *should* be turned off when this code is executed.
  */
-	.align	128
+	.balign	128
 	ENTRY(get_dcache_dtag)
 	rdpr	%pstate, %o5
 	andn    %o5, PSTATE_IE | PSTATE_AM, %o3
@@ -662,7 +675,7 @@ flush_icache_1:
 	b	1f
 	  stx	%o0, [%o1 + CH_DC_IDX]
 
-	.align	128
+	.balign	128
 1:
 	ldxa	[%o0]ASI_DC_TAG, %o2
 	stx	%o2, [%o1 + CH_DC_TAG]
@@ -734,7 +747,7 @@ flush_icache_1:
  * This is because diagnostic accesses to the Icache interfere with cache
  * consistency.
  */
-	.align	128
+	.balign	128
 	ENTRY(get_icache_dtag)
 	rdpr	%pstate, %o5
 	andn    %o5, PSTATE_IE | PSTATE_AM, %o3
@@ -777,7 +790,7 @@ flush_icache_1:
  *   data	- pointer to a ch_pc_data_t
  * structure (see cheetahregs.h):
  */
-	.align	128
+	.balign	128
 	ENTRY(get_pcache_dtag)
 	rdpr	%pstate, %o5
 	andn    %o5, PSTATE_IE | PSTATE_AM, %o3
@@ -1006,7 +1019,7 @@ flush_icache_1:
 #if !(defined(JALAPENO) || defined(SERRANO))
 
 	.section ".text"
-	.align	64
+	.balign	64
 	ENTRY_NP(fast_ecc_err)
 
 	/*
@@ -1279,7 +1292,7 @@ fast_ecc_err_5:
  * %g2: [ clo_flags if cpu_private unavailable ] - sys_trap->have_win: arg #1
  */
 
-	.align	128
+	.balign	128
 	ENTRY_NP(ce_err)
 	membar	#Sync			! Cheetah requires membar #Sync
 
@@ -1406,7 +1419,7 @@ ce_err_1:
  * This trap cannot happen at TL>0 which means this routine will never
  * actually be called and so we treat this like a BAD TRAP panic.
  */
-	.align	64
+	.balign	64
 	ENTRY_NP(ce_err_tl1)
 
         call ptl1_panic
@@ -1756,6 +1769,25 @@ dpe_tl1_skip_tt:
 	 * it up and log it.  %g1 must point to the ch_err_tl1_data structure.
 	 * Restores the %g registers and issues retry.
 	 */
+
+#undef	CH_ERR_TL1_EXIT
+#define	CH_ERR_TL1_EXIT				\
+	CPU_INDEX(%g2, %g3);			\
+	set	ch_err_tl1_pending, %g3;	\
+	or	%g0, -1, %g4;			\
+	stb	%g4, [%g2 + %g3];		\
+	mov	1, %g2;				\
+	sll	%g2, PIL_15, %g2;		\
+	wr	%g2, SET_SOFTINT;		\
+	ldxa	[%g1 + CH_ERR_TL1_G7]%asi, %g7;	\
+	ldxa	[%g1 + CH_ERR_TL1_G6]%asi, %g6;	\
+	ldxa	[%g1 + CH_ERR_TL1_G5]%asi, %g5;	\
+	ldxa	[%g1 + CH_ERR_TL1_G4]%asi, %g4;	\
+	ldxa	[%g1 + CH_ERR_TL1_G3]%asi, %g3;	\
+	ldxa	[%g1 + CH_ERR_TL1_G2]%asi, %g2;	\
+	ldxa	[%g1 + CH_ERR_TL1_G1]%asi, %g1;	\
+	retry
+
 	CH_ERR_TL1_EXIT;
 	SET_SIZE(dcache_parity_tl1_err)
 
@@ -1961,7 +1993,7 @@ ipe_tl1_skip_tt:
 	mov	1, %g3			/* create mask */
 	sllx	%g3, 63, %g3		/*   for NPT bit */
 	ba,a,pt	%xcc, 2f
-	.align	8			/* Ensure rd/wr in same i$ line */
+	.balign	8			/* Ensure rd/wr in same i$ line */
 2:
 	rdpr	%tick, %g2		/* get tick register */
 	wrpr	%g3, %g2, %tick		/* write tick register, */
@@ -1972,7 +2004,7 @@ ipe_tl1_skip_tt:
 	mov	1, %g3			/* create mask */
 	sllx	%g3, 63, %g3		/*   for NPT bit */
 	ba,a,pt	%xcc, 4f
-	.align	8			/* Ensure rd/wr in same i$ line */
+	.balign	8			/* Ensure rd/wr in same i$ line */
 4:
 	rd	STICK, %g2		/* get stick register */
 	wr	%g3, %g2, STICK		/* write stick register, */
@@ -2073,7 +2105,7 @@ ipe_tl1_skip_tt:
 	ba	1f			! cache align stick adj
 	wrpr	%g0, %g3, %pstate	! turn off interrupts
 
-	.align	16
+	.balign	16
 1:	nop
 
 	rd	STICK, %g4		! read stick reg
@@ -2347,7 +2379,7 @@ icache_inval_all_1:
 	rd	%asi, %g1
 	wr	%g0, ASI_P, %asi
 	GET_ECACHE_DTAGS(%o0, %o1, %o3, %o4, %o5)
-	wr	%g1, %asi
+	wr	%g1, %g0, %asi
 	UNPARK_SIBLING_CORE(%o2, %o3, %o4)	! can use %o2 again
 	rdpr	%pstate, %o2
 	or	%o2, PSTATE_IE, %o2

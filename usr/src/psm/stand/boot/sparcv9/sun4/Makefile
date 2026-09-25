@@ -23,6 +23,7 @@
 # Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+# Copyright 2026 Klaus Ziegler.
 
 TOPDIR =	../../../../..
 
@@ -41,8 +42,8 @@ PROMVERS =	ieee1275
 ASFLAGS +=	$(sparcv9_XARCH)
 
 ARCH_C_SRC =	sun4u_memlist.c sun4x_standalloc.c sun4dep.c
-ARCH_S_SRC =	sparcv9_subr.s
-SRT0_S =	sun4u_srt0.s
+ARCH_S_SRC =	sparcv9_subr.S
+SRT0_S =	sun4u_srt0.S
 INLINES =
 
 LDFLAGS +=	-L$(TOPDIR)/psm/stand/lib/promif/$(TARG_MACH)/$(PROMVERS)/common
@@ -68,7 +69,8 @@ CPPINCS		+= -I$(TOPDIR)/psm/stand/boot/sparc/sun4
 
 include $(TOPDIR)/psm/Makefile.psm.64
 
-CFLAGS64	+= -xchip=ultra
+CFLAGS64	+= -xchip=ultra -Wc,-xcode=abs32
+CFLAGS64	+= -xregs=no%appl
 
 #
 # Cross-reference customization: include all boot-related source files.

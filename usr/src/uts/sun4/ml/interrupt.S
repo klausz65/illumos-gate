@@ -21,6 +21,9 @@
 /*
  * Copyright (c) 2003, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include "assym.h"
 
@@ -36,6 +39,10 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * (TT 0x40..0x4F, TL>0) Interrupt Level N Handler (N == 1..15)
@@ -82,7 +89,7 @@
 	stn	%g0, [%g5 + %g6]	! clear cpu->m_cpu.intr_tail[pil]
 	mov	1, %g5			! %g5 = 1
 	sll	%g5, %g4, %g5		! %g5 = 1 << pil
-	wr	%g5, CLEAR_SOFTINT	! clear interrupt on this pil
+	wr	%g5, %g0, CLEAR_SOFTINT	! clear interrupt on this pil
 2:
 #ifdef TRAPTRACE
 	TRACE_PTR(%g5, %g6)
@@ -134,15 +141,18 @@
 	mov	%g4, %g3		! %g3 = %g4, pil
 	cmp	%g4, LOCK_LEVEL
 	bg,a,pt	%xcc, 3f		! branch if pil > LOCK_LEVEL
-	mov	PIL_MAX, %g4		! %g4 = PIL_MAX (15)
-	sethi	%hi(intr_thread), %g1	! %g1 = intr_thread
-	mov	DISP_LEVEL, %g4		! %g4 = DISP_LEVEL (11)
+	mov	PIL_MAX, %g4		! delay slot (execd ONLY if branch taken)
+
+	! Path for PIL <= LOCK_LEVEL
+	set	intr_thread, %g1	! FIXED: 64-bit address before branch
+	mov	DISP_LEVEL, %g4		! prep. parameter register for sys_trap
 	ba,pt	%xcc, sys_trap
-	or	%g1, %lo(intr_thread), %g1
+	nop				! FIXED: safely fill branch delay slot
 3:
-	sethi	%hi(current_thread), %g1 ! %g1 = current_thread
+	! Path for PIL > LOCK_LEVEL (Branch target from line 143)
+	set	current_thread, %g1	! FIXED: 64-bit address before branch
 	ba,pt	%xcc, sys_trap
-	or	%g1, %lo(current_thread), %g1
+	nop				! FIXED: safely fill branch delay slot
 	SET_SIZE(pil_interrupt_common)
 	SET_SIZE(pil_interrupt)
 
@@ -238,8 +248,8 @@ _spurious:
 	stn	%g0, [os1 + os4];					\
 	mov	1, os1;							\
 	sll	os1, ls1, os1;						\
-	wr	os1, CLEAR_SOFTINT;					\
-5:	lduh	[os3 + IV_FLAGS], ls1;                                  \
+	wr	os1, %g0, CLEAR_SOFTINT;				\
+5:	lduh	[os3 + IV_FLAGS], ls1;					\
 	andn	ls1, IV_SOFTINT_PEND, ls1;				\
 	sth	ls1, [os3 + IV_FLAGS];				        \
 	stn	%g0, [os2];						\
@@ -360,7 +370,7 @@ _spurious:
 	! resume() hasn't yet stored a timestamp for it. Or, it could be in
 	! swtch() after its slice has been accounted for.
 	! Only account for the time slice if the starting timestamp is non-zero.
-	RD_CLOCK_TICK(%o4,%l2,%l3,__LINE__)
+	rd	%tick, %o4
 	sub	%o4, %o3, %o4			! o4 has interval
 
 	! A high-level interrupt in current_thread() interrupting here
@@ -439,13 +449,13 @@ _spurious:
 	bz,pt	%xcc, 0f
 	nop
 	! Do not call panic if a panic is already in progress.
-	sethi	%hi(panic_quiesce), %l2
-	ld	[%l2 + %lo(panic_quiesce)], %l2
+	set	panic_quiesce, %l2	! FIXED: 64-bit address calculation
+	ld	[%l2], %l2		! FIXED: direct load
 	brnz,pn	%l2, 0f
 	nop
-	sethi	%hi(intr_thread_actv_bit_set), %o0
+	set	intr_thread_actv_bit_set, %o0 ! FIXED: 64-bit strptr bef. call
 	call	panic
-	or	%o0, %lo(intr_thread_actv_bit_set), %o0
+	nop				! FIXED: safely clear branch delay slot
 0:
 #endif /* DEBUG */
 	or	%o5, %o4, %o5
@@ -483,13 +493,13 @@ _spurious:
 	ldsh	[%o4 + %lo(intr_pri)], %o4	! grab base interrupt priority
 	add	%l1, %o4, %o4		! convert level to dispatch priority
 	sth	%o4, [THREAD_REG + T_PRI]
-	stub	%l1, [THREAD_REG + T_PIL]	! save pil for intr_passivate
+	stb	%l1, [THREAD_REG + T_PIL]	! save pil for intr_passivate
 
 	! Store starting timestamp in thread structure.
 	add	THREAD_REG, T_INTR_START, %o3
 1:
 	ldx	[%o3], %o5
-	RD_CLOCK_TICK(%o4,%l2,%l3,__LINE__)
+	rd	%tick, %o4
 	casx	[%o3], %o5, %o4
 	cmp	%o4, %o5
 	! If a high-level interrupt occurred while we were attempting to store
@@ -545,16 +555,16 @@ _spurious:
 	brnz	%o0, 9f
 	nop
 	! Do not call panic if a panic is already in progress.
-	sethi	%hi(panic_quiesce), %o1
-	ld	[%o1 + %lo(panic_quiesce)], %o1
+	set	panic_quiesce, %o1	! FIXED: 64-bit address calculation
+	ld	[%o1], %o1		! FIXED: direct load
 	brnz,pn	%o1, 9f
 	nop
-	sethi	%hi(intr_thread_t_intr_start_zero), %o0
+	set	intr_thread_t_intr_start_zero, %o0 ! FIXED: 64-bit strptr bef. call
 	call	panic
-	or	%o0, %lo(intr_thread_t_intr_start_zero), %o0
+	nop				! FIXED: safely clear branch delay slot
 9:
 #endif /* DEBUG */
-	RD_CLOCK_TICK(%o1,%l2,%l3,__LINE__)
+	rd	%tick, %o4
 	sub	%o1, %o0, %l2			! l2 has interval
 	!
 	! The general outline of what the code here does is:
@@ -635,26 +645,26 @@ _spurious:
 	andcc	%o5, CPU_QUIESCED, %g0
 	bnz,pn	%xcc, 1f
 
-	ldn     [THREAD_REG + T_INTR], %o5      ! pinning anything?
-	brz,pn  %o5, 3f				! if not, don't inc intrcnt
+	ldn	[THREAD_REG + T_INTR], %o5	! pinning anything?
+	brz,pn	%o5, 3f				! if not, don't inc intrcnt
 
 	ldub	[%o2 + CPU_INTRCNT], %o5	! delay - %o5 = cpu_intrcnt
 	inc	%o5
 	cmp	%o5, INTRCNT_LIMIT		! have we hit the limit?
 	bl,a,pt	%xcc, 1f			! no preempt if < INTRCNT_LIMIT
-	stub	%o5, [%o2 + CPU_INTRCNT]	! delay annul - inc CPU_INTRCNT
+	stb	%o5, [%o2 + CPU_INTRCNT]	! delay annul - inc CPU_INTRCNT
 	bg,pn	%xcc, 2f			! don't inc stats again
 	!
 	! We've reached the limit. Set cpu_intrcnt and cpu_kprunrun, and do
 	! CPU_STATS_ADDQ(cp, sys, intrunpin, 1). Then call preempt.
 	!
 	mov	1, %o4				! delay
-	stub	%o4, [%o2 + CPU_KPRUNRUN]
+	stb	%o4, [%o2 + CPU_KPRUNRUN]
 	ldx	[%o2 + CPU_STATS_SYS_INTRUNPIN], %o4
 	inc	%o4
 	stx	%o4, [%o2 + CPU_STATS_SYS_INTRUNPIN]
 	ba	2f
-	stub	%o5, [%o2 + CPU_INTRCNT]	! delay
+	stb	%o5, [%o2 + CPU_INTRCNT]	! delay
 3:
 	! Code for t_intr == NULL
 	ldub	[%o2 + CPU_KPRUNRUN], %o5
@@ -679,7 +689,7 @@ _spurious:
 	!
 	ld	[%o2 + CPU_BASE_SPL], %o4
 	cmp	%o4, %l1
-	movl	%xcc, %l1, %o4
+	movle	%xcc, %l1, %o4
 	wrpr	%g0, %o4, %pil
 	SERVE_INTR_NEXT(%o1, %o2, %l1, %l3, %o4, %o5, %o3, %o0)
 	ba	0b				! compute new stats
@@ -698,13 +708,13 @@ _spurious:
 	bnz,pt	%xcc, 0f
 	nop
 	! Do not call panic if a panic is already in progress.
-	sethi	%hi(panic_quiesce), %l2
-	ld	[%l2 + %lo(panic_quiesce)], %l2
+	set	panic_quiesce, %l2	! FIXED: 64-bit address calculation
+	ld	[%l2], %l2		! FIXED: direct load
 	brnz,pn	%l2, 0f
 	nop
-	sethi	%hi(intr_thread_actv_bit_not_set), %o0
+	set	intr_thread_actv_bit_not_set, %o0 ! FIXED: 64-bit strptr bef. call
 	call	panic
-	or	%o0, %lo(intr_thread_actv_bit_not_set), %o0
+	nop				! FIXED: safely clear branch delay slot
 0:
 #endif /* DEBUG */
 	andn	%o5, %o4, %o5
@@ -712,7 +722,7 @@ _spurious:
 	!
 	! If there is still an interrupted thread underneath this one,
 	! then the interrupt was never blocked and the return is fairly
-	! simple.  Otherwise jump to intr_thread_exit.
+	! simple. Otherwise jump to intr_thread_exit.
 	!
 	ldn	[THREAD_REG + T_INTR], %o4	! pinned thread
 	brz,pn	%o4, intr_thread_exit		! branch if none
@@ -744,7 +754,7 @@ _spurious:
 	add	THREAD_REG, T_INTR_START, %o3	! o3 has &curthread->t_intr_star
 0:
 	ldx	[%o3], %o4			! o4 = t_intr_start before
-	RD_CLOCK_TICK(%o5,%l2,%l3,__LINE__)
+	rd	%tick, %o4
 	casx	[%o3], %o4, %o5			! put o5 in ts if o4 == ts after
 	cmp	%o4, %o5
 	! If a high-level interrupt occurred while we were attempting to store
@@ -760,7 +770,7 @@ _spurious:
 	set	SOFTINT_MASK, %o5
 	andcc	%o4, %o5, %g0
 	bz,a,pt	%xcc, 2f
-	stub	%g0, [%o2 + CPU_INTRCNT]	! delay annul
+	stb	%g0, [%o2 + CPU_INTRCNT]	! delay annul
 2:
 	jmp	%l0 + 8
 	nop
@@ -770,7 +780,7 @@ _spurious:
 	!
 	! An interrupt returned on what was once (and still might be)
 	! an interrupt thread stack, but the interrupted process is no longer
-	! there.  This means the interrupt must have blocked.
+	! there. This means the interrupt must have blocked.
 	!
 	! There is no longer a thread under this one, so put this thread back
 	! on the CPU's free list and resume the idle thread which will dispatch
@@ -803,9 +813,9 @@ _spurious:
 	wrpr	%g0, %l2, %pstate
 #endif /* TRAPTRACE */
 	! cpu_stats.sys.intrblk++
-        ldx	[%o2 + CPU_STATS_SYS_INTRBLK], %o4
-        inc     %o4
-        stx	%o4, [%o2 + CPU_STATS_SYS_INTRBLK]
+	ldx	[%o2 + CPU_STATS_SYS_INTRBLK], %o4
+	inc	%o4
+	stx	%o4, [%o2 + CPU_STATS_SYS_INTRBLK]
 	!
 	! Put thread back on the interrupt thread list.
 	!
@@ -824,13 +834,13 @@ _spurious:
 	brz,pt	%o4, 0f
 	nop
 	! Do not call panic if a panic is already in progress.
-	sethi	%hi(panic_quiesce), %l2
-	ld	[%l2 + %lo(panic_quiesce)], %l2
+	set	panic_quiesce, %l2	! FIXED: 64-bit address calcultation
+	ld	[%l2], %l2		! FIXED: direct load
 	brnz,pn	%l2, 0f
 	nop
-	sethi	%hi(intr_thread_exit_actv_bit_set), %o0
+	set	intr_thread_exit_actv_bit_set, %o0 ! FIXED: 64-bit strptr bef. call
 	call	panic
-	or	%o0, %lo(intr_thread_exit_actv_bit_set), %o0
+	nop				! FIXED: safely clear branch delay slot
 0:
 #endif /* DEBUG */
 	call	_intr_set_spl			! set CPU's base SPL level
@@ -930,13 +940,13 @@ no_onfault:
 	bz,pt	%xcc, 0f
 	nop
 	! Do not call panic if a panic is already in progress.
-	sethi	%hi(panic_quiesce), %l2
-	ld	[%l2 + %lo(panic_quiesce)], %l2
+	set	panic_quiesce, %l2	! FIXED: 64-bit address calculation
+	ld	[%l2], %l2		! FIXED: direct load
 	brnz,pn	%l2, 0f
 	nop
-	sethi	%hi(current_thread_actv_bit_set), %o0
+	set	current_thread_actv_bit_set, %o0 ! FIXED: 64-bit strptr bef. call
 	call	panic
-	or	%o0, %lo(current_thread_actv_bit_set), %o0
+	nop				! FIXED: safely clear branch delay slot
 0:
 #endif /* DEBUG */
 	or	%o5, %o4, %o4
@@ -972,13 +982,13 @@ no_onfault:
 	nop
 
 	! Don't panic if a panic is already in progress.
-	sethi	%hi(panic_quiesce), %l3
-	ld	[%l3 + %lo(panic_quiesce)], %l3
+	set	panic_quiesce, %l3	! FIXED: 64-bit address calculation
+	ld	[%l3], %l3		! FIXED: direct load
 	brnz,pn	%l3, 9f
 	nop
-	sethi	%hi(current_thread_nested_PIL_not_found), %o0
+	set	current_thread_nested_PIL_not_found, %o0 ! 64-bit strptr bef. call
 	call	panic
-	or	%o0, %lo(current_thread_nested_PIL_not_found), %o0
+	nop				! FIXED: safely clear branch delay slot
 9:
 #endif /* DEBUG */
 	andcc	%l1, %o5, %g0		! test mask against high-level bits of
@@ -996,15 +1006,15 @@ no_onfault:
 	brnz,pt	%l3, 9f
 	nop
 	! Don't panic if a panic is already in progress.
-	sethi	%hi(panic_quiesce), %l1
-	ld	[%l1 + %lo(panic_quiesce)], %l1
+	set	panic_quiesce, %l1	! FIXED: 64-bit address calculation
+	ld	[%l1], %l1		! FIXED: direct load
 	brnz,pn	%l1, 9f
 	nop
 	srl	%o4, 3, %o1			! Find interrupted PIL for panic
 	add	%o1, LOCK_LEVEL + 1, %o1
-	sethi	%hi(current_thread_nested_pil_zero), %o0
+	set	current_thread_nested_pil_zero, %o0 ! 64-bit strptr bef. call
 	call	panic
-	or	%o0, %lo(current_thread_nested_pil_zero), %o0
+	nop				! FIXED: safely clear branch delay slot
 9:
 #endif /* DEBUG */
 	RD_CLOCK_TICK_NO_SUSPEND_CHECK(%l1, %l2)
@@ -1111,12 +1121,12 @@ no_onfault:
 3:
 	! Store starting timestamp for this PIL in CPU structure at
 	! cpu.cpu_m.pil_high_start[PIL - (LOCK_LEVEL + 1)]
-        sub     %o2, LOCK_LEVEL + 1, %o4	! convert PIL to array index
-	sllx    %o4, 3, %o4			! index to byte offset
+	sub	%o2, LOCK_LEVEL + 1, %o4	! convert PIL to array index
+	sllx	%o4, 3, %o4			! index to byte offset
 	add	%o4, CPU_MCPU, %o4	! CPU_PIL_HIGH_START is too large
 	add	%o4, MCPU_PIL_HIGH_START, %o4
 	RD_CLOCK_TICK_NO_SUSPEND_CHECK(%o5, %l2)
-        stx     %o5, [%o3 + %o4]
+	stx	%o5, [%o3 + %o4]
 
 	wrpr	%g0, %o2, %pil			! enable interrupts
 
@@ -1154,7 +1164,7 @@ no_onfault:
 	! clear perfcntr overflow
 	mov	1, %o0
 	sllx	%o0, PIL_15, %o0
-	wr	%o0, CLEAR_SOFTINT
+	wr	%o0, %g0, CLEAR_SOFTINT
 
 	wrpr	%g0, %g5, %pstate		! Enable vec interrupts
 
@@ -1188,37 +1198,37 @@ current_thread_complete:
 	bnz,pt	%xcc, 0f
 	nop
 	! Do not call panic if a panic is already in progress.
-	sethi	%hi(panic_quiesce), %l2
-	ld	[%l2 + %lo(panic_quiesce)], %l2
+	set	panic_quiesce, %l2	! FIXED: 64-bit address calculation
+	ld	[%l2], %l2		! FIXED: direct load
 	brnz,pn	%l2, 0f
 	nop
-	sethi	%hi(current_thread_actv_bit_not_set), %o0
+	set	current_thread_actv_bit_not_set, %o0 ! 64-bit strptr bef. call
 	call	panic
-	or	%o0, %lo(current_thread_actv_bit_not_set), %o0
+	nop				! FIXED: safely clear branch delay slot
 0:
 #endif /* DEBUG */
 	andn	%l2, %o5, %l2
 	st	%l2, [%o3 + CPU_INTR_ACTV]
 
 	! Take timestamp, compute interval, update cumulative counter.
-        sub     %o2, LOCK_LEVEL + 1, %o4	! PIL to array index
-	sllx    %o4, 3, %o4			! index to byte offset
+	sub	%o2, LOCK_LEVEL + 1, %o4	! PIL to array index
+	sllx	%o4, 3, %o4			! index to byte offset
 	add	%o4, CPU_MCPU, %o4	! CPU_PIL_HIGH_START is too large
 	add	%o4, MCPU_PIL_HIGH_START, %o4
 	RD_CLOCK_TICK_NO_SUSPEND_CHECK(%o5, %o0)
-	ldx     [%o3 + %o4], %o0
+	ldx	[%o3 + %o4], %o0
 #ifdef DEBUG
 	! ASSERT(cpu.cpu_m.pil_high_start[pil - (LOCK_LEVEL + 1)] != 0)
 	brnz,pt	%o0, 9f
 	nop
 	! Don't panic if a panic is already in progress.
-	sethi	%hi(panic_quiesce), %l2
-	ld	[%l2 + %lo(panic_quiesce)], %l2
+	set	panic_quiesce, %l2	! FIXED: 64-bit address calculation
+	ld	[%l2], %l2		! FIXED: direct load
 	brnz,pn	%l2, 9f
 	nop
-	sethi	%hi(current_thread_timestamp_zero), %o0
+	set	current_thread_timestamp_zero, %o0 ! 64-bit strptr bef. call
 	call	panic
-	or	%o0, %lo(current_thread_timestamp_zero), %o0
+	nop				! FIXED: safely clear branch delay slot
 9:
 #endif /* DEBUG */
 	stx	%g0, [%o3 + %o4]
@@ -1402,7 +1412,7 @@ current_thread_nested_PIL_not_found:
 	SET_SIZE(enable_vec_intr)
 
 	ENTRY_NP(cbe_level14)
-	save    %sp, -SA(MINFRAME), %sp ! get a new window
+	save	%sp, -SA(MINFRAME), %sp ! get a new window
 	!
 	! Make sure that this is from TICK_COMPARE; if not just return
 	!
@@ -1487,7 +1497,7 @@ current_thread_nested_PIL_not_found:
 	!
 	mov	1, %l1			! %l1 = 1
 	sll	%l1, %l2, %l1		! %l1 = 1 << pil
-	wr	%l1, SET_SOFTINT	! trigger required pil softint
+	wr	%l1, %g0, SET_SOFTINT	! trigger required pil softint
 4:
 	wrpr	%g0, %l5, %pstate	! %pstate = saved %pstate (in %l5)
 	ret
@@ -1574,7 +1584,7 @@ current_thread_nested_PIL_not_found:
 	!
 	mov	1, %g5			! %g5 = 1
 	sll	%g5, %g2, %g5		! %g5 = 1 << pil
-	wr	%g5, SET_SOFTINT	! trigger required pil softint
+	wr	%g5, %g0, SET_SOFTINT	! trigger required pil softint
 	retry
 	SET_SIZE(setsoftint_tl1)
 
@@ -1610,7 +1620,7 @@ current_thread_nested_PIL_not_found:
 	sll	%g1, CPTRSHIFT, %g6	! %g6 = offset to inum entry in table
 	add	%g5, %g6, %g5		! %g5 = &intr_vec_table[inum]
 	ldn	[%g5], %g3		! %g3 = pointer to first entry of
-					!       intr_vec_t list
+					!	intr_vec_t list
 
 	! Verify the first intr_vec_t pointer for a given inum and it should
 	! not be NULL. This used to be guarded by DEBUG but broken drivers can
@@ -1698,7 +1708,7 @@ current_thread_nested_PIL_not_found:
 	ldn	[%g3 + IV_VEC_NEXT], %g3 ! %g3 = pointer to next intr_vec_t (iv)
 	brnz,pn	%g3, 0b			! iv->iv_vec_next is non NULL, goto 0b
 	nop
-	wr	%g1, SET_SOFTINT	! triggered one or more pil softints
+	wr	%g1, %g0, SET_SOFTINT	! triggered one or more pil softints
 	retry
 
 .no_ivintr:
@@ -1712,7 +1722,7 @@ current_thread_nested_PIL_not_found:
 
 	ENTRY_NP(wr_clr_softint)
 	retl
-	wr	%o0, CLEAR_SOFTINT
+	wr	%o0, %g0, CLEAR_SOFTINT
 	SET_SIZE(wr_clr_softint)
 
 /*
@@ -1733,7 +1743,7 @@ current_thread_nested_PIL_not_found:
 	sll	%o0, CPTRSHIFT, %o0	! %o0 = offset to pil entry
 	add	%g4, INTR_TAIL, %g6	! %g6 = &cpu->m_cpu.intr_tail
 	ldn	[%o0 + %g6], %g1	! %g1 = cpu->m_cpu.intr_tail[pil]
-					!       current tail (ct)
+					!	current tail (ct)
 	brz,pt	%g1, 2f			! branch if current tail is NULL
 	stn	%o1, [%g6 + %o0]	! make intr_vec_t (iv) as new tail
 
@@ -1817,7 +1827,7 @@ _intr_set_spl:					! intr_thread_exit enters here
 _intr_flag_table:
 	.byte	0, 1, 2, 2,	3, 3, 3, 3,	4, 4, 4, 4,	4, 4, 4, 4
 	.byte	5, 5, 5, 5,	5, 5, 5, 5,	5, 5, 5, 5,	5, 5, 5, 5
-	.align	4
+	.balign	4
 
 /*
  * int
@@ -1948,8 +1958,8 @@ _intr_flag_table:
 	! Lots of asserts, but just check panic_quiesce first.
 	! Don't bother with lots of tests if we're just ignoring them.
 	!
-	sethi	%hi(panic_quiesce), %o0
-	ld	[%o0 + %lo(panic_quiesce)], %o0
+	set	panic_quiesce, %o0	! FIXED: 64-bit address calculation
+	ld	[%o0], %o0		! FIXED: direct load
 	brnz,pn	%o0, 2f
 	nop
 	!
@@ -1958,9 +1968,9 @@ _intr_flag_table:
 	rdpr	%pil, %o1
 	cmp	%o1, LOCK_LEVEL
 	ble,pt	%xcc, 0f
-	sethi	%hi(intr_get_time_high_pil), %o0	! delay
+	set	intr_get_time_high_pil, %o0 ! FIXED: 64-bit strptr bef. call
 	call	panic
-	or	%o0, %lo(intr_get_time_high_pil), %o0
+	nop				! FIXED: safely clear branch delay slot
 0:
 	!
 	! ASSERT((t_flags & T_INTR_THREAD) != 0 && t_pil > 0)
@@ -2037,7 +2047,7 @@ _intr_flag_table:
 
 	ld	[%o5 + CPU_BASE_SPL], %o2	! restore %pil to the greater
 	cmp	%o2, %o1			! of either our pil %o1 or
-	movl	%xcc, %o1, %o2			! cpu_base_spl.
+	movle	%xcc, %o1, %o2			! cpu_base_spl.
 	retl
 	wrpr	%g0, %o2, %pil
 	SET_SIZE(intr_get_time)

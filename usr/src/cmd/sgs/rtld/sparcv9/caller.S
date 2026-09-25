@@ -25,6 +25,9 @@
  *
  * Return the pc of the calling routine.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #if	defined(lint)
 
@@ -90,6 +93,8 @@ set_sparc_g7(ulong_t val)
 #include	<sys/asm_linkage.h>
 
 	.file	"caller.s"
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 	ENTRY(caller)
 	retl

@@ -23,6 +23,13 @@
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 #include <sys/param.h>
 #include <sys/errno.h>
@@ -478,8 +485,8 @@
 
 
 
-	.seg	".text"
-	.align	4
+	.text
+	.balign	4
 
 	ENTRY(kcopy)
 
@@ -598,7 +605,7 @@
 fp_panic_msg:
 	.asciz	"Unable to restore fp state after copy operation"
 
-	.align	4
+	.balign	4
 .copyerr2:
 	set	fp_panic_msg, %o0
 	call	panic
@@ -2219,7 +2226,7 @@ blkdone:
 	! through both buffers without having to bump each buffer's
 	! pointer. A very fast 4 instruction loop.
 	!
-	.align 16
+	.balign 16
 .dcocl:
 	stba	%o4, [%o1 + %o3]ASI_USER
 	inccc	%o3
@@ -2408,7 +2415,7 @@ blkdone:
 	nop
 	ba,pt	%ncc, .dcos2
 	nop
-	.align 32
+	.balign 32
 .dodebc:
 	ldx	[%o0 + %o3], %o4
 	deccc	%o2
@@ -2429,7 +2436,7 @@ blkdone:
 	!
 	! Four byte copy loop. %o2 is the number of 4 byte chunks to copy.
 	!
-	.align 32
+	.balign 32
 .dodfbc:
 	lduw	[%o0 + %o3], %o4
 	deccc	%o2
@@ -2451,7 +2458,7 @@ blkdone:
 	! two byte aligned copy loop. %o2 is the number of 2 byte chunks to
 	! copy.
 	!
-	.align 32
+	.balign 32
 .dodtbc:
 	lduh	[%o0 + %o3], %o4
 	deccc	%o2
@@ -3438,7 +3445,7 @@ copyout_blkdone:
 	! through both buffers without having to bump each buffer's
 	! pointer. A very fast 4 instruction loop.
 	!
-	.align 16
+	.balign 16
 .dcicl:
 	stb	%o4, [%o1 + %o3]
 	inccc	%o3
@@ -3616,7 +3623,7 @@ copyout_blkdone:
 	! done, we examine %o3. If this is < 0, we have 1 - 7 bytes more
 	! to copy.
 	!
-	.align 32
+	.balign 32
 .didebc:
 	ldxa	[%o0 + %o3]ASI_USER, %o4
 	deccc	%o2
@@ -3636,7 +3643,7 @@ copyout_blkdone:
 	!
 	! 4 byte copy loop. %o2 is number of 4 byte chunks to copy.
 	!
-	.align 32
+	.balign 32
 .didfbc:
 	lduwa	[%o0 + %o3]ASI_USER, %o4
 	deccc	%o2
@@ -3657,7 +3664,7 @@ copyout_blkdone:
 	! 2 byte aligned copy loop. %o2 is number of 2 byte chunks to
 	! copy.
 	!
-	.align 32
+	.balign 32
 .didtbc:
 	lduha	[%o0 + %o3]ASI_USER, %o4
 	deccc	%o2
@@ -4615,30 +4622,46 @@ copyin_blkdone:
  * No fault handler installed (to be called under on_fault())
  */
 
+	.text
 	ENTRY(copyout_noerr)
 	sethi	%hi(.copyio_noerr), REAL_LOFAULT
 	b	.do_copyout
 	  or	REAL_LOFAULT, %lo(.copyio_noerr), REAL_LOFAULT
 	SET_SIZE(copyout_noerr)
 
-	.align	4
+	.data
+	.balign	4
 	DGDEF(use_hw_bcopy)
-	.word	1
+	.type	use_hw_bcopy, @object
+	.size	use_hw_bcopy, 4
+	.long	1
 	DGDEF(use_hw_copyio)
-	.word	1
+	.type	use_hw_copyio, @object
+	.size	use_hw_copyio, 4
+	.long	1
 	DGDEF(use_hw_bzero)
-	.word	1
+	.type	use_hw_bzero, @object
+	.size	use_hw_bzero, 4
+	.long	1
 	DGDEF(hw_copy_limit_1)
-	.word	0
+	.type	hw_copy_limit_1, @object
+	.size	hw_copy_limit_1, 4
+	.long	0
 	DGDEF(hw_copy_limit_2)
-	.word	0
+	.type	hw_copy_limit_2, @object
+	.size	hw_copy_limit_2, 4
+	.long	0
 	DGDEF(hw_copy_limit_4)
-	.word	0
+	.type	hw_copy_limit_4, @object
+	.size	hw_copy_limit_4, 4
+	.long	0
 	DGDEF(hw_copy_limit_8)
-	.word	0
+	.type	hw_copy_limit_8, @object
+	.size	hw_copy_limit_8, 4
+	.long	0
 
-	.align	64
-	.section ".text"
+	.text
+	.balign	64
 
 
 /*

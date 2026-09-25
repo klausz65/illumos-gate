@@ -23,6 +23,7 @@
 # Use is subject to license terms.
 #
 # Copyright 2019 Peter Tribble.
+# Copyright 2026 Klaus Ziegler.
 #
 
 SYSOBJS=		\
@@ -34,16 +35,12 @@ include $(SRC)/lib/Makefile.lib.64
 
 DYNFLAGS += $(DYNFLAGS64)
 BUILD.SO= $(CC) $(CFLAGS) -o $@ $(GSHARED) $(DYNFLAGS) $(PICS) -L $(ROOT)/usr/lib/$(MACH64) $(LDLIBS)
-BUILD.s=	$(AS) $(ASFLAGS) -xarch=v9 -D__sparcv9 $< -o $@
+ARCH	= -m64 -xarch=sparcvis
 
 # sparcv9-specific rule
 pics/%.o: ../sparc/sys/%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)
-
-pics/%.o: sys/%.s
-	$(BUILD.s)
-	$(POST_PROCESS_S_O)
 
 .KEEP_STATE:
 

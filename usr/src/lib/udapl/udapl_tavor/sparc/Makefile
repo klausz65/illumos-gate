@@ -26,14 +26,14 @@
 
 include ../Makefile.com
 
-ASFLAGS += -D_ASM -xarch=v8
+ASFLAGS += -D_ASM -xarch=v8plusa
 
-SRCS += dapl_tavor_atomic_copy.s
+SRCS += dapl_tavor_atomic_copy.S
 
 OBJECTS += dapl_tavor_atomic_copy.o
 
 install: all $(ROOTLIBS)
 
-pics/%.o: %.s
+pics/%.o: %.S
 	$(COMPILE.s) -o $@ $<
 	$(POST_PROCESS_O)

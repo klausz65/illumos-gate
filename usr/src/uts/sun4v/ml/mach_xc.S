@@ -36,6 +36,9 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * Entered by the software trap (TT=ST_SELFXCALL, TL>0) thru send_self_xcall().
@@ -57,35 +60,35 @@
 	! prepare their return PC and nPC now
 	!
 	rdpr	%tnpc, %g1
-	wrpr	%g1, %tpc			!  PC <- TNPC[TL]
- 	add	%g1, 4, %g1
-	wrpr	%g1, %tnpc			! nPC <- TNPC[TL] + 4
+	wrpr	%g1, %tpc			/* PC <- TNPC[TL] */
+	add	%g1, 4, %g1
+	wrpr	%g1, %tnpc			/* nPC <- TNPC[TL] + 4 */
 
 #ifdef TRAPTRACE
 	TRACE_PTR(%g4, %g6)
 	GET_TRACE_TICK(%g6, %g3)
-	stxa	%g6, [%g4 + TRAP_ENT_TICK]%asi
+	stxa	%g6, [%g4 + TRAP_ENT_TICK] %asi
 	rdpr	%tl, %g6
-	stha	%g6, [%g4 + TRAP_ENT_TL]%asi
+	stha	%g6, [%g4 + TRAP_ENT_TL] %asi
 	rdpr	%tt, %g6
-	stha	%g6, [%g4 + TRAP_ENT_TT]%asi
-	stna	%o3, [%g4 + TRAP_ENT_TR]%asi ! pc of the TL>0 handler
+	stha	%g6, [%g4 + TRAP_ENT_TT] %asi
+	stna	%o3, [%g4 + TRAP_ENT_TR] %asi	/* pc of the TL>0 handler */
 	rdpr	%tpc, %g6
-	stna	%g6, [%g4 + TRAP_ENT_TPC]%asi
+	stna	%g6, [%g4 + TRAP_ENT_TPC] %asi
 	rdpr	%tstate, %g6
-	stxa	%g6, [%g4 + TRAP_ENT_TSTATE]%asi
-	stna	%sp, [%g4 + TRAP_ENT_SP]%asi
-	stna	%o1, [%g4 + TRAP_ENT_F1]%asi ! arg 1
-	stna	%o2, [%g4 + TRAP_ENT_F2]%asi ! arg 2
-	stna	%g0, [%g4 + TRAP_ENT_F3]%asi
-	stna	%g0, [%g4 + TRAP_ENT_F4]%asi
+	stxa	%g6, [%g4 + TRAP_ENT_TSTATE] %asi
+	stna	%sp, [%g4 + TRAP_ENT_SP] %asi
+	stna	%o1, [%g4 + TRAP_ENT_F1] %asi	/* arg 1 */
+	stna	%o2, [%g4 + TRAP_ENT_F2] %asi	/* arg 2 */
+	stna	%g0, [%g4 + TRAP_ENT_F3] %asi
+	stna	%g0, [%g4 + TRAP_ENT_F4] %asi
 	TRACE_NEXT(%g4, %g6, %g3)
 #endif /* TRAPTRACE */
 	!
 	! Load the arguments for the fast trap handler.
 	!
 	mov	%o1, %g1
-	jmp	%o3				! call the fast trap handler
+	jmp	%o3				/* call the fast trap handler */
 	mov	%o2, %g2
 	/* Not Reached */
 	SET_SIZE(self_xcall)
@@ -93,24 +96,24 @@
 #ifdef  TRAPTRACE
 	ENTRY(xc_trace)
 	rdpr	%pstate, %g1
-	andn	%g1, PSTATE_IE | PSTATE_AM, %g2
+	andn	%g1, (PSTATE_IE | PSTATE_AM), %g2
 	wrpr	%g0, %g2, %pstate			/* disable interrupts */
 	TRACE_PTR(%g3, %g4)
 	GET_TRACE_TICK(%g6, %g4)
-	stxa	%g6, [%g3 + TRAP_ENT_TICK]%asi
-	stha	%g0, [%g3 + TRAP_ENT_TL]%asi
+	stxa	%g6, [%g3 + TRAP_ENT_TICK] %asi
+	stha	%g0, [%g3 + TRAP_ENT_TL] %asi
 	set	TT_XCALL, %g2
 	or	%o0, %g2, %g4
-	stha	%g4, [%g3 + TRAP_ENT_TT]%asi
-	stna	%o7, [%g3 + TRAP_ENT_TPC]%asi
+	stha	%g4, [%g3 + TRAP_ENT_TT] %asi
+	stna	%o7, [%g3 + TRAP_ENT_TPC] %asi
 	ldn	[%o1], %g2
-	stna	%g2, [%g3 + TRAP_ENT_SP]%asi		/* sp = cpuset */
-	stna	%o2, [%g3 + TRAP_ENT_TR]%asi		/* tr = func */
-	stna	%o3, [%g3 + TRAP_ENT_F1]%asi		/* f1 = arg1 */
-	stna	%o4, [%g3 + TRAP_ENT_F2]%asi		/* f2 = arg2 */
-	stna	%g0, [%g3 + TRAP_ENT_F3]%asi		/* f3 = 0 */
-	stna	%i7, [%g3 + TRAP_ENT_F4]%asi		/* f4 = xcall caller */
-	stxa	%g1, [%g3 + TRAP_ENT_TSTATE]%asi	/* tstate = pstate */
+	stna	%g2, [%g3 + TRAP_ENT_SP] %asi		/* sp = cpuset */
+	stna	%o2, [%g3 + TRAP_ENT_TR] %asi		/* tr = func */
+	stna	%o3, [%g3 + TRAP_ENT_F1] %asi		/* f1 = arg1 */
+	stna	%o4, [%g3 + TRAP_ENT_F2] %asi		/* f2 = arg2 */
+	stna	%g0, [%g3 + TRAP_ENT_F3] %asi		/* f3 = 0 */
+	stna	%i7, [%g3 + TRAP_ENT_F4] %asi		/* f4 = xcall caller */
+	stxa	%g1, [%g3 + TRAP_ENT_TSTATE] %asi	/* tstate = pstate */
 	TRACE_NEXT(%g2, %g3, %g4)
 /*
  * In the case of a cpuset of greater size than a long we
@@ -123,35 +126,35 @@
 	clr	%o2
 1:
 	TRACE_PTR(%g3, %g4)
-	stha	%g0, [%g3 + TRAP_ENT_TL]%asi
+	stha	%g0, [%g3 + TRAP_ENT_TL] %asi
 	set	TT_XCALL_CONT, %g2
 	or	%g2, %o2, %g2				/* continuation # */
-	stha	%g2, [%g3 + TRAP_ENT_TT]%asi
-	stxa	%g6, [%g3 + TRAP_ENT_TICK]%asi		/* same tick */
-	stna	%g0, [%g3 + TRAP_ENT_TPC]%asi		/* clr unused fields */
-	stna	%g0, [%g3 + TRAP_ENT_SP]%asi
-	stna	%g0, [%g3 + TRAP_ENT_TR]%asi
-	stxa	%g0, [%g3 + TRAP_ENT_TSTATE]%asi
-	stna	%g0, [%g3 + TRAP_ENT_F2]%asi
-	stna	%g0, [%g3 + TRAP_ENT_F3]%asi
-	stna	%g0, [%g3 + TRAP_ENT_F4]%asi
+	stha	%g2, [%g3 + TRAP_ENT_TT] %asi
+	stxa	%g6, [%g3 + TRAP_ENT_TICK] %asi		/* same tick */
+	stna	%g0, [%g3 + TRAP_ENT_TPC] %asi		/* clr unused fields */
+	stna	%g0, [%g3 + TRAP_ENT_SP] %asi
+	stna	%g0, [%g3 + TRAP_ENT_TR] %asi
+	stxa	%g0, [%g3 + TRAP_ENT_TSTATE] %asi
+	stna	%g0, [%g3 + TRAP_ENT_F2] %asi
+	stna	%g0, [%g3 + TRAP_ENT_F3] %asi
+	stna	%g0, [%g3 + TRAP_ENT_F4] %asi
 	ldn	[%o1], %g2
-	stna	%g2, [%g3 + TRAP_ENT_F1]%asi
+	stna	%g2, [%g3 + TRAP_ENT_F1] %asi
 	add	%o1, CLONGSIZE, %o1
 	cmp	%o1, %g5
 	bge	2f
 	ldn	[%o1], %g2
-	stna	%g2, [%g3 + TRAP_ENT_F2]%asi
+	stna	%g2, [%g3 + TRAP_ENT_F2] %asi
 	add	%o1, CLONGSIZE, %o1
 	cmp	%o1, %g5
 	bge	2f
 	ldn	[%o1], %g2
-	stna	%g2, [%g3 + TRAP_ENT_F3]%asi
+	stna	%g2, [%g3 + TRAP_ENT_F3] %asi
 	add	%o1, CLONGSIZE, %o1
 	cmp	%o1, %g5
 	bge	2f
 	ldn	[%o1], %g2
-	stna	%g2, [%g3 + TRAP_ENT_F4]%asi
+	stna	%g2, [%g3 + TRAP_ENT_F4] %asi
 	add	%o1, CLONGSIZE, %o1
 2:
 	TRACE_NEXT(%g2, %g3, %g4)
@@ -160,7 +163,7 @@
 	inc	%o2
 #endif	/* CPUSET_SIZE */
 	retl
-	wrpr	%g0, %g1, %pstate			/* enable interrupts */
+	wrpr	%g1, 0, %pstate				/* enable interrupts */
 	SET_SIZE(xc_trace)
 
 #endif	/* TRAPTRACE */
@@ -173,7 +176,7 @@
  */
 	ENTRY(init_mondo)
 	ALTENTRY(init_mondo_nocheck)
-	CPU_ADDR(%g1, %g4)			! load CPU struct addr
+	CPU_ADDR(%g1, %g4)			/* load CPU struct addr */
 	add	%g1, CPU_MCPU, %g1
 	ldx	[%g1 + MCPU_MONDO_DATA], %g1
 	stx	%o0, [%g1]
@@ -185,7 +188,7 @@
 	stx	%g0, [%g1+0x30]
 	stx	%g0, [%g1+0x38]
 	retl
-	membar	#Sync			! allowed to be in the delay slot
+	membar	#Sync			/* allowed to be in the delay slot */
 	SET_SIZE(init_mondo)
 
 /*
@@ -205,11 +208,11 @@
 /*
  * Get cpu structure
  * Entry:
- *      %o0 - register for CPU_ADDR macro
- *      %o1 - scratch for CPU_ADDR macro
+ *	%o0 - register for CPU_ADDR macro
+ *	%o1 - scratch for CPU_ADDR macro
  */
 	ENTRY(get_cpuaddr)
-	CPU_ADDR(%o0, %o1)	! %o0 == CPU struct addr
+	CPU_ADDR(%o0, %o1)	/* %o0 == CPU struct addr */
 	retl
 	nop
 	SET_SIZE(get_cpuaddr)

@@ -22,6 +22,9 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include "assym.h"
 
@@ -35,34 +38,41 @@
 #include <sys/clock.h>
 #include <vm/hat_sfmmu.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 	.weak	cpu_feature_init
-	.type	cpu_feature_init, #function
+	.type	cpu_feature_init, @function
 
 	.weak	cpu_early_feature_init
-	.type	cpu_early_feature_init, #function
+	.type	cpu_early_feature_init, @function
 
 /*
  * Processor initialization
  *
  * This is the kernel entry point for other cpus except the first one.
  * When the prom jumps to this location we are still executing with the
- * prom's trap table.  It expects the cpuid as its first parameter.
+ * prom's trap table. It expects the cpuid as its first parameter.
  */
 
 	! allocate a temporary stack to run on while we figure who and
 	! what we are.
-	.seg	".data"
-	.align	8
+	.data
+	.balign	16
 etmpstk:
 	.skip	2048
+	.balign	16
 tmpstk:
-	.word	0
+	.xword	0
+	.type	tmpstk, @object
+	.size	tmpstk, 8
 
 	ENTRY_NP(cpu_startup)
 	!
 	! Initialize CPU state registers
 	!
-	! The boot cpu and other cpus are different.  The boot cpu has gone
+	! The boot cpu and other cpus are different. The boot cpu has gone
 	! through boot, and its state might be affected as a result.  The
 	! other cpus' states come directly from the prom.
 	!
@@ -73,7 +83,7 @@ tmpstk:
 	!
 	! Set up temporary stack
 	!
-	set	tmpstk, %g1
+	setx	tmpstk, %g3, %g1
 	sub	%g1, SA(KFPUSIZE+GSR_SIZE), %g2
 	and	%g2, 0x3F, %g3
 	sub	%g2, %g3, %o2
@@ -85,14 +95,14 @@ tmpstk:
 	sub	%g0, 1, THREAD_REG	! catch any curthread acceses
 
 	! On OPL platforms, context page size TLB programming must be enabled in
-	! ASI_MEMCNTL.  To avoid Olympus-C and Jupiter sTLB errata (strands with
+	! ASI_MEMCNTL. To avoid Olympus-C and Jupiter sTLB errata (strands with
 	! different TLB page size settings), this must be done here before any
-	! reference to non-nucleus memory.  An early hook is added to perform
+	! reference to non-nucleus memory. An early hook is added to perform
 	! cpu specific initialization.
 	!
 	sethi	%hi(cpu_early_feature_init), %o0
 	or	%o0, %lo(cpu_early_feature_init), %o0
-	brz	%o0, 0f
+	brz,pt	%o0, 0f
 	nop
 	call	%o0
 	nop
@@ -122,7 +132,7 @@ tmpstk:
 	!
 	sethi	%hi(cpu_feature_init), %o0
 	or	%o0, %lo(cpu_feature_init), %o0
-	brz	%o0, 1f
+	brz,pt	%o0, 1f
 	nop
 	call	%o0
 	nop

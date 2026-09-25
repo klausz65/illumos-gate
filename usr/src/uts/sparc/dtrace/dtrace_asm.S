@@ -22,12 +22,19 @@
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include <sys/asm_linkage.h>
 #include <sys/privregs.h>
 #include <sys/fsr.h>
 #include <sys/asi.h>
 #include "assym.h"
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 	ENTRY_NP(dtrace_getipl)
 	retl
@@ -120,7 +127,7 @@
 	mov	%g4, %o0
 1:
 	!
-	! The caller has been flushed to the stack.  This is unlikely
+	! The caller has been flushed to the stack. This is unlikely
 	! (interrupts are disabled in dtrace_probe()), but possible (the
 	! interrupt inducing the spill may have been taken before the
 	! call to dtrace_probe()).
@@ -152,7 +159,7 @@
 	mov	%i7, %g4
 0:
 	sub	%o1, 16, %o1		! Can only retrieve %l's and %i's
-	sll	%o1, 2, %o1		! Multiply by instruction size
+	sllx	%o1, 2, %o1		! Multiply by instruction size
 	add	%g5, %o1, %g5		! %g5 now contains the instr. to pick
 
 	sethi	%hi(nwin_minus_one), %g4
@@ -196,14 +203,14 @@
 
 	ENTRY(dtrace_copyin)
 	tst	%o2
-	bz	2f
+	bz,pn	%icc, 2f
 	clr	%g1
-	lduba	[%o0 + %g1]ASI_USER, %g2
+	lduba	[%o0 + %g1] ASI_USER, %g2
 0:
 	! check for an error if the count is 4k-aligned
 	andcc	%g1, 0xfff, %g0
 	bnz,pt	%icc, 1f
-	stub	%g2, [%o1 + %g1]
+	stb	%g2, [%o1 + %g1]
 	lduh	[%o3], %g3
 	andcc	%g3, CPU_DTRACE_BADADDR, %g0
 	bnz,pn	%icc, 2f
@@ -211,8 +218,8 @@
 1:
 	inc	%g1
 	cmp	%g1, %o2
-	bl,a	0b
-	lduba	[%o0 + %g1]ASI_USER, %g2
+	bl,a,pt	%icc, 0b
+	lduba	[%o0 + %g1] ASI_USER, %g2
 2:
 	retl
 	nop
@@ -221,11 +228,11 @@
 
 	ENTRY(dtrace_copyinstr)
 	tst	%o2
-	bz	2f
+	bz,pn	%icc, 2f
 	clr	%g1
-	lduba	[%o0 + %g1]ASI_USER, %g2
+	lduba	[%o0 + %g1] ASI_USER, %g2
 0:
-	stub	%g2, [%o1 + %g1]		! Store byte
+	stb	%g2, [%o1 + %g1]		! Store byte
 
 	! check for an error if the count is 4k-aligned
 	andcc	%g1, 0xfff, %g0
@@ -239,8 +246,8 @@
 	cmp	%g2, 0				! Was that '\0'?
 	be	2f				! If so, we're done
 	cmp	%g1, %o2			! Compare to limit
-	bl,a	0b				! If less, take another lap
-	lduba	[%o0 + %g1]ASI_USER, %g2	!   delay: load user byte
+	bl,a,pt	%icc, 0b				! If less, take another lap
+	lduba	[%o0 + %g1] ASI_USER, %g2	!   delay: load user byte
 2:
 	retl
 	nop
@@ -249,14 +256,14 @@
 
 	ENTRY(dtrace_copyout)
 	tst	%o2
-	bz	2f
+	bz,pn	%icc, 2f
 	clr	%g1
 	ldub	[%o0 + %g1], %g2
 0:
 	! check for an error if the count is 4k-aligned
 	andcc	%g1, 0xfff, %g0
 	bnz,pt	%icc, 1f
-	stba	%g2, [%o1 + %g1]ASI_USER
+	stba	%g2, [%o1 + %g1] ASI_USER
 	lduh	[%o3], %g3
 	andcc	%g3, CPU_DTRACE_BADADDR, %g0
 	bnz,pn	%icc, 2f
@@ -264,7 +271,7 @@
 1:
 	inc	%g1
 	cmp	%g1, %o2
-	bl,a	0b
+	bl,a,pt	%icc, 0b
 	ldub	[%o0 + %g1], %g2
 2:
 	retl
@@ -273,11 +280,11 @@
 
 	ENTRY(dtrace_copyoutstr)
 	tst	%o2
-	bz	2f
+	bz,pn	%icc, 2f
 	clr	%g1
 	ldub	[%o0 + %g1], %g2
 0:
-	stba	%g2, [%o1 + %g1]ASI_USER
+	stba	%g2, [%o1 + %g1] ASI_USER
 
 	! check for an error if the count is 4k-aligned
 	andcc	%g1, 0xfff, %g0
@@ -291,7 +298,7 @@
 	cmp	%g2, 0
 	be	2f
 	cmp	%g1, %o2
-	bl,a	0b
+	bl,a,pt	%icc, 0b
 	ldub	[%o0 + %g1], %g2
 2:
 	retl
@@ -300,35 +307,35 @@
 
 	ENTRY(dtrace_fulword)
 	clr	%o1
-	ldna	[%o0]ASI_USER, %o1
+	ldna	[%o0] ASI_USER, %o1
 	retl
 	mov	%o1, %o0
 	SET_SIZE(dtrace_fulword)
 
 	ENTRY(dtrace_fuword8)
 	clr	%o1
-	lduba	[%o0]ASI_USER, %o1
+	lduba	[%o0] ASI_USER, %o1
 	retl
 	mov	%o1, %o0
 	SET_SIZE(dtrace_fuword8)
 
 	ENTRY(dtrace_fuword16)
 	clr	%o1
-	lduha	[%o0]ASI_USER, %o1
+	lduha	[%o0] ASI_USER, %o1
 	retl
 	mov	%o1, %o0
 	SET_SIZE(dtrace_fuword16)
 
 	ENTRY(dtrace_fuword32)
 	clr	%o1
-	lda	[%o0]ASI_USER, %o1
+	lda	[%o0] ASI_USER, %o1
 	retl
 	mov	%o1, %o0
 	SET_SIZE(dtrace_fuword32)
 
 	ENTRY(dtrace_fuword64)
 	clr	%o1
-	ldxa	[%o0]ASI_USER, %o1
+	ldxa	[%o0] ASI_USER, %o1
 	retl
 	mov	%o1, %o0
 	SET_SIZE(dtrace_fuword64)

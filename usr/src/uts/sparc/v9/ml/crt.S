@@ -54,15 +54,15 @@
 	or	%o4, %o5, %o5
 	cmp	%o5, %o3
 	be,a	0f
-	ld	[%fp + STRUCT_VAL_OFF], %i0	! set expected return value
+	ld	[%fp + (STRUCT_VAL_OFF)], %i0	/* set expected return value */
 	ret
 	restore
-0:						! copy the struct
+0:						/* copy the struct */
 	subcc	%o1, 4, %o1
 	ld	[%o0 + %o1], %o4
-	bg	0b
-	st	%o4, [%i0 + %o1]		! delay slot
-	add	%i7, 0x4, %i7			! bump return address
+	bg,pt	%xcc, 0b			/* explicit %xcc and ,pt */
+	st	%o4, [%i0 + %o1]		/* delay slot */
+	add	%i7, 0x4, %i7			/* bump return address */
 	ret
 	restore
 	SET_SIZE(.stret4)
@@ -79,15 +79,15 @@
 	or	%o4, %o5, %o5
 	cmp	%o5, %o3
 	be,a	0f
-	ld	[%fp + STRUCT_VAL_OFF], %i0	! set expected return value
+	ld	[%fp + (STRUCT_VAL_OFF)], %i0	/* set expected return value */
 	ret
 	restore
-0:						! copy the struct
+0:						/* copy the struct */
 	subcc	%o1, 2, %o1
 	lduh	[%o0 + %o1], %o4
-	bg	0b
-	sth	%o4, [%i0 + %o1]		! delay slot
-	add	%i7, 0x4, %i7			! bump return address
+	bg,pt	%xcc, 0b			/* explicit %xcc and ,pt */
+	sth	%o4, [%i0 + %o1]		/* delay slot */
+	add	%i7, 0x4, %i7			/* bump return address */
 	ret
 	restore
 	SET_SIZE(.stret2)

@@ -64,11 +64,11 @@
 	wr	%g0, ASI_USER, %asi
 	ldn	[THREAD_REG + T_LOFAULT], %o5
 	tst	%o5
-	bz,pt	%ncc, .do_zero
+	bz,pt	%icc, .do_zero
 	sethi	%hi(.zeroerr), %o2
 	or	%o2, %lo(.zeroerr), %o2
 	membar	#Sync
-	ba,pt	%ncc, .do_zero
+	ba,pt	%icc, .do_zero
 	stn	%o2, [THREAD_REG + T_LOFAULT]
 
 	ENTRY(kzero)
@@ -81,7 +81,7 @@
 	or	%o5, LOFAULT_SET, %o5
 	or	%o2, %lo(.zeroerr), %o2
 	membar	#Sync
-	ba,pt	%ncc, .do_zero
+	ba,pt	%icc, .do_zero
 	stn	%o2, [THREAD_REG + T_LOFAULT]
 
 /*
@@ -94,14 +94,14 @@
 .zeroerr:
 	!
 	! Undo asi register setting. Just set it to be the
-        ! kernel default without checking.
+	! kernel default without checking.
 	!
 	wr	%g0, ASI_P, %asi
 	!
 	! If saved t_lofault has FP_USED set, clear the %fprs register
 	!
 	btst	FP_USED, %o5
-	bz,pt	%ncc, 1f		! skip if not used
+	bz,pt	%icc, 1f		! skip if not used
 	nop
 	membar #Sync
 	wr	%g0, %g0, %fprs		! clear fprs
@@ -112,8 +112,8 @@
 1:
 	tst	%o5
 	membar #Sync
-	bne,pn	%ncc, 3f
-	andncc	%o5, LOFAULT_SET, %o5
+	bne,pn	%icc, 3f
+	andn	%o5, LOFAULT_SET, %o5
 2:
 	!
 	! Old handler was zero. Just return the error.
@@ -129,10 +129,10 @@
 	! before we either simply return the error or we invoke the
 	! previously specified handler.
 	!
-	be	%ncc, 2b
+	be	%icc, 2b
 	stn	%o5, [THREAD_REG + T_LOFAULT]
 	jmp	%o5			! goto real handler
-	  nop
+	nop
 	SET_SIZE(kzero)
 	SET_SIZE(uzero)
 
@@ -145,7 +145,7 @@
 
 	ldn	[THREAD_REG + T_LOFAULT], %o5	! save old vector
 	tst	%o5
-	bz,pt	%ncc, .do_zero
+	bz,pt	%icc, .do_zero
 	sethi	%hi(.zeroerr), %o2
 	or	%o2, %lo(.zeroerr), %o2
 	membar	#Sync				! sync error barrier
@@ -153,11 +153,11 @@
 
 .do_zero:
 	cmp	%o1, 15			! check for small counts
-	blu,pn	%ncc, .byteclr		! just clear bytes
+	blu,pn	%icc, .byteclr		! just clear bytes
 	nop
 
 	cmp	%o1, 192		! check for large counts
-	blu	%ncc, .bzero_small
+	blu	%icc, .bzero_small
 	nop
 
 	sethi	%hi(use_hw_bzero), %o2
@@ -173,7 +173,7 @@
 
 	ldn	[THREAD_REG + T_LWP], %o2
 	tst	%o2
-	bz,pn	%ncc, .bzero_small
+	bz,pn	%icc, .bzero_small
 	nop
 
 	! Check for block alignment
@@ -193,7 +193,7 @@
 
 	! Clear bytes until word aligned
 .bzl_byte:
-	stba	%g0, [%o0]%asi
+	stba	%g0, [%o0] %asi
 	add	%o0, 1, %o0
 	btst	(4-1), %o0
 	bnz	%icc, .bzl_byte
@@ -206,7 +206,7 @@
 
 	! Clear words until double-word aligned
 .bzl_word:
-	sta	%g0, [%o0]%asi
+	sta	%g0, [%o0] %asi
 	add	%o0, 4, %o0
 	btst	(8-1), %o0
 	bnz	%icc, .bzl_word
@@ -214,7 +214,7 @@
 
 .bzl_dword:
 	! Clear dwords until block aligned
-	stxa	%g0, [%o0]%asi
+	stxa	%g0, [%o0] %asi
 	add	%o0, 8, %o0
 	btst	(64-1), %o0
 	bnz	%icc, .bzl_dword
@@ -245,24 +245,24 @@
 	wr	%g0, ASI_BLK_AIUS, %asi
 1:
 	mov	256, %o3
-	ba,pt	%ncc, .bzl_doblock
+	ba,pt	%icc, .bzl_doblock
 	nop
 
 .bzl_blkstart:
-      ! stda	%d0, [%o0+192]%asi  ! in dly slot of branch that got us here
-	stda	%d0, [%o0+128]%asi
-	stda	%d0, [%o0+64]%asi
-	stda	%d0, [%o0]%asi
+	! stda	%d0, [%o0+192] %asi  ! in dly slot of branch that got us here
+	stda	%d0, [%o0+128] %asi
+	stda	%d0, [%o0+64] %asi
+	stda	%d0, [%o0] %asi
 .bzl_zinst:
 	add	%o0, %o3, %o0
 	sub	%o1, %o3, %o1
 .bzl_doblock:
 	cmp	%o1, 256
-	bgeu,a	%ncc, .bzl_blkstart
-	stda	%d0, [%o0+192]%asi
+	bgeu,a	%icc, .bzl_blkstart
+	stda	%d0, [%o0+192] %asi
 
 	cmp	%o1, 64
-	blu	%ncc, .bzl_finish
+	blu	%icc, .bzl_finish
 
 	andn	%o1, (64-1), %o3
 	srl	%o3, 4, %o2		! using blocks, 1 instr / 16 words
@@ -286,31 +286,31 @@
 .bzlf_dword:
 	! double words
 	cmp	%o1, 8
-	blu	%ncc, .bzlf_word
+	blu	%icc, .bzlf_word
 	nop
-	stxa	%g0, [%o0]%asi
+	stxa	%g0, [%o0] %asi
 	add	%o0, 8, %o0
 	sub	%o1, 8, %o1
-	ba,pt	%ncc, .bzlf_dword
+	ba,pt	%icc, .bzlf_dword
 	nop
 
 .bzlf_word:
 	! words
 	cmp	%o1, 4
-	blu	%ncc, .bzlf_byte
+	blu	%icc, .bzlf_byte
 	nop
-	sta	%g0, [%o0]%asi
+	sta	%g0, [%o0] %asi
 	add	%o0, 4, %o0
 	sub	%o1, 4, %o1
-	ba,pt	%ncc, .bzlf_word
+	ba,pt	%icc, .bzlf_word
 	nop
 
 1:
 	add	%o0, 1, %o0		! increment address
 .bzlf_byte:
 	subcc	%o1, 1, %o1		! decrement count
-	bgeu,a	%ncc, 1b
-	stba	%g0, [%o0]%asi		! zero a byte
+	bgeu,a	%icc, 1b
+	stba	%g0, [%o0] %asi		! zero a byte
 
 	!
 	! If we used the FP registers, that bit was turned
@@ -325,7 +325,7 @@
 	! before resetting the error handler.
 	!
 	tst	%o5
-	bz,pt	%ncc, 1f
+	bz,pt	%icc, 1f
 	andn	%o5, LOFAULT_SET, %o5
 	membar	#Sync				! sync error barrier
 	stn	%o5, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
@@ -345,7 +345,7 @@
 	!
 	! clear bytes until word aligned
 	!
-1:	stba	%g0,[%o0]%asi
+1:	stba	%g0,[%o0] %asi
 	add	%o0, 1, %o0
 	btst	3, %o0
 	bnz	1b
@@ -358,54 +358,54 @@
 	btst	7, %o0			! is double aligned?
 	bz	%icc, .bzero_nobuf
 	nop
-	sta	%g0, [%o0]%asi		! clr to double boundry
+	sta	%g0, [%o0] %asi		! clr to double boundry
 	sub	%o1, 4, %o1
-	ba,pt	%ncc, .bzero_nobuf
+	ba,pt	%icc, .bzero_nobuf
 	add	%o0, 4, %o0
 
-	!stxa	%g0, [%o0+0xf8]%asi
+	!stxa	%g0, [%o0+0xf8] %asi
 .bzero_blk:
-	stxa	%g0, [%o0+0xf0]%asi
-	stxa	%g0, [%o0+0xe8]%asi
-	stxa	%g0, [%o0+0xe0]%asi
-	stxa	%g0, [%o0+0xd8]%asi
-	stxa	%g0, [%o0+0xd0]%asi
-	stxa	%g0, [%o0+0xc8]%asi
-	stxa	%g0, [%o0+0xc0]%asi
-	stxa	%g0, [%o0+0xb8]%asi
-	stxa	%g0, [%o0+0xb0]%asi
-	stxa	%g0, [%o0+0xa8]%asi
-	stxa	%g0, [%o0+0xa0]%asi
-	stxa	%g0, [%o0+0x98]%asi
-	stxa	%g0, [%o0+0x90]%asi
-	stxa	%g0, [%o0+0x88]%asi
-	stxa	%g0, [%o0+0x80]%asi
-	stxa	%g0, [%o0+0x78]%asi
-	stxa	%g0, [%o0+0x70]%asi
-	stxa	%g0, [%o0+0x68]%asi
-	stxa	%g0, [%o0+0x60]%asi
-	stxa	%g0, [%o0+0x58]%asi
-	stxa	%g0, [%o0+0x50]%asi
-	stxa	%g0, [%o0+0x48]%asi
-	stxa	%g0, [%o0+0x40]%asi
-	stxa	%g0, [%o0+0x38]%asi
-	stxa	%g0, [%o0+0x30]%asi
-	stxa	%g0, [%o0+0x28]%asi
-	stxa	%g0, [%o0+0x20]%asi
-	stxa	%g0, [%o0+0x18]%asi
-	stxa	%g0, [%o0+0x10]%asi
-	stxa	%g0, [%o0+0x08]%asi
-	stxa	%g0, [%o0]%asi
+	stxa	%g0, [%o0+0xf0] %asi
+	stxa	%g0, [%o0+0xe8] %asi
+	stxa	%g0, [%o0+0xe0] %asi
+	stxa	%g0, [%o0+0xd8] %asi
+	stxa	%g0, [%o0+0xd0] %asi
+	stxa	%g0, [%o0+0xc8] %asi
+	stxa	%g0, [%o0+0xc0] %asi
+	stxa	%g0, [%o0+0xb8] %asi
+	stxa	%g0, [%o0+0xb0] %asi
+	stxa	%g0, [%o0+0xa8] %asi
+	stxa	%g0, [%o0+0xa0] %asi
+	stxa	%g0, [%o0+0x98] %asi
+	stxa	%g0, [%o0+0x90] %asi
+	stxa	%g0, [%o0+0x88] %asi
+	stxa	%g0, [%o0+0x80] %asi
+	stxa	%g0, [%o0+0x78] %asi
+	stxa	%g0, [%o0+0x70] %asi
+	stxa	%g0, [%o0+0x68] %asi
+	stxa	%g0, [%o0+0x60] %asi
+	stxa	%g0, [%o0+0x58] %asi
+	stxa	%g0, [%o0+0x50] %asi
+	stxa	%g0, [%o0+0x48] %asi
+	stxa	%g0, [%o0+0x40] %asi
+	stxa	%g0, [%o0+0x38] %asi
+	stxa	%g0, [%o0+0x30] %asi
+	stxa	%g0, [%o0+0x28] %asi
+	stxa	%g0, [%o0+0x20] %asi
+	stxa	%g0, [%o0+0x18] %asi
+	stxa	%g0, [%o0+0x10] %asi
+	stxa	%g0, [%o0+0x08] %asi
+	stxa	%g0, [%o0] %asi
 .zinst:
 	add	%o0, %o3, %o0		! increment source address
 	sub	%o1, %o3, %o1		! decrement count
 .bzero_nobuf:
 	cmp	%o1, 0x100		! can we do whole chunk?
-	bgeu,a	%ncc, .bzero_blk
-	stxa	%g0, [%o0+0xf8]%asi	! do first double of chunk
+	bgeu,a	%icc, .bzero_blk
+	stxa	%g0, [%o0+0xf8] %asi	! do first double of chunk
 
 	cmp	%o1, 7			! can we zero any more double words
-	bleu	%ncc, .byteclr		! too small go zero bytes
+	bleu	%icc, .byteclr		! too small go zero bytes
 
 	andn	%o1, 7, %o3		! %o3 bytes left, double-word aligned
 	srl	%o3, 1, %o2		! using doubles, need 1 instr / 2 words
@@ -420,8 +420,8 @@
 	add	%o0, 1, %o0		! increment address
 .byteclr:
 	subcc	%o1, 1, %o1		! decrement count
-	bgeu,a	%ncc, 3b
-	stba	%g0, [%o0]%asi		! zero a byte
+	bgeu,a	%icc, 3b
+	stba	%g0, [%o0] %asi		! zero a byte
 
 .bzero_finished:
 	!
@@ -436,7 +436,7 @@
 	! before resetting the error handler.
 	!
 	tst	%o5
-	bz	%ncc, 1f
+	bz	%icc, 1f
 	andn	%o5, LOFAULT_SET, %o5
 	membar	#Sync				! sync error barrier
 	stn	%o5, [THREAD_REG + T_LOFAULT]	! restore old t_lofault

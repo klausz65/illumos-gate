@@ -23,7 +23,7 @@
  * Copyright (c) 1987 Sun Microsystems, Inc.
  */
 
-	.file	"alloca.s"
+	.file	"alloca.S"
 
 #include <sys/asm_linkage.h>
 
@@ -38,14 +38,14 @@
 	! be in the middle of a compilicated expression.
 	!
 	ENTRY(__builtin_alloca)
-	mov	%sp, %o3		! save current sp
-	sub	%sp, %o0, %sp		! bump to new value
+	mov	%sp, %o3		/* save current sp */
+	sub	%sp, %o0, %sp		/* bump to new value */
 	! copy loop: should do nothing gracefully
 	b	2f
-	subcc	%o2, %o1, %o5		! number of bytes to move
+	subcc	%o2, %o1, %o5		/* number of bytes to move */
 1:
-	ld	[%o3 + %o1], %o4	! load from old temp area
-	st	%o4, [%sp + %o1]	! store to new temp area
+	ld	[%o3 + %o1], %o4	/* load from old temp area */
+	st	%o4, [%sp + %o1]	/* store to new temp area */
 	add	%o1, 4, %o1
 2:	bg	1b
 	subcc	%o5, 4, %o5

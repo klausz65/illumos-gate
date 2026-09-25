@@ -34,7 +34,10 @@ include $(TOPDIR)/lib/Makefile.lib
 include $(TOPDIR)/psm/stand/lib/Makefile.lib
 include $(TOPDIR)/psm/Makefile.psm.64
 
-CFLAGS64	+= -xchip=ultra
+CSTD		= $(CSTD_GNU99)
+
+CFLAGS64	+= -xchip=ultra -Wc,-xcode=abs32
+CFLAGS64	+= -xregs=no%appl
 CERRWARN	+= -_gcc=-Wno-parentheses
 
 PROMDIR =	$(TOPDIR)/psm/promif/ieee1275/common

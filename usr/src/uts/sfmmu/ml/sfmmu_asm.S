@@ -23,6 +23,9 @@
  * Use is subject to license terms.
  * Copyright (c) 2016 by Delphix. All rights reserved.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 /*
  * SFMMU primitives.  These primitives should only be used by sfmmu
@@ -47,6 +50,10 @@
 #include <sys/intr.h>
 #include <sys/clock.h>
 #include <sys/trapstat.h>
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 #ifdef TRAPTRACE
 #include <sys/traptrace.h>
@@ -103,7 +110,7 @@
  */
 #define	GET_TSBE_POINTER(vpshift, tsbbase, tagacc, szc, tmp)		\
 	mov	TSB_ENTRIES(0), tmp	/* nentries in TSB size 0 */	;\
-	srlx	tagacc, vpshift, tagacc 				;\
+	srlx	tagacc, vpshift, tagacc					;\
 	sllx	tmp, szc, tmp		/* tmp = nentries in TSB */	;\
 	sub	tmp, 1, tmp		/* mask = nentries - 1 */	;\
 	and	tagacc, tmp, tmp	/* tsbent = virtpage & mask */	;\
@@ -115,7 +122,7 @@
  * using (vaddr>>vpshift)%tsbsz as the index.
  *
  * Note that, for now, the kpm TSB and kernel TSB are the same for
- * each mapping size.  However that need not always be the case.  If
+ * each mapping size. However that need not always be the case. If
  * the trap handlers are updated to search a different TSB for kpm
  * addresses than for kernel addresses then kpm_tsbbase and kpm_tsbsz
  * (and/or kpmsm_tsbbase/kpmsm_tsbsz) may be entirely independent.
@@ -130,12 +137,12 @@
 #define	GET_KPM_TSBE_POINTER(vpshift, tsbp, vaddr, szc, tmp)		\
 	cmp	vpshift, MMU_PAGESHIFT					;\
 	bne,pn	%icc, 1f		/* branch if large case */	;\
-	  sethi	%hi(kpmsm_tsbsz), szc					;\
+	sethi	%hi(kpmsm_tsbsz), szc					;\
 	sethi	%hi(kpmsm_tsbbase), tsbp				;\
 	ld	[szc + %lo(kpmsm_tsbsz)], szc				;\
 	ldx	[tsbp + %lo(kpmsm_tsbbase)], tsbp			;\
 	ba,pt	%icc, 2f						;\
-	  nop								;\
+	nop								;\
 1:	sethi	%hi(kpm_tsbsz), szc					;\
 	sethi	%hi(kpm_tsbbase), tsbp					;\
 	ld	[szc + %lo(kpm_tsbsz)], szc				;\
@@ -159,30 +166,30 @@
 #if defined(UTSB_PHYS)
 
 #define	TSB_LOCK_ENTRY(tsbep, tmp1, tmp2, label)			\
-	lda	[tsbep]ASI_MEM, tmp1					;\
+	lda	[tsbep] ASI_MEM, tmp1					;\
 	sethi	%hi(TSBTAG_LOCKED), tmp2				;\
-	cmp	tmp1, tmp2 						;\
-	be,a,pn	%icc, label		/* if locked ignore */		;\
-	  nop								;\
-	casa	[tsbep]ASI_MEM, tmp1, tmp2				;\
-	cmp	tmp1, tmp2 						;\
-	bne,a,pn %icc, label		/* didn't lock so ignore */	;\
-	  nop								;\
+	cmp	tmp1, tmp2						;\
+	be,a,pn	%xcc, label		/* FIXED: use 64-bit %xcc */	;\
+	nop								;\
+	casxa	[tsbep] ASI_MEM, tmp1, tmp2				;\
+	cmp	tmp1, tmp2						;\
+	bne,a,pn %xcc, label		/* FIXED: use 64-bit %xcc */	;\
+	nop								;\
 	/* tsbe lock acquired */					;\
 	membar #StoreStore
 
 #else /* UTSB_PHYS */
 
 #define	TSB_LOCK_ENTRY(tsbep, tmp1, tmp2, label)			\
-	lda	[tsbep]%asi, tmp1					;\
+	lda	[tsbep] %asi, tmp1					;\
 	sethi	%hi(TSBTAG_LOCKED), tmp2				;\
-	cmp	tmp1, tmp2 						;\
-	be,a,pn	%icc, label		/* if locked ignore */		;\
-	  nop								;\
-	casa	[tsbep]%asi, tmp1, tmp2					;\
-	cmp	tmp1, tmp2 						;\
-	bne,a,pn %icc, label		/* didn't lock so ignore */	;\
-	  nop								;\
+	cmp	tmp1, tmp2						;\
+	be,a,pn	%xcc, label		/* FIXED: use 64-bit %xcc */	;\
+	nop								;\
+	casxa	[tsbep] %asi, tmp1, tmp2				;\
+	cmp	tmp1, tmp2						;\
+	bne,a,pn %xcc, label		/* FIXED: use 64-bit %xcc */	;\
+	nop								;\
 	/* tsbe lock acquired */					;\
 	membar #StoreStore
 
@@ -201,17 +208,17 @@
 
 #define	TSB_INSERT_UNLOCK_ENTRY(tsbep, tte, tagtarget, tmp1)		\
 	add	tsbep, TSBE_TTE, tmp1					;\
-	stxa	tte, [tmp1]ASI_MEM		/* write tte data */	;\
+	stxa	tte, [tmp1] ASI_MEM		/* write tte data */	;\
 	membar #StoreStore						;\
 	add	tsbep, TSBE_TAG, tmp1					;\
-	stxa	tagtarget, [tmp1]ASI_MEM	/* write tte tag & unlock */
+	stxa	tagtarget, [tmp1] ASI_MEM	/* write tte tag & unlock */
 
 #else /* UTSB_PHYS */
 
 #define	TSB_INSERT_UNLOCK_ENTRY(tsbep, tte, tagtarget,tmp1)		\
-	stxa	tte, [tsbep + TSBE_TTE]%asi	/* write tte data */	;\
+	stxa	tte, [tsbep + TSBE_TTE] %asi	/* write tte data */	;\
 	membar #StoreStore						;\
-	stxa	tagtarget, [tsbep + TSBE_TAG]%asi /* write tte tag & unlock */
+	stxa	tagtarget, [tsbep + TSBE_TAG] %asi /* write tte tag & unlock */
 
 #endif /* UTSB_PHYS */
 
@@ -220,8 +227,8 @@
  *
  * tsbep = pointer to the TSBE to load as va (ro)
  * tte = value of the TTE retrieved and loaded (wo)
- * tagtarget = tag target register.  To get TSBE tag to load,
- *   we need to mask off the context and leave only the va (clobbered)
+ * tagtarget = tag target register. To get TSBE tag to load,
+ * we need to mask off the context and leave only the va (clobbered)
  * ttepa = pointer to the TTE to retrieve/load as pa (ro)
  * tmp1, tmp2 = scratch registers
  * label = label to jump to if we fail to lock the tsb entry
@@ -238,12 +245,14 @@
 	 * we always invalidate the hash table before we unload the TSB.;\
 	 */								;\
 	sllx	tagtarget, TTARGET_VA_SHIFT, tagtarget			;\
-	ldxa	[ttepa]ASI_MEM, tte					;\
+	ldxa	[ttepa] ASI_MEM, tte					;\
 	srlx	tagtarget, TTARGET_VA_SHIFT, tagtarget			;\
 	sethi	%hi(TSBTAG_INVALID), tmp2				;\
 	add	tsbep, TSBE_TAG, tmp1					;\
-	brgez,a,pn tte, label						;\
-	 sta	tmp2, [tmp1]ASI_MEM			/* unlock */	;\
+	cmp	tte, %g0		/* FIXED: check if tte >= 0 */	;\
+	bge,a,pn %xcc, label		/* FIXED: standard v9 branch */	;\
+	nop								;\
+	stxa	tmp2, [tmp1] ASI_MEM	/* unlock */			;\
 	TSB_INSERT_UNLOCK_ENTRY(tsbep, tte, tagtarget, tmp1)		;\
 label:
 
@@ -257,11 +266,13 @@ label:
 	 * we always invalidate the hash table before we unload the TSB.;\
 	 */								;\
 	sllx	tagtarget, TTARGET_VA_SHIFT, tagtarget			;\
-	ldxa	[ttepa]ASI_MEM, tte					;\
+	ldxa	[ttepa] ASI_MEM, tte					;\
 	srlx	tagtarget, TTARGET_VA_SHIFT, tagtarget			;\
 	sethi	%hi(TSBTAG_INVALID), tmp2				;\
-	brgez,a,pn tte, label						;\
-	 sta	tmp2, [tsbep + TSBE_TAG]%asi		/* unlock */	;\
+	cmp	tte, %g0		/* FIXED: check if tte >= 0 */	;\
+	bge,a,pn %xcc, label		/* FIXED: standard v9 branch */	;\
+	nop								;\
+	stxa	tmp2, [tsbep + TSBE_TAG] %asi	/* unlock */		;\
 	TSB_INSERT_UNLOCK_ENTRY(tsbep, tte, tagtarget, tmp1)		;\
 label:
 
@@ -273,9 +284,9 @@ label:
  *
  * tsbep = pointer to the TSBE to load as va (ro)
  * tte = 4M pfn offset (in), value of the TTE retrieved and loaded (out)
- *   with exec_perm turned off and exec_synth turned on
- * tagtarget = tag target register.  To get TSBE tag to load,
- *   we need to mask off the context and leave only the va (clobbered)
+ * with exec_perm turned off and exec_synth turned on
+ * tagtarget = tag target register. To get TSBE tag to load,
+ * we need to mask off the context and leave only the va (clobbered)
  * ttepa = pointer to the TTE to retrieve/load as pa (ro)
  * tmp1, tmp2 = scratch registers
  * label = label to use for branch (text)
@@ -293,11 +304,11 @@ label:
 	 */								;\
 	sllx	tagtarget, TTARGET_VA_SHIFT, tagtarget			;\
 	mov	tte, tmp1						;\
-	ldxa	[ttepa]ASI_MEM, tte					;\
+	ldxa	[ttepa] ASI_MEM, tte					;\
 	srlx	tagtarget, TTARGET_VA_SHIFT, tagtarget			;\
 	sethi	%hi(TSBTAG_INVALID), tmp2				;\
 	brgez,a,pn tte, label						;\
-	 sta	tmp2, [tsbep + TSBE_TAG]%asi		/* unlock */	;\
+	sta	tmp2, [tsbep + TSBE_TAG] %asi		/* unlock */	;\
 	or	tte, tmp1, tte						;\
 	andn	tte, TTE_EXECPRM_INT, tte				;\
 	or	tte, TTE_E_SYNTH_INT, tte				;\
@@ -322,8 +333,8 @@ label:
 	srlx	tagaccess, MMU_PAGESHIFT4M, tagaccess			;\
 	srlx	tte, TTE_SZ_SHFT, tmp		/* isolate the */	;\
 	andcc	tmp, TTE_SZ_BITS, %g0		/* tte_size bits */	;\
-	bz,a,pt %icc, label##f		/* if 0, is */		;\
-	  and	tagaccess, 0x7, tagaccess	/* 32M page size */	;\
+	bz,a,pt %icc, label##f			/* if 0, is */		;\
+	and	tagaccess, 0x7, tagaccess	/* 32M page size */	;\
 	and	tagaccess, 0x3f, tagaccess /* else 256M page size */	;\
 label:									;\
 	sllx	tagaccess, MMU_PAGESHIFT4M, pfn
@@ -338,7 +349,7 @@ label:									;\
 
 #define	SET_TTE4M_PN(tte, tmp)						\
 	/*								;\
-	 * Set 4M pagesize tte bits. 					;\
+	 * Set 4M pagesize tte bits.					;\
 	 */								;\
 	set	TTE4M, tmp						;\
 	sllx	tmp, TTE_SZ_SHFT, tmp					;\
@@ -364,8 +375,10 @@ label:									;\
 	TSB_LOCK_ENTRY(tsbep, tmp1, tmp2, label)			;\
 	sethi	%hi(TSBTAG_INVALID), tmp2				;\
 	add	tsbep, TSBE_TAG, tmp1					;\
-	brgez,a,pn tteva, label						;\
-	 sta	tmp2, [tmp1]ASI_MEM			/* unlock */	;\
+	cmp	tteva, %g0						;\
+	bge,a,pn %xcc, label						;\
+	nop								;\
+	stxa	tmp2, [tmp1] ASI_MEM			/* unlock */	;\
 	TSB_INSERT_UNLOCK_ENTRY(tsbep, tteva, tagtarget, tmp1)		;\
 label:
 
@@ -376,8 +389,10 @@ label:
 	ldx	[tteva], tteva			/* load tte */		;\
 	TSB_LOCK_ENTRY(tsbep, tmp1, tmp2, label)			;\
 	sethi	%hi(TSBTAG_INVALID), tmp2				;\
-	brgez,a,pn tteva, label						;\
-	 sta	tmp2, [tsbep + TSBE_TAG]%asi		/* unlock */	;\
+	cmp	tteva, %g0						;\
+	bge,a,pn %xcc, label						;\
+	nop								;\
+	stxa	tmp2, [tsbep + TSBE_TAG] %asi		/* unlock */	;\
 	TSB_INSERT_UNLOCK_ENTRY(tsbep, tteva, tagtarget, tmp1)		;\
 label:
 
@@ -386,10 +401,10 @@ label:
 /*
  * Invalidate a TSB entry in the TSB.
  *
- * NOTE: TSBE_TAG is assumed to be zero.  There is a compile time check
- *	 about this earlier to ensure this is true.  Thus when we are
+ * NOTE: TSBE_TAG is assumed to be zero. There is a compile time check
+ *	 about this earlier to ensure this is true. Thus when we are
  *	 directly referencing tsbep below, we are referencing the tte_tag
- *	 field of the TSBE.  If this  offset ever changes, the code below
+ *	 field of the TSBE. If this  offset ever changes, the code below
  *	 will need to be modified.
  *
  * tsbep = pointer to TSBE as va (ro)
@@ -402,39 +417,39 @@ label:
 #if defined(UTSB_PHYS)
 
 #define	TSB_INVALIDATE(tsbep, tag, tmp1, tmp2, tmp3, label)		\
-	lda	[tsbep]ASI_MEM, tmp1	/* tmp1 = tsbe tag */		;\
+	lda	[tsbep] ASI_MEM, tmp1	/* tmp1 = tsbe tag */		;\
 	sethi	%hi(TSBTAG_LOCKED), tmp2				;\
 label##1:								;\
 	cmp	tmp1, tmp2		/* see if tsbe is locked, if */	;\
-	be,a,pn	%icc, label##1	/* so, loop until unlocked */	;\
-	  lda	[tsbep]ASI_MEM, tmp1	/* reloading value each time */	;\
-	ldxa	[tsbep]ASI_MEM, tmp3	/* tmp3 = tsbe tag */		;\
+	be,a,pn	%xcc, label##1		/* FIXED: use 64-bit %xcc */	;\
+	ldxa	[tsbep] ASI_MEM, tmp1	/* FIXED: use 64-bit ldxa */	;\
+	ldxa	[tsbep] ASI_MEM, tmp3	/* tmp3 = tsbe tag */		;\
 	cmp	tag, tmp3		/* compare tags */		;\
-	bne,pt	%xcc, label##2	/* if different, do nothing */	;\
-	  sethi	%hi(TSBTAG_INVALID), tmp3				;\
-	casa	[tsbep]ASI_MEM, tmp1, tmp3 /* try to set tag invalid */	;\
+	bne,pt	%xcc, label##2		/* if different, do nothing */	;\
+	sethi	%hi(TSBTAG_INVALID), tmp3				;\
+	casxa	[tsbep] ASI_MEM, tmp1, tmp3 /* FIXED: 64-bit casxa */	;\
 	cmp	tmp1, tmp3		/* if not successful */		;\
-	bne,a,pn %icc, label##1	/* start over from the top */	;\
-	  lda	[tsbep]ASI_MEM, tmp1	/* reloading tsbe tag */	;\
+	bne,a,pn %xcc, label##1		/* FIXED: use 64-bit %xcc */	;\
+	ldxa	[tsbep] ASI_MEM, tmp1	/* FIXED: use 64-bit ldxa */	;\
 label##2:
 
 #else /* UTSB_PHYS */
 
 #define	TSB_INVALIDATE(tsbep, tag, tmp1, tmp2, tmp3, label)		\
-	lda	[tsbep]%asi, tmp1	/* tmp1 = tsbe tag */		;\
+	ldxa	[tsbep] %asi, tmp1	/* FIXED: use 64-bit ldxa */	;\
 	sethi	%hi(TSBTAG_LOCKED), tmp2				;\
 label##1:								;\
 	cmp	tmp1, tmp2		/* see if tsbe is locked, if */	;\
-	be,a,pn	%icc, label##1	/* so, loop until unlocked */	;\
-	  lda	[tsbep]%asi, tmp1	/* reloading value each time */	;\
-	ldxa	[tsbep]%asi, tmp3	/* tmp3 = tsbe tag */		;\
+	be,a,pn	%xcc, label##1		/* FIXED: use 64-bit %xcc */	;\
+	ldxa	[tsbep] %asi, tmp1	/* FIXED: use 64-bit ldxa */	;\
+	ldxa	[tsbep] %asi, tmp3	/* tmp3 = tsbe tag */		;\
 	cmp	tag, tmp3		/* compare tags */		;\
-	bne,pt	%xcc, label##2	/* if different, do nothing */	;\
-	  sethi	%hi(TSBTAG_INVALID), tmp3				;\
-	casa	[tsbep]%asi, tmp1, tmp3	/* try to set tag invalid */	;\
+	bne,pt	%xcc, label##2		/* if different, do nothing */	;\
+	sethi	%hi(TSBTAG_INVALID), tmp3				;\
+	casxa	[tsbep] %asi, tmp1, tmp3 /* FIXED: 64-bit casxa */	;\
 	cmp	tmp1, tmp3		/* if not successful */		;\
-	bne,a,pn %icc, label##1	/* start over from the top */	;\
-	  lda	[tsbep]%asi, tmp1	/* reloading tsbe tag */	;\
+	bne,a,pn %xcc, label##1		/* FIXED: use 64-bit %xcc */	;\
+	ldxa	[tsbep] %asi, tmp1	/* FIXED: use 64-bit ldxa */	;\
 label##2:
 
 #endif /* UTSB_PHYS */
@@ -460,8 +475,7 @@ label##2:
 	nop				/* for perf reasons */		;\
 	or	tmp, dest, dest		/* contents of patched value */
 
-
-	.seg	".data"
+	.data
 	.global	sfmmu_panic1
 sfmmu_panic1:
 	.asciz	"sfmmu_asm: interrupts already disabled"
@@ -502,19 +516,19 @@ sfmmu_panic10:
 sfmmu_panic11:
 	.asciz	"sfmmu_asm: ktsb_phys must not be 0 on a sun4v platform"
 
-        ENTRY(sfmmu_disable_intrs)
-        rdpr    %pstate, %o0
+	ENTRY(sfmmu_disable_intrs)
+	rdpr	%pstate, %o0
 #ifdef DEBUG
 	PANIC_IF_INTR_DISABLED_PSTR(%o0, sfmmu_di_l0, %g1)
 #endif /* DEBUG */
-        retl
-          wrpr   %o0, PSTATE_IE, %pstate
-        SET_SIZE(sfmmu_disable_intrs)
+	retl
+	wrpr	%o0, PSTATE_IE, %pstate
+	SET_SIZE(sfmmu_disable_intrs)
 
 	ENTRY(sfmmu_enable_intrs)
-        retl
-          wrpr    %g0, %o0, %pstate
-        SET_SIZE(sfmmu_enable_intrs)
+	retl
+	wrpr	%g0, %o0, %pstate
+	SET_SIZE(sfmmu_enable_intrs)
 
 /*
  * This routine is called both by resume() and sfmmu_get_ctx() to
@@ -540,28 +554,28 @@ sfmmu_panic11:
  * ret - 0: no ctx is allocated
  *       1: a ctx is allocated
  */
-        ENTRY_NP(sfmmu_alloc_ctx)
+	ENTRY_NP(sfmmu_alloc_ctx)
 
 #ifdef DEBUG
-	sethi   %hi(ksfmmup), %g1
-	ldx     [%g1 + %lo(ksfmmup)], %g1
-	cmp     %g1, %o0
-	bne,pt   %xcc, 0f
-	  nop
+	sethi	%hi(ksfmmup), %g1
+	ldx	[%g1 + %lo(ksfmmup)], %g1
+	cmp	%g1, %o0
+	bne,pt	%xcc, 0f
+	nop
 
-	sethi   %hi(panicstr), %g1		! if kernel as, panic
-        ldx     [%g1 + %lo(panicstr)], %g1
-        tst     %g1
-        bnz,pn  %icc, 7f
-          nop
+	sethi	%hi(panicstr), %g1		! if kernel as, panic
+	ldx	[%g1 + %lo(panicstr)], %g1
+	tst	%g1
+	bnz,pn	%icc, 7f
+	nop
 
 	sethi	%hi(sfmmu_panic7), %o0
 	call	panic
-	  or	%o0, %lo(sfmmu_panic7), %o0
+	or	%o0, %lo(sfmmu_panic7), %o0
 
 7:
 	retl
-	  mov	%g0, %o0			! %o0 = ret = 0
+	mov	%g0, %o0			! %o0 = ret = 0
 
 0:
 	PANIC_IF_INTR_ENABLED_PSTR(sfmmu_ei_l1, %g1)
@@ -574,11 +588,11 @@ sfmmu_panic11:
 
 #ifdef sun4v
 	/* During suspend on sun4v, context domains can be temporary removed */
-	brz,a,pn       %o3, 0f
-	  nop
+	brz,a,pn	%o3, 0f
+	nop
 #endif
 
-        lduw	[%o2 + CPU_MMU_IDX], %g2		! %g2 = mmu index
+	lduw	[%o2 + CPU_MMU_IDX], %g2		! %g2 = mmu index
 
 	! load global mmu_ctxp gnum
 	ldx	[%o3 + MMU_CTX_GNUM], %o4		! %o4 = mmu_ctxp->gnum
@@ -586,20 +600,20 @@ sfmmu_panic11:
 #ifdef DEBUG
 	cmp	%o4, %g0		! mmu_ctxp->gnum should never be 0
 	bne,pt	%xcc, 3f
-	  nop
+	nop
 
-	sethi   %hi(panicstr), %g1	! test if panicstr is already set
-        ldx     [%g1 + %lo(panicstr)], %g1
-        tst     %g1
-        bnz,pn  %icc, 1f
-          nop
+	sethi	%hi(panicstr), %g1	! test if panicstr is already set
+	ldx	[%g1 + %lo(panicstr)], %g1
+	tst	%g1
+	bnz,pn	%icc, 1f
+	nop
 
 	sethi	%hi(sfmmu_panic8), %o0
 	call	panic
-	  or	%o0, %lo(sfmmu_panic8), %o0
+	or	%o0, %lo(sfmmu_panic8), %o0
 1:
 	retl
-	  mov	%g0, %o0			! %o0 = ret = 0
+	mov	%g0, %o0			! %o0 = ret = 0
 3:
 #endif
 
@@ -620,29 +634,29 @@ sfmmu_panic11:
 
 	cmp	%g6, INVALID_CONTEXT		! hat cnum == INVALID ??
 	bne,pt	%icc, 1f			! valid hat cnum, check gnum
-	  nop
+	nop
 
 	! cnum == INVALID, check allocflag
 	mov	%g0, %g4	! %g4 = ret = 0
-	brz,pt  %o1, 8f		! allocflag == 0, skip ctx allocation, bail
-	  mov	%g6, %o1
+	brz,pt	%o1, 8f		! allocflag == 0, skip ctx allocation, bail
+	mov	%g6, %o1
 
 	! (invalid HAT cnum) && (allocflag == 1)
 	ba,pt	%icc, 2f
-	  nop
+	nop
 #ifdef sun4v
 0:
 	set	INVALID_CONTEXT, %o1
 	membar	#LoadStore|#StoreStore
 	ba,pt	%icc, 8f
-	  mov   %g0, %g4                ! %g4 = ret = 0
+	mov	%g0, %g4		! %g4 = ret = 0
 #endif
 1:
 	! valid HAT cnum, check gnum
 	cmp	%g5, %o4
-	mov	1, %g4				!%g4 = ret = 1
-	be,a,pt	%icc, 8f			! gnum unchanged, go to done
-	  mov	%g6, %o1
+	mov	1, %g4			!%g4 = ret = 1
+	be,a,pt	%icc, 8f		! gnum unchanged, go to done
+	mov	%g6, %o1
 
 2:
 	/*
@@ -652,12 +666,12 @@ sfmmu_panic11:
 	ldstub	[%o0 + SFMMU_CTX_LOCK], %g3	! %g3 = per process (PP) lock
 3:
 	brz	%g3, 5f
-	  nop
+	nop
 4:
-	brnz,a,pt       %g3, 4b				! spin if lock is 1
-	  ldub	[%o0 + SFMMU_CTX_LOCK], %g3
-	ba	%xcc, 3b				! retry the lock
-	  ldstub	[%o0 + SFMMU_CTX_LOCK], %g3    ! %g3 = PP lock
+	brnz,a,pt	%g3, 4b			! spin if lock is 1
+	ldub	[%o0 + SFMMU_CTX_LOCK], %g3
+	ba	%xcc, 3b			! retry the lock
+	ldstub	[%o0 + SFMMU_CTX_LOCK], %g3	! %g3 = PP lock
 
 5:
 	membar  #LoadLoad
@@ -671,29 +685,29 @@ sfmmu_panic11:
 
 	cmp	%g6, INVALID_CONTEXT		! hat cnum == INVALID ??
 	bne,pt	%icc, 1f			! valid hat cnum, check gnum
-	  nop
+	nop
 
 	! cnum == INVALID, check allocflag
 	mov	%g0, %g4	! %g4 = ret = 0
 	brz,pt	%o1, 2f		! allocflag == 0, called from resume, set hw
-	  mov	%g6, %o1
+	mov	%g6, %o1
 
 	! (invalid HAT cnum) && (allocflag == 1)
 	ba,pt	%icc, 6f
-	  nop
+	nop
 1:
 	! valid HAT cnum, check gnum
 	cmp	%g5, %o4
 	mov	1, %g4				! %g4 = ret  = 1
 	be,a,pt	%icc, 2f			! gnum unchanged, go to done
-	  mov	%g6, %o1
+	mov	%g6, %o1
 
 	ba,pt	%icc, 6f
-	  nop
+	nop
 2:
 	membar  #LoadStore|#StoreStore
-	ba,pt %icc, 8f
-	  clrb  [%o0 + SFMMU_CTX_LOCK]
+	ba,pt	%icc, 8f
+	clrb	[%o0 + SFMMU_CTX_LOCK]
 6:
 	/*
 	 * We get here if we do not have a valid context, or
@@ -706,8 +720,8 @@ sfmmu_panic11:
 	ld	[%o3 + MMU_CTX_NCTXS], %g4
 
 	/*
-         * %g2 = &sfmmu_ctx_t[mmuid] - SFMMU_CTXS;
-         * %g3 = mmu cnum address
+	 * %g2 = &sfmmu_ctx_t[mmuid] - SFMMU_CTXS;
+	 * %g3 = mmu cnum address
 	 * %g4 = mmu nctxs
 	 *
 	 * %o0 = sfmmup
@@ -719,8 +733,8 @@ sfmmu_panic11:
 	ld	[%g3], %o1
 0:
 	cmp	%o1, %g4
-	bl,a,pt %icc, 1f
-	  add	%o1, 1, %o5		! %o5 = mmu_ctxp->cnum + 1
+	bl,a,pt	%icc, 1f
+	add	%o1, 1, %o5		! %o5 = mmu_ctxp->cnum + 1
 
 	/*
 	 * cnum reachs max, bail, so wrap around can be performed later.
@@ -730,24 +744,24 @@ sfmmu_panic11:
 
 	membar  #LoadStore|#StoreStore
 	ba,pt	%icc, 8f
-	  clrb	[%o0 + SFMMU_CTX_LOCK]
+	clrb	[%o0 + SFMMU_CTX_LOCK]
 1:
 	! %g3 = addr of mmu_ctxp->cnum
 	! %o5 = mmu_ctxp->cnum + 1
 	cas	[%g3], %o1, %o5
 	cmp	%o1, %o5
 	bne,a,pn %xcc, 0b	! cas failed
-	  ld	[%g3], %o1
+	ld	[%g3], %o1
 
 #ifdef DEBUG
-        set	MAX_SFMMU_CTX_VAL, %o5
+	set	MAX_SFMMU_CTX_VAL, %o5
 	cmp	%o1, %o5
 	ble,pt %icc, 2f
-	  nop
+	nop
 
 	sethi	%hi(sfmmu_panic9), %o0
 	call	panic
-	  or	%o0, %lo(sfmmu_panic9), %o0
+	or	%o0, %lo(sfmmu_panic9), %o0
 2:
 #endif
 	! update hat gnum and cnum
@@ -780,7 +794,7 @@ sfmmu_panic11:
 
 	cmp	%o1, INVALID_CONTEXT
 	be,a,pn	%icc, 9f
-	  clr	%g1
+	clr	%g1
 9:
 
 #ifdef	sun4u
@@ -791,8 +805,8 @@ sfmmu_panic11:
 
 	SET_SECCTX(%o1, %g1, %o4, %o5, alloc_ctx_lbl1)
 
-        retl
-          mov   %g4, %o0                        ! %o0 = ret
+	retl
+	mov	%g4, %o0			! %o0 = ret
 
 	SET_SIZE(sfmmu_alloc_ctx)
 
@@ -807,11 +821,11 @@ sfmmu_panic11:
 	casx	[%o2], %g1, %g2
 	cmp	%g1, %g2
 	be,pt	%xcc, 1f			/* cas succeeded - return */
-	  nop
+	nop
 	ldx	[%o2], %g3			/* new current */
 	stx	%g3, [%o0]			/* save as new original */
 	ba,pt	%xcc, 2b
-	  mov	%g3, %g1
+	mov	%g3, %g1
 1:	retl
 	membar	#StoreLoad
 	SET_SIZE(sfmmu_modifytte)
@@ -927,11 +941,11 @@ sfmmu_panic11:
 	 *
 	 * sethi   %hh(RUNTIME_PATCH), tmp
 	 * sethi   %lm(RUNTIME_PATCH), dest
-	 * or      tmp, %hm(RUNTIME_PATCH), tmp
-	 * or      dest, %lo(RUNTIME_PATCH), dest
+	 * or	   tmp, %hm(RUNTIME_PATCH), tmp
+	 * or	   dest, %lo(RUNTIME_PATCH), dest
 	 * sllx    tmp, 32, tmp
 	 * nop
-	 * or      tmp, dest, dest
+	 * or	   tmp, dest, dest
 	 *
 	 * which differs from the implementation in the
 	 * "SPARC Architecture Manual"
@@ -988,7 +1002,7 @@ sfmmu_panic11:
 	 * %o2, %o3 are used as scratch registers.
 	 *
 	 * sllx/srlx store the 6 bit immediate value in the lowest order bits
-	 * so we do a simple add.  The caller must be careful to prevent
+	 * so we do a simple add. The caller must be careful to prevent
 	 * overflow, which could easily occur if the initial value is nonzero!
 	 */
 	ld	[%o0], %o3			! %o3 = instruction to patch
@@ -1005,7 +1019,7 @@ sfmmu_panic11:
 	ENTRY_NP(sfmmu_fixup_mmu_asi)
 	/*
 	 * Patch imm_asi of all ldda instructions in the MMU
-	 * trap handlers.  We search MMU_PATCH_INSTR instructions
+	 * trap handlers. We search MMU_PATCH_INSTR instructions
 	 * starting from the itlb miss handler (trap 0x64).
 	 * %o0 = address of tt[0,1]_itlbmiss
 	 * %o1 = imm_asi to setup, shifted by appropriate offset.
@@ -1014,18 +1028,18 @@ sfmmu_panic11:
 	 */
 1:	ldsw	[%o0], %o2			! load instruction to %o2
 	brgez,pt %o2, 2f
-	  srl	%o2, 30, %o5
+	srl	%o2, 30, %o5
 	btst	1, %o5				! test bit 30; skip if not set
 	bz,pt	%icc, 2f
-	  sllx	%o2, 39, %o5			! bit 24 -> bit 63
+	sllx	%o2, 39, %o5			! bit 24 -> bit 63
 	srlx	%o5, 58, %o5			! isolate op3 part of opcode
 	xor	%o5, 0x13, %o5			! 01 0011 binary == ldda
 	brnz,pt	%o5, 2f				! skip if not a match
-	  or	%o2, %o1, %o2			! or in imm_asi
+	or	%o2, %o1, %o2			! or in imm_asi
 	st	%o2, [%o0]			! write patched instruction
 2:	dec	%o3
 	brnz,a,pt %o3, 1b			! loop until we're done
-	  add	%o0, I_SIZE, %o0
+	add	%o0, I_SIZE, %o0
 	retl
 	flush	%o0
 	SET_SIZE(sfmmu_fixup_mmu_asi)
@@ -1050,7 +1064,7 @@ sfmmu_panic11:
 
 	sethi	%hi(sfmmu_panic11), %o0
 	call	panic
-	  or	%o0, %lo(sfmmu_panic11), %o0
+	or	%o0, %lo(sfmmu_panic11), %o0
 do_patch:
 
 #else /* sun4v */
@@ -1066,19 +1080,19 @@ do_patch:
 	mov	6, %o3				! number of instructions
 	sethi	%hi(dktsb), %o0			! to search
 	call	sfmmu_fixup_mmu_asi		! patch kdtlb miss
-	  or	%o0, %lo(dktsb), %o0
+	or	%o0, %lo(dktsb), %o0
 	mov	6, %o3				! number of instructions
 	sethi	%hi(dktsb4m), %o0		! to search
 	call	sfmmu_fixup_mmu_asi		! patch kdtlb4m miss
-	  or	%o0, %lo(dktsb4m), %o0
+	or	%o0, %lo(dktsb4m), %o0
 	mov	6, %o3				! number of instructions
 	sethi	%hi(iktsb), %o0			! to search
 	call	sfmmu_fixup_mmu_asi		! patch kitlb miss
-	  or	%o0, %lo(iktsb), %o0
+	or	%o0, %lo(iktsb), %o0
 	mov	6, %o3				! number of instructions
 	sethi	%hi(iktsb4m), %o0		! to search
 	call	sfmmu_fixup_mmu_asi		! patch kitlb4m miss
-	  or	%o0, %lo(iktsb4m), %o0
+	or	%o0, %lo(iktsb4m), %o0
 	mov	%o4, %o7			! retore return pc -- leaf
 	retl
 	nop
@@ -1095,7 +1109,7 @@ do_patch:
 	set	ktsb_base, %o5
 	set	ktsb4m_base, %l1
 	brz,pt	%o4, 1f
-	  nop
+	nop
 	set	ktsb_pbase, %o5
 	set	ktsb4m_pbase, %l1
 1:
@@ -1104,18 +1118,18 @@ do_patch:
 
 	sethi	%hi(iktsb), %o0
 	call	sfmmu_fix_ktlb_traptable
-	  or	%o0, %lo(iktsb), %o0
+	or	%o0, %lo(iktsb), %o0
 
 	sethi	%hi(dktsb), %o0
 	call	sfmmu_fix_ktlb_traptable
-	  or	%o0, %lo(dktsb), %o0
+	or	%o0, %lo(dktsb), %o0
 
 	sethi	%hi(ktsb4m_szcode), %o1
 	ld	[%o1 + %lo(ktsb4m_szcode)], %o1	/* %o1 = ktsb4m size code */
 
 	sethi	%hi(iktsb4m), %o0
 	call	sfmmu_fix_ktlb_traptable
-	  or	%o0, %lo(iktsb4m), %o0
+	or	%o0, %lo(iktsb4m), %o0
 
 	sethi	%hi(dktsb4m), %o0
 	call	sfmmu_fix_ktlb_traptable
@@ -1127,38 +1141,38 @@ do_patch:
 	mov	%o2, %o4		! sfmmu_fixup_or needs this in %o4
 	sethi	%hi(tsb_kernel_patch_asi), %o0
 	call	sfmmu_fixup_or
-	  or	%o0, %lo(tsb_kernel_patch_asi), %o0
+	or	%o0, %lo(tsb_kernel_patch_asi), %o0
 #endif /* !sun4v */
 
-	ldx 	[%o5], %o4		! load ktsb base addr (VA or PA)
+	ldx	[%o5], %o4		! load ktsb base addr (VA or PA)
 
 	sethi	%hi(dktsbbase), %o0
 	call	sfmmu_fixup_setx	! patch value of ktsb base addr
-	  or	%o0, %lo(dktsbbase), %o0
+	or	%o0, %lo(dktsbbase), %o0
 
 	sethi	%hi(iktsbbase), %o0
 	call	sfmmu_fixup_setx	! patch value of ktsb base addr
-	  or	%o0, %lo(iktsbbase), %o0
+	or	%o0, %lo(iktsbbase), %o0
 
 	sethi	%hi(sfmmu_kprot_patch_ktsb_base), %o0
 	call	sfmmu_fixup_setx	! patch value of ktsb base addr
-	  or	%o0, %lo(sfmmu_kprot_patch_ktsb_base), %o0
+	or	%o0, %lo(sfmmu_kprot_patch_ktsb_base), %o0
 
 #ifdef sun4v
 	sethi	%hi(sfmmu_dslow_patch_ktsb_base), %o0
 	call	sfmmu_fixup_setx	! patch value of ktsb base addr
-	  or	%o0, %lo(sfmmu_dslow_patch_ktsb_base), %o0
+	or	%o0, %lo(sfmmu_dslow_patch_ktsb_base), %o0
 #endif /* sun4v */
 
-	ldx 	[%l1], %o4		! load ktsb4m base addr (VA or PA)
+	ldx	[%l1], %o4		! load ktsb4m base addr (VA or PA)
 
 	sethi	%hi(dktsb4mbase), %o0
 	call	sfmmu_fixup_setx	! patch value of ktsb4m base addr
-	  or	%o0, %lo(dktsb4mbase), %o0
+	or	%o0, %lo(dktsb4mbase), %o0
 
 	sethi	%hi(iktsb4mbase), %o0
 	call	sfmmu_fixup_setx	! patch value of ktsb4m base addr
-	  or	%o0, %lo(iktsb4mbase), %o0
+	or	%o0, %lo(iktsb4mbase), %o0
 
 	sethi	%hi(sfmmu_kprot_patch_ktsb4m_base), %o0
 	call	sfmmu_fixup_setx	! patch value of ktsb4m base addr
@@ -1167,31 +1181,31 @@ do_patch:
 #ifdef sun4v
 	sethi	%hi(sfmmu_dslow_patch_ktsb4m_base), %o0
 	call	sfmmu_fixup_setx	! patch value of ktsb4m base addr
-	  or	%o0, %lo(sfmmu_dslow_patch_ktsb4m_base), %o0
+	or	%o0, %lo(sfmmu_dslow_patch_ktsb4m_base), %o0
 #endif /* sun4v */
 
 	set	ktsb_szcode, %o4
 	ld	[%o4], %o4
 	sethi	%hi(sfmmu_kprot_patch_ktsb_szcode), %o0
 	call	sfmmu_fixup_or		! patch value of ktsb_szcode
-	  or	%o0, %lo(sfmmu_kprot_patch_ktsb_szcode), %o0
+	or	%o0, %lo(sfmmu_kprot_patch_ktsb_szcode), %o0
 
 #ifdef sun4v
 	sethi	%hi(sfmmu_dslow_patch_ktsb_szcode), %o0
 	call	sfmmu_fixup_or		! patch value of ktsb_szcode
-	  or	%o0, %lo(sfmmu_dslow_patch_ktsb_szcode), %o0
+	or	%o0, %lo(sfmmu_dslow_patch_ktsb_szcode), %o0
 #endif /* sun4v */
 
 	set	ktsb4m_szcode, %o4
 	ld	[%o4], %o4
 	sethi	%hi(sfmmu_kprot_patch_ktsb4m_szcode), %o0
 	call	sfmmu_fixup_or		! patch value of ktsb4m_szcode
-	  or	%o0, %lo(sfmmu_kprot_patch_ktsb4m_szcode), %o0
+	or	%o0, %lo(sfmmu_kprot_patch_ktsb4m_szcode), %o0
 
 #ifdef sun4v
 	sethi	%hi(sfmmu_dslow_patch_ktsb4m_szcode), %o0
 	call	sfmmu_fixup_or		! patch value of ktsb4m_szcode
-	  or	%o0, %lo(sfmmu_dslow_patch_ktsb4m_szcode), %o0
+	or	%o0, %lo(sfmmu_dslow_patch_ktsb4m_szcode), %o0
 #endif /* sun4v */
 
 	ret
@@ -1200,7 +1214,7 @@ do_patch:
 
 	ENTRY_NP(sfmmu_kpm_patch_tlbm)
 	/*
-	 * Fixup trap handlers in common segkpm case.  This is reserved
+	 * Fixup trap handlers in common segkpm case. This is reserved
 	 * for future use should kpm TSB be changed to be other than the
 	 * kernel TSB.
 	 */
@@ -1238,26 +1252,26 @@ do_patch:
 	ldx	[%o1], %o4
 	sethi	%hi(sfmmu_uprot_get_1st_tsbe_ptr), %o0
 	call	sfmmu_fixup_setx
-	  or	%o0, %lo(sfmmu_uprot_get_1st_tsbe_ptr), %o0
+	or	%o0, %lo(sfmmu_uprot_get_1st_tsbe_ptr), %o0
 	sethi	%hi(sfmmu_uitlb_get_1st_tsbe_ptr), %o0
 	call	sfmmu_fixup_setx
-	  or	%o0, %lo(sfmmu_uitlb_get_1st_tsbe_ptr), %o0
+	or	%o0, %lo(sfmmu_uitlb_get_1st_tsbe_ptr), %o0
 	sethi	%hi(sfmmu_udtlb_get_1st_tsbe_ptr), %o0
 	call	sfmmu_fixup_setx
-	  or	%o0, %lo(sfmmu_udtlb_get_1st_tsbe_ptr), %o0
+	or	%o0, %lo(sfmmu_udtlb_get_1st_tsbe_ptr), %o0
 
 	/* patch value of utsb4m_vabase */
 	set	utsb4m_vabase, %o1
 	ldx	[%o1], %o4
 	sethi	%hi(sfmmu_uprot_get_2nd_tsb_base), %o0
 	call	sfmmu_fixup_setx
-	  or	%o0, %lo(sfmmu_uprot_get_2nd_tsb_base), %o0
+	or	%o0, %lo(sfmmu_uprot_get_2nd_tsb_base), %o0
 	sethi	%hi(sfmmu_uitlb_get_2nd_tsb_base), %o0
 	call	sfmmu_fixup_setx
-	  or	%o0, %lo(sfmmu_uitlb_get_2nd_tsb_base), %o0
+	or	%o0, %lo(sfmmu_uitlb_get_2nd_tsb_base), %o0
 	sethi	%hi(sfmmu_udtlb_get_2nd_tsb_base), %o0
 	call	sfmmu_fixup_setx
-	  or	%o0, %lo(sfmmu_udtlb_get_2nd_tsb_base), %o0
+	or	%o0, %lo(sfmmu_udtlb_get_2nd_tsb_base), %o0
 
 	/*
 	 * Patch TSB base register masks and shifts if needed.
@@ -1275,24 +1289,24 @@ do_patch:
 	/* patch reserved VA range size if needed. */
 	sethi	%hi(sfmmu_tsb_1st_resv_offset), %o0
 	call	sfmmu_fixup_shiftx
-	  or	%o0, %lo(sfmmu_tsb_1st_resv_offset), %o0
+	or	%o0, %lo(sfmmu_tsb_1st_resv_offset), %o0
 	call	sfmmu_fixup_shiftx
-	  add	%o0, I_SIZE, %o0
+	add	%o0, I_SIZE, %o0
 	sethi	%hi(sfmmu_tsb_2nd_resv_offset), %o0
 	call	sfmmu_fixup_shiftx
-	  or	%o0, %lo(sfmmu_tsb_2nd_resv_offset), %o0
+	or	%o0, %lo(sfmmu_tsb_2nd_resv_offset), %o0
 	call	sfmmu_fixup_shiftx
-	  add	%o0, I_SIZE, %o0
+	add	%o0, I_SIZE, %o0
 1:
 	/* patch TSBREG_VAMASK used to set up TSB base register */
 	set	tsb_slab_mask, %o1
 	ldx	[%o1], %o4
 	sethi	%hi(sfmmu_tsb_1st_tsbreg_vamask), %o0
 	call	sfmmu_fixup_or
-	  or	%o0, %lo(sfmmu_tsb_1st_tsbreg_vamask), %o0
+	or	%o0, %lo(sfmmu_tsb_1st_tsbreg_vamask), %o0
 	sethi	%hi(sfmmu_tsb_2nd_tsbreg_vamask), %o0
 	call	sfmmu_fixup_or
-	  or	%o0, %lo(sfmmu_tsb_2nd_tsbreg_vamask), %o0
+	or	%o0, %lo(sfmmu_tsb_2nd_tsbreg_vamask), %o0
 
 	ret
 	restore
@@ -1302,10 +1316,10 @@ do_patch:
 	ENTRY_NP(sfmmu_patch_shctx)
 #ifdef sun4u
 	retl
-	  nop
+	nop
 #else /* sun4u */
 	set	sfmmu_shctx_cpu_mondo_patch, %o0
-	MAKE_JMP_INSTR(5, %o1, %o2)	! jmp       %g5
+	MAKE_JMP_INSTR(5, %o1, %o2)	! jmp %g5
 	st	%o1, [%o0]
 	flush	%o0
 	MAKE_NOP_INSTR(%o1)
@@ -1314,22 +1328,22 @@ do_patch:
 	flush	%o0
 
 	set	sfmmu_shctx_user_rtt_patch, %o0
-	st      %o1, [%o0]		! nop 1st instruction
+	st	%o1, [%o0]		! nop 1st instruction
 	flush	%o0
-	add     %o0, I_SIZE, %o0
-	st      %o1, [%o0]		! nop 2nd instruction
+	add	%o0, I_SIZE, %o0
+	st	%o1, [%o0]		! nop 2nd instruction
 	flush	%o0
-	add     %o0, I_SIZE, %o0
-	st      %o1, [%o0]		! nop 3rd instruction
+	add	%o0, I_SIZE, %o0
+	st	%o1, [%o0]		! nop 3rd instruction
 	flush	%o0
-	add     %o0, I_SIZE, %o0
-	st      %o1, [%o0]		! nop 4th instruction
+	add	%o0, I_SIZE, %o0
+	st	%o1, [%o0]		! nop 4th instruction
 	flush	%o0
-	add     %o0, I_SIZE, %o0
-	st      %o1, [%o0]		! nop 5th instruction
+	add	%o0, I_SIZE, %o0
+	st	%o1, [%o0]		! nop 5th instruction
 	flush	%o0
-	add     %o0, I_SIZE, %o0
-	st      %o1, [%o0]		! nop 6th instruction
+	add	%o0, I_SIZE, %o0
+	st	%o1, [%o0]		! nop 6th instruction
 	retl
 	flush	%o0
 #endif /* sun4u */
@@ -1400,7 +1414,7 @@ do_patch:
 	mov	ASI_N, %o3
 	ld	[%o4 + %lo(ktsb_phys)], %o4
 	movrnz	%o4, ASI_MEM, %o3
-	mov	%o3, %asi
+	wr	%o3, %g0, %asi
 #endif /* !sun4v */
 	mov	%o0, %g1			! %g1 = vaddr
 
@@ -1414,7 +1428,7 @@ do_patch:
 
 	wrpr	%g0, %o5, %pstate		! enable interrupts
 	retl
-	  membar #StoreStore|#StoreLoad
+	membar #StoreStore|#StoreLoad
 	SET_SIZE(sfmmu_kpm_load_tsb)
 
 	/*
@@ -1432,7 +1446,7 @@ do_patch:
 	mov	ASI_N, %o3
 	ld	[%o4 + %lo(ktsb_phys)], %o4
 	movrnz	%o4, ASI_MEM, %o3
-	mov	%o3, %asi
+	wr	%o3, %g0, %asi
 #endif /* !sun4v */
 	mov	%o0, %g1			! %g1 = vaddr
 
@@ -1445,7 +1459,7 @@ do_patch:
 	TSB_INVALIDATE(%g2, %g1, %o3, %o4, %o1, kpm_tsbinval)
 
 	retl
-	  membar	#StoreStore|#StoreLoad
+	membar	#StoreStore|#StoreLoad
 	SET_SIZE(sfmmu_kpm_unload_tsb)
 
 
@@ -1543,10 +1557,10 @@ do_patch:
 	ldx	[tsbma + KPMTSBM_VBASE], val				;\
 	cmp	tagacc, val						;\
 	blu,pn	%xcc, label						;\
-	  ldx	[tsbma + KPMTSBM_VEND], tmp1				;\
+	ldx	[tsbma + KPMTSBM_VEND], tmp1				;\
 	cmp	tagacc, tmp1						;\
 	bgeu,pn	%xcc, label						;\
-	  lduw	[tsbma + KPMTSBM_DTLBMISS], val				;\
+	lduw	[tsbma + KPMTSBM_DTLBMISS], val				;\
 	inc	val							;\
 	st	val, [tsbma + KPMTSBM_DTLBMISS]				;\
 label:
@@ -1555,19 +1569,21 @@ label:
 #endif	/* KPM_TLBMISS_STATS_GATHER */
 
 #ifdef	PTL1_PANIC_DEBUG
-	.seg	".data"
+	.data
 	.global	test_ptl1_panic
+	.type	test_ptl1_panic, @object	! GAS syntax for symbol type
+	.size	test_ptl1_panic, 4		! set correct 4 byte size for linker
 test_ptl1_panic:
-	.word	0
-	.align	8
+	.long	0		! force 4 bytes (32-Bit) for GAS
+	.balign	8		! align next data symbol to 8 bytes
 
-	.seg	".text"
-	.align	4
+	.text
+	.balign	4
 #endif	/* PTL1_PANIC_DEBUG */
 
 	/*
 	 * The following routines are jumped to from the mmu trap handlers to do
-	 * the setting up to call systrap.  They are separate routines instead
+	 * the setting up to call systrap. They are separate routines instead
 	 * of being part of the handlers because the handlers would exceed 32
 	 * instructions and since this is part of the slow path the jump cost is
 	 * irrelevant.
@@ -1580,10 +1596,10 @@ test_ptl1_panic:
 	rdpr	%tt, %g6
 	cmp	%g6, FAST_IMMU_MISS_TT
 	be,a,pn	%icc, 1f
-	  mov	T_INSTR_MMU_MISS, %g3
+	mov	T_INSTR_MMU_MISS, %g3
 	cmp	%g6, T_INSTR_MMU_MISS
 	be,a,pn	%icc, 1f
-	  mov	T_INSTR_MMU_MISS, %g3
+	mov	T_INSTR_MMU_MISS, %g3
 	mov	%g5, %g2
 	mov	T_DATA_PROT, %g3		/* arg2 = traptype */
 	cmp	%g6, FAST_DMMU_MISS_TT
@@ -1598,7 +1614,7 @@ test_ptl1_panic:
 	st	%g0, [%g4 + %lo(test_ptl1_panic)]
 	cmp	%g1, %g0
 	bne,a,pn %icc, ptl1_panic
-	  or	%g0, PTL1_BAD_DEBUG, %g1
+	or	%g0, PTL1_BAD_DEBUG, %g1
 #endif	/* PTL1_PANIC_DEBUG */
 1:
 	HAT_GLOBAL_STAT(HATSTAT_PAGEFAULT, %g6, %g4)
@@ -1611,7 +1627,7 @@ test_ptl1_panic:
 	or	%g1, %lo(trap), %g1
 2:
 	ba,pt	%xcc, sys_trap
-	  mov	-1, %g4
+	mov	-1, %g4
 	SET_SIZE(sfmmu_pagefault)
 
 	ENTRY_NP(sfmmu_mmu_trap)
@@ -1621,10 +1637,10 @@ test_ptl1_panic:
 	rdpr	%tt, %g6
 	cmp	%g6, FAST_IMMU_MISS_TT
 	be,a,pn	%icc, 1f
-	  mov	T_INSTR_MMU_MISS, %g3
+	mov	T_INSTR_MMU_MISS, %g3
 	cmp	%g6, T_INSTR_MMU_MISS
 	be,a,pn	%icc, 1f
-	  mov	T_INSTR_MMU_MISS, %g3
+	mov	T_INSTR_MMU_MISS, %g3
 	mov	%g5, %g2
 	mov	T_DATA_PROT, %g3		/* arg2 = traptype */
 	cmp	%g6, FAST_DMMU_MISS_TT
@@ -1639,7 +1655,7 @@ test_ptl1_panic:
 	sethi	%hi(sfmmu_tsbmiss_exception), %g1
 	or	%g1, %lo(sfmmu_tsbmiss_exception), %g1
 	ba,pt	%xcc, sys_trap
-	  mov	-1, %g4
+	mov	-1, %g4
 	/*NOTREACHED*/
 	SET_SIZE(sfmmu_mmu_trap)
 
@@ -1650,7 +1666,7 @@ test_ptl1_panic:
 	rdpr	%tt, %g6
 	cmp	%g6, FAST_IMMU_MISS_TT
 	be,a,pn	%icc, 1f
-	  mov	T_INSTR_MMU_MISS, %g3
+	mov	T_INSTR_MMU_MISS, %g3
 	mov	%g5, %g2
 	cmp	%g6, FAST_DMMU_MISS_TT
 	move	%icc, T_DATA_MMU_MISS, %g3
@@ -1660,7 +1676,7 @@ test_ptl1_panic:
 	or	%g1, %lo(sfmmu_tsbmiss_suspended), %g1
 	/* g1 = TL0 handler, g2 = tagacc, g3 = trap type */
 	ba,pt	%xcc, sys_trap
-	  mov	PIL_15, %g4
+	mov	PIL_15, %g4
 	/*NOTREACHED*/
 	SET_SIZE(sfmmu_suspend_tl)
 
@@ -1688,7 +1704,7 @@ test_ptl1_panic:
 	set	rtt_fill_end, %g4
 	cmp	%g1, %g4
 	bgeu,pn %xcc, 6f
-	 nop
+	nop
 	set	fault_rtt_fn1, %g1
 	wrpr	%g0, %g1, %tnpc
 	ba,a	7f
@@ -1719,16 +1735,16 @@ test_ptl1_panic:
 	and	%g2, WTRAP_TTMASK, %g4
 	cmp	%g4, WTRAP_TYPE
 	bne,pn	%xcc, 1f
-	 nop
+	nop
 	/* tpc should be in the trap table */
 	set	trap_table, %g4
 	cmp	%g1, %g4
 	blt,pn %xcc, 1f
-	 .empty
+	.empty
 	set	etrap_table, %g4
 	cmp	%g1, %g4
 	bge,pn %xcc, 1f
-	 .empty
+	.empty
 	andn	%g1, WTRAP_ALIGN, %g1	/* 128 byte aligned */
 	add	%g1, WTRAP_FAULTOFF, %g1
 	wrpr	%g0, %g1, %tnpc
@@ -1749,10 +1765,10 @@ test_ptl1_panic:
 	rdpr	%tt, %g7
 	cmp	%g7, FAST_IMMU_MISS_TT
 	be,a,pn	%icc, ptl1_panic
-	  mov	PTL1_BAD_WTRAP, %g1
+	mov	PTL1_BAD_WTRAP, %g1
 	cmp	%g7, T_INSTR_MMU_MISS
 	be,a,pn	%icc, ptl1_panic
-	  mov	PTL1_BAD_WTRAP, %g1
+	mov	PTL1_BAD_WTRAP, %g1
 	mov	T_DATA_PROT, %g5
 	cmp	%g7, FAST_DMMU_MISS_TT
 	move	%icc, T_DATA_MMU_MISS, %g5
@@ -1763,11 +1779,11 @@ test_ptl1_panic:
 1:
 	CPU_PADDR(%g1, %g4)
 	add	%g1, CPU_TL1_HDLR, %g1
-	lda	[%g1]ASI_MEM, %g4
+	lda	[%g1] ASI_MEM, %g4
 	brnz,a,pt %g4, sfmmu_mmu_trap
-	  sta	%g0, [%g1]ASI_MEM
+	sta	%g0, [%g1] ASI_MEM
 	ba,pt	%icc, ptl1_panic
-	  mov	PTL1_BAD_TRAP, %g1
+	mov	PTL1_BAD_TRAP, %g1
 	SET_SIZE(sfmmu_window_trap)
 
 	ENTRY_NP(sfmmu_kpm_exception)
@@ -1828,8 +1844,8 @@ test_ptl1_panic:
  * maps while they are being changed.
  *
  * NOTE: We will never have any holes in our ISM maps. sfmmu_share/unshare
- *       will make sure of that. This means we can terminate our search on
- *       the first zero mapping we find.
+ *	 will make sure of that. This means we can terminate our search on
+ *	 the first zero mapping we find.
  *
  * Parameters:
  * tagacc	= (pseudo-)tag access register (vaddr + ctx) (in)
@@ -1843,38 +1859,38 @@ test_ptl1_panic:
  * ismhit:   label where to jump to if an ism dtlb miss
  * exitlabel:label where to jump if hat is busy due to hat_unshare.
  */
-#define ISM_CHECK(tagacc, tsbmiss, ismseg, ismhat, tmp1, tmp2, tmp3 \
+#define ISM_CHECK(tagacc, tsbmiss, ismseg, ismhat, tmp1, tmp2, tmp3, \
 	label, ismhit)							\
 	ldx	[tsbmiss + TSBMISS_ISMBLKPA], tmp1 /* tmp1 = &ismblk */	;\
 	brlz,pt  tmp1, label##3		/* exit if -1 */	;\
-	  add	tmp1, IBLK_MAPS, ismhat	/* ismhat = &ismblk.map[0] */	;\
+	add	tmp1, IBLK_MAPS, ismhat	/* ismhat = &ismblk.map[0] */	;\
 label##1:								;\
-	ldxa	[ismhat]ASI_MEM, ismseg	/* ismblk.map[0].ism_seg */	;\
+	ldxa	[ismhat] ASI_MEM, ismseg	/* ismblk.map[0].ism_seg */	;\
 	mov	tmp1, tmp3	/* update current ismblkpa head */	;\
 label##2:								;\
 	brz,pt  ismseg, label##3		/* no mapping */	;\
-	  add	ismhat, IMAP_VB_SHIFT, tmp1 /* tmp1 = vb_shift addr */	;\
-	lduba	[tmp1]ASI_MEM, tmp1 		/* tmp1 = vb shift*/	;\
+	add	ismhat, IMAP_VB_SHIFT, tmp1 /* tmp1 = vb_shift addr */	;\
+	lduba	[tmp1] ASI_MEM, tmp1		/* tmp1 = vb shift*/	;\
 	srlx	ismseg, tmp1, tmp2		/* tmp2 = vbase */	;\
 	srlx	tagacc, tmp1, tmp1		/* tmp1 =  va seg*/	;\
 	sub	tmp1, tmp2, tmp2		/* tmp2 = va - vbase */	;\
 	add	ismhat, IMAP_SZ_MASK, tmp1 /* tmp1 = sz_mask addr */	;\
-	lda	[tmp1]ASI_MEM, tmp1		/* tmp1 = sz_mask */	;\
+	lda	[tmp1] ASI_MEM, tmp1		/* tmp1 = sz_mask */	;\
 	and	ismseg, tmp1, tmp1		/* tmp1 = size */	;\
-	cmp	tmp2, tmp1		 	/* check va <= offset*/	;\
+	cmp	tmp2, tmp1			/* check va <= offset*/	;\
 	blu,a,pt  %xcc, ismhit			/* ism hit */		;\
-	  add	ismhat, IMAP_ISMHAT, ismhat 	/* ismhat = &ism_sfmmu*/ ;\
+	add	ismhat, IMAP_ISMHAT, ismhat	/* ismhat = &ism_sfmmu*/ ;\
 									;\
-	add	ismhat, ISM_MAP_SZ, ismhat /* ismhat += sizeof(map) */ 	;\
+	add	ismhat, ISM_MAP_SZ, ismhat /* ismhat += sizeof(map) */	;\
 	add	tmp3, (IBLK_MAPS + ISM_MAP_SLOTS * ISM_MAP_SZ), tmp1	;\
 	cmp	ismhat, tmp1						;\
-	bl,pt	%xcc, label##2		/* keep looking  */	;\
-	  ldxa	[ismhat]ASI_MEM, ismseg	/* ismseg = map[ismhat] */	;\
+	bl,pt	%xcc, label##2		/* keep looking  */		;\
+	ldxa	[ismhat] ASI_MEM, ismseg /* ismseg = map[ismhat] */	;\
 									;\
 	add	tmp3, IBLK_NEXTPA, tmp1					;\
-	ldxa	[tmp1]ASI_MEM, tmp1		/* check blk->nextpa */	;\
+	ldxa	[tmp1] ASI_MEM, tmp1		/* check blk->nextpa */	;\
 	brgez,pt tmp1, label##1		/* continue if not -1*/	;\
-	  add	tmp1, IBLK_MAPS, ismhat	/* ismhat = &ismblk.map[0]*/	;\
+	add	tmp1, IBLK_MAPS, ismhat	/* ismhat = &ismblk.map[0]*/	;\
 label##3:
 
 /*
@@ -1894,10 +1910,10 @@ label##3:
 	vapg, label, tmp1, tmp2)					\
 	sllx	tagacc, TAGACC_CTX_LSHIFT, tmp1				;\
 	brnz,a,pt tmp1, label##1					;\
-	  ld    [tsbarea + TSBMISS_UHASHSZ], hmebp			;\
+	ld	[tsbarea + TSBMISS_UHASHSZ], hmebp			;\
 	ld	[tsbarea + TSBMISS_KHASHSZ], hmebp			;\
 	ba,pt	%xcc, label##2					;\
-	  ldx	[tsbarea + TSBMISS_KHASHSTART], tmp1			;\
+	ldx	[tsbarea + TSBMISS_KHASHSTART], tmp1			;\
 label##1:								;\
 	ldx	[tsbarea + TSBMISS_UHASHSTART], tmp1			;\
 label##2:								;\
@@ -1931,26 +1947,26 @@ label##2:								;\
  * label: temporary label
  */
 
-#define	HMEHASH_SEARCH(hmebp, hmeblktag, hatid, hmeblkpa, tsbarea, 	\
+#define	HMEHASH_SEARCH(hmebp, hmeblktag, hatid, hmeblkpa, tsbarea,	\
 	tmp1, label)							\
-	add     hmebp, HMEBUCK_NEXTPA, hmeblkpa				;\
-	ldxa    [hmeblkpa]ASI_MEM, hmeblkpa				;\
+	add	hmebp, HMEBUCK_NEXTPA, hmeblkpa				;\
+	ldxa	[hmeblkpa] ASI_MEM, hmeblkpa				;\
 	HAT_HSEARCH_DBSTAT(hatid, tsbarea, hmebp, tmp1)			;\
 label##1:								;\
 	cmp	hmeblkpa, HMEBLK_ENDPA					;\
-	be,pn   %xcc, label##2					;\
+	be,pn	%xcc, label##2					;\
 	HAT_HLINK_DBSTAT(hatid, tsbarea, hmebp, tmp1)			;\
 	add	hmeblkpa, HMEBLK_TAG, hmebp				;\
-	ldxa	[hmebp]ASI_MEM, tmp1	 /* read 1st part of tag */	;\
+	ldxa	[hmebp] ASI_MEM, tmp1	 /* read 1st part of tag */	;\
 	add	hmebp, CLONGSIZE, hmebp					;\
-	ldxa	[hmebp]ASI_MEM, hmebp 	/* read 2nd part of tag */	;\
+	ldxa	[hmebp] ASI_MEM, hmebp	/* read 2nd part of tag */	;\
 	xor	tmp1, hmeblktag, tmp1					;\
 	xor	hmebp, hatid, hmebp					;\
 	or	hmebp, tmp1, hmebp					;\
 	brz,pn	hmebp, label##2	/* branch on hit */		;\
-	  add	hmeblkpa, HMEBLK_NEXTPA, hmebp				;\
+	add	hmeblkpa, HMEBLK_NEXTPA, hmebp				;\
 	ba,pt	%xcc, label##1					;\
-	  ldxa	[hmebp]ASI_MEM, hmeblkpa	/* hmeblk ptr pa */	;\
+	ldxa	[hmebp] ASI_MEM, hmeblkpa	/* hmeblk ptr pa */	;\
 label##2:
 
 /*
@@ -1968,26 +1984,26 @@ label##2:
  */
 
 #define	HMEHASH_SEARCH_SHME(hmeblktag, hatid, hmeblkpa, tsbarea,	\
-	tmp1, tmp2, label)			 			\
+	tmp1, tmp2, label)						\
 label##1:								;\
 	cmp	hmeblkpa, HMEBLK_ENDPA					;\
 	be,pn   %xcc, label##4					;\
 	HAT_HLINK_DBSTAT(hatid, tsbarea, tmp1, tmp2)			;\
 	add	hmeblkpa, HMEBLK_TAG, tmp2				;\
-	ldxa	[tmp2]ASI_MEM, tmp1	 /* read 1st part of tag */	;\
+	ldxa	[tmp2] ASI_MEM, tmp1	 /* read 1st part of tag */	;\
 	add	tmp2, CLONGSIZE, tmp2					;\
-	ldxa	[tmp2]ASI_MEM, tmp2 	/* read 2nd part of tag */	;\
+	ldxa	[tmp2] ASI_MEM, tmp2	/* read 2nd part of tag */	;\
 	xor	tmp1, hmeblktag, tmp1					;\
 	xor	tmp2, hatid, tmp2					;\
-	brz,pn	tmp2, label##3	/* branch on hit */		;\
-	  add	hmeblkpa, HMEBLK_NEXTPA, tmp2				;\
+	brz,pn	tmp2, label##3		/* branch on hit */		;\
+	add	hmeblkpa, HMEBLK_NEXTPA, tmp2				;\
 label##2:								;\
-	ba,pt	%xcc, label##1					;\
-	  ldxa	[tmp2]ASI_MEM, hmeblkpa	/* hmeblk ptr pa */		;\
+	ba,pt	%xcc, label##1						;\
+	ldxa	[tmp2] ASI_MEM, hmeblkpa	/* hmeblk ptr pa */	;\
 label##3:								;\
 	cmp	tmp1, SFMMU_MAX_HME_REGIONS				;\
 	bgeu,pt	%xcc, label##2					;\
-	  add	hmeblkpa, HMEBLK_NEXTPA, tmp2				;\
+	add	hmeblkpa, HMEBLK_NEXTPA, tmp2				;\
 	and	tmp1, BT_ULMASK, tmp2					;\
 	srlx	tmp1, BT_ULSHIFT, tmp1					;\
 	sllx	tmp1, CLONGSHIFT, tmp1					;\
@@ -1996,7 +2012,7 @@ label##3:								;\
 	srlx	tmp1, tmp2, tmp1					;\
 	btst	0x1, tmp1						;\
 	bz,pn	%xcc, label##2					;\
-	  add	hmeblkpa, HMEBLK_NEXTPA, tmp2				;\
+	add	hmeblkpa, HMEBLK_NEXTPA, tmp2				;\
 label##4:
 
 #if ((1 << SFHME_SHIFT) != SFHME_SIZE)
@@ -2018,10 +2034,10 @@ label##4:
  */
 #define	HMEBLK_TO_HMENT(vaddr, hmeblkpa, hmentoff, hmemisc, tmp1, label1)\
 	add	hmeblkpa, HMEBLK_MISC, hmentoff				;\
-	lda	[hmentoff]ASI_MEM, hmemisc 				;\
+	lda	[hmentoff] ASI_MEM, hmemisc				;\
 	andcc	hmemisc, HBLK_SZMASK, %g0				;\
 	bnz,a,pn  %icc, label1		/* if sz != TTE8K branch */	;\
-	  or	%g0, HMEBLK_HME1, hmentoff				;\
+	or	%g0, HMEBLK_HME1, hmentoff				;\
 	srl	vaddr, MMU_PAGESHIFT, tmp1				;\
 	and	tmp1, NHMENTS - 1, tmp1		/* tmp1 = index */	;\
 	sllx	tmp1, SFHME_SHIFT, tmp1					;\
@@ -2048,12 +2064,12 @@ label1:
  *
  */
 #define GET_TTE(tagacc, hatid, tte, hmeblkpa, tsbarea, hmemisc, hmeshift, \
-		 hashno, tmp, label, foundlabel, suspendlabel, exitlabel) \
+	    hashno, tmp, label, foundlabel, suspendlabel, exitlabel)	\
 									;\
 	stn	tagacc, [tsbarea + (TSBMISS_SCRATCH + TSB_TAGACC)]	;\
 	stn	hatid, [tsbarea + (TSBMISS_SCRATCH + TSBMISS_HATID)]	;\
 	HMEHASH_FUNC_ASM(tagacc, hatid, tsbarea, hmeshift, tte,		\
-		hmeblkpa, label##5, hmemisc, tmp)			;\
+	    hmeblkpa, label##5, hmemisc, tmp)			;\
 									;\
 	/*								;\
 	 * tagacc = tagacc						;\
@@ -2075,7 +2091,7 @@ label1:
 	 * tmp  = scratch						;\
 	 */								;\
 	stn	tte, [tsbarea + (TSBMISS_SCRATCH + TSBMISS_HMEBP)]	;\
-	HMEHASH_SEARCH(tte, hmemisc, hatid, hmeblkpa, 	 		\
+	HMEHASH_SEARCH(tte, hmemisc, hatid, hmeblkpa,			;\
 		tsbarea, tagacc, label##1)				;\
 	/*								;\
 	 * tagacc = CLOBBERED						;\
@@ -2084,10 +2100,10 @@ label1:
 	 * tmp = scratch						;\
 	 */								;\
 	cmp	hmeblkpa, HMEBLK_ENDPA					;\
-	bne,pn   %xcc, label##4       /* branch if hmeblk found */    ;\
-	  ldn	[tsbarea + (TSBMISS_SCRATCH + TSB_TAGACC)], tagacc	;\
+	bne,pn   %xcc, label##4		/* branch if hmeblk found */	;\
+	ldn	[tsbarea + (TSBMISS_SCRATCH + TSB_TAGACC)], tagacc	;\
 	ba,pt	%xcc, exitlabel		/* exit if hblk not found */	;\
-	  nop								;\
+	nop								;\
 label##4:								;\
 	/*								;\
 	 * We have found the hmeblk containing the hment.		;\
@@ -2114,8 +2130,8 @@ label##4:								;\
 									;\
 	add	hatid, SFHME_TTE, hatid					;\
 	add	hmeblkpa, hatid, hmeblkpa				;\
-	ldxa	[hmeblkpa]ASI_MEM, tte	/* MMU_READTTE through pa */	;\
-	ldn	[tsbarea + (TSBMISS_SCRATCH + TSBMISS_HMEBP)], hatid 	;\
+	ldxa	[hmeblkpa] ASI_MEM, tte	/* MMU_READTTE through pa */	;\
+	ldn	[tsbarea + (TSBMISS_SCRATCH + TSBMISS_HMEBP)], hatid	;\
 	set	TTE_SUSPEND, hatid					;\
 	TTE_SUSPEND_INT_SHIFT(hatid)					;\
 	btst	tte, hatid						;\
@@ -2126,7 +2142,7 @@ label##4:								;\
 	 * Mapping is suspended, so goto suspend label.			;\
 	 */								;\
 	ba,pt	%xcc, suspendlabel					;\
-	  nop
+	nop
 
 /*
  * GET_SHME_TTE is similar to GET_TTE() except it searches
@@ -2134,7 +2150,7 @@ label##4:								;\
  * If valid tte is found, hmemisc = shctx flag, i.e., shme is
  * either 0 (not part of scd) or 1 (part of scd).
  */
-#define GET_SHME_TTE(tagacc, hatid, tte, hmeblkpa, tsbarea, hmemisc, 	\
+#define GET_SHME_TTE(tagacc, hatid, tte, hmeblkpa, tsbarea, hmemisc,	\
 		hmeshift, hashno, tmp, label, foundlabel,		\
 		suspendlabel, exitlabel)				\
 									;\
@@ -2164,8 +2180,8 @@ label##4:								;\
 	 */								;\
 	stn	tte, [tsbarea + (TSBMISS_SCRATCH + TSBMISS_HMEBP)]	;\
 									;\
-	add     tte, HMEBUCK_NEXTPA, hmeblkpa				;\
-	ldxa    [hmeblkpa]ASI_MEM, hmeblkpa				;\
+	add	tte, HMEBUCK_NEXTPA, hmeblkpa				;\
+	ldxa	[hmeblkpa] ASI_MEM, hmeblkpa				;\
 	HAT_HSEARCH_DBSTAT(hatid, tsbarea, tagacc, tte)			;\
 									;\
 label##8:								;\
@@ -2178,10 +2194,10 @@ label##8:								;\
 	 * tmp = scratch						;\
 	 */								;\
 	cmp	hmeblkpa, HMEBLK_ENDPA					;\
-	bne,pn   %xcc, label##4       /* branch if hmeblk found */    ;\
-	  ldn	[tsbarea + (TSBMISS_SCRATCH + TSB_TAGACC)], tagacc	;\
+	bne,pn	%xcc, label##4		/* branch if hmeblk found */	;\
+	ldn	[tsbarea + (TSBMISS_SCRATCH + TSB_TAGACC)], tagacc	;\
 	ba,pt	%xcc, exitlabel		/* exit if hblk not found */	;\
-	  nop								;\
+	nop								;\
 label##4:								;\
 	/*								;\
 	 * We have found the hmeblk containing the hment.		;\
@@ -2210,15 +2226,15 @@ label##4:								;\
 									;\
 	add	hatid, SFHME_TTE, hatid					;\
 	add	hmeblkpa, hatid, hmeblkpa				;\
-	ldxa	[hmeblkpa]ASI_MEM, tte	/* MMU_READTTE through pa */	;\
+	ldxa	[hmeblkpa] ASI_MEM, tte	/* MMU_READTTE through pa */	;\
 	brlz,pt tte, label##6						;\
-	  nop								;\
+	nop								;\
 	btst	HBLK_SZMASK, hmemisc					;\
 	bnz,a,pt %icc, label##7					;\
-	  ldn	[tsbarea + (TSBMISS_SCRATCH + TSBMISS_HMEBP)], hatid 	;\
+	ldn	[tsbarea + (TSBMISS_SCRATCH + TSBMISS_HMEBP)], hatid	;\
 									;\
 	/*								;\
- 	 * We found an invalid 8K tte in shme.				;\
+	 * We found an invalid 8K tte in shme.				;\
 	 * it may not belong to shme's region since			;\
 	 * region size/alignment granularity is 8K but different	;\
 	 * regions don't share hmeblks. Continue the search.		;\
@@ -2227,12 +2243,12 @@ label##4:								;\
 	ldn	[tsbarea + (TSBMISS_SCRATCH + TSBMISS_HATID)], hatid	;\
 	srlx	tagacc, hmeshift, tte					;\
 	add	hmeblkpa, HMEBLK_NEXTPA, hmeblkpa			;\
-	ldxa	[hmeblkpa]ASI_MEM, hmeblkpa				;\
+	ldxa	[hmeblkpa] ASI_MEM, hmeblkpa				;\
 	MAKE_HASHTAG(tte, hatid, hmeshift, hashno, hmemisc)		;\
 	ba,a,pt	%xcc, label##8					;\
 label##6:								;\
 	GET_SCDSHMERMAP(tsbarea, hmeblkpa, hatid, hmemisc)		;\
-	ldn	[tsbarea + (TSBMISS_SCRATCH + TSBMISS_HMEBP)], hatid 	;\
+	ldn	[tsbarea + (TSBMISS_SCRATCH + TSBMISS_HMEBP)], hatid	;\
 label##7:								;\
 	set	TTE_SUSPEND, hatid					;\
 	TTE_SUSPEND_INT_SHIFT(hatid)					;\
@@ -2244,7 +2260,7 @@ label##7:								;\
 	 * Mapping is suspended, so goto suspend label.			;\
 	 */								;\
 	ba,pt	%xcc, suspendlabel					;\
-	  nop
+	nop
 
 	/*
 	 * KERNEL PROTECTION HANDLER
@@ -2254,7 +2270,7 @@ label##7:								;\
 	 * g3 - g7 = scratch registers
 	 *
 	 * Note: This function is patched at runtime for performance reasons.
-	 * 	 Any changes here require sfmmu_patch_ktsb fixed.
+	 *	 Any changes here require sfmmu_patch_ktsb fixed.
 	 */
 	ENTRY_NP(sfmmu_kprot_trap)
 	mov	%g2, %g7		! TSB pointer macro clobbers tagacc
@@ -2277,10 +2293,10 @@ sfmmu_kprot_patch_ktsb4m_szcode:
 	GET_TSBE_POINTER(MMU_PAGESHIFT4M, %g3, %g7, %g6, %g5)
 	! %g3 = 4M tsb entry pointer, as TSB miss handler expects
 
-        CPU_TSBMISS_AREA(%g6, %g7)
-        HAT_PERCPU_STAT16(%g6, TSBMISS_KPROTS, %g7)
+	CPU_TSBMISS_AREA(%g6, %g7)
+	HAT_PERCPU_STAT16(%g6, TSBMISS_KPROTS, %g7)
 	ba,pt	%xcc, sfmmu_tsb_miss_tt
-	  nop
+	nop
 
 	/*
 	 * USER PROTECTION HANDLER
@@ -2297,7 +2313,7 @@ sfmmu_kprot_patch_ktsb4m_szcode:
 
 	GET_UTSBREG(SCRATCHPAD_UTSBREG2, %g3)	/* get 2nd utsbreg */
 	brlz,pt %g3, 9f				/* check for 2nd TSB */
-	  nop
+	nop
 
 	GET_2ND_TSBE_PTR(%g2, %g3, %g4, %g5)
 	/* %g3 = second TSB entry ptr now, %g2 preserved */
@@ -2307,13 +2323,13 @@ sfmmu_kprot_patch_ktsb4m_szcode:
 	/* g1 = first TSB entry ptr */
 	GET_UTSBREG(SCRATCHPAD_UTSBREG2, %g3)
 	brlz,pt %g3, 9f			/* check for 2nd TSB */
-	  nop
+	nop
 
 	GET_2ND_TSBE_PTR(%g2, %g3, %g4, %g5)
 	/* %g3 = second TSB entry ptr now, %g2 preserved */
 #else /* UTSB_PHYS */
 	brgez,pt %g1, 9f		/* check for 2nd TSB */
-	  mov	-1, %g3			/* set second tsbe ptr to -1 */
+	mov	-1, %g3			/* set second tsbe ptr to -1 */
 
 	mov	%g2, %g7
 	GET_2ND_TSBE_PTR(%g7, %g1, %g3, %g4, %g5, sfmmu_uprot)
@@ -2326,10 +2342,10 @@ sfmmu_kprot_patch_ktsb4m_szcode:
 	CPU_TSBMISS_AREA(%g6, %g7)
 	HAT_PERCPU_STAT16(%g6, TSBMISS_UPROTS, %g7)
 	ba,pt	%xcc, sfmmu_tsb_miss_tt		/* branch TSB miss handler */
-	  nop
+	nop
 
 	/*
-	 * Kernel 8K page iTLB miss.  We also get here if we took a
+	 * Kernel 8K page iTLB miss. We also get here if we took a
 	 * fast instruction access mmu miss trap while running in
 	 * invalid context.
 	 *
@@ -2338,10 +2354,10 @@ sfmmu_kprot_patch_ktsb4m_szcode:
 	 * %g3 = faulting context id (used)
 	 * %g7 = TSB tag to match (used)
 	 */
-	.align	64
+	.balign	64
 	ALTENTRY(sfmmu_kitlb_miss)
 	brnz,pn %g3, tsb_tl0_noctxt
-	  nop
+	nop
 
 	/* kernel miss */
 	/* get kernel tsb pointer */
@@ -2357,39 +2373,39 @@ iktsb:	sllx	%g2, 64-(TAGACC_SHIFT + TSB_START_SIZE + RUNTIME_PATCH), %g1
 	ldda	[%g1]RUNTIME_PATCH, %g4		! %g4 = tag, %g5 = data
 	cmp	%g4, %g7
 	bne,pn	%xcc, iktsb4mbase		! check 4m ktsb
-	  srlx    %g2, MMU_PAGESHIFT4M, %g3	! use 4m virt-page as TSB index
+	srlx	%g2, MMU_PAGESHIFT4M, %g3	! use 4m virt-page as TSB index
 
 	andcc %g5, TTE_EXECPRM_INT, %g0		! check exec bit
 	bz,pn	%icc, exec_fault
-	  nop
+	nop
 	TT_TRACE(trace_tsbhit)			! 2 instr traptrace
 	ITLB_STUFF(%g5, %g1, %g2, %g3, %g4)
 	retry
 
 iktsb4mbase:
-        RUNTIME_PATCH_SETX(%g4, %g6)
-        /* %g4 = contents of ktsb4m_base or ktsb4m_pbase */
+	RUNTIME_PATCH_SETX(%g4, %g6)
+	/* %g4 = contents of ktsb4m_base or ktsb4m_pbase */
 iktsb4m:
-	sllx    %g3, 64-(TSB_START_SIZE + RUNTIME_PATCH), %g3
-        srlx    %g3, 64-(TSB_START_SIZE + TSB_ENTRY_SHIFT + RUNTIME_PATCH), %g3
+	sllx	%g3, 64-(TSB_START_SIZE + RUNTIME_PATCH), %g3
+	srlx	%g3, 64-(TSB_START_SIZE + TSB_ENTRY_SHIFT + RUNTIME_PATCH), %g3
 	add	%g4, %g3, %g3			! %g3 = 4m tsbe ptr
 	ldda	[%g3]RUNTIME_PATCH, %g4		! %g4 = tag, %g5 = data
 	cmp	%g4, %g7
 	bne,pn	%xcc, sfmmu_tsb_miss_tt		! branch on miss
-	  andcc %g5, TTE_EXECPRM_INT, %g0		! check exec bit
+	andcc %g5, TTE_EXECPRM_INT, %g0		! check exec bit
 	bz,pn	%icc, exec_fault
-	  nop
+	nop
 	TT_TRACE(trace_tsbhit)			! 2 instr traptrace
 	ITLB_STUFF(%g5, %g1, %g2, %g3, %g4)
 	retry
 
 	/*
-	 * Kernel dTLB miss.  We also get here if we took a fast data
+	 * Kernel dTLB miss. We also get here if we took a fast data
 	 * access mmu miss trap while running in invalid context.
 	 *
 	 * Note: for now we store kpm TTEs in the kernel TSB as usual.
 	 *	We select the TSB miss handler to branch to depending on
-	 *	the virtual address of the access.  In the future it may
+	 *	the virtual address of the access. In the future it may
 	 *	be desirable to separate kpm TTEs into their own TSB,
 	 *	in which case all that needs to be done is to set
 	 *	kpm_tsbbase/kpm_tsbsz to point to the new TSB and branch
@@ -2399,10 +2415,10 @@ iktsb4m:
 	 * %g2 = tag access register (used)
 	 * %g3 = faulting context id (used)
 	 */
-	.align	64
+	.balign	64
 	ALTENTRY(sfmmu_kdtlb_miss)
 	brnz,pn	%g3, tsb_tl0_noctxt		/* invalid context? */
-	  nop
+	nop
 
 	/* Gather some stats for kpm misses in the TLB. */
 	/* KPM_TLBMISS_STAT_INCR(tagacc, val, tsbma, tmp1, label) */
@@ -2431,7 +2447,7 @@ dktsb:	sllx	%g2, 64-(TAGACC_SHIFT + TSB_START_SIZE + RUNTIME_PATCH), %g1
 	srlx	%g2, TAG_VALO_SHIFT, %g6	! make tag to compare
 	cmp	%g6, %g4			! compare tag
 	bne,pn	%xcc, dktsb4m_kpmcheck_small
-	  add	%g7, %g1, %g1			/* form tsb ptr */
+	add	%g7, %g1, %g1			/* form tsb ptr */
 	TT_TRACE(trace_tsbhit)
 	DTLB_STUFF(%g5, %g1, %g2, %g3, %g4)
 	/* trapstat expects tte in %g5 */
@@ -2440,7 +2456,7 @@ dktsb:	sllx	%g2, 64-(TAGACC_SHIFT + TSB_START_SIZE + RUNTIME_PATCH), %g1
 	/*
 	 * If kpm is using large pages, the following instruction needs
 	 * to be patched to a nop at boot time (by sfmmu_kpm_patch_tsbm)
-	 * so that we will probe the 4M TSB regardless of the VA.  In
+	 * so that we will probe the 4M TSB regardless of the VA. In
 	 * the case kpm is using small pages, we know no large kernel
 	 * mappings are located above 0x80000000.00000000 so we skip the
 	 * probe as an optimization.
@@ -2481,7 +2497,7 @@ dktsb4m:
 
 dktsb4m_tsbmiss:
 	bne,pn	%xcc, dktsb4m_kpmcheck
-	  add	%g7, %g3, %g3			! %g3 = kernel second TSB ptr
+	add	%g7, %g3, %g3			! %g3 = kernel second TSB ptr
 	TT_TRACE(trace_tsbhit)
 	/* we don't check TTE size here since we assume 4M TSB is separate */
 	DTLB_STUFF(%g5, %g1, %g2, %g3, %g4)
@@ -2490,10 +2506,10 @@ dktsb4m_tsbmiss:
 
 	/*
 	 * So, we failed to find a valid TTE to match the faulting
-	 * address in either TSB.  There are a few cases that could land
+	 * address in either TSB. There are a few cases that could land
 	 * us here:
 	 *
-	 * 1) This is a kernel VA below 0x80000000.00000000.  We branch
+	 * 1) This is a kernel VA below 0x80000000.00000000. We branch
 	 *    to sfmmu_tsb_miss_tt to handle the miss.
 	 * 2) We missed on a kpm VA, and we didn't find the mapping in the
 	 *    4M TSB.  Let segkpm handle it.
@@ -2510,9 +2526,9 @@ dktsb4m_tsbmiss:
 dktsb4m_kpmcheck:
 	cmp	%g2, %g0
 	bl,pn	%xcc, sfmmu_kpm_dtsb_miss
-	  nop
+	nop
 	ba,a,pt	%icc, sfmmu_tsb_miss_tt
-	  nop
+	nop
 
 #ifdef sun4v
 	/*
@@ -2526,13 +2542,13 @@ dktsb4m_kpmcheck:
 	 * g3 - g6 = scratch registers
 	 * g7 = TSB tag to match
 	 */
-	.align	64
+	.balign	64
 	ALTENTRY(sfmmu_uitlb_fastpath)
 
 	PROBE_1ST_ITSB(%g1, %g7, uitlb_fast_8k_probefail)
 	/* g4 - g5 = clobbered by PROBE_1ST_ITSB */
 	ba,pn	%xcc, sfmmu_tsb_miss_tt
-	  mov	-1, %g3
+	mov	-1, %g3
 
 	/*
 	 * User data miss w/ single TSB.
@@ -2545,19 +2561,19 @@ dktsb4m_kpmcheck:
 	 * g3 - g6 = scratch registers
 	 * g7 = TSB tag to match
 	 */
-	.align 64
+	.balign 64
 	ALTENTRY(sfmmu_udtlb_fastpath)
 
 	PROBE_1ST_DTSB(%g1, %g7, udtlb_fast_8k_probefail)
 	/* g4 - g5 = clobbered by PROBE_1ST_DTSB */
 	ba,pn	%xcc, sfmmu_tsb_miss_tt
-	  mov	-1, %g3
+	mov	-1, %g3
 
 	/*
 	 * User instruction miss w/ multiple TSBs (sun4v).
 	 * The first probe covers 8K, 64K, and 512K page sizes,
 	 * because 64K and 512K mappings are replicated off 8K
-	 * pointer.  Second probe covers 4M page size only.
+	 * pointer. Second probe covers 4M page size only.
 	 *
 	 * Just like sfmmu_udtlb_slowpath, except:
 	 *   o Uses ASI_ITLB_IN
@@ -2569,7 +2585,7 @@ dktsb4m_kpmcheck:
 	 * g3 - g6 = scratch registers
 	 * g7 = TSB tag to match
 	 */
-	.align	64
+	.balign	64
 	ALTENTRY(sfmmu_uitlb_slowpath)
 
 	GET_1ST_TSBE_PTR(%g2, %g1, %g4, %g5)
@@ -2588,7 +2604,7 @@ dktsb4m_kpmcheck:
 	 * User instruction miss w/ multiple TSBs (sun4u).
 	 * The first probe covers 8K, 64K, and 512K page sizes,
 	 * because 64K and 512K mappings are replicated off 8K
-	 * pointer.  Probe of 1st TSB has already been done prior to entry
+	 * pointer. Probe of 1st TSB has already been done prior to entry
 	 * into this routine. For the UTSB_PHYS case we probe up to 3
 	 * valid other TSBs in the following order:
 	 * 1) shared TSB for 4M-256M pages
@@ -2608,30 +2624,30 @@ dktsb4m_kpmcheck:
 	 * g4 - g6 = scratch registers
 	 * g7 = TSB tag to match
 	 */
-	.align	64
+	.balign	64
 	ALTENTRY(sfmmu_uitlb_slowpath)
 
 #ifdef UTSB_PHYS
 
-       GET_UTSBREG(SCRATCHPAD_UTSBREG4, %g6)
-        brlz,pt %g6, 1f
-          nop
-        GET_4TH_TSBE_PTR(%g2, %g6, %g4, %g5)
-        PROBE_4TH_ITSB(%g6, %g7, uitlb_4m_scd_probefail)
+	GET_UTSBREG(SCRATCHPAD_UTSBREG4, %g6)
+	brlz,pt	%g6, 1f
+	nop
+	GET_4TH_TSBE_PTR(%g2, %g6, %g4, %g5)
+	PROBE_4TH_ITSB(%g6, %g7, uitlb_4m_scd_probefail)
 1:
-        GET_UTSBREG(SCRATCHPAD_UTSBREG2, %g3)
-        brlz,pt %g3, 2f
-          nop
-        GET_2ND_TSBE_PTR(%g2, %g3, %g4, %g5)
-        PROBE_2ND_ITSB(%g3, %g7, uitlb_4m_probefail)
+	GET_UTSBREG(SCRATCHPAD_UTSBREG2, %g3)
+	brlz,pt	%g3, 2f
+	nop
+	GET_2ND_TSBE_PTR(%g2, %g3, %g4, %g5)
+	PROBE_2ND_ITSB(%g3, %g7, uitlb_4m_probefail)
 2:
-        GET_UTSBREG(SCRATCHPAD_UTSBREG3, %g6)
-        brlz,pt %g6, sfmmu_tsb_miss_tt
-          nop
-        GET_3RD_TSBE_PTR(%g2, %g6, %g4, %g5)
-        PROBE_3RD_ITSB(%g6, %g7, uitlb_8K_scd_probefail)
-        ba,pn   %xcc, sfmmu_tsb_miss_tt
-          nop
+	GET_UTSBREG(SCRATCHPAD_UTSBREG3, %g6)
+	brlz,pt	%g6, sfmmu_tsb_miss_tt
+	nop
+	GET_3RD_TSBE_PTR(%g2, %g6, %g4, %g5)
+	PROBE_3RD_ITSB(%g6, %g7, uitlb_8K_scd_probefail)
+	ba,pn	%xcc, sfmmu_tsb_miss_tt
+	nop
 
 #else /* UTSB_PHYS */
 	mov	%g1, %g3	/* save tsb8k reg in %g3 */
@@ -2640,9 +2656,9 @@ dktsb4m_kpmcheck:
 	mov	%g2, %g6	/* GET_2ND_TSBE_PTR clobbers tagacc */
 	mov	%g3, %g7	/* copy tsb8k reg in %g7 */
 	GET_2ND_TSBE_PTR(%g6, %g7, %g3, %g4, %g5, sfmmu_uitlb)
-       /* g1 = first TSB pointer, g3 = second TSB pointer */
-        srlx    %g2, TAG_VALO_SHIFT, %g7
-        PROBE_2ND_ITSB(%g3, %g7, isynth)
+	/* g1 = first TSB pointer, g3 = second TSB pointer */
+	srlx	%g2, TAG_VALO_SHIFT, %g7
+	PROBE_2ND_ITSB(%g3, %g7, isynth)
 	ba,pn	%xcc, sfmmu_tsb_miss_tt
 	  nop
 
@@ -2651,39 +2667,39 @@ dktsb4m_kpmcheck:
 
 #if defined(sun4u) && defined(UTSB_PHYS)
 
-        /*
+	/*
 	 * We come here for ism predict DTLB_MISS case or if
 	 * if probe in first TSB failed.
-         */
+	 */
 
-        .align 64
-        ALTENTRY(sfmmu_udtlb_slowpath_noismpred)
+	.balign 64
+	ALTENTRY(sfmmu_udtlb_slowpath_noismpred)
 
 	/*
-         * g1 = tsb8k pointer register
-         * g2 = tag access register
-         * g4 - %g6 = scratch registers
-         * g7 = TSB tag to match
+	 * g1 = tsb8k pointer register
+	 * g2 = tag access register
+	 * g4 - %g6 = scratch registers
+	 * g7 = TSB tag to match
 	 */
 
 	/*
 	 * ISM non-predict probe order
-         * probe 1ST_TSB (8K index)
-         * probe 2ND_TSB (4M index)
-         * probe 4TH_TSB (4M index)
-         * probe 3RD_TSB (8K index)
+	 * probe 1ST_TSB (8K index)
+	 * probe 2ND_TSB (4M index)
+	 * probe 4TH_TSB (4M index)
+	 * probe 3RD_TSB (8K index)
 	 *
 	 * We already probed first TSB in DTLB_MISS handler.
 	 */
 
-        /*
-         * Private 2ND TSB 4M-256 pages
-         */
+	/*
+	 * Private 2ND TSB 4M-256 pages
+	 */
 	GET_UTSBREG(SCRATCHPAD_UTSBREG2, %g3)
 	brlz,pt %g3, 1f
-	  nop
-        GET_2ND_TSBE_PTR(%g2, %g3, %g4, %g5)
-        PROBE_2ND_DTSB(%g3, %g7, udtlb_4m_probefail)
+	nop
+	GET_2ND_TSBE_PTR(%g2, %g3, %g4, %g5)
+	PROBE_2ND_DTSB(%g3, %g7, udtlb_4m_probefail)
 
 	/*
 	 * Shared Context 4TH TSB 4M-256 pages
@@ -2691,30 +2707,30 @@ dktsb4m_kpmcheck:
 1:
 	GET_UTSBREG(SCRATCHPAD_UTSBREG4, %g6)
 	brlz,pt %g6, 2f
-	  nop
-        GET_4TH_TSBE_PTR(%g2, %g6, %g4, %g5)
-        PROBE_4TH_DTSB(%g6, %g7, udtlb_4m_shctx_probefail)
+	nop
+	GET_4TH_TSBE_PTR(%g2, %g6, %g4, %g5)
+	PROBE_4TH_DTSB(%g6, %g7, udtlb_4m_shctx_probefail)
 
-        /*
-         * Shared Context 3RD TSB 8K-512K pages
-         */
+	/*
+	 * Shared Context 3RD TSB 8K-512K pages
+	 */
 2:
 	GET_UTSBREG(SCRATCHPAD_UTSBREG3, %g6)
 	brlz,pt %g6, sfmmu_tsb_miss_tt
-	  nop
-        GET_3RD_TSBE_PTR(%g2, %g6, %g4, %g5)
-        PROBE_3RD_DTSB(%g6, %g7, udtlb_8k_shctx_probefail)
+	nop
+	GET_3RD_TSBE_PTR(%g2, %g6, %g4, %g5)
+	PROBE_3RD_DTSB(%g6, %g7, udtlb_8k_shctx_probefail)
 	ba,pn	%xcc, sfmmu_tsb_miss_tt
-	  nop
+	nop
 
-	.align 64
-        ALTENTRY(sfmmu_udtlb_slowpath_ismpred)
+	.balign 64
+	ALTENTRY(sfmmu_udtlb_slowpath_ismpred)
 
 	/*
-         * g1 = tsb8k pointer register
-         * g2 = tag access register
-         * g4 - g6 = scratch registers
-         * g7 = TSB tag to match
+	 * g1 = tsb8k pointer register
+	 * g2 = tag access register
+	 * g4 - g6 = scratch registers
+	 * g7 = TSB tag to match
 	 */
 
 	/*
@@ -2723,49 +2739,50 @@ dktsb4m_kpmcheck:
 	 * probe 2ND_TSB (4M index)
 	 * probe 1ST_TSB (8K index)
 	 * probe 3RD_TSB (8K index)
+	 */
 
 	/*
 	 * Shared Context 4TH TSB 4M-256 pages
 	 */
 	GET_UTSBREG(SCRATCHPAD_UTSBREG4, %g6)
-	brlz,pt %g6, 4f
-	  nop
-        GET_4TH_TSBE_PTR(%g2, %g6, %g4, %g5)
-        PROBE_4TH_DTSB(%g6, %g7, udtlb_4m_shctx_probefail2)
+	brlz,pt	%g6, 4f
+	nop
+	GET_4TH_TSBE_PTR(%g2, %g6, %g4, %g5)
+	PROBE_4TH_DTSB(%g6, %g7, udtlb_4m_shctx_probefail2)
 
-        /*
-         * Private 2ND TSB 4M-256 pages
-         */
+	/*
+	 * Private 2ND TSB 4M-256 pages
+	 */
 4:
 	GET_UTSBREG(SCRATCHPAD_UTSBREG2, %g3)
 	brlz,pt %g3, 5f
-	  nop
-        GET_2ND_TSBE_PTR(%g2, %g3, %g4, %g5)
-        PROBE_2ND_DTSB(%g3, %g7, udtlb_4m_probefail2)
+	nop
+	GET_2ND_TSBE_PTR(%g2, %g3, %g4, %g5)
+	PROBE_2ND_DTSB(%g3, %g7, udtlb_4m_probefail2)
 
 5:
-        PROBE_1ST_DTSB(%g1, %g7, udtlb_8k_first_probefail2)
+	PROBE_1ST_DTSB(%g1, %g7, udtlb_8k_first_probefail2)
 
-        /*
-         * Shared Context 3RD TSB 8K-512K pages
-         */
+	/*
+	 * Shared Context 3RD TSB 8K-512K pages
+	 */
 	GET_UTSBREG(SCRATCHPAD_UTSBREG3, %g6)
-	brlz,pt %g6, 6f
-	  nop
-        GET_3RD_TSBE_PTR(%g2, %g6, %g4, %g5)
-        PROBE_3RD_DTSB(%g6, %g7, udtlb_8k_shctx_probefail2)
+	brlz,pt	%g6, 6f
+	nop
+	GET_3RD_TSBE_PTR(%g2, %g6, %g4, %g5)
+	PROBE_3RD_DTSB(%g6, %g7, udtlb_8k_shctx_probefail2)
 6:
 	ba,pn	%xcc, sfmmu_tsb_miss_tt /* ISM Predict and ISM non-predict path */
-	  nop
+	nop
 
 #else /* sun4u && UTSB_PHYS */
 
-       .align 64
-        ALTENTRY(sfmmu_udtlb_slowpath)
+	.balign 64
+	ALTENTRY(sfmmu_udtlb_slowpath)
 
 	srax	%g2, PREDISM_BASESHIFT, %g6	/* g6 > 0 : ISM predicted */
 	brgz,pn %g6, udtlb_miss_probesecond	/* check for ISM */
-	  mov	%g1, %g3
+	mov	%g1, %g3
 
 udtlb_miss_probefirst:
 	/*
@@ -2786,7 +2803,7 @@ udtlb_miss_probefirst:
 	 *   g3 = second TSB ptr IFF ISM pred. (else don't care)
 	 */
 	brgz,pn	%g6, sfmmu_tsb_miss_tt
-	  nop
+	nop
 #else /* sun4v */
 	mov	%g1, %g4
 	GET_1ST_TSBE_PTR(%g4, %g1, %g5, sfmmu_udtlb)
@@ -2799,8 +2816,8 @@ udtlb_miss_probefirst:
 	 *   g3 = second TSB ptr IFF ISM pred. (else don't care)
 	 */
 	brgz,pn	%g6, sfmmu_tsb_miss_tt
-	  nop
-	ldxa	[%g0]ASI_DMMU_TSB_8K, %g3
+	nop
+	ldxa	[%g0] ASI_DMMU_TSB_8K, %g3
 	/* fall through in 8K->4M probe order */
 #endif /* sun4v */
 
@@ -2822,14 +2839,14 @@ udtlb_miss_probesecond:
 	GET_2ND_TSBE_PTR(%g2, %g7, %g3, %g4, %g5, sfmmu_udtlb)
 	/* %g2 clobbered, %g3 =second tsbe ptr */
 	mov	MMU_TAG_ACCESS, %g2
-	ldxa	[%g2]ASI_DMMU, %g2
+	ldxa	[%g2] ASI_DMMU, %g2
 #endif /* sun4v */
 
 	srlx	%g2, TAG_VALO_SHIFT, %g7
 	PROBE_2ND_DTSB(%g3, %g7, udtlb_4m_probefail)
 	/* g4 - g5 = clobbered here; %g7 still vpg_4m at this point */
 	brgz,pn	%g6, udtlb_miss_probefirst
-	  nop
+	nop
 
 	/* fall through to sfmmu_tsb_miss_tt */
 #endif /* sun4u && UTSB_PHYS */
@@ -2856,7 +2873,7 @@ udtlb_miss_probesecond:
 	rdpr	%tl, %g7
 	cmp	%g7, 1
 	ble,pt	%xcc, 0f
-	  sethi	%hi(KERNELBASE), %g6
+	sethi	%hi(KERNELBASE), %g6
 	rdpr	%tpc, %g7
 	or	%g6, %lo(KERNELBASE), %g6
 	cmp	%g7, %g6
@@ -2875,20 +2892,20 @@ udtlb_miss_probesecond:
 
 	sllx	%g2, TAGACC_CTX_LSHIFT, %g3
 	brz,a,pn %g3, 1f			/* skip ahead if kernel */
-	  ldn	[%g6 + TSBMISS_KHATID], %g7
+	ldn	[%g6 + TSBMISS_KHATID], %g7
 	srlx	%g3, TAGACC_CTX_LSHIFT, %g3	/* g3 = ctxnum */
-	ldn	[%g6 + TSBMISS_UHATID], %g7     /* g7 = hatid */
+	ldn	[%g6 + TSBMISS_UHATID], %g7	/* g7 = hatid */
 
 	HAT_PERCPU_STAT32(%g6, TSBMISS_UTSBMISS, %g5)
 
 	cmp	%g3, INVALID_CONTEXT
 	be,pn	%icc, tsb_tl0_noctxt		/* no ctx miss exception */
-	  stn	%g7, [%g6 + (TSBMISS_SCRATCH + TSBMISS_HATID)]
+	stn	%g7, [%g6 + (TSBMISS_SCRATCH + TSBMISS_HATID)]
 
 #if defined(sun4v) || defined(UTSB_PHYS)
-        ldub    [%g6 + TSBMISS_URTTEFLAGS], %g7	/* clear ctx1 flag set from */
-        andn    %g7, HAT_CHKCTX1_FLAG, %g7	/* the previous tsb miss    */
-        stub    %g7, [%g6 + TSBMISS_URTTEFLAGS]
+	ldub	[%g6 + TSBMISS_URTTEFLAGS], %g7	/* clear ctx1 flag set from */
+	andn	%g7, HAT_CHKCTX1_FLAG, %g7	/* the previous tsb miss */
+	stub	%g7, [%g6 + TSBMISS_URTTEFLAGS]
 #endif /* sun4v || UTSB_PHYS */
 
 	ISM_CHECK(%g2, %g6, %g3, %g4, %g5, %g7, %g1, tsb_l1, tsb_ism)
@@ -2900,7 +2917,7 @@ udtlb_miss_probesecond:
 	 */
 
 	ba,pt	%icc, 2f
-	  ldn	[%g6 + (TSBMISS_SCRATCH + TSBMISS_HATID)], %g7
+	ldn	[%g6 + (TSBMISS_SCRATCH + TSBMISS_HATID)], %g7
 
 1:
 	HAT_PERCPU_STAT32(%g6, TSBMISS_KTSBMISS, %g5)
@@ -2917,7 +2934,7 @@ udtlb_miss_probesecond:
 tsb_512K:
 	sllx	%g2, TAGACC_CTX_LSHIFT, %g5
 	brz,pn	%g5, 3f
-	  ldub	[%g6 + TSBMISS_UTTEFLAGS], %g4
+	ldub	[%g6 + TSBMISS_UTTEFLAGS], %g4
 	and	%g4, HAT_512K_FLAG, %g5
 
 	/*
@@ -2925,14 +2942,14 @@ tsb_512K:
 	 * a 512k page in the hash list but have not set the HAT_512K_FLAG
 	 * flag yet, so we will skip searching the 512k hash list.
 	 * In this case we will end up in pagefault which will find
-	 * the mapping and return.  So, in this instance we will end up
+	 * the mapping and return. So, in this instance we will end up
 	 * spending a bit more time resolving this TSB miss, but it can
 	 * only happen once per process and even then, the chances of that
 	 * are very small, so it's not worth the extra overhead it would
 	 * take to close this window.
 	 */
 	brz,pn	%g5, tsb_4M
-	  nop
+	nop
 3:
 	/*
 	 * 512K hash
@@ -2946,10 +2963,10 @@ tsb_512K:
 tsb_4M:
 	sllx	%g2, TAGACC_CTX_LSHIFT, %g5
 	brz,pn	%g5, 4f
-	  ldub	[%g6 + TSBMISS_UTTEFLAGS], %g4
+	ldub	[%g6 + TSBMISS_UTTEFLAGS], %g4
 	and	%g4, HAT_4M_FLAG, %g5
 	brz,pn	%g5, tsb_32M
-	  nop
+	nop
 4:
 	/*
 	 * 4M hash
@@ -2963,14 +2980,14 @@ tsb_4M:
 tsb_32M:
 	sllx	%g2, TAGACC_CTX_LSHIFT, %g5
 #ifdef	sun4v
-        brz,pn	%g5, 6f
+	brz,pn	%g5, 6f
 #else
-	brz,pn  %g5, tsb_pagefault
+	brz,pn	%g5, tsb_pagefault
 #endif
 	  ldub	[%g6 + TSBMISS_UTTEFLAGS], %g4
 	and	%g4, HAT_32M_FLAG, %g5
 	brz,pn	%g5, tsb_256M
-	  nop
+	nop
 5:
 	/*
 	 * 32M hash
@@ -2982,21 +2999,21 @@ tsb_32M:
 	/* NOT REACHED */
 
 #if defined(sun4u) && !defined(UTSB_PHYS)
-#define tsb_shme        tsb_pagefault
+#define tsb_shme tsb_pagefault
 #endif
 tsb_256M:
 	ldub	[%g6 + TSBMISS_UTTEFLAGS], %g4
 	and	%g4, HAT_256M_FLAG, %g5
 	brz,pn	%g5, tsb_shme
-	  nop
+	nop
 6:
 	/*
 	 * 256M hash
 	 */
 
 	GET_TTE(%g2, %g7, %g3, %g4, %g6, %g1,
-	    MMU_PAGESHIFT256M, TTE256M, %g5, tsb_l256M, tsb_checktte,
-	    sfmmu_suspend_tl, tsb_shme)
+		MMU_PAGESHIFT256M, TTE256M, %g5, tsb_l256M, tsb_checktte,
+		sfmmu_suspend_tl, tsb_shme)
 	/* NOT REACHED */
 
 tsb_checktte:
@@ -3009,12 +3026,12 @@ tsb_checktte:
 	 * g7 = hatid
 	 */
 	brlz,a,pt %g3, tsb_validtte
-	  rdpr	%tt, %g7
+	rdpr	%tt, %g7
 
 #if defined(sun4u) && !defined(UTSB_PHYS)
 #undef tsb_shme
-	ba      tsb_pagefault
-	  nop
+	ba	tsb_pagefault
+		nop
 #else /* sun4u && !UTSB_PHYS */
 
 tsb_shme:
@@ -3024,10 +3041,10 @@ tsb_shme:
 	 */
 	sllx	%g2, TAGACC_CTX_LSHIFT, %g5
 	brz,pn	%g5, tsb_pagefault
-	  nop
+	nop
 	ldx	[%g6 + TSBMISS_SHARED_UHATID], %g7	/* g7 = srdp */
 	brz,pn	%g7, tsb_pagefault
-	  nop
+	nop
 
 	GET_SHME_TTE(%g2, %g7, %g3, %g4, %g6, %g1,
 		MMU_PAGESHIFT64K, TTE64K, %g5, tsb_shme_l8K, tsb_shme_checktte,
@@ -3038,7 +3055,7 @@ tsb_shme_512K:
 	ldub	[%g6 + TSBMISS_URTTEFLAGS], %g4
 	and	%g4, HAT_512K_FLAG, %g5
 	brz,pn	%g5, tsb_shme_4M
-	  nop
+	nop
 
 	/*
 	 * 512K hash
@@ -3053,7 +3070,7 @@ tsb_shme_4M:
 	ldub	[%g6 + TSBMISS_URTTEFLAGS], %g4
 	and	%g4, HAT_4M_FLAG, %g5
 	brz,pn	%g5, tsb_shme_32M
-	  nop
+	nop
 4:
 	/*
 	 * 4M hash
@@ -3067,7 +3084,7 @@ tsb_shme_32M:
 	ldub	[%g6 + TSBMISS_URTTEFLAGS], %g4
 	and	%g4, HAT_32M_FLAG, %g5
 	brz,pn	%g5, tsb_shme_256M
-	  nop
+	nop
 
 	/*
 	 * 32M hash
@@ -3082,15 +3099,15 @@ tsb_shme_256M:
 	ldub	[%g6 + TSBMISS_URTTEFLAGS], %g4
 	and	%g4, HAT_256M_FLAG, %g5
 	brz,pn	%g5, tsb_pagefault
-	  nop
+	nop
 
 	/*
 	 * 256M hash
 	 */
 
 	GET_SHME_TTE(%g2, %g7, %g3, %g4, %g6, %g1,
-	    MMU_PAGESHIFT256M, TTE256M, %g5, tsb_shme_l256M, tsb_shme_checktte,
-	    sfmmu_suspend_tl, tsb_pagefault)
+		MMU_PAGESHIFT256M, TTE256M, %g5, tsb_shme_l256M, tsb_shme_checktte,
+		sfmmu_suspend_tl, tsb_pagefault)
 	/* NOT REACHED */
 
 tsb_shme_checktte:
@@ -3106,10 +3123,10 @@ tsb_shme_checktte:
 	 */
 
 	brz,pt  %g1, tsb_validtte
-	  nop
-	ldub    [%g6 + TSBMISS_URTTEFLAGS], %g1
-	  or	%g1, HAT_CHKCTX1_FLAG, %g1
-	stub    %g1, [%g6 + TSBMISS_URTTEFLAGS]
+	nop
+	ldub	[%g6 + TSBMISS_URTTEFLAGS], %g1
+	or	%g1, HAT_CHKCTX1_FLAG, %g1
+	stub	%g1, [%g6 + TSBMISS_URTTEFLAGS]
 
 	SAVE_CTX1(%g7, %g2, %g1, tsb_shmel)
 #endif /* sun4u && !UTSB_PHYS */
@@ -3123,22 +3140,22 @@ tsb_validtte:
 	 */
 
 	/*
-	 * Set ref/mod bits if this is a prot trap.  Usually, it isn't.
+	 * Set ref/mod bits if this is a prot trap. Usually, it isn't.
 	 */
 	cmp	%g7, FAST_PROT_TT
 	bne,pt	%icc, 4f
-	  nop
+	nop
 
 	TTE_SET_REFMOD_ML(%g3, %g4, %g6, %g7, %g5, tsb_lset_refmod,
-	    tsb_protfault)
+		tsb_protfault)
 
 	GET_MMU_D_TTARGET(%g2, %g7)		/* %g2 = ttarget */
 #ifdef sun4v
 	MMU_FAULT_STATUS_AREA(%g7)
 	ldx	[%g7 + MMFSA_D_ADDR], %g5	/* load fault addr for later */
 #else /* sun4v */
-	mov     MMU_TAG_ACCESS, %g5
-	ldxa    [%g5]ASI_DMMU, %g5
+	mov	MMU_TAG_ACCESS, %g5
+	ldxa	[%g5] ASI_DMMU, %g5
 #endif /* sun4v */
 	ba,pt	%xcc, tsb_update_tl1
 	  nop
@@ -3147,15 +3164,15 @@ tsb_validtte:
 	 * If ITLB miss check exec bit.
 	 * If not set treat as invalid TTE.
 	 */
-	cmp     %g7, T_INSTR_MMU_MISS
+	cmp	%g7, T_INSTR_MMU_MISS
 	be,pn	%icc, 5f
-	  andcc   %g3, TTE_EXECPRM_INT, %g0	/* check execute bit is set */
-	cmp     %g7, FAST_IMMU_MISS_TT
+	andcc	%g3, TTE_EXECPRM_INT, %g0	/* check execute bit is set */
+	cmp	%g7, FAST_IMMU_MISS_TT
 	bne,pt %icc, 3f
-	  andcc   %g3, TTE_EXECPRM_INT, %g0	/* check execute bit is set */
+	andcc	%g3, TTE_EXECPRM_INT, %g0	/* check execute bit is set */
 5:
 	bz,pn %icc, tsb_protfault
-	  nop
+	nop
 
 3:
 	/*
@@ -3174,10 +3191,10 @@ tsb_validtte:
 	MMU_FAULT_STATUS_AREA(%g2)
 	cmp	%g7, T_INSTR_MMU_MISS
 	be,a,pt	%icc, 9f
-	  nop
+	nop
 	cmp	%g7, FAST_IMMU_MISS_TT
 	be,a,pt	%icc, 9f
-	  nop
+	nop
 	add	%g2, MMFSA_D_, %g2
 9:
 	ldx	[%g2 + MMFSA_CTX_], %g7
@@ -3187,42 +3204,42 @@ tsb_validtte:
 	srlx	%g2, TTARGET_VA_SHIFT, %g2
 	or	%g2, %g7, %g2
 #else /* sun4v */
-	mov     MMU_TAG_ACCESS, %g5
-	cmp     %g7, FAST_IMMU_MISS_TT
-	be,a,pt %icc, 9f
-	   ldxa  [%g0]ASI_IMMU, %g2
-	ldxa    [%g0]ASI_DMMU, %g2
-	ba,pt   %icc, tsb_update_tl1
-	   ldxa  [%g5]ASI_DMMU, %g5
+	mov	MMU_TAG_ACCESS, %g5
+	cmp	%g7, FAST_IMMU_MISS_TT
+	be,a,pt	%icc, 9f
+	ldxa	[%g0] ASI_IMMU, %g2
+	ldxa	[%g0] ASI_DMMU, %g2
+	ba,pt	%icc, tsb_update_tl1
+	ldxa	[%g5] ASI_DMMU, %g5
 9:
-	ldxa    [%g5]ASI_IMMU, %g5
+	ldxa	[%g5] ASI_IMMU, %g5
 #endif /* sun4v */
 
 tsb_update_tl1:
 	srlx	%g2, TTARGET_CTX_SHIFT, %g7
 	brz,pn	%g7, tsb_kernel
 #ifdef sun4v
-	  and	%g3, TTE_SZ_BITS, %g7	! assumes TTE_SZ_SHFT is 0
+	and	%g3, TTE_SZ_BITS, %g7	! assumes TTE_SZ_SHFT is 0
 #else  /* sun4v */
-	  srlx	%g3, TTE_SZ_SHFT, %g7
+	srlx	%g3, TTE_SZ_SHFT, %g7
 #endif /* sun4v */
 
 tsb_user:
 #ifdef sun4v
 	cmp	%g7, TTE4M
 	bge,pn	%icc, tsb_user4m
-	  nop
+	nop
 #else /* sun4v */
 	cmp	%g7, TTESZ_VALID | TTE4M
 	be,pn	%icc, tsb_user4m
-	  srlx	%g3, TTE_SZ2_SHFT, %g7
+	srlx	%g3, TTE_SZ2_SHFT, %g7
 	andcc	%g7, TTE_SZ2_BITS, %g7		! check 32/256MB
 #ifdef ITLB_32M_256M_SUPPORT
 	bnz,pn	%icc, tsb_user4m
-	  nop
+	nop
 #else /* ITLB_32M_256M_SUPPORT */
 	bnz,a,pn %icc, tsb_user_pn_synth
-	 nop
+	nop
 #endif /* ITLB_32M_256M_SUPPORT */
 #endif /* sun4v */
 
@@ -3231,32 +3248,32 @@ tsb_user8k:
 	ldub	[%g6 + TSBMISS_URTTEFLAGS], %g7
 	and	%g7, HAT_CHKCTX1_FLAG, %g1
 	brz,a,pn %g1, 1f
-	  ldn	[%g6 + TSBMISS_TSBPTR], %g1		! g1 = 1ST TSB ptr
+	ldn	[%g6 + TSBMISS_TSBPTR], %g1		! g1 = 1ST TSB ptr
 	GET_UTSBREG_SHCTX(%g6, TSBMISS_TSBSCDPTR, %g1)
 	brlz,a,pn %g1, ptl1_panic			! if no shared 3RD tsb
-	  mov PTL1_NO_SCDTSB8K, %g1			! panic
-        GET_3RD_TSBE_PTR(%g5, %g1, %g6, %g7)
+	mov PTL1_NO_SCDTSB8K, %g1			! panic
+	GET_3RD_TSBE_PTR(%g5, %g1, %g6, %g7)
 1:
 #else /* defined(sun4v) || defined(UTSB_PHYS) */
-	ldn   [%g6 + TSBMISS_TSBPTR], %g1             ! g1 = 1ST TSB ptr
+	ldn	[%g6 + TSBMISS_TSBPTR], %g1		! g1 = 1ST TSB ptr
 #endif /* defined(sun4v) || defined(UTSB_PHYS) */
 
 #ifndef UTSB_PHYS
 	mov	ASI_N, %g7	! user TSBs accessed by VA
-	mov	%g7, %asi
+	wr	%g7, %g0, %asi
 #endif /* !UTSB_PHYS */
 
 	TSB_UPDATE_TL(%g1, %g3, %g2, %g4, %g7, %g6, locked_tsb_l3)
 
-	rdpr    %tt, %g5
+	rdpr	%tt, %g5
 #ifdef sun4v
 	cmp	%g5, T_INSTR_MMU_MISS
 	be,a,pn	%xcc, 9f
-	  mov	%g3, %g5
+	mov	%g3, %g5
 #endif /* sun4v */
 	cmp	%g5, FAST_IMMU_MISS_TT
 	be,pn	%xcc, 9f
-	  mov	%g3, %g5
+	mov	%g3, %g5
 
 	DTLB_STUFF(%g5, %g1, %g2, %g3, %g4)
 	! trapstat wants TTE in %g5
@@ -3271,44 +3288,44 @@ tsb_user4m:
 	ldub	[%g6 + TSBMISS_URTTEFLAGS], %g7
 	and	%g7, HAT_CHKCTX1_FLAG, %g1
 	brz,a,pn %g1, 4f
-	  ldn	[%g6 + TSBMISS_TSBPTR4M], %g1		! g1 = 2ND TSB ptr
+	ldn	[%g6 + TSBMISS_TSBPTR4M], %g1		! g1 = 2ND TSB ptr
 	GET_UTSBREG_SHCTX(%g6, TSBMISS_TSBSCDPTR4M, %g1)! g1 = 4TH TSB ptr
 	brlz,a,pn %g1, 5f				! if no shared 4TH TSB
-	  nop
-        GET_4TH_TSBE_PTR(%g5, %g1, %g6, %g7)
+	nop
+	GET_4TH_TSBE_PTR(%g5, %g1, %g6, %g7)
 
 #else /* defined(sun4v) || defined(UTSB_PHYS) */
-	ldn   [%g6 + TSBMISS_TSBPTR4M], %g1             ! g1 = 2ND TSB ptr
+	ldn	[%g6 + TSBMISS_TSBPTR4M], %g1		! g1 = 2ND TSB ptr
 #endif /* defined(sun4v) || defined(UTSB_PHYS) */
 4:
-	brlz,pn %g1, 5f	/* Check to see if we have 2nd TSB programmed */
-	  nop
+	brlz,pn	%g1, 5f	/* Check to see if we have 2nd TSB programmed */
+	nop
 
 #ifndef UTSB_PHYS
 	mov	ASI_N, %g7	! user TSBs accessed by VA
-	mov	%g7, %asi
+	wr	%g7, %g0, %asi
 #endif /* UTSB_PHYS */
 
-        TSB_UPDATE_TL(%g1, %g3, %g2, %g4, %g7, %g6, locked_tsb_l4)
+	TSB_UPDATE_TL(%g1, %g3, %g2, %g4, %g7, %g6, locked_tsb_l4)
 
 5:
-	rdpr    %tt, %g5
+	rdpr	%tt, %g5
 #ifdef sun4v
-        cmp     %g5, T_INSTR_MMU_MISS
-        be,a,pn %xcc, 9f
-          mov   %g3, %g5
+	cmp	%g5, T_INSTR_MMU_MISS
+	be,a,pn	%xcc, 9f
+	mov	%g3, %g5
 #endif /* sun4v */
-        cmp     %g5, FAST_IMMU_MISS_TT
-        be,pn   %xcc, 9f
-        mov     %g3, %g5
+	cmp	%g5, FAST_IMMU_MISS_TT
+	be,pn	%xcc, 9f
+	mov	%g3, %g5
 
-        DTLB_STUFF(%g5, %g1, %g2, %g3, %g4)
-        ! trapstat wants TTE in %g5
-        retry
+	DTLB_STUFF(%g5, %g1, %g2, %g3, %g4)
+	! trapstat wants TTE in %g5
+	retry
 9:
-        ITLB_STUFF(%g5, %g1, %g2, %g3, %g4)
-        ! trapstat wants TTE in %g5
-        retry
+	ITLB_STUFF(%g5, %g1, %g2, %g3, %g4)
+	! trapstat wants TTE in %g5
+	retry
 
 #if !defined(sun4v) && !defined(ITLB_32M_256M_SUPPORT)
 	/*
@@ -3330,41 +3347,41 @@ tsb_user4m:
 	 */
 tsb_user_pn_synth:
 	rdpr %tt, %g5
-	cmp    %g5, FAST_IMMU_MISS_TT
+	cmp	%g5, FAST_IMMU_MISS_TT
 	be,pt	%xcc, tsb_user_itlb_synth	/* ITLB miss */
-	  andcc %g3, TTE_EXECPRM_INT, %g0	/* is execprm bit set */
-	bz,pn %icc, 4b				/* if not, been here before */
-	  ldn	[%g6 + TSBMISS_TSBPTR4M], %g1	/* g1 = tsbp */
+	andcc	%g3, TTE_EXECPRM_INT, %g0	/* is execprm bit set */
+	bz,pn	%icc, 4b				/* if not, been here before */
+	ldn	[%g6 + TSBMISS_TSBPTR4M], %g1	/* g1 = tsbp */
 	brlz,a,pn %g1, 5f			/* no 2nd tsb */
-	  mov	%g3, %g5
+	mov	%g3, %g5
 
 	mov	MMU_TAG_ACCESS, %g7
-	ldxa	[%g7]ASI_DMMU, %g6		/* get tag access va */
+	ldxa	[%g7] ASI_DMMU, %g6		/* get tag access va */
 	GET_4M_PFN_OFF(%g3, %g6, %g5, %g7, 1)	/* make 4M pfn offset */
 
 	mov	ASI_N, %g7	/* user TSBs always accessed by VA */
-	mov	%g7, %asi
+	wr	%g7, %g0, %asi
 	TSB_UPDATE_TL_PN(%g1, %g5, %g2, %g4, %g7, %g3, locked_tsb_l5) /* update TSB */
 5:
-        DTLB_STUFF(%g5, %g1, %g2, %g3, %g4)
-        retry
+	DTLB_STUFF(%g5, %g1, %g2, %g3, %g4)
+	retry
 
 tsb_user_itlb_synth:
 	ldn	[%g6 + TSBMISS_TSBPTR4M], %g1		/* g1 =  2ND TSB */
 
 	mov	MMU_TAG_ACCESS, %g7
-	ldxa	[%g7]ASI_IMMU, %g6		/* get tag access va */
+	ldxa	[%g7] ASI_IMMU, %g6		/* get tag access va */
 	GET_4M_PFN_OFF(%g3, %g6, %g5, %g7, 2)	/* make 4M pfn offset */
 	brlz,a,pn %g1, 7f	/* Check to see if we have 2nd TSB programmed */
-	  or	%g5, %g3, %g5			/* add 4M bits to TTE */
+	or	%g5, %g3, %g5			/* add 4M bits to TTE */
 
 	mov	ASI_N, %g7	/* user TSBs always accessed by VA */
-	mov	%g7, %asi
+	wr	%g7, %g0, %asi
 	TSB_UPDATE_TL_PN(%g1, %g5, %g2, %g4, %g7, %g3, locked_tsb_l6) /* update TSB */
 7:
 	SET_TTE4M_PN(%g5, %g7)			/* add TTE4M pagesize to TTE */
-        ITLB_STUFF(%g5, %g1, %g2, %g3, %g4)
-        retry
+	ITLB_STUFF(%g5, %g1, %g2, %g3, %g4)
+	retry
 #endif /* sun4v && ITLB_32M_256M_SUPPORT */
 
 tsb_kernel:
@@ -3376,30 +3393,30 @@ tsb_kernel:
 	cmp	%g7, TTESZ_VALID | TTE4M	! no 32M or 256M support
 	be,pn	%icc, 5f
 #endif /* sun4v */
-	  nop
+	nop
 	ldn	[%g6 + TSBMISS_TSBPTR], %g1	! g1 = 8K TSB ptr
 	ba,pt	%xcc, 6f
-	  nop
+	nop
 5:
 	ldn	[%g6 + TSBMISS_TSBPTR4M], %g1	! g1 = 4M TSB ptr
 	brlz,pn	%g1, 3f		/* skip programming if 4M TSB ptr is -1 */
-	  nop
+	nop
 6:
 #ifndef sun4v
 tsb_kernel_patch_asi:
 	or	%g0, RUNTIME_PATCH, %g6
-	mov	%g6, %asi	! XXX avoid writing to %asi !!
+	wr	%g6, %g0, %asi	! XXX avoid writing to %asi !!
 #endif
 	TSB_UPDATE_TL(%g1, %g3, %g2, %g4, %g7, %g6, locked_tsb_l7)
 3:
 #ifdef sun4v
 	cmp	%g5, T_INSTR_MMU_MISS
 	be,a,pn	%icc, 1f
-	  mov	%g3, %g5			! trapstat wants TTE in %g5
+	mov	%g3, %g5			! trapstat wants TTE in %g5
 #endif /* sun4v */
 	cmp	%g5, FAST_IMMU_MISS_TT
 	be,pn	%icc, 1f
-	  mov	%g3, %g5			! trapstat wants TTE in %g5
+	mov	%g3, %g5			! trapstat wants TTE in %g5
 	DTLB_STUFF(%g5, %g1, %g2, %g3, %g4)
 	! trapstat wants TTE in %g5
 	retry
@@ -3410,7 +3427,7 @@ tsb_kernel_patch_asi:
 
 tsb_ism:
 	/*
-	 * This is an ISM [i|d]tlb miss.  We optimize for largest
+	 * This is an ISM [i|d]tlb miss. We optimize for largest
 	 * page size down to smallest.
 	 *
 	 * g2 = vaddr + ctx(or ctxtype (sun4v)) aka (pseudo-)tag access
@@ -3419,29 +3436,29 @@ tsb_ism:
 	 * g4 = physical address of ismmap->ism_sfmmu
 	 * g6 = tsbmiss area
 	 */
-	ldna	[%g4]ASI_MEM, %g7		/* g7 = ism hatid */
+	ldna	[%g4] ASI_MEM, %g7		/* g7 = ism hatid */
 	brz,a,pn %g7, ptl1_panic		/* if zero jmp ahead */
-	  mov	PTL1_BAD_ISM, %g1
+	mov	PTL1_BAD_ISM, %g1
 						/* g5 = pa of imap_vb_shift */
 	sub	%g4, (IMAP_ISMHAT - IMAP_VB_SHIFT), %g5
-	lduba	[%g5]ASI_MEM, %g4		/* g4 = imap_vb_shift */
+	lduba	[%g5] ASI_MEM, %g4		/* g4 = imap_vb_shift */
 	srlx	%g3, %g4, %g3			/* clr size field */
 	set	TAGACC_CTX_MASK, %g1		/* mask off ctx number */
-	sllx    %g3, %g4, %g3                   /* g3 = ism vbase */
-	and     %g2, %g1, %g4                   /* g4 = ctx number */
-	andn    %g2, %g1, %g1                   /* g1 = tlb miss vaddr */
-	sub     %g1, %g3, %g2                   /* g2 = offset in ISM seg */
-	or      %g2, %g4, %g2                   /* g2 = (pseudo-)tagacc */
-	sub     %g5, (IMAP_VB_SHIFT - IMAP_HATFLAGS), %g5
-	lduha   [%g5]ASI_MEM, %g4               /* g5 = pa of imap_hatflags */
+	sllx	%g3, %g4, %g3			/* g3 = ism vbase */
+	and	%g2, %g1, %g4			/* g4 = ctx number */
+	andn	%g2, %g1, %g1			/* g1 = tlb miss vaddr */
+	sub	%g1, %g3, %g2			/* g2 = offset in ISM seg */
+	or	%g2, %g4, %g2			/* g2 = (pseudo-)tagacc */
+	sub	%g5, (IMAP_VB_SHIFT - IMAP_HATFLAGS), %g5
+	lduha	[%g5] ASI_MEM, %g4		/* g5 = pa of imap_hatflags */
 #if defined(sun4v) || defined(UTSB_PHYS)
-	and     %g4, HAT_CTX1_FLAG, %g5         /* g5 = imap_hatflags */
-	brz,pt %g5, tsb_chk4M_ism
-	  nop
-	ldub    [%g6 + TSBMISS_URTTEFLAGS], %g5
-	or      %g5, HAT_CHKCTX1_FLAG, %g5
-	stub    %g5, [%g6 + TSBMISS_URTTEFLAGS]
-	rdpr    %tt, %g5
+	and	%g4, HAT_CTX1_FLAG, %g5		/* g5 = imap_hatflags */
+	brz,pt	%g5, tsb_chk4M_ism
+	nop
+	ldub	[%g6 + TSBMISS_URTTEFLAGS], %g5
+	or	%g5, HAT_CHKCTX1_FLAG, %g5
+	stub	%g5, [%g6 + TSBMISS_URTTEFLAGS]
+	rdpr	%tt, %g5
 	SAVE_CTX1(%g5, %g3, %g1, tsb_shctxl)
 #endif /* defined(sun4v) || defined(UTSB_PHYS) */
 
@@ -3459,12 +3476,12 @@ tsb_ism:
 tsb_chk4M_ism:
 	and	%g4, HAT_4M_FLAG, %g5		/* g4 = imap_hatflags */
 	brnz,pt	%g5, tsb_ism_4M			/* branch if 4M pages */
-	  nop
+	nop
 
 tsb_ism_32M:
 	and	%g4, HAT_32M_FLAG, %g5		/* check default 32M next */
 	brz,pn	%g5, tsb_ism_256M
-	  nop
+	nop
 
 	/*
 	 * 32M hash.
@@ -3477,14 +3494,14 @@ tsb_ism_32M:
 
 tsb_ism_32M_found:
 	brlz,a,pt %g3, tsb_validtte
-	  rdpr	%tt, %g7
+	rdpr	%tt, %g7
 	ba,pt	%xcc, tsb_ism_4M
-	  nop
+	nop
 
 tsb_ism_256M:
 	and	%g4, HAT_256M_FLAG, %g5		/* 256M is last resort */
 	brz,a,pn %g5, ptl1_panic
-	  mov	PTL1_BAD_ISM, %g1
+	mov	PTL1_BAD_ISM, %g1
 
 	/*
 	 * 256M hash.
@@ -3495,7 +3512,7 @@ tsb_ism_256M:
 
 tsb_ism_256M_found:
 	brlz,a,pt %g3, tsb_validtte
-	  rdpr	%tt, %g7
+	rdpr	%tt, %g7
 
 tsb_ism_4M:
 	/*
@@ -3508,7 +3525,7 @@ tsb_ism_4M:
 
 tsb_ism_4M_found:
 	brlz,a,pt %g3, tsb_validtte
-	  rdpr	%tt, %g7
+	rdpr	%tt, %g7
 
 tsb_ism_8K:
 	/*
@@ -3522,13 +3539,13 @@ tsb_ism_8K:
 
 tsb_ism_8K_found:
 	brlz,a,pt %g3, tsb_validtte
-	  rdpr	%tt, %g7
+	rdpr	%tt, %g7
 
 tsb_pagefault:
 	rdpr	%tt, %g7
 	cmp	%g7, FAST_PROT_TT
 	be,a,pn	%icc, tsb_protfault
-	  wrpr	%g0, FAST_DMMU_MISS_TT, %tt
+	wrpr	%g0, FAST_DMMU_MISS_TT, %tt
 
 tsb_protfault:
 	/*
@@ -3554,22 +3571,22 @@ tsb_protfault:
 	move	%icc, %g5, %g4
 #else
 	mov	MMU_TAG_ACCESS, %g4
-	ldxa	[%g4]ASI_DMMU, %g2
-	ldxa	[%g4]ASI_IMMU, %g5
+	ldxa	[%g4] ASI_DMMU, %g2
+	ldxa	[%g4] ASI_IMMU, %g5
 	move	%icc, %g5, %g2
 	cmp	%g7, T_INSTR_MMU_MISS
 	move	%icc, %g5, %g2
 	sllx	%g2, TAGACC_CTX_LSHIFT, %g4
 #endif /* sun4v */
 	brnz,pn	%g4, 3f				/* skip if not kernel */
-	  rdpr	%tl, %g5
+	rdpr	%tl, %g5
 
 	add	%sp, STACK_BIAS, %g3
 	srlx	%g3, MMU_PAGESHIFT, %g3
 	srlx	%g2, MMU_PAGESHIFT, %g4
 	cmp	%g3, %g4
 	be,a,pn	%icc, ptl1_panic		/* panic if bad %sp */
-	  mov	PTL1_BAD_STACK, %g1
+	mov	PTL1_BAD_STACK, %g1
 
 	cmp	%g5, 1
 	ble,pt	%icc, 2f
@@ -3580,15 +3597,15 @@ tsb_protfault:
 	mov	PTL1_BAD_KPROT_FAULT, %g1
 	movne	%icc, PTL1_BAD_KMISS, %g1
 	ba,pt	%icc, ptl1_panic
-	  nop
+	nop
 
 2:
 	/*
-	 * We are taking a pagefault in the kernel on a kernel address.  If
+	 * We are taking a pagefault in the kernel on a kernel address. If
 	 * CPU_DTRACE_NOFAULT is set in the cpuc_dtrace_flags, we don't actually
 	 * want to call sfmmu_pagefault -- we will instead note that a fault
 	 * has occurred by setting CPU_DTRACE_BADADDR and issue a "done"
-	 * (instead of a "retry").  This will step over the faulting
+	 * (instead of a "retry"). This will step over the faulting
 	 * instruction.
 	 */
 	CPU_INDEX(%g1, %g2)
@@ -3607,14 +3624,14 @@ tsb_protfault:
 3:
 	cmp	%g5, 1
 	ble,pt	%icc, 4f
-	  nop
+	nop
 	TSTAT_CHECK_TL1(4f, %g1, %g2)
 	ba,pt	%icc, sfmmu_window_trap
-	  nop
+	nop
 
 4:
 	/*
-	 * We are taking a pagefault on a non-kernel address.  If we are in
+	 * We are taking a pagefault on a non-kernel address. If we are in
 	 * the kernel (e.g., due to a copyin()), we will check cpuc_dtrace_flags
 	 * and (if CPU_DTRACE_NOFAULT is set) will proceed as outlined above.
 	 */
@@ -3638,7 +3655,7 @@ tsb_protfault:
 	rdpr	%tstate, %g2
 	btst	TSTATE_PRIV, %g2
 	bz,a	ptl1_panic
-	  mov	PTL1_BAD_DTRACE_FLAGS, %g1
+	mov	PTL1_BAD_DTRACE_FLAGS, %g1
 	done
 
 	ALTENTRY(tsb_tl0_noctxt)
@@ -3666,7 +3683,7 @@ tsb_protfault:
 	rdpr	%tstate, %g5
 	btst	TSTATE_PRIV, %g5
 	bz,a	ptl1_panic
-	  mov	PTL1_BAD_DTRACE_FLAGS, %g1
+	mov	PTL1_BAD_DTRACE_FLAGS, %g1
 	TSTAT_CHECK_TL1(2f, %g1, %g2);
 2:
 	done
@@ -3677,48 +3694,48 @@ tsb_protfault:
 #ifdef sun4v
 	MMU_FAULT_STATUS_AREA(%g2)
 	be,a,pt	%icc, 2f
-	  ldx	[%g2 + MMFSA_I_CTX], %g3
+	ldx	[%g2 + MMFSA_I_CTX], %g3
 	cmp	%g5, T_INSTR_MMU_MISS
 	be,a,pt	%icc, 2f
-	  ldx	[%g2 + MMFSA_I_CTX], %g3
+	ldx	[%g2 + MMFSA_I_CTX], %g3
 	ldx	[%g2 + MMFSA_D_CTX], %g3
 2:
 #else
 	mov	MMU_TAG_ACCESS, %g2
 	be,a,pt	%icc, 2f
-	  ldxa	[%g2]ASI_IMMU, %g3
-	ldxa	[%g2]ASI_DMMU, %g3
+	ldxa	[%g2] ASI_IMMU, %g3
+	ldxa	[%g2] ASI_DMMU, %g3
 2:	sllx	%g3, TAGACC_CTX_LSHIFT, %g3
 #endif /* sun4v */
 	brz,a,pn %g3, ptl1_panic		! panic if called for kernel
-	  mov	PTL1_BAD_CTX_STEAL, %g1		! since kernel ctx was stolen
+	mov	PTL1_BAD_CTX_STEAL, %g1		! since kernel ctx was stolen
 	rdpr	%tl, %g5
 	cmp	%g5, 1
 	ble,pt	%icc, sfmmu_mmu_trap
-	  nop
+	nop
 	TSTAT_CHECK_TL1(sfmmu_mmu_trap, %g1, %g2)
 	ba,pt	%icc, sfmmu_window_trap
-	  nop
+	nop
 	SET_SIZE(sfmmu_tsb_miss)
 
 	/*
 	 * This routine will look for a user or kernel vaddr in the hash
-	 * structure.  It returns a valid pfn or PFN_INVALID.  It doesn't grab
-	 * any locks.  It should only be used by other sfmmu routines.
+	 * structure. It returns a valid pfn or PFN_INVALID. It doesn't grab
+	 * any locks. It should only be used by other sfmmu routines.
 	 */
 	ENTRY_NP(sfmmu_vatopfn)
- 	/*
- 	 * disable interrupts
- 	 */
- 	rdpr	%pstate, %o3
+	/*
+	 * disable interrupts
+	 */
+	rdpr	%pstate, %o3
 #ifdef DEBUG
 	PANIC_IF_INTR_DISABLED_PSTR(%o3, sfmmu_di_l5, %g1)
 #endif
 	/*
 	 * disable interrupts to protect the TSBMISS area
 	 */
-	andn    %o3, PSTATE_IE, %o5
-	wrpr    %o5, 0, %pstate
+	andn	%o3, PSTATE_IE, %o5
+	wrpr	%o5, 0, %pstate
 
 	/*
 	 * o0 = vaddr
@@ -3729,7 +3746,7 @@ tsb_protfault:
 	ldn	[%g1 + TSBMISS_KHATID], %o4
 	cmp	%o4, %o1
 	bne,pn	%ncc, vatopfn_nokernel
-	  mov	TTE64K, %g5			/* g5 = rehash # */
+	mov	TTE64K, %g5			/* g5 = rehash # */
 	mov %g1,%o5				/* o5 = tsbmiss_area */
 	/*
 	 * o0 = vaddr
@@ -3754,10 +3771,10 @@ tsb_protfault:
 	 * not just vaddr. Since this call is for kernel we need to clear
 	 * any lower vaddr bits that would be interpreted as ctx bits.
 	 */
-	set     TAGACC_CTX_MASK, %g1
-	andn    %o0, %g1, %o0
+	set	TAGACC_CTX_MASK, %g1
+	andn	%o0, %g1, %o0
 	GET_TTE(%o0, %o4, %g1, %g2, %o5, %g4, %g6, %g5, %g3,
-		vatopfn_l1, kvtop_hblk_found, tsb_suspend, kvtop_nohblk)
+	    vatopfn_l1, kvtop_hblk_found, tsb_suspend, kvtop_nohblk)
 
 kvtop_hblk_found:
 	/*
@@ -3771,8 +3788,8 @@ kvtop_hblk_found:
 	 * o1 = hat id
 	 */
 	brgez,a,pn %g1, 6f			/* if tte invalid goto tl0 */
-	  mov	-1, %o0				/* output = -1 (PFN_INVALID) */
-	stx %g1,[%o2]				/* put tte into *ttep */
+	mov	-1, %o0				/* output = -1 (PFN_INVALID) */
+	stx	%g1,[%o2]			/* put tte into *ttep */
 	TTETOPFN(%g1, %o0, vatopfn_l2, %g2, %g3, %g4)
 	/*
 	 * o0 = vaddr
@@ -3781,11 +3798,11 @@ kvtop_hblk_found:
 	 * g1 = pfn
 	 */
 	ba,pt	%xcc, 6f
-	  mov	%g1, %o0
+	mov	%g1, %o0
 
 kvtop_nohblk:
 	/*
-	 * we get here if we couldn't find valid hblk in hash.  We rehash
+	 * we get here if we couldn't find valid hblk in hash. We rehash
 	 * if neccesary.
 	 */
 	ldn	[%o5 + (TSBMISS_SCRATCH + TSB_TAGACC)], %o0
@@ -3795,16 +3812,16 @@ kvtop_nohblk:
 	cmp	%g5, DEFAULT_MAX_HASHCNT	/* no 32/256M kernel pages */
 #endif /* sun4v */
 	be,a,pn	%icc, 6f
-	  mov	-1, %o0				/* output = -1 (PFN_INVALID) */
+	mov	-1, %o0				/* output = -1 (PFN_INVALID) */
 	mov	%o1, %o4			/* restore hatid */
 #ifdef sun4v
-        add	%g5, 2, %g5
+	add	%g5, 2, %g5
 	cmp	%g5, 3
 	move	%icc, MMU_PAGESHIFT4M, %g6
 	ba,pt	%icc, 1b
 	movne	%icc, MMU_PAGESHIFT256M, %g6
 #else
-        inc	%g5
+	inc	%g5
 	cmp	%g5, 2
 	move	%icc, MMU_PAGESHIFT512K, %g6
 	ba,pt	%icc, 1b
@@ -3812,7 +3829,7 @@ kvtop_nohblk:
 #endif /* sun4v */
 6:
 	retl
- 	  wrpr	%g0, %o3, %pstate		/* re-enable interrupts */
+	wrpr	%g0, %o3, %pstate		/* re-enable interrupts */
 
 tsb_suspend:
 	/*
@@ -3824,13 +3841,13 @@ tsb_suspend:
 	 * g3 = tte va
 	 * o2 = tsbmiss area  use o5 instead of o2 for tsbmiss
 	 */
-	stx %g1,[%o2]				/* put tte into *ttep */
+	stx	%g1,[%o2]				/* put tte into *ttep */
 	brgez,a,pn %g1, 8f			/* if tte invalid goto 8: */
-	  sub	%g0, 1, %o0			/* output = PFN_INVALID */
+	sub	%g0, 1, %o0			/* output = PFN_INVALID */
 	sub	%g0, 2, %o0			/* output = PFN_SUSPENDED */
 8:
 	retl
-	 wrpr	%g0, %o3, %pstate		/* enable interrupts */
+	wrpr	%g0, %o3, %pstate		/* enable interrupts */
 
 vatopfn_nokernel:
 	/*
@@ -3840,11 +3857,11 @@ vatopfn_nokernel:
 	 * support kernel addresses as well is because
 	 * we do va_to_pa while holding the hashlock.
 	 */
- 	wrpr	%g0, %o3, %pstate		/* re-enable interrupts */
+	wrpr	%g0, %o3, %pstate		/* re-enable interrupts */
 	save	%sp, -SA(MINFRAME), %sp
 	sethi	%hi(sfmmu_panic3), %o0
 	call	panic
-	 or	%o0, %lo(sfmmu_panic3), %o0
+	or	%o0, %lo(sfmmu_panic3), %o0
 
 	SET_SIZE(sfmmu_vatopfn)
 
@@ -3863,18 +3880,18 @@ vatopfn_nokernel:
 	 * tte for specified rehash # is not found, invalid or suspended.
 	 */
 	ENTRY_NP(sfmmu_kvaszc2pfn)
- 	/*
- 	 * disable interrupts
- 	 */
- 	rdpr	%pstate, %o3
+	/*
+	 * disable interrupts
+	 */
+	rdpr	%pstate, %o3
 #ifdef DEBUG
 	PANIC_IF_INTR_DISABLED_PSTR(%o3, sfmmu_di_l6, %g1)
 #endif
 	/*
 	 * disable interrupts to protect the TSBMISS area
 	 */
-	andn    %o3, PSTATE_IE, %o5
-	wrpr    %o5, 0, %pstate
+	andn	%o3, PSTATE_IE, %o5
+	wrpr	%o5, 0, %pstate
 
 	CPU_TSBMISS_AREA(%g1, %o5)
 	ldn	[%g1 + TSBMISS_KHATID], %o4
@@ -3898,8 +3915,8 @@ vatopfn_nokernel:
 	srlx	%o0, MMU_PAGESHIFT, %o0
 	sllx	%o0, MMU_PAGESHIFT, %o0
 	GET_TTE(%o0, %o4, %g3, %g4, %g1, %o5, %g6, %o1, %g5,
-		kvaszc2pfn_l1, kvaszc2pfn_hblk_found, kvaszc2pfn_nohblk,
-		kvaszc2pfn_nohblk)
+	    kvaszc2pfn_l1, kvaszc2pfn_hblk_found, kvaszc2pfn_nohblk,
+	    kvaszc2pfn_nohblk)
 
 kvaszc2pfn_hblk_found:
 	/*
@@ -3907,20 +3924,20 @@ kvaszc2pfn_hblk_found:
 	 * %o0 = vaddr
 	 */
 	brgez,a,pn %g3, 1f			/* check if tte is invalid */
-	  mov	-1, %o0				/* output = -1 (PFN_INVALID) */
+	mov	-1, %o0				/* output = -1 (PFN_INVALID) */
 	TTETOPFN(%g3, %o0, kvaszc2pfn_l2, %g2, %g4, %g5)
 	/*
 	 * g3 = pfn
 	 */
 	ba,pt	%xcc, 1f
-	  mov	%g3, %o0
+	mov	%g3, %o0
 
 kvaszc2pfn_nohblk:
 	mov	-1, %o0
 
 1:
 	retl
- 	  wrpr	%g0, %o3, %pstate		/* re-enable interrupts */
+	wrpr	%g0, %o3, %pstate		/* re-enable interrupts */
 
 	SET_SIZE(sfmmu_kvaszc2pfn)
 
@@ -3930,16 +3947,16 @@ kvaszc2pfn_nohblk:
  * kpm lock used between trap level tsbmiss handler and kpm C level.
  */
 #define KPMLOCK_ENTER(kpmlckp, tmp1, label1, asi)			\
-	mov     0xff, tmp1						;\
+	mov	0xff, tmp1						;\
 label1:									;\
-	casa    [kpmlckp]asi, %g0, tmp1					;\
-	brnz,pn tmp1, label1						;\
-	mov     0xff, tmp1						;\
+	casa	[kpmlckp]asi, %g0, tmp1					;\
+	brnz,pn	tmp1, label1						;\
+	mov	0xff, tmp1						;\
 	membar  #LoadLoad
 
 #define KPMLOCK_EXIT(kpmlckp, asi)					\
-	membar  #LoadStore|#StoreStore					;\
-	sta     %g0, [kpmlckp]asi
+	membar	#LoadStore|#StoreStore					;\
+	sta	%g0, [kpmlckp]asi
 
 /*
  * Lookup a memseg for a given pfn and if found, return the physical
@@ -3963,21 +3980,21 @@ label1:									;\
 	and	mseg, SFMMU_N_MEM_SLOTS - 1, mseg			;\
 	sllx	mseg, SFMMU_MEM_HASH_ENTRY_SHIFT, mseg			;\
 	add	tmp1, mseg, tmp1					;\
-	ldxa	[tmp1]%asi, mseg					;\
+	ldxa	[tmp1] %asi, mseg					;\
 	cmp	mseg, MSEG_NULLPTR_PA					;\
 	be,pn	%xcc, label##1		/* if not found */	;\
-	  nop								;\
-	ldxa	[mseg + MEMSEG_PAGES_BASE]%asi, tmp1			;\
+	nop								;\
+	ldxa	[mseg + MEMSEG_PAGES_BASE] %asi, tmp1			;\
 	cmp	pfn, tmp1			/* pfn - pages_base */	;\
 	blu,pn	%xcc, label##1					;\
-	  ldxa	[mseg + MEMSEG_PAGES_END]%asi, tmp2			;\
+	ldxa	[mseg + MEMSEG_PAGES_END] %asi, tmp2			;\
 	cmp	pfn, tmp2			/* pfn - pages_end */	;\
 	bgeu,pn	%xcc, label##1					;\
-	  sub	pfn, tmp1, tmp1			/* pfn - pages_base */	;\
+	sub	pfn, tmp1, tmp1			/* pfn - pages_base */	;\
 	mulx	tmp1, PAGE_SIZE, tmp1					;\
-	ldxa	[mseg + MEMSEG_PAGESPA]%asi, tmp2	/* pages */	;\
+	ldxa	[mseg + MEMSEG_PAGESPA] %asi, tmp2	/* pages */	;\
 	add	tmp2, tmp1, tmp1			/* pp */	;\
-	lduwa	[tmp1 + PAGE_PAGENUM]%asi, tmp2				;\
+	lduwa	[tmp1 + PAGE_PAGENUM] %asi, tmp2			;\
 	cmp	tmp2, pfn						;\
 	be,pt	%xcc, label##_ok			/* found */	;\
 label##1:								;\
@@ -3987,15 +4004,15 @@ label##1:								;\
 label##2:								;\
 	cmp	mseg, MSEG_NULLPTR_PA					;\
 	be,pn	%xcc, label##_ok		/* if not found */	;\
-	  nop								;\
-	ldxa	[mseg + MEMSEG_PAGES_BASE]%asi, tmp1			;\
+	nop								;\
+	ldxa	[mseg + MEMSEG_PAGES_BASE] %asi, tmp1			;\
 	cmp	pfn, tmp1			/* pfn - pages_base */	;\
 	blu,a,pt %xcc, label##2					;\
-	  ldxa	[mseg + MEMSEG_NEXTPA]%asi, mseg			;\
-	ldxa	[mseg + MEMSEG_PAGES_END]%asi, tmp2			;\
+	ldxa	[mseg + MEMSEG_NEXTPA] %asi, mseg			;\
+	ldxa	[mseg + MEMSEG_PAGES_END] %asi, tmp2			;\
 	cmp	pfn, tmp2			/* pfn - pages_end */	;\
 	bgeu,a,pt %xcc, label##2					;\
-	  ldxa	[mseg + MEMSEG_NEXTPA]%asi, mseg			;\
+	ldxa	[mseg + MEMSEG_NEXTPA] %asi, mseg			;\
 label##_ok:
 
 	/*
@@ -4017,13 +4034,13 @@ label##_ok:
 	ldub	[%g6 + KPMTSBM_FLAGS], %g4
 	and	%g4, KPMTSBM_ENABLE_FLAG, %g5
 	brz,pn	%g5, sfmmu_tsb_miss		/* if kpm not enabled */
-	  nop
+	nop
 
 	/* VA range check */
 	ldx	[%g6 + KPMTSBM_VBASE], %g7
 	cmp	%g2, %g7
 	blu,pn	%xcc, sfmmu_tsb_miss
-	  ldx	[%g6 + KPMTSBM_VEND], %g5
+	ldx	[%g6 + KPMTSBM_VEND], %g5
 	cmp	%g2, %g5
 	bgeu,pn	%xcc, sfmmu_tsb_miss
 	  stx	%g3, [%g6 + KPMTSBM_TSBPTR]
@@ -4037,7 +4054,7 @@ label##_ok:
 	and	%g4, KPMTSBM_TLTSBM_FLAG, %g3
 	inc	%g5
 	brz,pn	%g3, sfmmu_kpm_exception
-	  st	%g5, [%g6 + KPMTSBM_TSBMISS]
+	st	%g5, [%g6 + KPMTSBM_TSBMISS]
 #else
 	inc	%g5
 	st	%g5, [%g6 + KPMTSBM_TSBMISS]
@@ -4054,9 +4071,9 @@ label##_ok:
 	/* vaddr2pfn */
 	ldub	[%g6 + KPMTSBM_SZSHIFT], %g3
 	sub	%g2, %g7, %g4			/* paddr = vaddr-kpm_vbase */
-	srax    %g4, %g3, %g2			/* which alias range (r) */
+	srax	%g4, %g3, %g2			/* which alias range (r) */
 	brnz,pn	%g2, sfmmu_kpm_exception	/* if (r != 0) goto C handler */
-	  srlx	%g4, MMU_PAGESHIFT, %g2		/* %g2 = pfn */
+	srlx	%g4, MMU_PAGESHIFT, %g2		/* %g2 = pfn */
 
 	/*
 	 * Setup %asi
@@ -4064,18 +4081,19 @@ label##_ok:
 	 * if (mseg_pa == NULL) sfmmu_kpm_exception
 	 * g2=pfn
 	 */
-	mov	ASI_MEM, %asi
+	set	ASI_MEM, %g1			/* load ASI_MEM into a register */
+	wr	%g1, %g0, %asi
 	PAGE_NUM2MEMSEG_NOLOCK_PA(%g2, %g3, %g6, %g4, %g5, %g7, kpmtsbmp2m)
 	cmp	%g3, MSEG_NULLPTR_PA
 	be,pn	%xcc, sfmmu_kpm_exception	/* if mseg not found */
-	  nop
+	nop
 
 	/*
 	 * inx = ptokpmp((kpmptop((ptopkpmp(pfn))) - mseg_pa->kpm_pbase));
 	 * g2=pfn g3=mseg_pa
 	 */
 	ldub	[%g6 + KPMTSBM_KPMP2PSHFT], %g5
-	ldxa	[%g3 + MEMSEG_KPM_PBASE]%asi, %g7
+	ldxa	[%g3 + MEMSEG_KPM_PBASE] %asi, %g7
 	srlx	%g2, %g5, %g4
 	sllx	%g4, %g5, %g4
 	sub	%g4, %g7, %g4
@@ -4086,10 +4104,10 @@ label##_ok:
 	 * g2=pfn g3=mseg_pa g4=inx
 	 */
 #ifdef	DEBUG
-	ldxa	[%g3 + MEMSEG_KPM_NKPMPGS]%asi, %g5
+	ldxa	[%g3 + MEMSEG_KPM_NKPMPGS] %asi, %g5
 	cmp	%g4, %g5			/* inx - nkpmpgs */
 	bgeu,pn	%xcc, sfmmu_kpm_exception	/* if out of range */
-	  ld	[%g6 + KPMTSBM_KPMPTABLESZ], %g7
+	ld	[%g6 + KPMTSBM_KPMPTABLESZ], %g7
 #else
 	ld	[%g6 + KPMTSBM_KPMPTABLESZ], %g7
 #endif
@@ -4097,7 +4115,7 @@ label##_ok:
 	 * kp = &mseg_pa->kpm_pages[inx]
 	 */
 	sllx	%g4, KPMPAGE_SHIFT, %g4		/* kpm_pages offset */
-	ldxa	[%g3 + MEMSEG_KPM_PAGES]%asi, %g5 /* kpm_pages */
+	ldxa	[%g3 + MEMSEG_KPM_PAGES] %asi, %g5 /* kpm_pages */
 	add	%g5, %g4, %g5			/* kp */
 
 	/*
@@ -4108,13 +4126,13 @@ label##_ok:
 	sub	%g7, 1, %g7			/* mask */
 	srlx	%g5, %g1, %g1			/* x = ksp >> kpmp_shift */
 	add	%g5, %g1, %g5			/* y = ksp + x */
-	and 	%g5, %g7, %g5			/* hashinx = y & mask */
+	and	%g5, %g7, %g5			/* hashinx = y & mask */
 
 	/*
 	 * Calculate physical kpm_page pointer
 	 * g2=pfn g3=mseg_pa g4=offset g5=hashinx
 	 */
-	ldxa	[%g3 + MEMSEG_KPM_PAGESPA]%asi, %g1 /* kpm_pagespa */
+	ldxa	[%g3 + MEMSEG_KPM_PAGESPA] %asi, %g1 /* kpm_pagespa */
 	add	%g1, %g4, %g1			/* kp_pa */
 
 	/*
@@ -4159,16 +4177,16 @@ label##_ok:
 	KPMLOCK_ENTER(%g3, %g7, kpmtsbmhdlr1, ASI_MEM)
 
 	/* use C-handler if there's no go for dropin */
-	ldsha	[%g1 + KPMPAGE_REFCNTC]%asi, %g7 /* kp_refcntc */
+	ldsha	[%g1 + KPMPAGE_REFCNTC] %asi, %g7 /* kp_refcntc */
 	cmp	%g7, -1
 	bne,pn	%xcc, 5f	/* use C-handler if there's no go for dropin */
-	  nop
+	nop
 
 #ifdef	DEBUG
 	/* double check refcnt */
-	ldsha	[%g1 + KPMPAGE_REFCNT]%asi, %g7
+	ldsha	[%g1 + KPMPAGE_REFCNT] %asi, %g7
 	brz,pn	%g7, 5f			/* let C-handler deal with this */
-	  nop
+	nop
 #endif
 
 #ifndef sun4v
@@ -4176,7 +4194,7 @@ label##_ok:
 	mov	ASI_N, %g1
 	andcc	%g7, KPMTSBM_TSBPHYS_FLAG, %g0
 	movnz	%icc, ASI_MEM, %g1
-	mov	%g1, %asi
+	wr	%g1, %g0, %asi
 #endif
 
 	/*
@@ -4219,7 +4237,7 @@ locked_tsb_l1:
 	/* g3=hlck_pa */
 	KPMLOCK_EXIT(%g3, ASI_MEM)
 	ba,pt	%icc, sfmmu_kpm_exception
-	  nop
+	nop
 	SET_SIZE(sfmmu_kpm_dtsb_miss)
 
 	/*
@@ -4240,7 +4258,7 @@ locked_tsb_l1:
 	ldub	[%g6 + KPMTSBM_FLAGS], %g4
 	and	%g4, KPMTSBM_ENABLE_FLAG, %g5
 	brz,pn	%g5, sfmmu_tsb_miss		/* if kpm not enabled */
-	  nop
+	nop
 
 	/*
 	 * VA range check
@@ -4249,10 +4267,10 @@ locked_tsb_l1:
 	ldx	[%g6 + KPMTSBM_VBASE], %g7
 	cmp	%g2, %g7
 	blu,pn	%xcc, sfmmu_tsb_miss
-	  ldx	[%g6 + KPMTSBM_VEND], %g5
+	ldx	[%g6 + KPMTSBM_VEND], %g5
 	cmp	%g2, %g5
 	bgeu,pn	%xcc, sfmmu_tsb_miss
-	  stx	%g1, [%g6 + KPMTSBM_TSBPTR]	/* save 8K kpm TSB pointer */
+	stx	%g1, [%g6 + KPMTSBM_TSBPTR]	/* save 8K kpm TSB pointer */
 
 	/*
 	 * check TL tsbmiss handling flag
@@ -4263,7 +4281,7 @@ locked_tsb_l1:
 	and	%g4, KPMTSBM_TLTSBM_FLAG, %g1
 	inc	%g5
 	brz,pn	%g1, sfmmu_kpm_exception
-	  st	%g5, [%g6 + KPMTSBM_TSBMISS]
+	st	%g5, [%g6 + KPMTSBM_TSBMISS]
 #else
 	inc	%g5
 	st	%g5, [%g6 + KPMTSBM_TSBMISS]
@@ -4284,22 +4302,22 @@ locked_tsb_l1:
 	 */
 	ldub	[%g6 + KPMTSBM_SZSHIFT], %g3	/* g3 = kpm_size_shift */
 	sub	%g2, %g7, %g4			/* paddr = vaddr-kpm_vbase */
-	srax    %g4, %g3, %g7			/* which alias range (r) */
+	srax	%g4, %g3, %g7			/* which alias range (r) */
 	brz,pt	%g7, 2f
-	  sethi   %hi(vac_colors_mask), %g5
+	sethi	%hi(vac_colors_mask), %g5
 	ld	[%g5 + %lo(vac_colors_mask)], %g5
 
 	srlx	%g2, MMU_PAGESHIFT, %g1		/* vaddr >> MMU_PAGESHIFT */
 	and	%g1, %g5, %g1			/* g1 = v */
 	sllx	%g7, %g3, %g5			/* g5 = r << kpm_size_shift */
 	cmp	%g7, %g1			/* if (r > v) */
-	bleu,pn %xcc, 1f
-	  sub   %g4, %g5, %g4			/* paddr -= r << kpm_size_shift */
+	bleu,pn	%xcc, 1f
+	sub	%g4, %g5, %g4			/* paddr -= r << kpm_size_shift */
 	sub	%g7, %g1, %g5			/* g5 = r - v */
 	sllx	%g5, MMU_PAGESHIFT, %g7		/* (r-v) << MMU_PAGESHIFT */
 	add	%g4, %g7, %g4			/* paddr += (r-v)<<MMU_PAGESHIFT */
 	ba	2f
-	  nop
+	nop
 1:
 	sllx	%g7, MMU_PAGESHIFT, %g5		/* else */
 	sub	%g4, %g5, %g4			/* paddr -= r << MMU_PAGESHIFT */
@@ -4324,17 +4342,18 @@ locked_tsb_l1:
 	 * g2=pfn g6=per-CPU kpm tsbmiss area
 	 * g4 g5 g7 for scratch use.
 	 */
-	mov	ASI_MEM, %asi
+	set	ASI_MEM, %g1			/* load ASI_MEM into a register */
+	wr	%g1, %g0, %asi
 	PAGE_NUM2MEMSEG_NOLOCK_PA(%g2, %g3, %g6, %g4, %g5, %g7, kpmtsbmsp2m)
 	cmp	%g3, MSEG_NULLPTR_PA
 	be,pn	%xcc, sfmmu_kpm_exception	/* if mseg not found */
-	  nop
+	nop
 
 	/*
 	 * inx = pfn - mseg_pa->kpm_pbase
 	 * g2=pfn  g3=mseg_pa  g6=per-CPU kpm tsbmiss area
 	 */
-	ldxa	[%g3 + MEMSEG_KPM_PBASE]%asi, %g7
+	ldxa	[%g3 + MEMSEG_KPM_PBASE] %asi, %g7
 	sub	%g2, %g7, %g4
 
 #ifdef	DEBUG
@@ -4342,15 +4361,15 @@ locked_tsb_l1:
 	 * Validate inx value
 	 * g2=pfn g3=mseg_pa g4=inx g6=per-CPU tsbmiss area
 	 */
-	ldxa	[%g3 + MEMSEG_KPM_NKPMPGS]%asi, %g5
+	ldxa	[%g3 + MEMSEG_KPM_NKPMPGS] %asi, %g5
 	cmp	%g4, %g5			/* inx - nkpmpgs */
 	bgeu,pn	%xcc, sfmmu_kpm_exception	/* if out of range */
-	  ld	[%g6 + KPMTSBM_KPMPTABLESZ], %g7
+	ld	[%g6 + KPMTSBM_KPMPTABLESZ], %g7
 #else
 	ld	[%g6 + KPMTSBM_KPMPTABLESZ], %g7
 #endif
 	/* ksp = &mseg_pa->kpm_spages[inx] */
-	ldxa	[%g3 + MEMSEG_KPM_SPAGES]%asi, %g5
+	ldxa	[%g3 + MEMSEG_KPM_SPAGES] %asi, %g5
 	add	%g5, %g4, %g5			/* ksp */
 
 	/*
@@ -4362,14 +4381,14 @@ locked_tsb_l1:
 	sub	%g7, 1, %g7			/* mask */
 	sllx	%g5, %g1, %g1			/* x = ksp << kpmp_shift */
 	add	%g5, %g1, %g5			/* y = ksp + x */
-	and 	%g5, %g7, %g5			/* hashinx = y & mask */
+	and	%g5, %g7, %g5			/* hashinx = y & mask */
 
 	/*
 	 * Calculate physical kpm_spage pointer
 	 * g2=pfn g3=mseg_pa g4=offset g5=hashinx
 	 * g6=per-CPU kpm tsbmiss area
 	 */
-	ldxa	[%g3 + MEMSEG_KPM_PAGESPA]%asi, %g1 /* kpm_spagespa */
+	ldxa	[%g3 + MEMSEG_KPM_PAGESPA] %asi, %g1 /* kpm_spagespa */
 	add	%g1, %g4, %g1			/* ksp_pa */
 
 	/*
@@ -4406,21 +4425,21 @@ locked_tsb_l1:
 	KPMLOCK_ENTER(%g3, %g7, kpmtsbsmlock, ASI_MEM)
 
 	/* use C-handler if there's no go for dropin */
-	ldsba	[%g1 + KPMSPAGE_MAPPED]%asi, %g7	/* kp_mapped */
+	ldsba	[%g1 + KPMSPAGE_MAPPED] %asi, %g7	/* kp_mapped */
 	andcc	%g7, KPM_MAPPED_GO, %g0			/* go or no go ? */
 	bz,pt	%icc, 5f				/* no go */
-	  nop
+	nop
 	and	%g7, KPM_MAPPED_MASK, %g7		/* go */
 	cmp	%g7, KPM_MAPPEDS			/* cacheable ? */
 	be,a,pn	%xcc, 3f
-	  or	%g5, TTE_CV_INT, %g5			/* cacheable */
+	or	%g5, TTE_CV_INT, %g5			/* cacheable */
 3:
 #ifndef sun4v
 	ldub	[%g6 + KPMTSBM_FLAGS], %g7
 	mov	ASI_N, %g1
 	andcc	%g7, KPMTSBM_TSBPHYS_FLAG, %g0
 	movnz	%icc, ASI_MEM, %g1
-	mov	%g1, %asi
+	wr	%g1, %g0, %asi
 #endif
 
 	/*
@@ -4463,29 +4482,29 @@ locked_tsb_l2:
 	/* g3=hlck_pa */
 	KPMLOCK_EXIT(%g3, ASI_MEM)
 	ba,pt	%icc, sfmmu_kpm_exception
-	  nop
+	nop
 	SET_SIZE(sfmmu_kpm_dtsb_miss_small)
 
 #if (1<< KPMTSBM_SHIFT) != KPMTSBM_SIZE
 #error - KPMTSBM_SHIFT does not correspond to size of kpmtsbm struct
 #endif
 
-	.seg	".data"
+	.data
 sfmmu_kpm_tsbmtl_panic:
 	.ascii	"sfmmu_kpm_tsbmtl: interrupts disabled"
 	.byte	0
 sfmmu_kpm_stsbmtl_panic:
 	.ascii	"sfmmu_kpm_stsbmtl: interrupts disabled"
 	.byte	0
-	.align	4
-	.seg	".text"
+	.balign	4
+	.text
 
 	/*
 	 * Enable/disable tsbmiss handling at trap level for a kpm (large) page.
 	 * Called from C-level, sets/clears "go" indication for trap level
-	 * handler.  khl_lock is a low level spin lock to protect the kp_tsbmtl
-	 * field.  Assumed that &kp->kp_refcntc is checked for zero or -1 at
-	 * C-level.  Assumes khl_mutex is held when called from C-level.
+	 * handler. khl_lock is a low level spin lock to protect the kp_tsbmtl
+	 * field. Assumed that &kp->kp_refcntc is checked for zero or -1 at
+	 * C-level. Assumes khl_mutex is held when called from C-level.
 	 */
 	ENTRY_NP(sfmmu_kpm_tsbmtl)
 	rdpr	%pstate, %o3
@@ -4498,7 +4517,7 @@ sfmmu_kpm_stsbmtl_panic:
 #ifdef DEBUG
 	andcc	%o3, PSTATE_IE, %g0		/* if interrupts already */
 	bnz,pt %icc, 1f				/* disabled, panic	 */
-	  nop
+	nop
 	save	%sp, -SA(MINFRAME), %sp
 	sethi	%hi(sfmmu_kpm_tsbmtl_panic), %o0
 	call	panic
@@ -4512,18 +4531,18 @@ sfmmu_kpm_stsbmtl_panic:
 	KPMLOCK_ENTER(%o1, %o4, kpmtsbmtl1, ASI_N)
 	mov	-1, %o5
 	brz,a	%o2, 2f
-	  mov	0, %o5
+	mov	0, %o5
 2:
 	sth	%o5, [%o0]
 	KPMLOCK_EXIT(%o1, ASI_N)
 
 	retl
-	  wrpr	%g0, %o3, %pstate		/* enable interrupts */
+	wrpr	%g0, %o3, %pstate		/* enable interrupts */
 	SET_SIZE(sfmmu_kpm_tsbmtl)
 
 	/*
 	 * kpm_smallpages: stores val to byte at address mapped within low level
-	 * lock brackets. The old value is returned.  Called from C-level.
+	 * lock brackets. The old value is returned. Called from C-level.
 	 */
 	ENTRY_NP(sfmmu_kpm_stsbmtl)
 	rdpr	%pstate, %o3
@@ -4535,12 +4554,12 @@ sfmmu_kpm_stsbmtl_panic:
 	 */
 #ifdef DEBUG
 	andcc	%o3, PSTATE_IE, %g0		/* if interrupts already */
-	bnz,pt %icc, 1f				/* disabled, panic	 */
-	  nop
+	bnz,pt	%icc, 1f				/* disabled, panic	 */
+	nop
 	save	%sp, -SA(MINFRAME), %sp
 	sethi	%hi(sfmmu_kpm_stsbmtl_panic), %o0
 	call	panic
-	  or	%o0, %lo(sfmmu_kpm_stsbmtl_panic), %o0
+	or	%o0, %lo(sfmmu_kpm_stsbmtl_panic), %o0
 	ret
 	restore
 1:
@@ -4554,7 +4573,7 @@ sfmmu_kpm_stsbmtl_panic:
 
 	and	%o5, KPM_MAPPED_MASK, %o0	/* return old val */
 	retl
-	  wrpr	%g0, %o3, %pstate		/* enable interrupts */
+	wrpr	%g0, %o3, %pstate		/* enable interrupts */
 	SET_SIZE(sfmmu_kpm_stsbmtl)
 
 #ifdef sun4v
@@ -4562,7 +4581,7 @@ sfmmu_kpm_stsbmtl_panic:
 	 * User/kernel data miss w// multiple TSBs
 	 * The first probe covers 8K, 64K, and 512K page sizes,
 	 * because 64K and 512K mappings are replicated off 8K
-	 * pointer.  Second probe covers 4M page size only.
+	 * pointer. Second probe covers 4M page size only.
 	 *
 	 * MMU fault area contains miss address and context.
 	 */
@@ -4575,7 +4594,7 @@ slow_miss_common:
 	 *  %g3 = ctx (cannot be INVALID_CONTEXT)
 	 */
 	brnz,pt	%g3, 8f			! check for user context
-	  nop
+	nop
 
 	/*
 	 * Kernel miss
@@ -4614,7 +4633,7 @@ sfmmu_dslow_patch_ktsb4m_szcode:
 
 	GET_UTSBREG(SCRATCHPAD_UTSBREG2, %g3)	/* get 2nd utsbreg */
 	brlz,pt %g3, sfmmu_tsb_miss_tt		/* done if no 2nd TSB */
-	  nop
+	nop
 
 	GET_2ND_TSBE_PTR(%g2, %g3, %g4, %g5)
 	/* %g3 = second TSB entry ptr now, %g2 preserved */
@@ -4628,7 +4647,7 @@ sfmmu_dslow_patch_ktsb4m_szcode:
 	 * User/kernel instruction miss w/ multiple TSBs
 	 * The first probe covers 8K, 64K, and 512K page sizes,
 	 * because 64K and 512K mappings are replicated off 8K
-	 * pointer.  Second probe covers 4M page size only.
+	 * pointer. Second probe covers 4M page size only.
 	 *
 	 * MMU fault area contains miss address and context.
 	 */
@@ -4642,13 +4661,13 @@ sfmmu_dslow_patch_ktsb4m_szcode:
 /*
  * Per-CPU tsbmiss areas to avoid cache misses in TSB miss handlers.
  */
-	.seg	".data"
-	.align	64
+	.data
+	.balign	64
 	.global tsbmiss_area
 tsbmiss_area:
 	.skip	(TSBMISS_SIZE * NCPU)
 
-	.align	64
+	.balign	64
 	.global kpmtsbm_area
 kpmtsbm_area:
 	.skip	(KPMTSBM_SIZE * NCPU)

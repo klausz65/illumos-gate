@@ -23,6 +23,9 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 /*
  * Assembly language support for px driver
@@ -31,6 +34,10 @@
 #include <sys/asm_linkage.h>
 #include <sys/machthread.h>
 #include <sys/privregs.h>
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*LINTLIBRARY*/
 
@@ -62,7 +69,7 @@
 	tst	%o3			! Set up %asi with modifier for
 	movz	%xcc, ASI_IOL, %g1	! Big/little endian physical space
 	movnz	%xcc, ASI_IO, %g1
-	mov	%g1, %asi
+	wr	%g1, %g0, %asi
 
 	cmp	%o0, 8			! 64-bit?
 	bne	.peek_int
@@ -118,7 +125,7 @@
 	tst	%o3
 	movz	%xcc, ASI_IOL, %g1	! Big/little endian physical space
 	movnz	%xcc, ASI_IO, %g1
-	mov	%g1, %asi
+	wr	%g1, %g0, %asi
 
 	cmp	%o0, 8			! 64 bit?
 	bne	.poke_int

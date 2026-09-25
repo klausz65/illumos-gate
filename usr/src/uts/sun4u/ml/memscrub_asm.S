@@ -22,6 +22,9 @@
 /*
  * Copyright (c) 2007 by Sun Microsystems, Inc.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 /*
  * General machine architecture & implementation specific
@@ -43,31 +46,31 @@
 	! void	memscrub_read(caddr_t src, u_int blks)
 	!
 
-	.seg ".text"
-	.align	4
+	.section	.text
+	.balign	4
 
 	ENTRY(memscrub_read)
 	srl	%o1, 0, %o1			! clear upper word of blk count
-        rd	%fprs, %o2			! get the status of fp
+	rd	%fprs, %o2			! get the status of fp
 	wr	%g0, FPRS_FEF, %fprs		! enable fp
 
 1:
 	prefetch [%o0 + 8*64], 0
-	ldda	[%o0]ASI_BLK_P, %d0
+	ldda	[%o0] ASI_BLK_P, %d0
 	add	%o0, 64, %o0
 	prefetch [%o0 + 8*64], 0
-	ldda	[%o0]ASI_BLK_P, %d16
+	ldda	[%o0] ASI_BLK_P, %d16
 	add	%o0, 64, %o0
 	prefetch [%o0 + 8*64], 0
-	ldda	[%o0]ASI_BLK_P, %d32
+	ldda	[%o0] ASI_BLK_P, %d32
 	add	%o0, 64, %o0
 	prefetch [%o0 + 8*64], 0
-	ldda	[%o0]ASI_BLK_P, %d48
+	ldda	[%o0] ASI_BLK_P, %d48
 	dec	%o1
-	brnz,a	%o1, 1b
+	brnz,a,pt %o1, 1b
 	add	%o0, 64, %o0
 
 	retl
-	wr	%o2, 0, %fprs			! restore fprs (disabled)
+	wr	%g0, %o2, %fprs			! restore fprs (disabled)
 	SET_SIZE(memscrub_read)
 

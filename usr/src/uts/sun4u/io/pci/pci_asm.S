@@ -23,6 +23,10 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
+
 
 /*
  * Assembly language support for physical big/little endian access of pcitool
@@ -34,6 +38,10 @@
 #include <sys/privregs.h>
 
 /*LINTLIBRARY*/
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+
 
 ! pci_do_phys_peek: Do physical address read.
 !
@@ -61,7 +69,7 @@
 	tst	%o3			! Set up %asi with modifier for
 	movz	%xcc, ASI_IOL, %g1	! Big/little endian physical space
 	movnz	%xcc, ASI_IO, %g1
-	mov	%g1, %asi
+	wr	%g1, %g0, %asi
 
 	cmp	%o0, 8			! 64-bit?
 	bne	.peek_int
@@ -116,8 +124,8 @@
 
 	tst	%o3
 	bz	.poke_asi_set
-	mov	ASI_IOL, %asi
-	mov	ASI_IO, %asi
+	wr	%g0, ASI_IOL, %asi
+	wr	%g0, ASI_IO, %asi
 .poke_asi_set:
 
 	cmp	%o0, 8			! 64 bit?

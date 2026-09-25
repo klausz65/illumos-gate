@@ -22,6 +22,9 @@
  * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include <sys/param.h>
 #include <sys/errno.h>
@@ -56,15 +59,19 @@
  *	u_int maxlength, *lencopied;
  */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 	ENTRY(copystr)
 	orcc	%o2, %g0, %o4		! save original count
-	bg,a	%ncc, 1f
-	  sub	%o0, %o1, %o0		! o0 gets the difference of src and dst
+	bg,a	%xcc, 1f
+	sub	%o0, %o1, %o0		! o0 gets the difference of src and dst
 
 	!
 	! maxlength <= 0
 	!
-	bz	%ncc, .cs_out		! maxlength = 0
+	bz	%xcc, .cs_out		! maxlength = 0
 	mov	ENAMETOOLONG, %o0
 
 	b	2f			! maxlength < 0
@@ -81,18 +88,18 @@
 	bnz,pt	%icc, 1f
 	add	%o1, 1, %o1		! incr dst addr
 
-	ba,pt	%ncc, .cs_out		! last byte in string
+	ba,pt	%xcc, .cs_out		! last byte in string
 	mov	0, %o0			! ret code = 0
 1:
 	subcc	%o2, 1, %o2		! test count
-	bgeu,a	%ncc, 0b
+	bgeu,a	%xcc, 0b
 	ldub	[%o0 + %o1], %g1	! delay slot, get source byte
 
 	mov	0, %o2			! max number of bytes moved
 	mov	ENAMETOOLONG, %o0	! ret code = ENAMETOOLONG
 .cs_out:
 	tst	%o3
-	bz	%ncc, 2f
+	bz	%xcc, 2f
 	sub	%o4, %o2, %o4		! compute length and store it
 	stn	%o4, [%o3]
 2:
@@ -107,7 +114,7 @@
  */
 
 	ENTRY(copyinstr)
-	sethi	%hi(.copyinstr_err), %o4
+	set	.copyinstr_err, %o4
 	ldn	[THREAD_REG + T_LOFAULT], %o5	! catch faults
 	or	%o4, %lo(.copyinstr_err), %o4
 	membar	#Sync				! sync error barrier
@@ -133,16 +140,16 @@
 	bnz,pt	%icc, 1f
 	add	%g4, 1, %g4		! incr dst addr
 
-	ba,pt	%ncc, .copyinstr_out	! last byte in string
+	ba,pt	%xcc, .copyinstr_out	! last byte in string
 	mov	0, %o0			! ret code = 0
 1:
 	subcc	%g3, 1, %g3		! test count
-	bgeu,a	%ncc, 0b
+	bgeu,a	%xcc, 0b
 	lduba	[%g2+%g4]ASI_USER, %g1	! delay slot, get source byte
 
 	mov	0, %g3			! max number of bytes moved
-	ba,pt	%ncc, .copyinstr_out
-	  mov	ENAMETOOLONG, %o0	! ret code = ENAMETOOLONG
+	ba,pt	%xcc, .copyinstr_out
+	mov	ENAMETOOLONG, %o0	! ret code = ENAMETOOLONG
 
 /*
  * Fault while trying to move from or to user space.
@@ -162,7 +169,7 @@
 	mov	EFAULT, %o0
 .copyinstr_out:
 	tst	%o3			! want length?
-	bz	%ncc, 2f
+	bz	%xcc, 2f
 	sub	%o2, %g3, %o2		! compute length and store it
 	stn	%o2, [%o3]
 2:
@@ -192,19 +199,19 @@
 	bnz	1f
 	add	%o1, 1, %o1		! incr dst addr
 
-	ba,pt	%ncc, .copyinstr_noerr_out	! last byte in string
+	ba,pt	%xcc, .copyinstr_noerr_out	! last byte in string
 	mov	0, %o0			! ret code = 0
 1:
 	subcc	%o2, 1, %o2		! test count
-	bgeu,a	%ncc, 0b
+	bgeu,a	%xcc, 0b
 	lduba	[%o0 + %o1]ASI_USER, %g1	! delay slot, get source byte
 
 	mov	0, %o2			! max number of bytes moved
 	b	.copyinstr_noerr_out
-	  mov	ENAMETOOLONG, %o0	! ret code = ENAMETOOLONG
+	mov	ENAMETOOLONG, %o0	! ret code = ENAMETOOLONG
 .copyinstr_noerr_out:
 	tst	%o3			! want length?
-	bz	%ncc, 2f
+	bz	%xcc, 2f
 	sub	%o4, %o2, %o4
 	stn	%o4, [%o3]
 2:
@@ -218,7 +225,7 @@
  */
 
 	ENTRY(copyoutstr)
-	sethi	%hi(.copyoutstr_err), %o5
+	set	.copyoutstr_err, %o5
 	ldn	[THREAD_REG + T_LOFAULT], %o4	! catch faults
 	or	%o5, %lo(.copyoutstr_err), %o5
 	membar	#Sync				! sync error barrier
@@ -245,16 +252,16 @@
 	bnz,pt	%icc, 1f
 	add	%g4, 1, %g4		! incr dst addr
 
-	ba,pt	%ncc, .copyoutstr_out	! last byte in string
+	ba,pt	%xcc, .copyoutstr_out	! last byte in string
 	mov	0, %o0			! ret code = 0
 1:
 	subcc	%g3, 1, %g3		! test count
-	bgeu,a	%ncc, 0b
+	bgeu,a	%xcc, 0b
 	ldub	[%g2 + %g4], %g1	! delay slot, get source byte
 
 	mov	0, %g3			! max number of bytes moved
-	ba,pt	%ncc, .copyoutstr_out
-	  mov	ENAMETOOLONG, %o0	! ret code = ENAMETOOLONG
+	ba,pt	%xcc, .copyoutstr_out
+	mov	ENAMETOOLONG, %o0	! ret code = ENAMETOOLONG
 
 /*
  * Fault while trying to move from or to user space.
@@ -274,7 +281,7 @@
 	mov	EFAULT, %o0
 .copyoutstr_out:
 	tst	%o3			! want length?
-	bz	%ncc, 2f
+	bz	%xcc, 2f
 	sub	%o2, %g3, %o2		! compute length and store it
 	stn	%o2, [%o3]
 2:
@@ -307,15 +314,15 @@
 	mov	0, %o0			! ret code = 0
 1:
 	subcc	%o2, 1, %o2		! test count
-	bgeu,a	%ncc, 0b
+	bgeu,a	%xcc, 0b
 	ldub	[%o0+%o1], %g1	! delay slot, get source byte
 
 	mov	0, %o2			! max number of bytes moved
 	b	.copyoutstr_noerr_out
-	  mov	ENAMETOOLONG, %o0	! ret code = ENAMETOOLONG
+	mov	ENAMETOOLONG, %o0	! ret code = ENAMETOOLONG
 .copyoutstr_noerr_out:
 	tst	%o3			! want length?
-	bz	%ncc, 2f
+	bz	%xcc, 2f
 	sub	%o4, %o2, %o4
 	stn	%o4, [%o3]
 2:
@@ -325,7 +332,7 @@
 
 
 /*
- * Copy a block of storage.  If the source and target regions overlap,
+ * Copy a block of storage. If the source and target regions overlap,
  * one or both of the regions will be silently corrupted.
  * No fault handler installed (to be called under on_fault())
  */
@@ -335,13 +342,13 @@
 
 	subcc	%g0, %i2, %i3
 	add	%i0, %i2, %i0
-	bz,pn	%ncc, 5f
+	bz,pn	%xcc, 5f
 	add	%i1, %i2, %i1
 	lduba	[%i0 + %i3]ASI_USER, %i4
 4:	stba	%i4, [%i1 + %i3]ASI_USER
 	inccc	%i3
-	bcc,a,pt %ncc, 4b
-	lduba  [%i0 + %i3]ASI_USER, %i4
+	bcc,a,pt %xcc, 4b
+	lduba	[%i0 + %i3]ASI_USER, %i4
 5:
 	ret
 	restore %g0, 0, %o0		! return (0)
@@ -349,7 +356,7 @@
 	SET_SIZE(ucopy)
 
 /*
- * Copy a user-land string.  If the source and target regions overlap,
+ * Copy a user-land string. If the source and target regions overlap,
  * one or both of the regions will be silently corrupted.
  * No fault handler installed (to be called under on_fault())
  */
@@ -365,7 +372,7 @@
 	brz,pn	%i4, 5f
 	inc	%i5
 	deccc	%i2
-	bnz,a,pt %ncc, 4b
+	bnz,a,pt %xcc, 4b
 	lduba	[%i0 + %i5]ASI_USER, %i4
 5:
 	brnz,a,pt %i3, 6f

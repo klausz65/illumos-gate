@@ -22,6 +22,9 @@
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include <sys/asm_linkage.h>
 #include <sys/machthread.h>
@@ -42,6 +45,10 @@
 	 *   so0 - spill other tl 0
 	 *   so1 - spill other tl >0
 	 */
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 	ENTRY_NP(fault_32bit_sn0)
 	!

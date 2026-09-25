@@ -44,7 +44,7 @@ include $(SRC)/lib/iconv_modules/Makefile.iconv
 
 LDFLAGS = $(DYNFLAGS) $(LDLIBS)
 
-CFLAGS		+= -D_REENTRANT
+CFLAGS		+= $(XREGSFLAG) -D_REENTRANT
 
 CLEANFILES +=	tbl.h
 

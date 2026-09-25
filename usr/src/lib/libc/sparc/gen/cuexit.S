@@ -28,12 +28,10 @@
  * Use is subject to license terms.
  */
 
-.ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.7	*/
-
 /* C library -- exit						*/
 /* void exit (int status);					*/
 
-	.file	"cuexit.s"
+	.file	"cuexit.S"
 
 #include "SYS.h"
 

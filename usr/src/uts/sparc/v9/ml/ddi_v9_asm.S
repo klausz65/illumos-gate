@@ -66,7 +66,7 @@
  * access handle.
  */
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_get8)
 	ALTENTRY(ddi_io_get8)
 	ALTENTRY(ddi_mem_get8)
@@ -77,13 +77,13 @@
 	SET_SIZE(ddi_io_get8)
 	SET_SIZE(ddi_mem_get8)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_get8)
 	retl
 	ldub	[%o1], %o0
 	SET_SIZE(i_ddi_get8)
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_get16)
 	ALTENTRY(ddi_io_get16)
 	ALTENTRY(ddi_mem_get16)
@@ -94,7 +94,7 @@
 	SET_SIZE(ddi_io_get16)
 	SET_SIZE(ddi_mem_get16)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_get16)
 	ALTENTRY(i_ddi_swap_get16)
 	retl
@@ -102,7 +102,7 @@
 	SET_SIZE(i_ddi_get16)
 	SET_SIZE(i_ddi_swap_get16)
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_get32)
 	ALTENTRY(ddi_io_get32)
 	ALTENTRY(ddi_mem_get32)
@@ -113,7 +113,7 @@
 	SET_SIZE(ddi_io_get32)
 	SET_SIZE(ddi_mem_get32)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_get32)
 	ALTENTRY(i_ddi_swap_get32)
 	retl
@@ -121,7 +121,7 @@
 	SET_SIZE(i_ddi_get32)
 	SET_SIZE(i_ddi_swap_get32)
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_get64)
 	ALTENTRY(ddi_io_get64)
 	ALTENTRY(ddi_mem_get64)
@@ -132,7 +132,7 @@
 	SET_SIZE(ddi_io_get64)
 	SET_SIZE(ddi_mem_get64)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_get64)
 	ALTENTRY(i_ddi_swap_get64)
 	retl
@@ -140,7 +140,7 @@
 	SET_SIZE(i_ddi_get64)
 	SET_SIZE(i_ddi_swap_get64)
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_put8)
 	ALTENTRY(ddi_io_put8)
 	ALTENTRY(ddi_mem_put8)
@@ -151,13 +151,13 @@
 	SET_SIZE(ddi_io_put8)
 	SET_SIZE(ddi_mem_put8)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_put8)
 	retl
-	stub	%o2, [%o1]
+	stb	%o2, [%o1]
 	SET_SIZE(i_ddi_put8)
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_put16)
 	ALTENTRY(ddi_io_put16)
 	ALTENTRY(ddi_mem_put16)
@@ -168,7 +168,7 @@
 	SET_SIZE(ddi_io_put16)
 	SET_SIZE(ddi_mem_put16)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_put16)
 	ALTENTRY(i_ddi_swap_put16)
 	retl
@@ -176,7 +176,7 @@
 	SET_SIZE(i_ddi_put16)
 	SET_SIZE(i_ddi_swap_put16)
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_put32)
 	ALTENTRY(ddi_io_put32)
 	ALTENTRY(ddi_mem_put32)
@@ -187,7 +187,7 @@
 	SET_SIZE(ddi_io_put32)
 	SET_SIZE(ddi_mem_put32)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_put32)
 	ALTENTRY(i_ddi_swap_put32)
 	retl
@@ -195,7 +195,7 @@
 	SET_SIZE(i_ddi_put32)
 	SET_SIZE(i_ddi_swap_put32)
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_put64)
 	ALTENTRY(ddi_io_put64)
 	ALTENTRY(ddi_mem_put64)
@@ -206,7 +206,7 @@
 	SET_SIZE(ddi_io_put64)
 	SET_SIZE(ddi_mem_put64)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_put64)
 	ALTENTRY(i_ddi_swap_put64)
 	retl
@@ -231,10 +231,10 @@
  */
 
 #define DDI_REP_GET(n,s)			\
-	cmp	DDI_DEV_NO_AUTOINCR, %o4;	\
+	cmp	%o4, DDI_DEV_NO_AUTOINCR;	\
 	mov	%g0, %o4;			\
 	brz,pn	%o3, 1f;			\
-	movnz	%xcc, n, %o4;			\
+	movne	%xcc, n, %o4;			\
 2:						\
 	dec	%o3;				\
 	ld##s	[%o2], %g4;			\
@@ -244,7 +244,7 @@
 	add	%o1, n, %o1;			\
 1:
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_rep_get8)
 	ALTENTRY(ddi_mem_rep_get8)
 	ldn      [%o0 + AHI_REP_GET8], %g1
@@ -253,14 +253,14 @@
 	SET_SIZE(ddi_rep_get8)
 	SET_SIZE(ddi_mem_rep_get8)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_rep_get8)
 	DDI_REP_GET(1,ub)
 	retl
 	nop
 	SET_SIZE(i_ddi_rep_get8)
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_rep_get16)
 	ALTENTRY(ddi_mem_rep_get16)
 	ldn	[%o0 + AHI_REP_GET16], %g1
@@ -269,7 +269,7 @@
 	SET_SIZE(ddi_rep_get16)
 	SET_SIZE(ddi_mem_rep_get16)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_rep_get16)
 	ALTENTRY(i_ddi_swap_rep_get16)
 	DDI_REP_GET(2,uh)
@@ -278,7 +278,7 @@
 	SET_SIZE(i_ddi_rep_get16)
 	SET_SIZE(i_ddi_swap_rep_get16)
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_rep_get32)
 	ALTENTRY(ddi_mem_rep_get32)
 	ldn      [%o0 + AHI_REP_GET32], %g1
@@ -287,16 +287,16 @@
 	SET_SIZE(ddi_rep_get32)
 	SET_SIZE(ddi_mem_rep_get32)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_rep_get32)
 	ALTENTRY(i_ddi_swap_rep_get32)
-	DDI_REP_GET(4,/**/)
+	DDI_REP_GET(4,)
 	retl
 	nop
 	SET_SIZE(i_ddi_rep_get32)
 	SET_SIZE(i_ddi_swap_rep_get32)
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_rep_get64)
 	ALTENTRY(ddi_mem_rep_get64)
 	ldn      [%o0 + AHI_REP_GET64], %g1
@@ -305,7 +305,7 @@
 	SET_SIZE(ddi_rep_get64)
 	SET_SIZE(ddi_mem_rep_get64)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_rep_get64)
 	ALTENTRY(i_ddi_swap_rep_get64)
 	DDI_REP_GET(8,x)
@@ -324,10 +324,10 @@
  * making the increment operation a non-operation.
  */
 #define DDI_REP_PUT(n,s)			\
-	cmp	DDI_DEV_NO_AUTOINCR, %o4;	\
+	cmp	%o4, DDI_DEV_NO_AUTOINCR;	\
 	mov	%g0, %o4;			\
 	brz,pn	%o3, 1f;			\
-	movnz	%xcc, n, %o4;			\
+	movne	%xcc, n, %o4;			\
 2:						\
 	dec	%o3;				\
 	ld##s	[%o1], %g4;			\
@@ -337,7 +337,7 @@
 	add	%o2, %o4, %o2;			\
 1:
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_rep_put8)
 	ALTENTRY(ddi_mem_rep_put8)
 	ldn      [%o0 + AHI_REP_PUT8], %g1
@@ -346,14 +346,14 @@
 	SET_SIZE(ddi_rep_put8)
 	SET_SIZE(ddi_mem_rep_put8)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_rep_put8)
 	DDI_REP_PUT(1,ub)
 	retl
 	nop
 	SET_SIZE(i_ddi_rep_put8)
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_rep_put16)
 	ALTENTRY(ddi_mem_rep_put16)
 	ldn      [%o0 + AHI_REP_PUT16], %g1
@@ -362,7 +362,7 @@
 	SET_SIZE(ddi_rep_put16)
 	SET_SIZE(ddi_mem_rep_put16)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_rep_put16)
 	ALTENTRY(i_ddi_swap_rep_put16)
 	DDI_REP_PUT(2,uh)
@@ -371,7 +371,7 @@
 	SET_SIZE(i_ddi_rep_put16)
 	SET_SIZE(i_ddi_swap_rep_put16)
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_rep_put32)
 	ALTENTRY(ddi_mem_rep_put32)
 	ldn      [%o0 + AHI_REP_PUT32], %g1
@@ -380,16 +380,16 @@
 	SET_SIZE(ddi_rep_put32)
 	SET_SIZE(ddi_mem_rep_put32)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_rep_put32)
 	ALTENTRY(i_ddi_swap_rep_put32)
-	DDI_REP_PUT(4,/**/)
+	DDI_REP_PUT(4,)
 	retl
 	nop
 	SET_SIZE(i_ddi_rep_put32)
 	SET_SIZE(i_ddi_swap_rep_put32)
 
-	.align 32
+	.balign 32
 	ENTRY(ddi_rep_put64)
 	ALTENTRY(ddi_mem_rep_put64)
 	ldn      [%o0 + AHI_REP_PUT64], %g1
@@ -398,7 +398,7 @@
 	SET_SIZE(ddi_rep_put64)
 	SET_SIZE(ddi_mem_rep_put64)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_rep_put64)
 	ALTENTRY(i_ddi_swap_rep_put64)
 	DDI_REP_PUT(8,x)
@@ -407,7 +407,7 @@
 	SET_SIZE(i_ddi_rep_put64)
 	SET_SIZE(i_ddi_swap_rep_put64)
 
-	.align 16
+	.balign 16
 	ENTRY(ddi_io_rep_get8)
 	set	DDI_DEV_NO_AUTOINCR, %o4 /* Set flag to DDI_DEV_NO_AUTOINCR */
 	ldn	[%o0 + AHI_REP_GET8], %g1
@@ -415,7 +415,7 @@
 	nop
 	SET_SIZE(ddi_io_rep_get8)
 
-	.align 16
+	.balign 16
 	ENTRY(ddi_io_rep_get16)
 	set	DDI_DEV_NO_AUTOINCR, %o4 /* Set flag to DDI_DEV_NO_AUTOINCR */
 	ldn	[%o0 + AHI_REP_GET16], %g1
@@ -423,7 +423,7 @@
 	nop
 	SET_SIZE(ddi_io_rep_get16)
 
-	.align 16
+	.balign 16
 	ENTRY(ddi_io_rep_get32)
 	set	DDI_DEV_NO_AUTOINCR, %o4 /* Set flag to DDI_DEV_NO_AUTOINCR */
 	ldn	[%o0 + AHI_REP_GET32], %g1
@@ -431,7 +431,7 @@
 	nop
 	SET_SIZE(ddi_io_rep_get32)
 
-	.align 16
+	.balign 16
 	ENTRY(ddi_io_rep_get64)
 	set	DDI_DEV_NO_AUTOINCR, %o4 /* Set flag to DDI_DEV_NO_AUTOINCR */
 	ldn	[%o0 + AHI_REP_GET64], %g1
@@ -439,27 +439,27 @@
 	nop
 	SET_SIZE(ddi_io_rep_get64)
 
-        .align 64
+        .balign 64
 	ENTRY(ddi_check_acc_handle)
-	save	%sp, -SA(WINDOWSIZE), %sp	! get a new window
+	save	%sp, -SA(WINDOWSIZE), %sp	/* get a new window */
 	ldn	[%i0 + AHI_FAULT_CHECK], %g1
 	jmpl	%g1, %o7
 	mov	%i0, %o0
-	brnz,a,pn %o0, 0f			! if (return_value != 0)
-	mov	-1, %o0				!	return (DDI_FAILURE)
-0:						! else	return (DDI_SUCCESS)
+	brnz,a,pn %o0, 0f			/* if (return_value != 0) */
+	mov	-1, %o0				/*	return (DDI_FAILURE) */
+0:						/* else	return (DDI_SUCCESS) */
 	sra	%o0, 0, %i0
 	ret
 	restore
 	SET_SIZE(ddi_check_acc_handle)
 
-        .align 16
+        .balign 16
         ENTRY(i_ddi_acc_fault_check)
 	retl
 	ld      [%o0 + AHI_FAULT], %o0
         SET_SIZE(i_ddi_acc_fault_check)
 
-	.align 16
+	.balign 16
 	ENTRY(ddi_io_rep_put8)
 	set	DDI_DEV_NO_AUTOINCR, %o4 /* Set flag to DDI_DEV_NO_AUTOINCR */
 	ldn	[%o0 + AHI_REP_PUT8], %g1
@@ -467,7 +467,7 @@
 	nop
 	SET_SIZE(ddi_io_rep_put8)
 
-	.align 16
+	.balign 16
 	ENTRY(ddi_io_rep_put16)
 	set	DDI_DEV_NO_AUTOINCR, %o4 /* Set flag to DDI_DEV_NO_AUTOINCR */
 	ldn	[%o0 + AHI_REP_PUT16], %g1
@@ -475,7 +475,7 @@
 	nop
 	SET_SIZE(ddi_io_rep_put16)
 
-	.align 16
+	.balign 16
 	ENTRY(ddi_io_rep_put32)
 	set	DDI_DEV_NO_AUTOINCR, %o4 /* Set flag to DDI_DEV_NO_AUTOINCR */
 	ldn	[%o0 + AHI_REP_PUT32], %g1
@@ -483,7 +483,7 @@
 	nop
 	SET_SIZE(ddi_io_rep_put32)
 
-	.align 16
+	.balign 16
 	ENTRY(ddi_io_rep_put64)
 	set	DDI_DEV_NO_AUTOINCR, %o4 /* Set flag to DDI_DEV_NO_AUTOINCR */
 	ldn	[%o0 + AHI_REP_PUT64], %g1
@@ -492,34 +492,34 @@
 	SET_SIZE(ddi_io_rep_put64)
 
 	ENTRY(do_peek)
-	rdpr	%pstate, %o3	! check ints
+	rdpr	%pstate, %o3		/* check ints */
 	andcc	%o3, PSTATE_IE, %g0
 	bz,a	done
-	or	%g0, 1, %o0	! Return failure if ints are disabled
+	or	%g0, 1, %o0		/* Return failure if ints are disabled */
 	wrpr	%o3, PSTATE_IE, %pstate
-	cmp	%o0, 8		! 64-bit?
-	bne,a	.peek_int
-	cmp	%o0, 4		! 32-bit?
+	cmp	%o0, 8			/* 64-bit? */
+	bne,a,pt %xcc, .peek_int	/* FIXED: %xcc and prdicted-taken */
+	cmp	%o0, 4			/* 32-bit? */
 	ldx	[%o1], %g1
 	ba	.peekdone
 	stx	%g1, [%o2]
 .peek_int:
-	bne,a	.peek_half
-	cmp	%o0, 2		! 16-bit?
+	bne,a,pt %xcc, .peek_half	/* FIXED: %xcc and prdicted-taken */
+	cmp	%o0, 2			/* 16-bit? */
 	lduw	[%o1], %g1
 	ba	.peekdone
 	stuw	%g1, [%o2]
 .peek_half:
-	bne,a	.peek_byte
-	ldub	[%o1], %g1	! 8-bit!
+	bne,a,pt %xcc, .peek_byte	/* FIXED: %xcc and prdicted-taken */
+	ldub	[%o1], %g1		/* 8-bit! */
 	lduh	[%o1], %g1
 	ba	.peekdone
 	stuh	%g1, [%o2]
 .peek_byte:
-	stub	%g1, [%o2]
+	stb	%g1, [%o2]
 .peekdone:
-	membar	#Sync		! Make sure the loads take
-	rdpr	%pstate, %o3	! check&enable ints
+	membar	#Sync			/* Make sure the loads take */
+	rdpr	%pstate, %o3		/* check&enable ints */
 	andcc	%o3, PSTATE_IE, %g0
 	bnz	1f
 	nop
@@ -532,26 +532,26 @@ done:
 	SET_SIZE(do_peek)
 
 	ENTRY(do_poke)
-	cmp	%o0, 8		! 64 bit?
-	bne,a	.poke_int
-	cmp	%o0, 4		! 32-bit?
+	cmp	%o0, 8			/* 64 bit? */
+	bne,a,pt %xcc, .poke_int	/* FIXED: %xcc and prdicted-taken */
+	cmp	%o0, 4			/* 32-bit? */
 	ldx	[%o2], %g1
 	ba	.pokedone
 	stx	%g1, [%o1]
 .poke_int:
-	bne,a	.poke_half
-	cmp	%o0, 2		! 16-bit?
+	bne,a,pt %xcc, .poke_half	/* FIXED: %xcc and prdicted-taken */
+	cmp	%o0, 2			/* 16-bit? */
 	lduw	[%o2], %g1
 	ba	.pokedone
 	stuw	%g1, [%o1]
 .poke_half:
-	bne,a	.poke_byte
-	ldub	[%o2], %g1	! 8-bit!
+	bne,a,pt %xcc, .poke_byte	/* FIXED: %xcc and prdicted-taken */
+	ldub	[%o2], %g1		/* 8-bit! */
 	lduh	[%o2], %g1
 	ba	.pokedone
 	stuh	%g1, [%o1]
 .poke_byte:
-	stub	%g1, [%o1]
+	stb	%g1, [%o1]
 .pokedone:
 	membar	#Sync
 	retl
@@ -568,48 +568,48 @@ done:
  * do_peek or do_poke to return DDI_FAILURE, instead of longjmp'ing back to
  * on_trap.  In the case of a peek, we may also need to re-enable interrupts.
  */
-	.seg	".data"
+	.data
 .peek_panic:
 	.asciz	"peek_fault: missing or invalid on_trap_data"
 .poke_panic:
 	.asciz	"poke_fault: missing or invalid on_trap_data"
 
 	ENTRY(peek_fault)
-	ldn	[THREAD_REG + T_ONTRAP], %o0	! %o0 = on_trap_data pointer
-	brz,pn	%o0, .peekfail			! if (%o0 == NULL) panic
+	ldx	[THREAD_REG + T_ONTRAP], %o0	/* FIXED: Native 64-bit */
+	brz,pn	%o0, .peekfail			/* if (%o0 == NULL) panic */
 	nop
-	lduh	[%o0 + OT_PROT], %o1		! %o1 = %o0->ot_prot
-	andcc	%o1, OT_DATA_ACCESS, %g0	! if (!(%o1 & OT_DATA_ACCESS))
-	bz,pn	%icc, .peekfail			!     panic
+	lduh	[%o0 + OT_PROT], %o1		/* %o1 = %o0->ot_prot */
+	andcc	%o1, OT_DATA_ACCESS, %g0	/* if (!(%o1 & OT_DATA_ACCESS)) */
+	bz,pn	%icc, .peekfail			/*     panic */
 	rdpr	%pstate, %o3
 
-	andcc	%o3, PSTATE_IE, %g0		! enable interrupts
+	andcc	%o3, PSTATE_IE, %g0		/* enable interrupts */
 	bnz	1f
 	nop
 	wrpr	%o3, PSTATE_IE, %pstate
 1:
 	retl
-	sub	%g0, 1, %o0			! return (DDI_FAILURE);
+	sub	%g0, 1, %o0			/* return (DDI_FAILURE); */
 .peekfail:
-	set	.peek_panic, %o0		! Load panic message
-	call	panic				! Panic if bad t_ontrap data
+	set	.peek_panic, %o0		/* Load panic message */
+	call	panic				/* Panic if bad t_ontrap data */
 	nop
 	SET_SIZE(peek_fault)
 
 
 	ENTRY(poke_fault)
-	ldn	[THREAD_REG + T_ONTRAP], %o0	! %o0 = on_trap_data pointer
-	brz,pn	%o0, .pokefail			! if (%o0 == NULL) panic
+	ldn	[THREAD_REG + T_ONTRAP], %o0	/* %o0 = on_trap_data pointer */
+	brz,pn	%o0, .pokefail			/* if (%o0 == NULL) panic */
 	nop
-	lduh	[%o0 + OT_PROT], %o1		! %o1 = %o0->ot_prot
-	andcc	%o1, OT_DATA_ACCESS, %g0	! if (!(%o1 & OT_DATA_ACCESS))
-	bz,pn	%icc, .pokefail			!     panic
+	lduh	[%o0 + OT_PROT], %o1		/* %o1 = %o0->ot_prot */
+	andcc	%o1, OT_DATA_ACCESS, %g0	/* if (!(%o1 & OT_DATA_ACCESS)) */
+	bz,pn	%icc, .pokefail			/*     panic */
 	nop
 	retl
-	sub	%g0, 1, %o0			! return (DDI_FAILURE);
+	sub	%g0, 1, %o0			/* return (DDI_FAILURE); */
 .pokefail:
-	set	.poke_panic, %o0		! Load panic message
-	call	panic				! Panic if bad t_ontrap data
+	set	.poke_panic, %o0		/* Load panic message */
+	call	panic				/* Panic if bad t_ontrap data */
 	nop
 	SET_SIZE(poke_fault)
 
@@ -664,34 +664,34 @@ done:
  *
  */
 
-	.seg	".data"
+	.data
 .acc_panic:
 	.asciz	"DDI access: missing or invalid on_trap_data"
 
 	ENTRY(i_ddi_caut_trampoline)
-	ldn	[THREAD_REG + T_ONTRAP], %o5    ! %o5 = curthread->t_ontrap
-	lduh	[%o5 + OT_PROT], %o1		! %o1 = %o0->ot_prot
-	andcc	%o1, OT_DATA_ACCESS, %g0	! if (!(%o1 & OT_DATA_ACCESS))
-	bz,pn	%icc, .cautaccfail		!     panic
+	ldn	[THREAD_REG + T_ONTRAP], %o5    /* %o5 = curthread->t_ontrap */
+	lduh	[%o5 + OT_PROT], %o1		/* %o1 = %o0->ot_prot */
+	andcc	%o1, OT_DATA_ACCESS, %g0	/* if (!(%o1 & OT_DATA_ACCESS)) */
+	bz,pn	%icc, .cautaccfail		/*     panic */
 	rdpr	%pstate, %o3
-	andcc	%o3, PSTATE_IE, %g0		! enable interrupts
+	andcc	%o3, PSTATE_IE, %g0		/* enable interrupts */
 	bnz	1f
 	nop
 	wrpr	%o3, PSTATE_IE, %pstate
 1:
-	ldn	[%o5 + OT_HANDLE], %o0		! %o0 = ot_handle
-	brz,pn	%o0, .cautaccfail		! if (ot_handle == NULL) panic
+	ldn	[%o5 + OT_HANDLE], %o0		/* %o0 = ot_handle */
+	brz,pn	%o0, .cautaccfail		/* if (ot_handle == NULL) panic */
 	nop
-	ldn	[%o0 + AHI_ERR], %o4		! %o4 = hp->ahi_err
+	ldn	[%o0 + AHI_ERR], %o4		/* %o4 = hp->ahi_err */
 	membar	#Sync
-	stx	%g0, [%o4 + ERR_ENA]		! ahi_err->err_ena = 0
+	stx	%g0, [%o4 + ERR_ENA]		/* ahi_err->err_ena = 0 */
 	mov	-2, %o0
-	st	%o0, [%o4 + ERR_STATUS]		! ahi_err->err_status = NONFATAL
-	b	longjmp				! longjmp back
-	add	%o5, OT_JMPBUF, %o0		! %o0 = &ot_jmpbuf
+	stx	%o0, [%o4 + ERR_STATUS]		/* FIXED: Ensure full 64-bit alignment update */
+	b	longjmp				/* longjmp back */
+	add	%o5, OT_JMPBUF, %o0		/* %o0 = &ot_jmpbuf */
 .cautaccfail:
-	set	.acc_panic, %o0			! Load panic message
-	call	panic				! Panic if bad t_ontrap data
+	set	.acc_panic, %o0			/* Load panic message */
+	call	panic				/* Panic if bad t_ontrap data */
 	nop
 	SET_SIZE(i_ddi_caut_trampoline)
 
@@ -703,22 +703,22 @@ done:
  */
 	ENTRY(i_ddi_ontrap)
 	ldn	[%o0 + AHI_ERR], %o4
-	ldn	[%o4 + ERR_ONTRAP],  %o4	! %o4 = hp->ahi_err->err_ontrap
-	ldn	[THREAD_REG + T_ONTRAP], %o5	! %o5 = curthread->t_ontrap
-	stn	%o5, [%o4 + OT_PREV]		! ot_prev = t_ontrap
-	membar	#Sync				! force error barrier
-	stn	%o4, [THREAD_REG + T_ONTRAP]	! t_ontrap = err_ontrap
+	ldn	[%o4 + ERR_ONTRAP],  %o4	/* %o4 = hp->ahi_err->err_ontrap */
+	ldn	[THREAD_REG + T_ONTRAP], %o5	/* %o5 = curthread->t_ontrap */
+	stn	%o5, [%o4 + OT_PREV]		/* ot_prev = t_ontrap */
+	membar	#Sync				/* force error barrier */
+	stn	%o4, [THREAD_REG + T_ONTRAP]	/* t_ontrap = err_ontrap */
 	b	setjmp
 	add	%o4, OT_JMPBUF, %o0
 	SET_SIZE(i_ddi_ontrap)
 
 	ENTRY(i_ddi_notrap)
-	membar	#Sync				! force error barrier
+	membar	#Sync				/* force error barrier */
 	ldn	[%o0 + AHI_ERR], %o4
-	ldn	[%o4 + ERR_ONTRAP],  %o4	! %o4 = hp->ahi_err->err_ontrap
+	ldn	[%o4 + ERR_ONTRAP],  %o4	/* %o4 = hp->ahi_err->err_ontrap */
 	ldn	[%o4 + OT_PREV], %o4
 	retl
-	stn	%o4, [THREAD_REG + T_ONTRAP]	! restore curthread->t_ontrap
+	stn	%o4, [THREAD_REG + T_ONTRAP]	/* restore curthread->t_ontrap */
 	SET_SIZE(i_ddi_notrap)
 
 /*
@@ -728,31 +728,31 @@ done:
  * i_ddi_protect_trampoline().  DDI_NOPROTECT() clears the ontrap set-up.
  */
 	ENTRY(i_ddi_prot_trampoline)
-	ldn	[THREAD_REG + T_ONTRAP], %o5    ! %o5 = curthread->t_ontrap
-	lduh	[%o5 + OT_PROT], %o1		! %o1 = %o0->ot_prot
-	andcc	%o1, OT_DATA_ACCESS, %g0	! if (!(%o1 & OT_DATA_ACCESS))
-	bz,pn	%icc, .protaccfail		!     panic
+	ldn	[THREAD_REG + T_ONTRAP], %o5    /* %o5 = curthread->t_ontrap */
+	lduh	[%o5 + OT_PROT], %o1		/* %o1 = %o0->ot_prot */
+	andcc	%o1, OT_DATA_ACCESS, %g0	/* if (!(%o1 & OT_DATA_ACCESS)) */
+	bz,pn	%icc, .protaccfail		/*     panic */
 	rdpr	%pstate, %o3
-	andcc	%o3, PSTATE_IE, %g0		! enable interrupts
+	andcc	%o3, PSTATE_IE, %g0		/* enable interrupts */
 	bnz	1f
 	nop
 	wrpr	%o3, PSTATE_IE, %pstate
 1:
-	ldn	[%o5 + OT_HANDLE], %o0		! %o0 = ot_handle
-	brz,pn	%o0, .protaccfail		! if (ot_handle == NULL) panic
+	ldn	[%o5 + OT_HANDLE], %o0		/* %o0 = ot_handle */
+	brz,pn	%o0, .protaccfail		/* if (ot_handle == NULL) panic */
 	nop
-	ldn	[%o0 + AHI_ERR], %o4		! %o4 = hp->ahi_err
-	stn	%g0, [%o4 + ERR_ENA]		! ahi_err->err_ena = 0
+	ldn	[%o0 + AHI_ERR], %o4		/* %o4 = hp->ahi_err */
+	stn	%g0, [%o4 + ERR_ENA]		/* ahi_err->err_ena = 0 */
 	mov	-2, %o0
-	st	%o0, [%o4 + ERR_STATUS]		! ahi_err->err_status = NONFATAL
-	ldn	[%o5 + OT_PREV], %o0		! restore ontrap
-	membar	#Sync				! force error barrier
+	stx	%o0, [%o4 + ERR_STATUS]		/* FIXED: Ensure full 64-bit alignment update */
+	ldn	[%o5 + OT_PREV], %o0		/* restore ontrap */
+	membar	#Sync				/* force error barrier */
 	stn	%o0, [THREAD_REG + T_ONTRAP];
-	b	longjmp				! longjmp back
-	add	%o5, OT_JMPBUF, %o0		! %o0 = &ot_jmpbuf
+	b	longjmp				/* longjmp back */
+	add	%o5, OT_JMPBUF, %o0		/* %o0 = &ot_jmpbuf */
 .protaccfail:
-	set	.acc_panic, %o0			! Load panic message
-	call	panic				! Panic if bad t_ontrap data
+	set	.acc_panic, %o0			/* Load panic message */
+	call	panic				/* Panic if bad t_ontrap data */
 	nop
 	SET_SIZE(i_ddi_prot_trampoline)
 
@@ -777,144 +777,144 @@ done:
 /*
  * DDI_FLAGERR_ACC specific get/put routines.
  */
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_get8)
-	DDI_PROTECT()				! set ontrap protection
-	ldub	[%o1], %o2			! do the io access
-	DDI_NOPROTECT()				! remove protection & ret
+	DDI_PROTECT()				/* set ontrap protection */
+	ldub	[%o1], %o2			/* do the io access */
+	DDI_NOPROTECT()				/* remove protection & ret */
 	retl
-	mov	%o2, %o0			! set return value
+	mov	%o2, %o0			/* set return value */
 	SET_SIZE(i_ddi_prot_get8)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_get16)
-	DDI_PROTECT()				! set ontrap protection
-	lduh	[%o1], %o2			! do the io access
-	DDI_NOPROTECT()				! remove protection & ret
+	DDI_PROTECT()				/* set ontrap protection */
+	lduh	[%o1], %o2			/* do the io access */
+	DDI_NOPROTECT()				/* remove protection & ret */
 	retl
-	mov	%o2, %o0			! set return value
+	mov	%o2, %o0			/* set return value */
 	SET_SIZE(i_ddi_prot_get16)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_get32)
-	DDI_PROTECT()				! set ontrap protection
-	ld	[%o1], %o2			! do the io access
-	DDI_NOPROTECT()				! remove protection & ret
+	DDI_PROTECT()				/* set ontrap protection */
+	ld	[%o1], %o2			/* do the io access */
+	DDI_NOPROTECT()				/* remove protection & ret */
 	retl
-	mov	%o2, %o0			! set return value
+	mov	%o2, %o0			/* set return value */
 	SET_SIZE(i_ddi_prot_get32)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_get64)
-	DDI_PROTECT()				! set ontrap protection
-	ldx	[%o1], %o2			! do the io access
-	DDI_NOPROTECT()				! remove protection & ret
+	DDI_PROTECT()				/* set ontrap protection */
+	ldx	[%o1], %o2			/* do the io access */
+	DDI_NOPROTECT()				/* remove protection & ret */
 	retl
-	mov	%o2, %o0			! set return value
+	mov	%o2, %o0			/* set return value */
 	SET_SIZE(i_ddi_prot_get64)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_put8)
-	stub	%o2, [%o1]			! do the io access
+	stb	%o2, [%o1]			/* do the io access */
 	retl
 	membar	#Sync;
 	SET_SIZE(i_ddi_prot_put8)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_put16)
-	stuh	%o2, [%o1]			! do the io access
+	stuh	%o2, [%o1]			/* do the io access */
 	retl
 	membar	#Sync;
 	SET_SIZE(i_ddi_prot_put16)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_put32)
-	st	%o2, [%o1]			! do the io access
+	st	%o2, [%o1]			/* do the io access */
 	retl
 	membar	#Sync;
 	SET_SIZE(i_ddi_prot_put32)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_put64)
-	stx	%o2, [%o1]			! do the io access
+	stx	%o2, [%o1]			/* do the io access */
 	retl
 	membar	#Sync;
 	SET_SIZE(i_ddi_prot_put64)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_rep_get8)
-	DDI_PROTECT()				! set ontrap protection
-	tst	%o0				! check access error
+	DDI_PROTECT()				/* set ontrap protection */
+	tst	%o0				/* check access error */
 	bnz,a	1f
 	nop
 	DDI_REP_GET(1,ub)
 1:
-	DDI_NOPROTECT()				! remove protection & ret
+	DDI_NOPROTECT()				/* remove protection & ret */
 	retl
 	nop
 	SET_SIZE(i_ddi_prot_rep_get8)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_rep_get16)
-	DDI_PROTECT()				! set ontrap protection
-	tst	%o0				! check access error
+	DDI_PROTECT()				/* set ontrap protection */
+	tst	%o0				/* check access error */
 	bnz,a	1f
 	nop
 	DDI_REP_GET(2,uh)
 1:
-	DDI_NOPROTECT()				! remove protection & ret
+	DDI_NOPROTECT()				/* remove protection & ret */
 	retl
 	nop
 	SET_SIZE(i_ddi_prot_rep_get16)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_rep_get32)
-	DDI_PROTECT()				! set ontrap protection
-	tst	%o0				! check access error
+	DDI_PROTECT()				/* set ontrap protection */
+	tst	%o0				/* check access error */
 	bnz,a	1f
 	nop
-	DDI_REP_GET(4,/**/)
+	DDI_REP_GET(4,)
 1:
-	DDI_NOPROTECT()				! remove protection & ret
+	DDI_NOPROTECT()				/* remove protection & ret */
 	retl
 	nop
 	SET_SIZE(i_ddi_prot_rep_get32)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_rep_get64)
-	DDI_PROTECT()				! set ontrap protection
-	tst	%o0				! check access error
+	DDI_PROTECT()				/* set ontrap protection */
+	tst	%o0				/* check access error */
 	bnz,a	1f
 	nop
 	DDI_REP_GET(8,x)
 1:
-	DDI_NOPROTECT()				! remove protection & ret
+	DDI_NOPROTECT()				/* remove protection & ret */
 	retl
 	nop
 	SET_SIZE(i_ddi_prot_rep_get64)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_rep_put8)
 	DDI_REP_PUT(1,ub)
 	retl
 	membar	#Sync;
 	SET_SIZE(i_ddi_prot_rep_put8)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_rep_put16)
 	DDI_REP_PUT(2,uh)
 	retl
 	membar	#Sync;
 	SET_SIZE(i_ddi_prot_rep_put16)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_rep_put32)
-	DDI_REP_PUT(4,/**/)
+	DDI_REP_PUT(4,)
 	retl
 	membar	#Sync;
 	SET_SIZE(i_ddi_prot_rep_put32)
 
-	.align 16
+	.balign 16
 	ENTRY(i_ddi_prot_rep_put64)
 	DDI_REP_PUT(8,x)
 	retl
@@ -926,33 +926,33 @@ done:
  * in ddi_impl.c
  */
 	ENTRY(i_ddi_caut_get)
-	rdpr	%pstate, %o3	! check ints
+	rdpr	%pstate, %o3		/* check ints */
 	andcc	%o3, PSTATE_IE, %g0
 	bz,a	cautdone
 	nop
 	wrpr	%o3, PSTATE_IE, %pstate
-	cmp	%o0, 8		! 64-bit?
-	bne,a	.get_int
-	cmp	%o0, 4		! 32-bit?
+	cmp	%o0, 8			/* 64-bit? */
+	bne,a,pt %xcc, .get_int		/* FIXED: %xcc and prdicted-taken */
+	cmp	%o0, 4			/* 32-bit? */
 	ldx	[%o1], %g1
 	ba	.getdone
 	stx	%g1, [%o2]
 .get_int:
-	bne,a	.get_half
-	cmp	%o0, 2		! 16-bit?
+	bne,a,pt %xcc, .get_half	/* FIXED: %xcc and prdicted-taken */
+	cmp	%o0, 2			/* 16-bit? */
 	lduw	[%o1], %g1
 	ba	.getdone
 	stuw	%g1, [%o2]
 .get_half:
-	bne,a	.get_byte
-	ldub	[%o1], %g1	! 8-bit!
+	bne,a,pt %xcc, .get_byte	/* FIXED: %xcc and prdicted-taken */
+	ldub	[%o1], %g1		/* 8-bit! */
 	lduh	[%o1], %g1
 	ba	.getdone
 	stuh	%g1, [%o2]
 .get_byte:
-	stub	%g1, [%o2]
+	stb	%g1, [%o2]
 .getdone:
-	rdpr	%pstate, %o3	! check&enable ints
+	rdpr	%pstate, %o3		/* check&enable ints */
 	andcc	%o3, PSTATE_IE, %g0
 	bnz,a	cautdone
 	nop

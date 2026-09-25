@@ -26,6 +26,8 @@
 include		../Makefile.com
 include		$(SRC)/lib/Makefile.lib.64
 
+ASFLAGS64 +=	-xarch=v9a
+
 .KEEP_STATE:
 
 all install:	$(SYMCAP)

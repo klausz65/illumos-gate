@@ -86,11 +86,13 @@ main()
 #include <sys/param.h>
 #include <link.h>
 
-	.file	"boot.s"
-	.seg	".text"
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+	.file	"boot.S"
+	.text
 	.global	_rt_boot, _setup, atexit_fini
 	.type	_rt_boot, #function
-	.align	4
+	.balign	4
 
 ! Entry vector
 !	+0: normal start
@@ -114,14 +116,12 @@ _elf_start:
 
 _alias_start:
 
-1:					! PIC prologue
-	call	2f
-	sethi	%hh(_GLOBAL_OFFSET_TABLE_ + (. - 1b)), %g1
-2:	or	%g1, %hm(_GLOBAL_OFFSET_TABLE_ + (. - 1b)), %g1
-	sllx	%g1, 32, %g5
-	sethi	%lm(_GLOBAL_OFFSET_TABLE_ + (. - 1b)), %l7
-	or	%l7, %lo(_GLOBAL_OFFSET_TABLE_ + (. - 1b)), %l7
-	or	%g5, %l7, %l7
+! PIC prologue for GNU assembler / SPARC-V9
+1:
+	sethi	%gdop_hix22(_GLOBAL_OFFSET_TABLE_), %g1
+	xor	%g1, %gdop_lox10(_GLOBAL_OFFSET_TABLE_), %g1
+	/* use %pc-relative additions in 64-bit mode */
+	rd	%pc, %l7
 	add	%l7, %o7, %l7		! finish PIC prologue
 
 ! %fp points to the root of our ELF bootstrap vector, use it to construct

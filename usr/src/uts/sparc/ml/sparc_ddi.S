@@ -26,6 +26,9 @@
 /*
  * Copyright 2012  Garrett D'Amore <garrett@damore.org>.  All rights reserved.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 /*
  * Assembler routines to make some DDI routines go faster.
@@ -38,6 +41,8 @@
 
 #include "assym.h"		/* for FKIOCTL etc. */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
 
 /*
  * Layered driver routines.
@@ -96,9 +101,9 @@
 
 	ENTRY(ddi_ctlops)
 	tst	%o0		! dip != 0?
-	be,pn	%ncc, 2f	! nope
+	be,pn	%xcc, 2f	! FIXED: use 64-bit %xcc
 	tst	%o1		! rdip != 0?
-	be,pn	%ncc, 2f	! nope
+	be,pn	%xcc, 2f	! FIXED: use 64-bit %xcc
 	ldn	[%o0 + DEVI_BUS_CTL], %o0
 				! dip = (dev_info_t *)DEVI(dip)->devi_bus_ctl;
 	brz,pn	%o0, 2f
@@ -183,7 +188,7 @@
 	sethi	%hi(DMP_NOSYNC), %o5
 	and	%o4, %o5, %o4
 	cmp	%o4, %o5
-	bne	1f
+	bne,pt	%icc, 1f
 	mov	%o3, %o5
 	retl
 	clr	%o0

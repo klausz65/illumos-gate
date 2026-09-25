@@ -25,6 +25,9 @@
  *
  * Assembly code support for the jalapeno module
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include "assym.h"
 
@@ -49,6 +52,10 @@
 #ifdef TRAPTRACE
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /* BEGIN CSTYLED */
 
@@ -362,7 +369,7 @@ flush_ecache_2:
 
 
 	.section ".text"
-	.align	64
+	.balign	64
 	ENTRY_NP(fast_ecc_err)
 
 	/*
@@ -502,7 +509,7 @@ fast_ecc_err_4:
  */
 
 	.section ".text"
-	.align	64
+	.balign	64
 	ENTRY_NP(fast_ecc_tl1_err)
 
 	/*
@@ -716,6 +723,25 @@ skip_traptrace:
 	 * it up and log it.  %g1 must point to the ch_err_tl1_data structure.
 	 * Restores the %g registers and issues retry.
 	 */
+
+#undef	CH_ERR_TL1_EXIT
+#define	CH_ERR_TL1_EXIT				\
+	CPU_INDEX(%g2, %g3);			\
+	set	ch_err_tl1_pending, %g3;	\
+	or	%g0, -1, %g4;			\
+	stb	%g4, [%g2 + %g3];		\
+	mov	1, %g2;				\
+	sll	%g2, PIL_15, %g2;		\
+	wr	%g2, SET_SOFTINT;		\
+	ldxa	[%g1 + CH_ERR_TL1_G7]%asi, %g7;	\
+	ldxa	[%g1 + CH_ERR_TL1_G6]%asi, %g6;	\
+	ldxa	[%g1 + CH_ERR_TL1_G5]%asi, %g5;	\
+	ldxa	[%g1 + CH_ERR_TL1_G4]%asi, %g4;	\
+	ldxa	[%g1 + CH_ERR_TL1_G3]%asi, %g3;	\
+	ldxa	[%g1 + CH_ERR_TL1_G2]%asi, %g2;	\
+	ldxa	[%g1 + CH_ERR_TL1_G1]%asi, %g1;	\
+	retry
+
 	CH_ERR_TL1_EXIT;
 	/*
 	 * Establish panic exit label.
@@ -909,8 +935,8 @@ ecache_flush_line_2:
 
 #define	VIS_BLOCKSIZE	64
 
-	.seg    ".data"
-	.align  VIS_BLOCKSIZE
+	.data
+	.balign  VIS_BLOCKSIZE
 	.type   sync_buf, #object
 sync_buf:
 	.skip   VIS_BLOCKSIZE

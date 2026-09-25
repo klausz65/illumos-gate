@@ -24,6 +24,9 @@
  *
  * Assembly code support for the Cheetah+ module
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include "assym.h"
 
@@ -49,6 +52,9 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 	.global retire_l2_start
 	.global retire_l2_end
@@ -121,7 +127,7 @@
 	PN_ECACHE_REFLUSH_LINE(l2_idx_out, l3_idx_out, scr3, scr4)
 
 
-	.align 4096
+	.balign 4096
 	ENTRY(retire_l2)
 retire_l2_start:
 
@@ -332,7 +338,7 @@ unretire_l3_start:
 unretire_l3_end:
 	SET_SIZE(unretire_l3)
 
-	.align 2048
+	.balign 2048
 
 	ENTRY(retire_l2_alternate)
 
@@ -544,7 +550,7 @@ unretire_l3_end:
 	rd	%asi, %g4
 	wr	%g0, ASI_N, %asi
 	GET_ECACHE_DTAGS(%g1, %g2, %g5, %g6, %g7)
-	wr	%g4, %asi
+	wr	%g4, %g0, %asi
 	UNPARK_SIBLING_CORE(%g3, %g4, %g5)	! can use %g3 again
 
 	retry

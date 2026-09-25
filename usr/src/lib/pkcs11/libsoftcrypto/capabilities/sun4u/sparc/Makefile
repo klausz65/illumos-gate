@@ -27,7 +27,7 @@ include		../Makefile.com
 
 CSTD =	$(CSTD_GNU99)
 
-ASFLAGS +=	-xarch=v8plus
+ASFLAGS +=	-xarch=v8plusa
 
 .KEEP_STATE:
 

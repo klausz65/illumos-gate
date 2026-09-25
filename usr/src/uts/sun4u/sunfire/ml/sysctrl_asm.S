@@ -23,6 +23,9 @@
  * Copyright 2001 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include <sys/param.h>
 #include <sys/errno.h>
@@ -38,6 +41,9 @@
 #include <sys/spitregs.h>
 
 #include "assym.h"
+
+	/* GNU assembler */
+	.register	%g2, #scratch
 
 #define	TT_HSM	0x99
 

@@ -22,6 +22,9 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include "assym.h"
 
@@ -36,10 +39,13 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 vec_uiii_irdr_tab:
-        .byte   UIII_IRDR_0, UIII_IRDR_1, UIII_IRDR_2, UIII_IRDR_3
-        .byte   UIII_IRDR_4, UIII_IRDR_5, UIII_IRDR_6, UIII_IRDR_7
+	.byte	UIII_IRDR_0, UIII_IRDR_1, UIII_IRDR_2, UIII_IRDR_3
+	.byte	UIII_IRDR_4, UIII_IRDR_5, UIII_IRDR_6, UIII_IRDR_7
 
 /*
  * (TT 0x60, TL>0) Interrupt Vector Handler
@@ -52,7 +58,7 @@ vec_uiii_irdr_tab:
 	! or an interrupt number.
 	!
 	mov	IRDR_0, %g2
-	ldxa	[%g2]ASI_INTR_RECEIVE, %g5	! %g5 = PC or Interrupt Number
+	ldxa	[%g2] ASI_INTR_RECEIVE, %g5	! %g5 = PC or Interrupt Number
 
 	! If the high bit of IRDR_0 is set, then this is a
 	! data bearing mondo vector.
@@ -64,33 +70,33 @@ vec_interrupt_resume:
 	set	KERNELBASE, %g4
 	cmp	%g5, %g4
 	bl,a,pt	%xcc, 0f			! an interrupt number found
-	  nop
+	nop
 	!
 	! intercept OBP xcalls and set PCONTEXT=0
 	!
 	set	_end, %g4		! _end is highest kernel address
 	cmp	%g5, %g4
 	bl,a,pt	%xcc, 7f
-	  nop
+	nop
 
 #ifndef _OPL
 	mov	MMU_PCONTEXT, %g1
-	ldxa	[%g1]ASI_DMMU, %g1
+	ldxa	[%g1] ASI_DMMU, %g1
 	srlx	%g1, CTXREG_NEXT_SHIFT, %g3
 	brz,pt	%g3, 7f			! nucleus pgsz is 0, no problem
-	  sllx	%g3, CTXREG_NEXT_SHIFT, %g3
+	sllx	%g3, CTXREG_NEXT_SHIFT, %g3
 	set	CTXREG_CTX_MASK, %g4	! check Pcontext
 	btst	%g4, %g1
 	bz,a,pt	%xcc, 6f
-	  clr	%g3			! kernel:  PCONTEXT=0
+	clr	%g3			! kernel:  PCONTEXT=0
 	xor	%g3, %g1, %g3		! user:	clr N_pgsz0/1 bits
 6:
 	set	DEMAP_ALL_TYPE, %g1
-	stxa	%g0, [%g1]ASI_DTLB_DEMAP
-	stxa	%g0, [%g1]ASI_ITLB_DEMAP
+	stxa	%g0, [%g1] ASI_DTLB_DEMAP
+	stxa	%g0, [%g1] ASI_ITLB_DEMAP
 	mov	MMU_PCONTEXT, %g1
-	stxa	%g3, [%g1]ASI_DMMU
-        membar  #Sync
+	stxa	%g3, [%g1] ASI_DMMU
+	membar	#Sync
 	sethi	%hi(FLUSH_ADDR), %g1
 	flush	%g1			! flush required by immu
 #endif /* _OPL */
@@ -110,35 +116,35 @@ vec_interrupt_resume:
 	!	g4: arg4
 	!
 	mov	IRDR_1, %g2
-	ldxa	[%g2]ASI_INTR_RECEIVE, %g1
+	ldxa	[%g2] ASI_INTR_RECEIVE, %g1
 	mov	IRDR_2, %g2
-	ldxa	[%g2]ASI_INTR_RECEIVE, %g2
+	ldxa	[%g2] ASI_INTR_RECEIVE, %g2
 #ifdef TRAPTRACE
 	TRACE_PTR(%g4, %g6)
 	GET_TRACE_TICK(%g6, %g3)
-	stxa	%g6, [%g4 + TRAP_ENT_TICK]%asi
+	stxa	%g6, [%g4 + TRAP_ENT_TICK] %asi
 	rdpr	%tl, %g6
-	stha	%g6, [%g4 + TRAP_ENT_TL]%asi
+	stha	%g6, [%g4 + TRAP_ENT_TL] %asi
 	rdpr	%tt, %g6
-	stha	%g6, [%g4 + TRAP_ENT_TT]%asi
+	stha	%g6, [%g4 + TRAP_ENT_TT] %asi
 	rdpr	%tpc, %g6
-	stna	%g6, [%g4 + TRAP_ENT_TPC]%asi
+	stxa	%g6, [%g4 + TRAP_ENT_TPC] %asi	! FIXED: use full 64-bit stxa
 	rdpr	%tstate, %g6
-	stxa	%g6, [%g4 + TRAP_ENT_TSTATE]%asi
-	stna	%sp, [%g4 + TRAP_ENT_SP]%asi
-	stna	%g5, [%g4 + TRAP_ENT_TR]%asi	! pc of the TL>0 handler
-	stxa	%g1, [%g4 + TRAP_ENT_F1]%asi
-	stxa	%g2, [%g4 + TRAP_ENT_F3]%asi
-	stxa	%g0, [%g4 + TRAP_ENT_F2]%asi
-	stxa	%g0, [%g4 + TRAP_ENT_F4]%asi
+	stxa	%g6, [%g4 + TRAP_ENT_TSTATE] %asi
+	stxa	%sp, [%g4 + TRAP_ENT_SP] %asi	! FIXED: use full 64-bit stxa
+	stxa	%g5, [%g4 + TRAP_ENT_TR] %asi	! FIXED: use full 64-bit stxa
+	stxa	%g1, [%g4 + TRAP_ENT_F1] %asi
+	stxa	%g2, [%g4 + TRAP_ENT_F3] %asi
+	stxa	%g0, [%g4 + TRAP_ENT_F2] %asi
+	stxa	%g0, [%g4 + TRAP_ENT_F4] %asi
 	TRACE_NEXT(%g4, %g6, %g3)
 #endif /* TRAPTRACE */
-	stxa	%g0, [%g0]ASI_INTR_RECEIVE_STATUS	! clear the BUSY bit
+	stxa	%g0, [%g0] ASI_INTR_RECEIVE_STATUS	! clear the BUSY bit
 	membar	#Sync
 #ifdef SF_ERRATA_51
 	ba,pt	%icc, 1f
 	nop
-	.align 32
+	.balign 32
 1:	jmp	%g5				! call the fast trap handler
 	nop
 #else
@@ -154,12 +160,12 @@ vec_interrupt_resume:
 	!	%g5 - inum
 	!	%g1 - temp
 	!
-        ! We don't bother to verify that the received inum is valid (it should
-        ! be < MAXIVNUM) since setvecint_tl1 will do that for us.
-        !
+	! We don't bother to verify that the received inum is valid (it should
+	! be < MAXIVNUM) since setvecint_tl1 will do that for us.
+	!
 	! clear BUSY bit
 	!
-	stxa	%g0, [%g0]ASI_INTR_RECEIVE_STATUS
+	stxa	%g0, [%g0] ASI_INTR_RECEIVE_STATUS
 	membar	#Sync
 
 	! setvecint_tl1 will do all the work, and finish with a retry
@@ -172,7 +178,7 @@ vec_interrupt_resume:
 
 
 !
-!   See usr/src/uts/sun4u/sys/dmv.h for the Databearing Mondo Vector
+!	See usr/src/uts/sun4u/sys/dmv.h for the Databearing Mondo Vector
 !	 interrupt format
 !
 ! Inputs:
@@ -196,7 +202,7 @@ vec_interrupt_resume:
 	set	dmv_totalints, %g3
 	ld	[%g3], %g3
 	cmp	%g2, %g3
-	bge,pn	%xcc, 2f		   ! inum >= dmv_totalints
+	bge,pn	%icc, 2f		   ! FIXED: %icc 32-bit totalints check
 	nop
 
 	set	dmv_dispatch_table, %g3
@@ -208,8 +214,8 @@ vec_interrupt_resume:
 #if (DMV_FUNC != 0) || (DMV_ARG != 8)
 #error "DMV_FUNC or DMV_SIZE has changed"
 #endif
-	ldda	[%g4]ASI_NQUAD_LD, %g2  ! %g2=handler %g3=argument
-	mov	%g3, %g1
+	ldx	[%g4 + 0], %g2	! FIXED: 64-bit function handler pointer
+	ldx	[%g4 + 8], %g1	! FIXED: 64-bit arg pointer directly into %g1
 	brz,pn  %g2, 2f
 	nop
 
@@ -220,10 +226,10 @@ vec_interrupt_resume:
 	!	%g2	Word 0 of the incoming mondo vector.
 	!
 	jmp	%g2
-	mov	%g5, %g2
+	mov	%g5, %g3	! FIXED: use a free scratch register
 
 	! No handler was listed in the table, so just record it
-	! as an error condition and continue.  There is a race
+	! as an error condition and continue. There is a race
 	! window here updating the counter, but that's ok since
 	! just knowing that spurious interrupts happened is enough,
 	! we probably won't need to know exactly how many.
@@ -236,7 +242,7 @@ vec_interrupt_resume:
 
 	!	When the handler's processing (which should be as quick as
 	!	possible) is complete, the handler must exit by jumping to
-	!	the label dmv_finish_intr.  The contents of %g1 at this time
+	!	the label dmv_finish_intr. The contents of %g1 at this time
 	!	determine whether a software interrupt will be issued, as
 	!	follows:
 	!
@@ -255,7 +261,7 @@ vec_interrupt_resume:
 	mov	%g1, %g5
 	!	We are done
 3:
-	stxa	%g0, [%g0]ASI_INTR_RECEIVE_STATUS ! clear the busy bit
+	stxa	%g0, [%g0] ASI_INTR_RECEIVE_STATUS ! clear the busy bit
 	retry
 	SET_SIZE(dmv_vector)
 
@@ -268,22 +274,22 @@ vec_interrupt_resume:
 #ifdef TRAPTRACE
 	TRACE_PTR(%g4, %g6)
 	GET_TRACE_TICK(%g6, %g3)
-	stxa	%g6, [%g4 + TRAP_ENT_TICK]%asi
+	stxa	%g6, [%g4 + TRAP_ENT_TICK] %asi
 	rdpr	%tl, %g6
-	stha	%g6, [%g4 + TRAP_ENT_TL]%asi
+	stha	%g6, [%g4 + TRAP_ENT_TL] %asi
 	rdpr	%tt, %g6
 	or	%g6, TT_SPURIOUS_INT, %g6
-	stha	%g6, [%g4 + TRAP_ENT_TT]%asi
+	stha	%g6, [%g4 + TRAP_ENT_TT] %asi
 	rdpr	%tpc, %g6
-	stna	%g6, [%g4 + TRAP_ENT_TPC]%asi
+	stna	%g6, [%g4 + TRAP_ENT_TPC] %asi
 	rdpr	%tstate, %g6
-	stxa	%g6, [%g4 + TRAP_ENT_TSTATE]%asi
-	stna	%sp, [%g4 + TRAP_ENT_SP]%asi
-	stna	%g1, [%g4 + TRAP_ENT_TR]%asi	! irsr
-	stna	%g2, [%g4 + TRAP_ENT_F1]%asi
-	ldxa	[%g0]ASI_INTR_RECEIVE_STATUS, %g5
-	stxa	%g5, [%g4 + TRAP_ENT_F2]%asi
-	stxa	%g0, [%g4 + TRAP_ENT_F4]%asi
+	stxa	%g6, [%g4 + TRAP_ENT_TSTATE] %asi
+	stna	%sp, [%g4 + TRAP_ENT_SP] %asi
+	stna	%g1, [%g4 + TRAP_ENT_TR] %asi	! irsr
+	stna	%g2, [%g4 + TRAP_ENT_F1] %asi
+	ldxa	[%g0] ASI_INTR_RECEIVE_STATUS, %g5
+	stxa	%g5, [%g4 + TRAP_ENT_F2] %asi
+	stxa	%g0, [%g4 + TRAP_ENT_F4] %asi
 	TRACE_NEXT(%g4, %g6, %g3)
 #endif /* TRAPTRACE */
 	cmp	%g2, 16
@@ -301,7 +307,7 @@ vec_interrupt_resume:
 	 * clear the intr busy bit even though it is
 	 * not visibly set (spurious intrs)
 	 */
-	stxa	%g0, [%g0]ASI_INTR_RECEIVE_STATUS	! clear the BUSY bit
+	stxa	%g0, [%g0] ASI_INTR_RECEIVE_STATUS	! clear the BUSY bit
 	membar  #Sync
 #endif /* CLEAR_INTR_BUSYBIT_ON_SPURIOUS */
 	sub	%g0, 1, %g4

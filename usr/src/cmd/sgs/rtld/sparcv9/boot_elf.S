@@ -36,8 +36,8 @@
 #include	<sys/stack.h>
 #include	<sys/asm_linkage.h>
 
-	.file	"boot_elf.s"
-	.seg	".text"
+	.file	"boot_elf.S"
+	.text
 #endif
 
 /*

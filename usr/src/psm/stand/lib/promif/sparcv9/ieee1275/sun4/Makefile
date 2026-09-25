@@ -33,7 +33,10 @@ include $(TOPDIR)/lib/Makefile.lib
 include $(TOPDIR)/psm/stand/lib/Makefile.lib
 include $(TOPDIR)/psm/Makefile.psm.64
 
-CFLAGS64	+= -xchip=ultra
+CSTD		= $(CSTD_GNU99)
+
+CFLAGS64	+= -xchip=ultra -Wc,-xcode=abs32
+CFLAGS64	+= -xregs=no%appl
 
 PLATSUN4DIR =	$(TOPDIR)/psm/promif/ieee1275/sun4
 SYSDIR =	$(TOPDIR)/uts

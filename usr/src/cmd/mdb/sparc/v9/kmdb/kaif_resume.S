@@ -60,6 +60,10 @@ kaif_resume(int work_required)
 }
 #else /* __lint */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 	/*
 	 * Used to start the world back up, as a whole or in part (single-step).
 	 * Arguments:
@@ -77,19 +81,19 @@ kaif_resume(int work_required)
 	 */
 
 	/* FP state */
-	add	%g6, KRS_FPREGS, %g4	! %g4 = &cpusave[this_cpuid].krs_fpregs
+	add	%g6, KRS_FPREGS, %g4	/* %g4 = &cpusave[this_cpuid].krs_fpregs */
 
 	ldx	[%g4 + FPU_FPRS], %g2
-	btst	FPRS_FEF, %g2		! was fp enabled?
-	bz,pt	%icc, 1f		! nope drive on...
-	wr	%g2, %fprs		! restore %fprs regardless
+	andcc	%g2, FPRS_FEF, %g0	/* was fp enabled? */
+	bz,pt	%icc, 1f		/* nope drive on... */
+	wr	%g2, %g0, %fprs		/* restore %fprs regardless */
 
 	LOAD_FPREGS(%g4)
 	ldx	[%g4 + FPU_FSR], %fsr
 
 1:
 	/* Register windows */
-	GET_NWIN(%g1, %g4);		! %g1 is scratch, %g4 set to nwin-1
+	GET_NWIN(%g1, %g4);		/* %g1 is scratch, %g4 set to nwin-1 */
 	wrpr	%g4, %cleanwin
 
 	sub	%g4, 1, %g1
@@ -100,7 +104,7 @@ kaif_resume(int work_required)
 	wrpr	%g0, %cwp
 	clr	%g2
 
-	ldx	[%g6 + KRS_RWINS], %g3	! %g3 = &cpusave[this_cpuid].krs_wins
+	ldx	[%g6 + KRS_RWINS], %g3	/* %g3 = &cpusave[this_cpuid].krs_wins */
 
 1:
 	RESTORE_V9WINDOW(%g3)
@@ -139,7 +143,7 @@ kaif_resume(int work_required)
 	mov	MMU_PCONTEXT, %g3
 	ldx	[%g6 + KRS_MMU_PCONTEXT], %g4
 	KAIF_DEMAP_TLB_ALL(%g2)
-	stxa	%g4, [%g3]ASI_MMU_CTX
+	stxa	%g4, [%g3] ASI_MMU_CTX
 	membar	#Sync
 
 	ldx	[%g6 + KRS_TSTATE], %g4
@@ -169,7 +173,7 @@ kaif_resume(int work_required)
 	ldx	[%g5 + KREG_OFF(KREG_G4)], %g4
 	ldx	[%g5 + KREG_OFF(KREG_G6)], %g6
 	ldx	[%g5 + KREG_OFF(KREG_G7)], %g7
-	be	%xcc, 1f			! the trap type check, above
+	be	%xcc, 1f			/* the trap type check, above */
 	ldx	[%g5 + KREG_OFF(KREG_G5)], %g5
 
 	retry

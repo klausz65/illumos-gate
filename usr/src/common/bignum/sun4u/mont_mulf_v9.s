@@ -29,7 +29,7 @@
 	.file	"mont_mulf_asm_v9.s"
 
 	.section	".rodata",#alloc
-	.align	8
+	.balign	8
 !
 ! CONSTANT POOL
 !
@@ -74,9 +74,9 @@ TwoToMinus32:
 	.section	".text",#alloc,#execinstr
 /* 000000	   0 */		.register	%g3,#scratch
 /* 000000	     */		.register	%g2,#scratch
-/* 000000	   0 */		.align	8
+/* 000000	   0 */		.balign	8
 /* 000000	     */		.skip	24
-/* 0x0018	     */		.align	4
+/* 0x0018	     */		.balign	4
 ! FILE mont_mulf.c
 
 !    1		      !/*
@@ -200,7 +200,7 @@ TwoToMinus32:
 /* 0x00c0	   0 */		.size	cleanup,(.-cleanup)
 
 	.section	".text",#alloc,#execinstr
-/* 000000	   0 */		.align	4
+/* 000000	   0 */		.balign	4
 
 !   70		      !	}
 !   71		      !}
@@ -516,7 +516,7 @@ TwoToMinus32:
 /* 0x0400	   0 */		.size	conv_d16_to_i32,(.-conv_d16_to_i32)
 
 	.section	".text",#alloc,#execinstr
-/* 000000	   0 */		.align	8
+/* 000000	   0 */		.balign	8
 !
 ! CONSTANT POOL
 !
@@ -524,9 +524,9 @@ TwoToMinus32:
 /* 000000	   0 */		.word	1127219200,0
 /* 0x0008	   0 */		.type	___const_seg_900000301,1
 /* 0x0008	   0 */		.size	___const_seg_900000301,(.-___const_seg_900000301)
-/* 0x0008	   0 */		.align	8
+/* 0x0008	   0 */		.balign	8
 /* 0x0008	     */		.skip	24
-/* 0x0020	     */		.align	4
+/* 0x0020	     */		.balign	4
 
 !  102		      !}
 !  104		      !void
@@ -634,7 +634,7 @@ TwoToMinus32:
 /* 0x0138	   0 */		.size	conv_i32_to_d32,(.-conv_i32_to_d32)
 
 	.section	".text",#alloc,#execinstr
-/* 000000	   0 */		.align	8
+/* 000000	   0 */		.balign	8
 !
 ! CONSTANT POOL
 !
@@ -642,9 +642,9 @@ TwoToMinus32:
 /* 000000	   0 */		.word	1127219200,0
 /* 0x0008	   0 */		.type	___const_seg_900000401,1
 /* 0x0008	   0 */		.size	___const_seg_900000401,(.-___const_seg_900000401)
-/* 0x0008	   0 */		.align	8
+/* 0x0008	   0 */		.balign	8
 /* 0x0008	     */		.skip	24
-/* 0x0020	     */		.align	4
+/* 0x0020	     */		.balign	4
 
 !  112		      !}
 !  115		      !void
@@ -813,7 +813,7 @@ TwoToMinus32:
 /* 0x0210	   0 */		.size	conv_i32_to_d16,(.-conv_i32_to_d16)
 
 	.section	".text",#alloc,#execinstr
-/* 000000	   0 */		.align	8
+/* 000000	   0 */		.balign	8
 !
 ! CONSTANT POOL
 !
@@ -821,9 +821,9 @@ TwoToMinus32:
 /* 000000	   0 */		.word	1127219200,0
 /* 0x0008	   0 */		.type	___const_seg_900000501,1
 /* 0x0008	   0 */		.size	___const_seg_900000501,(.-___const_seg_900000501)
-/* 0x0008	   0 */		.align	8
+/* 0x0008	   0 */		.balign	8
 /* 0x0008	     */		.skip	24
-/* 0x0020	     */		.align	4
+/* 0x0020	     */		.balign	4
 
 !  126		      !	}
 !  127		      !}
@@ -1245,7 +1245,7 @@ TwoToMinus32:
 /* 0x0520	   0 */		.size	conv_i32_to_d32_and_d16,(.-conv_i32_to_d32_and_d16)
 
 	.section	".text",#alloc,#execinstr
-/* 000000	   0 */		.align	4
+/* 000000	   0 */		.balign	4
 
 !  195		      !	}
 !  196		      !}
@@ -1389,9 +1389,9 @@ TwoToMinus32:
 /* 0x016c	   0 */		.size	adjust_montf_result,(.-adjust_montf_result)
 
 	.section	".text",#alloc,#execinstr
-/* 000000	   0 */		.align	8
+/* 000000	   0 */		.balign	8
 /* 000000	     */		.skip	24
-/* 0x0018	     */		.align	4
+/* 0x0018	     */		.balign	4
 
 !  218		      !		}
 !  219		      !	}

@@ -32,6 +32,10 @@
 #include <sys/machparam.h>
 #include <sys/hypervisor_api.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 	/*
 	 * int hv_mach_exit(uint64_t exit_code)
 	 */
@@ -39,7 +43,7 @@
 	mov	HV_MACH_EXIT, %o5
 	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hv_mach_exit)
 
 	/*
@@ -49,7 +53,7 @@
 	mov	HV_MACH_SIR, %o5
 	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hv_mach_sir)
 
 	/*
@@ -60,7 +64,7 @@
 	mov	HV_CPU_START, %o5
 	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hv_cpu_start)
 
 	/*
@@ -70,7 +74,7 @@
 	mov	HV_CPU_STOP, %o5
 	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hv_cpu_stop)
 
 	/*
@@ -83,7 +87,7 @@
 	ta	FAST_TRAP
 	stx	%o1, [%o2]
 	retl
-	  nop
+	nop
 	SET_SIZE(hv_cpu_set_rtba)
 
 	/*
@@ -93,7 +97,7 @@
 	mov	CONS_PUTCHAR, %o5
 	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hv_cnputchar)
 
 	/*
@@ -103,8 +107,8 @@
 	mov	%o0, %o2
 	mov	CONS_GETCHAR, %o5
 	ta	FAST_TRAP
-	brnz,a	%o0, 1f		! failure, just return error
-	  nop
+	brnz,a	%o0, 1f		/* failure, just return error */
+	nop
 
 	cmp	%o1, H_BREAK
 	be	1f
@@ -114,19 +118,20 @@
 	be	1f
 	mov	%o1, %o0
 
-	stb	%o1, [%o2]	! success, save character and return 0
+	stb	%o1, [%o2]	/* success, save character and return 0 */
 	mov	0, %o0
 1:
 	retl
-	  nop
+	nop
 	SET_SIZE(hv_cngetchar)
 
 	ENTRY(hv_tod_get)
 	mov	%o0, %o4
 	mov	TOD_GET, %o5
 	ta	FAST_TRAP
+	stx	%o1, [%o4]
 	retl
-	  stx	%o1, [%o4]
+	nop
 	SET_SIZE(hv_tod_get)
 
 	ENTRY(hv_tod_set)
@@ -160,7 +165,7 @@
 	ta	FAST_TRAP
 	stx	%o1, [%o2]
 	retl
-	  nop
+	nop
 	SET_SIZE(hv_mmu_fault_area_conf)
 
 	/*
@@ -342,7 +347,7 @@
 	 * int hv_cpu_state(uint64_t cpuid, uint64_t *cpu_state);
 	 */
 	ENTRY(hv_cpu_state)
-	mov	%o1, %o4			! save datap
+	mov	%o1, %o4			/* save datap */
 	mov	HV_CPU_STATE, %o5
 	ta	FAST_TRAP
 	brz,a	%o0, 1f
@@ -363,8 +368,9 @@
 	ENTRY(hv_dump_buf_update)
 	mov	DUMP_BUF_UPDATE, %o5
 	ta	FAST_TRAP
-	retl
 	stx	%o1, [%o2]
+	retl
+	nop
 	SET_SIZE(hv_dump_buf_update)
 
 	/*
@@ -378,14 +384,15 @@
 	mov	%o1, %o2
 	mov	MACH_SET_WATCHDOG, %o5
 	ta	FAST_TRAP
-	retl
 	stx	%o1, [%o2]
+	retl
+	nop
 	SET_SIZE(hv_mach_set_watchdog)
 
 	/*
 	 * For memory scrub
 	 * int hv_mem_scrub(uint64_t real_addr, uint64_t length,
-	 * 	uint64_t *scrubbed_len);
+	 * uint64_t *scrubbed_len);
 	 * Retun %o0 -- status
 	 *       %o1 -- bytes scrubbed
 	 */
@@ -393,14 +400,15 @@
 	mov	%o2, %o4
 	mov	HV_MEM_SCRUB, %o5
 	ta	FAST_TRAP
-	retl
 	stx	%o1, [%o4]
+	retl
+	nop
 	SET_SIZE(hv_mem_scrub)
 
 	/*
 	 * Flush ecache
 	 * int hv_mem_sync(uint64_t real_addr, uint64_t length,
-	 * 	uint64_t *flushed_len);
+	 * uint64_t *flushed_len);
 	 * Retun %o0 -- status
 	 *       %o1 -- bytes flushed
 	 */
@@ -408,8 +416,9 @@
 	mov	%o2, %o4
 	mov	HV_MEM_SYNC, %o5
 	ta	FAST_TRAP
-	retl
 	stx	%o1, [%o4]
+	retl
+	nop
 	SET_SIZE(hv_mem_sync)
 
 	/*
@@ -419,7 +428,7 @@
 	mov	HV_TM_ENABLE, %o5
 	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hv_tm_enable)
 
 	/*
@@ -433,8 +442,9 @@
 	ENTRY(hv_ttrace_buf_conf)
 	mov	TTRACE_BUF_CONF, %o5
 	ta	FAST_TRAP
-	retl
 	stx	%o1, [%o2]
+	retl
+	nop
 	SET_SIZE(hv_ttrace_buf_conf)
 
 	 /*
@@ -489,12 +499,12 @@
 	 * ret1 return required size of buffer / returned data size
 	 */
 	ENTRY(hv_mach_desc)
-	mov     %o1, %o4                ! save datap
-	ldx     [%o1], %o1
-	mov     HV_MACH_DESC, %o5
-	ta      FAST_TRAP
+	mov	%o1, %o4                /* save datap */
+	ldx	[%o1], %o1
+	mov	HV_MACH_DESC, %o5
+	ta	FAST_TRAP
 	retl
-	stx   %o1, [%o4]
+	stx	%o1, [%o4]
 	SET_SIZE(hv_mach_desc)
 
 	/*
@@ -533,29 +543,29 @@
 	SET_SIZE(hv_hpriv)
 
 	/*
-         * hv_ldc_tx_qconf(uint64_t channel, uint64_t ra_base,
+	 * hv_ldc_tx_qconf(uint64_t channel, uint64_t ra_base,
 	 *	uint64_t nentries);
 	 */
 	ENTRY(hv_ldc_tx_qconf)
-	mov     LDC_TX_QCONF, %o5
-	ta      FAST_TRAP
+	mov	LDC_TX_QCONF, %o5
+	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hv_ldc_tx_qconf)
 
 
 	/*
-         * hv_ldc_tx_qinfo(uint64_t channel, uint64_t *ra_base,
+	 * hv_ldc_tx_qinfo(uint64_t channel, uint64_t *ra_base,
 	 *	uint64_t *nentries);
 	 */
 	ENTRY(hv_ldc_tx_qinfo)
 	mov	%o1, %g1
 	mov	%o2, %g2
-	mov     LDC_TX_QINFO, %o5
-	ta      FAST_TRAP
-	stx     %o1, [%g1]
+	mov	LDC_TX_QINFO, %o5
+	ta	FAST_TRAP
+	stx	%o1, [%g1]
 	retl
-	  stx   %o2, [%g2]
+	stx	%o2, [%g2]
 	SET_SIZE(hv_ldc_tx_qinfo)
 
 
@@ -564,15 +574,15 @@
 	 *	uint64_t *headp, uint64_t *tailp, uint64_t *state);
 	 */
 	ENTRY(hv_ldc_tx_get_state)
-	mov     LDC_TX_GET_STATE, %o5
-	mov     %o1, %g1
-	mov     %o2, %g2
-	mov     %o3, %g3
-	ta      FAST_TRAP
-	stx     %o1, [%g1]
-	stx     %o2, [%g2]
+	mov	LDC_TX_GET_STATE, %o5
+	mov	%o1, %g1
+	mov	%o2, %g2
+	mov	%o3, %g3
+	ta	FAST_TRAP
+	stx	%o1, [%g1]
+	stx	%o2, [%g2]
 	retl
-	  stx   %o3, [%g3]
+	stx	%o3, [%g3]
 	SET_SIZE(hv_ldc_tx_get_state)
 
 
@@ -580,36 +590,36 @@
 	 * hv_ldc_tx_set_qtail(uint64_t channel, uint64_t tail)
 	 */
 	ENTRY(hv_ldc_tx_set_qtail)
-	mov     LDC_TX_SET_QTAIL, %o5
-	ta      FAST_TRAP
+	mov	LDC_TX_SET_QTAIL, %o5
+	ta	FAST_TRAP
 	retl
 	SET_SIZE(hv_ldc_tx_set_qtail)
 
 
 	/*
-         * hv_ldc_rx_qconf(uint64_t channel, uint64_t ra_base,
+	 * hv_ldc_rx_qconf(uint64_t channel, uint64_t ra_base,
 	 *	uint64_t nentries);
 	 */
 	ENTRY(hv_ldc_rx_qconf)
-	mov     LDC_RX_QCONF, %o5
-	ta      FAST_TRAP
+	mov	LDC_RX_QCONF, %o5
+	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hv_ldc_rx_qconf)
 
 
 	/*
-         * hv_ldc_rx_qinfo(uint64_t channel, uint64_t *ra_base,
+	 * hv_ldc_rx_qinfo(uint64_t channel, uint64_t *ra_base,
 	 *	uint64_t *nentries);
 	 */
 	ENTRY(hv_ldc_rx_qinfo)
 	mov	%o1, %g1
 	mov	%o2, %g2
-	mov     LDC_RX_QINFO, %o5
-	ta      FAST_TRAP
-	stx     %o1, [%g1]
+	mov	LDC_RX_QINFO, %o5
+	ta	FAST_TRAP
+	stx	%o1, [%g1]
 	retl
-	  stx   %o2, [%g2]
+	stx	%o2, [%g2]
 	SET_SIZE(hv_ldc_rx_qinfo)
 
 
@@ -618,15 +628,15 @@
 	 *	uint64_t *headp, uint64_t *tailp, uint64_t *state);
 	 */
 	ENTRY(hv_ldc_rx_get_state)
-	mov     LDC_RX_GET_STATE, %o5
-	mov     %o1, %g1
-	mov     %o2, %g2
-	mov     %o3, %g3
-	ta      FAST_TRAP
-	stx     %o1, [%g1]
-	stx     %o2, [%g2]
+	mov	LDC_RX_GET_STATE, %o5
+	mov	%o1, %g1
+	mov	%o2, %g2
+	mov	%o3, %g3
+	ta	FAST_TRAP
+	stx	%o1, [%g1]
+	stx	%o2, [%g2]
 	retl
-	  stx   %o3, [%g3]
+	stx	%o3, [%g3]
 	SET_SIZE(hv_ldc_rx_get_state)
 
 
@@ -634,8 +644,8 @@
 	 * hv_ldc_rx_set_qhead(uint64_t channel, uint64_t head)
 	 */
 	ENTRY(hv_ldc_rx_set_qhead)
-	mov     LDC_RX_SET_QHEAD, %o5
-	ta      FAST_TRAP
+	mov	LDC_RX_SET_QHEAD, %o5
+	ta	FAST_TRAP
 	retl
 	SET_SIZE(hv_ldc_rx_set_qhead)
 
@@ -644,10 +654,10 @@
 	 *		uint64_t tbl_entries)
 	 */
 	ENTRY(hv_ldc_set_map_table)
-	mov     LDC_SET_MAP_TABLE, %o5
-	ta      FAST_TRAP
+	mov	LDC_SET_MAP_TABLE, %o5
+	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hv_ldc_set_map_table)
 
 
@@ -658,11 +668,11 @@
 	ENTRY(hv_ldc_get_map_table)
 	mov	%o1, %g1
 	mov	%o2, %g2
-	mov     LDC_GET_MAP_TABLE, %o5
-	ta      FAST_TRAP
-	stx     %o1, [%g1]
+	mov	LDC_GET_MAP_TABLE, %o5
+	ta	FAST_TRAP
+	stx	%o1, [%g1]
 	retl
-	  stx     %o2, [%g2]
+	stx	%o2, [%g2]
 	SET_SIZE(hv_ldc_get_map_table)
 
 
@@ -671,11 +681,11 @@
 	 *		uint64_t raddr, uint64_t length, uint64_t *lengthp);
 	 */
 	ENTRY(hv_ldc_copy)
-	mov     %o5, %g1
-	mov     LDC_COPY, %o5
-	ta      FAST_TRAP
+	mov	%o5, %g1
+	mov	LDC_COPY, %o5
+	ta	FAST_TRAP
 	retl
-	  stx   %o1, [%g1]
+	stx	%o1, [%g1]
 	SET_SIZE(hv_ldc_copy)
 
 
@@ -686,11 +696,11 @@
 	ENTRY(hv_ldc_mapin)
 	mov	%o2, %g1
 	mov	%o3, %g2
-	mov     LDC_MAPIN, %o5
-	ta      FAST_TRAP
-	stx     %o1, [%g1]
+	mov	LDC_MAPIN, %o5
+	ta	FAST_TRAP
+	stx	%o1, [%g1]
 	retl
-	  stx     %o2, [%g2]
+	stx	%o2, [%g2]
 	SET_SIZE(hv_ldc_mapin)
 
 
@@ -698,10 +708,10 @@
 	 * hv_ldc_unmap(uint64_t raddr)
 	 */
 	ENTRY(hv_ldc_unmap)
-	mov     LDC_UNMAP, %o5
-	ta      FAST_TRAP
+	mov	LDC_UNMAP, %o5
+	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hv_ldc_unmap)
 
 
@@ -710,10 +720,10 @@
 	 *		 uint64_t revoke_cookie
 	 */
 	ENTRY(hv_ldc_revoke)
-	mov     LDC_REVOKE, %o5
-	ta      FAST_TRAP
+	mov	LDC_REVOKE, %o5
+	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hv_ldc_revoke)
 
 	/*
@@ -721,10 +731,10 @@
 	 */
 	ENTRY(hv_ldc_mapin_size_max)
 	mov	%o1, %g1
-	mov     LDC_MAPIN_SIZE_MAX, %o5
-	ta      FAST_TRAP
+	mov	LDC_MAPIN_SIZE_MAX, %o5
+	ta	FAST_TRAP
 	retl
-	  stx     %o1, [%g1]
+	stx	%o1, [%g1]
 	SET_SIZE(hv_ldc_mapin_size_max)
 
 	/*
@@ -733,10 +743,10 @@
 	 */
 	ENTRY(hvldc_intr_getcookie)
 	mov	%o2, %g1
-	mov     VINTR_GET_COOKIE, %o5
-	ta      FAST_TRAP
+	mov	VINTR_GET_COOKIE, %o5
+	ta	FAST_TRAP
 	retl
-	  stx   %o1, [%g1]
+	stx	%o1, [%g1]
 	SET_SIZE(hvldc_intr_getcookie)
 
 	/*
@@ -744,10 +754,10 @@
 	 *			uint64_t cookie);
 	 */
 	ENTRY(hvldc_intr_setcookie)
-	mov     VINTR_SET_COOKIE, %o5
-	ta      FAST_TRAP
+	mov	VINTR_SET_COOKIE, %o5
+	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hvldc_intr_setcookie)
 
 
@@ -757,10 +767,10 @@
 	 */
 	ENTRY(hvldc_intr_getvalid)
 	mov	%o2, %g1
-	mov     VINTR_GET_VALID, %o5
-	ta      FAST_TRAP
+	mov	VINTR_GET_VALID, %o5
+	ta	FAST_TRAP
 	retl
-	  stuw   %o1, [%g1]
+	stuw	%o1, [%g1]
 	SET_SIZE(hvldc_intr_getvalid)
 
 	/*
@@ -768,10 +778,10 @@
 	 *			int intr_valid_state);
 	 */
 	ENTRY(hvldc_intr_setvalid)
-	mov     VINTR_SET_VALID, %o5
-	ta      FAST_TRAP
+	mov	VINTR_SET_VALID, %o5
+	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hvldc_intr_setvalid)
 
 	/*
@@ -780,10 +790,10 @@
 	 */
 	ENTRY(hvldc_intr_getstate)
 	mov	%o2, %g1
-	mov     VINTR_GET_STATE, %o5
-	ta      FAST_TRAP
+	mov	VINTR_GET_STATE, %o5
+	ta	FAST_TRAP
 	retl
-	  stuw   %o1, [%g1]
+	stuw	%o1, [%g1]
 	SET_SIZE(hvldc_intr_getstate)
 
 	/*
@@ -791,10 +801,10 @@
 	 *			int intr_state);
 	 */
 	ENTRY(hvldc_intr_setstate)
-	mov     VINTR_SET_STATE, %o5
-	ta      FAST_TRAP
+	mov	VINTR_SET_STATE, %o5
+	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hvldc_intr_setstate)
 
 	/*
@@ -803,10 +813,10 @@
 	 */
 	ENTRY(hvldc_intr_gettarget)
 	mov	%o2, %g1
-	mov     VINTR_GET_TARGET, %o5
-	ta      FAST_TRAP
+	mov	VINTR_GET_TARGET, %o5
+	ta	FAST_TRAP
 	retl
-	  stuw   %o1, [%g1]
+	stuw	%o1, [%g1]
 	SET_SIZE(hvldc_intr_gettarget)
 
 	/*
@@ -814,10 +824,10 @@
 	 *			uint32_t cpuid);
 	 */
 	ENTRY(hvldc_intr_settarget)
-	mov     VINTR_SET_TARGET, %o5
-	ta      FAST_TRAP
+	mov	VINTR_SET_TARGET, %o5
+	ta	FAST_TRAP
 	retl
-	  nop
+	nop
 	SET_SIZE(hvldc_intr_settarget)
 
 	/*
@@ -837,7 +847,7 @@
 	ta	CORE_TRAP
 	stx	%o1, [%o3]
 	retl
-	  stx	%o2, [%o4]
+	stx	%o2, [%o4]
 	SET_SIZE(hv_api_get_version)
 
 	/*
@@ -856,7 +866,7 @@
 	mov	API_SET_VERSION, %o5
 	ta	CORE_TRAP
 	retl
-	  stx	%o1, [%o4]
+	stx	%o1, [%o4]
 	SET_SIZE(hv_api_set_version)
 
 	/*
@@ -864,7 +874,7 @@
 	 * %o1 - buffer size
 	 * %o2 - &characters written
 	 * returns
-	 * 	status
+	 * status
 	 */
 	ENTRY(hv_cnwrite)
 	mov	CONS_WRITE, %o5
@@ -884,7 +894,7 @@
 	ENTRY(hv_cnread)
 	mov	CONS_READ, %o5
 	ta	FAST_TRAP
-	brnz,a	%o0, 1f		! failure, just return error
+	brnz,a	%o0, 1f		/* failure, just return error */
 	nop
 
 	cmp	%o1, H_BREAK
@@ -895,7 +905,7 @@
 	be	1f
 	mov	%o1, %o0
 
-	stx	%o1, [%o2]	! success, save count and return 0
+	stx	%o1, [%o2]	/* success, save count and return 0 */
 	mov	0, %o0
 1:
 	retl

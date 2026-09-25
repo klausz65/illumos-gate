@@ -40,7 +40,7 @@
  * _init function epilogue
  */
 	.section	".init"
-	.align		4
+	.balign		4
 	ret
 	restore
 
@@ -48,6 +48,6 @@
  * _fini function epilogue
  */
 	.section	".fini"
-	.align		4
+	.balign		4
 	ret
 	restore

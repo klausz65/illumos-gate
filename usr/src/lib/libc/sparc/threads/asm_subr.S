@@ -22,8 +22,11 @@
 /*
  * Copyright (c) 1999, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
-	.file	"asm_subr.s"
+	.file	"asm_subr.S"
 
 #include "SYS.h"
 #include <sys/trap.h>
@@ -33,9 +36,9 @@
 	! thr_create() or pthread_create() returns (see setup_context()).
 	! We pass the (void *) return value to _thrp_terminate().
 	ENTRY(_lwp_start)
-	nop	! this is the location from which the func() was "called"
+	nop	/* this is the location from which the func() was "called" */
 	nop
-	call	_thrp_terminate	! %o0 contains the return value
+	call	_thrp_terminate	/* %o0 contains the return value */
 	nop
 	SET_SIZE(_lwp_start)
 
@@ -45,7 +48,7 @@
 	! All we need to do now is (carefully) call lwp_exit().
 	mov	SYS_lwp_exit, %g1
 	ta	SYSCALL_TRAPNUM
-	RET		! if we return, it is very bad
+	RET		/* if we return, it is very bad */
 	SET_SIZE(_lwp_terminate)
 
 	ENTRY(set_curthread)
@@ -55,6 +58,10 @@
 
 #ifdef __sparcv9
 #define	GREGSIZE	8
+.register %g2, #scratch
+.register %g3, #scratch
+.register %g6, #scratch
+.register %g7, #scratch
 #else
 #define	GREGSIZE	4
 #endif
@@ -74,7 +81,7 @@
 #ifdef __sparcv9
 	ENTRY(_getfprs)
 	retl
-	mov	%fprs, %o0
+	rd	%fprs, %o0
 	SET_SIZE(_getfprs)
 #else
 	ENTRY(_getpsr)
@@ -158,10 +165,10 @@ __sighndlrend:
 #undef	sigsetjmp
 
 	ENTRY2(sigsetjmp,_sigsetjmp)
-	stn	%sp, [%o0 + SJS_SP]	! save caller's sp into env->sjs_sp
-	add	%o7, 8, %o2		! calculate caller's return pc
-	stn	%o2, [%o0 + SJS_PC]	! save caller's pc into env->sjs_pc
-	stn	%fp, [%o0 + SJS_FP]	! save caller's return linkage
+	stn	%sp, [%o0 + SJS_SP]	/* save caller's sp into env->sjs_sp */
+	add	%o7, 8, %o2		/* calculate caller's return pc */
+	stn	%o2, [%o0 + SJS_PC]	/* save caller's pc into env->sjs_pc */
+	stn	%fp, [%o0 + SJS_FP]	/* save caller's return linkage */
 	stn	%i7, [%o0 + SJS_I7]
 #ifdef __sparcv9
 	rd	%asi, %o3
@@ -170,6 +177,6 @@ __sighndlrend:
 	stx	%o4, [%o0 + SJS_FPRS]
 #endif
 	call	__csigsetjmp
-	sub	%o2, 8, %o7		! __csigsetjmp returns to caller
+	sub	%o2, 8, %o7		/* __csigsetjmp returns to caller */
 	SET_SIZE(sigsetjmp)
 	SET_SIZE(_sigsetjmp)

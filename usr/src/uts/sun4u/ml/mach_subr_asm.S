@@ -22,6 +22,9 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 /*
  * General machine architecture & implementation specific
@@ -36,6 +39,10 @@
 #include <sys/cmpregs.h>
 #include <sys/clock.h>
 #include <sys/fpras.h>
+
+	/* GNU assembler */
+	.register	 %g2, #scratch
+	.register	 %g3, #scratch
 
 /*
  * This isn't the routine you're looking for.
@@ -63,22 +70,22 @@
 
 	ENTRY(set_error_enable_tl1)
 	cmp	%g2, EER_SET_ABSOLUTE
-	be	%xcc, 1f
-	  nop
-	ldxa	[%g0]ASI_ESTATE_ERR, %g3
+	be,pt	%icc, 1f
+	nop
+	ldxa	[%g0] ASI_ESTATE_ERR, %g3
 	membar	#Sync
 	cmp	%g2, EER_SET_SETBITS
-	be,a	%xcc, 1f
-	  or	%g3, %g1, %g1
+	be,a,pt	%icc, 1f
+	or	%g3, %g1, %g1
 	andn	%g3, %g1, %g1			/* EER_SET_CLRBITS */
 1:
-	stxa	%g1, [%g0]ASI_ESTATE_ERR	/* ecache error enable reg */
+	stxa	%g1, [%g0] ASI_ESTATE_ERR	/* ecache error enable reg */
 	membar	#Sync
 	retry
 	SET_SIZE(set_error_enable_tl1)
 
 	ENTRY(set_error_enable)
-	stxa	%o0, [%g0]ASI_ESTATE_ERR	/* ecache error enable reg */
+	stxa	%o0, [%g0] ASI_ESTATE_ERR	/* ecache error enable reg */
 	membar	#Sync
 	retl
 	nop
@@ -86,24 +93,24 @@
 
 	ENTRY(get_error_enable)
 	retl
-	ldxa	[%g0]ASI_ESTATE_ERR, %o0	/* ecache error enable reg */
+	ldxa	[%g0] ASI_ESTATE_ERR, %o0	/* ecache error enable reg */
 	SET_SIZE(get_error_enable)
 
 	ENTRY(get_asyncflt)
-	ldxa	[%g0]ASI_AFSR, %o1		! afsr reg
+	ldxa	[%g0] ASI_AFSR, %o1		! afsr reg
 	retl
 	stx	%o1, [%o0]
 	SET_SIZE(get_asyncflt)
 
 	ENTRY(set_asyncflt)
-	stxa	%o0, [%g0]ASI_AFSR		! afsr reg
+	stxa	%o0, [%g0] ASI_AFSR		! afsr reg
 	membar	#Sync
 	retl
 	nop
 	SET_SIZE(set_asyncflt)
 
 	ENTRY(get_asyncaddr)
-	ldxa	[%g0]ASI_AFAR, %o1		! afar reg
+	ldxa	[%g0] ASI_AFAR, %o1		! afar reg
 	retl
 	stx	%o1, [%o0]
 	SET_SIZE(get_asyncaddr)
@@ -128,10 +135,10 @@
 	ENTRY(set_cmp_error_steering)
 	membar	#Sync
 	set	ASI_CORE_ID, %o0		! %o0 = ASI_CORE_ID
-	ldxa	[%o0]ASI_CMP_PER_CORE, %o0	! get ASI_CORE_ID
+	ldxa	[%o0] ASI_CMP_PER_CORE, %o0	! get ASI_CORE_ID
 	and	%o0, COREID_MASK, %o0
 	set	ASI_CMP_ERROR_STEERING, %o1	! %o1 = ERROR_STEERING_REG
-	stxa	%o0, [%o1]ASI_CMP_SHARED	! this core now hadles
+	stxa	%o0, [%o1] ASI_CMP_SHARED	! this core now hadles
 	membar	#Sync				!  non-core specific errors
 	retl
 	nop
@@ -147,13 +154,13 @@
 	 * C.B. Liaw of PNP.
 	 *
 	 * This function must match a struct fpras_chkfn and must be
-	 * block aligned.  A zero return means all was well.  These
+	 * block aligned. A zero return means all was well. These
 	 * instructions are chosen to be sensitive to bit corruptions
 	 * on the fpras rewrite, so if a bit corruption still produces
 	 * a valid instruction we should still get an incorrect result
 	 * here.  This function is never called directly - it is copied
-	 * into per-cpu and per-operation buffers;  it must therefore
-	 * be absolutely position independent.  If an illegal instruction
+	 * into per-cpu and per-operation buffers; it must therefore
+	 * be absolutely position independent. If an illegal instruction
 	 * is encountered then the trap handler trampolines to the final
 	 * three instructions of this function.
 	 *
@@ -209,27 +216,27 @@
 	 * r[1]		%g1
 	 * r[0]		%g0
 	 *
-	 * For register r[n], register r[31-n] is the complement.  We must
-	 * avoid use of %i6/%i7 and %o6/%o7 as well as %g7.  Clearly we need
+	 * For register r[n], register r[31-n] is the complement. We must
+	 * avoid use of %i6/%i7 and %o6/%o7 as well as %g7. Clearly we need
 	 * to use a local or input register as one half of the pair, which
 	 * requires us to obtain our own register window or take steps
-	 * to preserve any local or input we choose to use.  We choose
+	 * to preserve any local or input we choose to use. We choose
 	 * %o1 as rd for the SETHI, so rd of the ADDCCC must be %l6.
 	 * We'll use %o1 as rs1 and %l6 as rs2 of the ADDCCC, which then
 	 * requires that imm22 be 0b111 10110 1 11111111 01001 or 0x3dbfe9,
-	 * or %hi(0xf6ffa400).  This determines the value of the constant
+	 * or %hi(0xf6ffa400). This determines the value of the constant
 	 * CBV2 below.
 	 *
 	 * The constant CBV1 is chosen such that an initial subcc %g0, CBV1
 	 * will set the carry bit and every addccc thereafter will continue
-	 * to generate a carry.  Other values are possible for CBV1 - this
+	 * to generate a carry. Other values are possible for CBV1 - this
 	 * is just one that works this way.
 	 *
 	 * Finally CBV3 is the expected answer when we perform our repeated
 	 * calculations on CBV1 and CBV2 - it is not otherwise specially
-	 * derived.  If this result is not obtained then a corruption has
+	 * derived. If this result is not obtained then a corruption has
 	 * occured during the FPRAS_REWRITE of one of the two blocks of
-	 * 16 instructions.  A corruption could also result in an illegal
+	 * 16 instructions. A corruption could also result in an illegal
 	 * instruction or other unexpected trap - we catch illegal
 	 * instruction traps in the PC range and trampoline to the
 	 * last instructions of the function to return a failure indication.
@@ -245,14 +252,14 @@
 #define	SETHI_CBV2_CBR1		sethi %hi(CBV2), CBR1
 #define	ADDCCC_CBR1_CBR2_CBR2	addccc CBR1, CBR2, CBR2
 
-	.align	64
+	.balign	64
 	ENTRY_NP(fpras_chkfn_type1)
 	mov	CBR2, CBO2		! 1, preserve CBR2 of (callers) window
 	mov	FPRAS_OK, %o0		! 2, default return value
 	ba,pt	%icc, 1f		! 3
-	  subcc %g0, CBV1, CBR2		! 4
+	subcc %g0, CBV1, CBR2		! 4
 					! 5 - 16
-	.align	64
+	.balign	64
 1:	SETHI_CBV2_CBR1			! 1
 	ADDCCC_CBR1_CBR2_CBR2		! 2
 	SETHI_CBV2_CBR1			! 3
@@ -292,14 +299,14 @@
 	cmp	CBR1, CBR2		! 3
 	movnz	%icc, FPRAS_BADCALC, %o0! 4, how detected
 	retl				! 5
-	  mov	CBO2, CBR2		! 6, restore borrowed register
+	mov	CBO2, CBR2		! 6, restore borrowed register
 	.skip 4*(13-7+1)		! 7 - 13
 					!
 					! illegal instr'n trap comes here
 					!
 	mov	CBO2, CBR2		! 14, restore borrowed register
 	retl				! 15
-	  mov	FPRAS_BADTRAP, %o0	! 16, how detected
+	mov	FPRAS_BADTRAP, %o0	! 16, how detected
 	SET_SIZE(fpras_chkfn_type1)
 
 /*
@@ -310,7 +317,7 @@
 	std	%g0, [%sp + ARGPUSH + STACK_BIAS]
 	fzero	%f0
 	fzero	%f2
-	ldd	[%sp + ARGPUSH + STACK_BIAS], %fsr
+	ldx	[%sp + ARGPUSH + STACK_BIAS], %fsr
 	faddd	%f0, %f2, %f4
 	fmuld	%f0, %f2, %f6
 	faddd	%f0, %f2, %f8

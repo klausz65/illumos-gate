@@ -21,10 +21,18 @@
 /*
  * Copyright (c) 1993, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 /*
  * Process switching routines.
  */
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+	.register	%g7, #scratch
 
 #include "assym.h"
 
@@ -51,12 +59,12 @@
  * the outgoing thread.
  *
  * The MMU context changes when the resuming thread resides in a different
- * process.  Kernel threads are known by resume to reside in process 0.
+ * process. Kernel threads are known by resume to reside in process 0.
  * The MMU context, therefore, only changes when resuming a thread in
  * a process different from curproc.
  *
  * resume_from_intr() is called when the thread being resumed was not
- * passivated by resume (e.g. was interrupted).  This means that the
+ * passivated by resume (e.g. was interrupted). This means that the
  * resume lock is already held and that a restore context is not needed.
  * Also, the MMU context is not changed on the resume in this case.
  *
@@ -88,7 +96,7 @@
 	ldn	[THREAD_REG + T_LWP], %o4	! get lwp pointer
 	rd	%fprs, %g4			! read fprs
 	brnz,pt	%o4, 0f				! if user thread skip
-	  ldn	[THREAD_REG + T_CPU], %i1	! get CPU pointer
+	ldn	[THREAD_REG + T_CPU], %i1	! get CPU pointer
 
 	!
 	! kernel thread
@@ -98,16 +106,16 @@
 	ldn	[THREAD_REG + T_STACK], %i2
 	ldn	[THREAD_REG + T_CTX], %g3	! get ctx pointer
 	andcc	%g4, FPRS_FEF, %g0		! is FPRS_FEF set
-	bz,pt	%icc, 1f			! nope, skip
-	  st	%g4, [%i2 + SA(MINFRAME) + FPU_FPRS]	! save fprs
+	bz,pt	%xcc, 1f			! nope, skip
+	st	%g4, [%i2 + SA(MINFRAME) + FPU_FPRS]	! save fprs
 
 	! save kernel fp state in stack
 	add	%i2, SA(MINFRAME), %o0		! o0 = kfpu_t ptr
 	rd	%gsr, %g5
 	call	fp_save
 	stx	%g5, [%o0 + FPU_GSR]		! store GSR
-	ba,a,pt	%icc, 1f
-	  nop
+	ba,a,pt	%xcc, 1f
+	nop
 
 0:
 	! user thread
@@ -119,13 +127,13 @@
 	andcc	%g4, FPRS_FEF, %g0		! is FPRS_FEF set
 	st	%g4, [%o0 + FPU_FPRS]		! store FPRS
 #if defined(DEBUG) || defined(NEED_FPU_EXISTS)
-	sethi	%hi(fpu_exists), %g5
-	ld	[%g5 + %lo(fpu_exists)], %g5
+	set	fpu_exists, %g5
+	ld	[%g5], %g5
 	brz,pn	%g5, 1f
-	  ldn	[THREAD_REG + T_CTX], %g3	! get ctx pointer
+	ldn	[THREAD_REG + T_CTX], %g3	! get ctx pointer
 #endif
-	bz,pt	%icc, 1f			! most apps don't use fp
-	  ldn	[THREAD_REG + T_CTX], %g3	! get ctx pointer
+	bz,pt	%xcc, 1f			! most apps don't use fp
+	ldn	[THREAD_REG + T_CTX], %g3	! get ctx pointer
 	ldn	[%o4 + LWP_FPU], %o0		! fp pointer
 	rd	%gsr, %g5
 	call	fp_save				! doesn't touch globals
@@ -182,7 +190,7 @@
 
 	cmp 	%i2, %i3		! resuming the same process?
 	be,pt	%xcc, 5f		! yes.
-	  nop
+	nop
 
 	ldx	[%i3 + P_AS], %o0	! load p->p_as
 	ldx	[%o0 + A_HAT], %i5	! %i5 = new proc hat
@@ -198,13 +206,13 @@
 	sllx	%g2, %o4, %o4		! %o4 = bit for this cpu
 	andcc	%o4, %o2, %g0
 	bnz,pn	%xcc, 0f		! bit already set, go to 0
-	  nop
+	nop
 3:
 	or	%o2, %o4, %o1		! or in this cpu's bit mask
 	casx	[%o5], %o2, %o1
 	cmp	%o2, %o1
 	bne,a,pn %xcc, 3b
-	  ldx	[%o5], %o2		! o2 = cpusran field
+	ldx	[%o5], %o2		! o2 = cpusran field
 	membar	#LoadLoad|#StoreLoad
 
 0:
@@ -222,22 +230,22 @@
 	! %i5 = new proc hat
 	!
 
-	sethi	%hi(ksfmmup), %o2
-        ldx	[%o2 + %lo(ksfmmup)], %o2
+	set	ksfmmup, %o2
+	ldx	[%o2], %o2
 
 	rdpr	%pstate, %i4
-        cmp	%i5, %o2		! new proc hat == ksfmmup ?
+	cmp	%i5, %o2		! new proc hat == ksfmmup ?
 	bne,pt	%xcc, 3f		! new proc is not kernel as, go to 3
-	  wrpr	%i4, PSTATE_IE, %pstate
+	wrpr	%i4, PSTATE_IE, %pstate
 
 	SET_KAS_CTXSEC_ARGS(%i5, %o0, %o1)
 
 	! new proc is kernel as
 
 	call	sfmmu_setctx_sec		! switch to kernel context
-	  or	%o0, %o1, %o0
+	or	%o0, %o1, %o0
 
-	ba,a,pt	%icc, 4f
+	ba,a,pt	%xcc, 4f
 
 	!
 	! Switch to user address space.
@@ -247,26 +255,26 @@
 	mov	%i1, %o2			! %o2 = CPU
 	set	SFMMU_PRIVATE, %o3		! %o3 = sfmmu private flag
 	call	sfmmu_alloc_ctx
-	  mov	%g0, %o1			! %o1 = allocate flag = 0
+	mov	%g0, %o1			! %o1 = allocate flag = 0
 
 	brz,a,pt %o0, 4f			! %o0 == 0, no private alloc'ed
-          nop
+	nop
 
-        ldn     [%i5 + SFMMU_SCDP], %o0         ! using shared contexts?
-        brz,a,pt %o0, 4f
-          nop
+	ldn	[%i5 + SFMMU_SCDP], %o0		! using shared contexts?
+	brz,a,pt %o0, 4f
+	nop
 
-	ldn   [%o0 + SCD_SFMMUP], %o0		! %o0 = scdp->scd_sfmmup
+	ldn	[%o0 + SCD_SFMMUP], %o0		! %o0 = scdp->scd_sfmmup
 	mov	%i1, %o2			! %o2 = CPU
 	set	SFMMU_SHARED, %o3		! %o3 = sfmmu shared flag
 	call	sfmmu_alloc_ctx
-	  mov	1, %o1				! %o1 = allocate flag = 1
+	mov	1, %o1				! %o1 = allocate flag = 1
 
 4:
 	call	sfmmu_load_mmustate		! program MMU registers
-	  mov	%i5, %o0
+	mov	%i5, %o0
 
-	wrpr    %g0, %i4, %pstate               ! enable interrupts
+	wrpr	%g0, %i4, %pstate		! enable interrupts
 
 5:
 	!
@@ -277,20 +285,20 @@
 	ldstub	[%i0 + T_LOCK], %o0	! lock curthread's t_lock
 6:
 	brnz,pn	%o0, 7f			! lock failed
-	  ldx	[%i0 + T_PC], %i7	! delay - restore resuming thread's pc
+	ldx	[%i0 + T_PC], %i7	! delay - restore resuming thread's pc
 
 	!
 	! Fix CPU structure to indicate new running thread.
 	! Set pointer in new thread to the CPU structure.
 	! XXX - Move migration statistic out of here
 	!
-        ldx	[%i0 + T_CPU], %g2	! last CPU to run the new thread
-        cmp     %g2, %i1		! test for migration
-        be,pt	%xcc, 4f		! no migration
-          ldn	[%i0 + T_LWP], %o1	! delay - get associated lwp (if any)
-        ldx	[%i1 + CPU_STATS_SYS_CPUMIGRATE], %g2
-        inc     %g2
-        stx	%g2, [%i1 + CPU_STATS_SYS_CPUMIGRATE]
+	ldx	[%i0 + T_CPU], %g2	! last CPU to run the new thread
+	cmp	%g2, %i1		! test for migration
+	be,pt	%xcc, 4f		! no migration
+	ldn	[%i0 + T_LWP], %o1	! delay - get associated lwp (if any)
+	ldx	[%i1 + CPU_STATS_SYS_CPUMIGRATE], %g2
+	inc	%g2
+	stx	%g2, [%i1 + CPU_STATS_SYS_CPUMIGRATE]
 	stx	%i1, [%i0 + T_CPU]	! set new thread's CPU pointer
 4:
 	stx	%i0, [%i1 + CPU_THREAD]	! set CPU's thread pointer
@@ -298,7 +306,7 @@
 	mov	%i0, THREAD_REG		! update global thread register
 	stx	%o1, [%i1 + CPU_LWP]	! set CPU's lwp ptr
 	brz,a,pn %o1, 1f		! if no lwp, branch and clr mpcb
-	  stx	%g0, [%i1 + CPU_MPCB]
+	stx	%g0, [%i1 + CPU_MPCB]
 	!
 	! user thread
 	! o1 = lwp
@@ -321,25 +329,25 @@
 	! of a membar #Sync.
 	!
 #if defined(DEBUG) || defined(NEED_FPU_EXISTS)
-	sethi	%hi(fpu_exists), %g3
-	ld	[%g3 + %lo(fpu_exists)], %g3
+	set	fpu_exists, %g3
+	ld	[%g3], %g3
 	brz,pn	%g3, 2f
-	  ldx	[%i0 + T_CTX], %i5	! should resumed thread restorectx?
+	ldx	[%i0 + T_CTX], %i5	! should resumed thread restorectx?
 #endif
 	ldx	[%o1 + LWP_FPU], %o0		! fp pointer
 	ld	[%o0 + FPU_FPRS], %g5		! get fpu_fprs
 	andcc	%g5, FPRS_FEF, %g0		! is FPRS_FEF set?
-	bz,a,pt	%icc, 9f			! no, skip fp_restore
-	  wr	%g0, FPRS_FEF, %fprs		! enable fprs so fp_zero works
+	bz,a,pt	%xcc, 9f			! no, skip fp_restore
+	wr	%g0, FPRS_FEF, %fprs		! enable fprs so fp_zero works
 
 	ldx	[THREAD_REG + T_CPU], %o4	! cpu pointer
 	call	fp_restore
-	  wr	%g5, %g0, %fprs			! enable fpu and restore fprs
+	wr	%g5, %g0, %fprs			! enable fpu and restore fprs
 
 	ldx	[%o0 + FPU_GSR], %g5		! load saved GSR data
 	wr	%g5, %g0, %gsr			! restore %gsr data
-	ba,pt	%icc,2f
-	  ldx	[%i0 + T_CTX], %i5	! should resumed thread restorectx?
+	ba,pt	%xcc,2f
+	ldx	[%i0 + T_CTX], %i5	! should resumed thread restorectx?
 
 9:
 	!
@@ -347,10 +355,10 @@
 	! Remove all possibility of using the fp regs as a "covert channel".
 	!
 	call	fp_zero
-	  wr	%g0, %g0, %gsr
+	wr	%g0, %g0, %gsr
 	ldx	[%i0 + T_CTX], %i5	! should resumed thread restorectx?
-	ba,pt	%icc, 2f
-	  wr	%g0, %g0, %fprs			! disable fprs
+	ba,pt	%xcc, 2f
+	wr	%g0, %g0, %fprs			! disable fprs
 
 1:
 #ifdef CPU_MPCB_PA
@@ -376,8 +384,8 @@
 	ld	[%o0 + SA(MINFRAME) + FPU_FPRS], %g5	! load fprs
 	ldx	[%i0 + T_CTX], %i5		! should thread restorectx?
 	andcc	%g5, FPRS_FEF, %g0		! did we save fp in stack?
-	bz,a,pt	%icc, 2f
-	  wr	%g0, %g0, %fprs			! clr fprs
+	bz,a,pt	%xcc, 2f
+	wr	%g0, %g0, %fprs			! clr fprs
 
 	wr	%g5, %g0, %fprs			! enable fpu and restore fprs
 	call	fp_restore
@@ -391,9 +399,9 @@
 	! i5 = ctx ptr
 	!
 	brz,a,pt %i5, 8f		! skip restorectx() when zero
-	  ld	[%i1 + CPU_BASE_SPL], %o0
+	ld	[%i1 + CPU_BASE_SPL], %o0
 	call	restorectx		! thread can not sleep on temp stack
-	  mov	THREAD_REG, %o0		! delay slot - arg = thread pointer
+	mov	THREAD_REG, %o0		! delay slot - arg = thread pointer
 	!
 	! Set priority as low as possible, blocking all interrupt threads
 	! that may be active.
@@ -409,7 +417,7 @@
 	lduh	[THREAD_REG + T_FLAGS], %o0
 	andcc	%o0, T_INTR_THREAD, %g0
 	bnz,pn	%xcc, 0f
-	  nop
+	nop
 5:
 	call	__dtrace_probe___sched_on__cpu	! DTrace probe
 	nop
@@ -420,24 +428,24 @@
 	add	THREAD_REG, T_INTR_START, %o2
 1:
 	ldx	[%o2], %o1
-	RD_CLOCK_TICK(%o0,%o3,%g5,__LINE__)
+	rd	%tick, %o4
 	casx	[%o2], %o1, %o0
 	cmp	%o0, %o1
 	be,pt	%xcc, 5b
-	  nop
+	nop
 	! If an interrupt occurred while we were attempting to store
 	! the timestamp, try again.
 	ba,pt	%xcc, 1b
-	  nop
+	nop
 
 	!
 	! lock failed - spin with regular load to avoid cache-thrashing.
 	!
 7:
 	brnz,a,pt %o0, 7b		! spin while locked
-	  ldub	[%i0 + T_LOCK], %o0
+	ldub	[%i0 + T_LOCK], %o0
 	ba	%xcc, 6b
-	  ldstub  [%i0 + T_LOCK], %o0	! delay - lock curthread's mutex
+	ldstub  [%i0 + T_LOCK], %o0	! delay - lock curthread's mutex
 	SET_SIZE(_resume_from_idle)
 	SET_SIZE(resume)
 
@@ -499,8 +507,8 @@
 	rd	%fprs, %g4
 	ldn	[THREAD_REG + T_STACK], %i2
 	andcc	%g4, FPRS_FEF, %g0		! is FPRS_FEF set
-	bz,pt	%icc, 4f
-	  st	%g4, [%i2 + SA(MINFRAME) + FPU_FPRS]	! save fprs
+	bz,pt	%xcc, 4f
+	st	%g4, [%i2 + SA(MINFRAME) + FPU_FPRS]	! save fprs
 
 	! save kernel fp state in stack
 	add	%i2, SA(MINFRAME), %o0		! %o0 = kfpu_t ptr
@@ -558,7 +566,7 @@
 	add	THREAD_REG, T_INTR_START, %o2
 2:
 	ldx	[%o2], %o1
-	RD_CLOCK_TICK(%o0,%o3,%l1,__LINE__)
+	rd	%tick, %o4
 	casx	[%o2], %o1, %o0
 	cmp	%o0, %o1
 	bne,pn	%xcc, 2b

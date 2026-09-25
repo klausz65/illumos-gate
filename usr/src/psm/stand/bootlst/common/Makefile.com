@@ -21,6 +21,7 @@
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+# Copyright 2026 Klaus Ziegler.
 
 TOPDIR	=	../../../../..
 
@@ -55,8 +56,9 @@ CPPFLAGS	+= $(CCYFLAG)$(STANDDIR)
 
 CSTD =	$(CSTD_GNU99)
 CFLAGS =	$(CCVERBOSE) -O $(CSTD)
+CFLAGS +=	-xregs=no%appl
 
-ASFLAGS =	-D_ASM $(CPPDEFS) -DLOCORE -D_LOCORE -D__STDC__
+ASFLAGS64 =	-D_ASM $(CPPDEFS) -DLOCORE -D_LOCORE
 AS_CPPFLAGS =	$(CPPINCS) $(CPPFLAGS.master)
 
 # install values

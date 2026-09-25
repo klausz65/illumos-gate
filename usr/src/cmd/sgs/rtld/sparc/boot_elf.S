@@ -38,8 +38,8 @@
 #include	<sys/stack.h>
 #include	<sys/asm_linkage.h>
 
-	.file	"boot_elf.s"
-	.seg	".text"
+	.file	"boot_elf.S"
+	.text
 #endif
 
 /*
@@ -84,7 +84,7 @@ elf_rtbndr(Rt_map *lmp, unsigned long pltoff, caddr_t from)
 
 	.global	elf_rtbndr
 	.type   elf_rtbndr, #function
-	.align	4
+	.balign	4
 
 elf_rtbndr:
 	mov	%i7, %o0		! Save callers address(profiling)
@@ -157,7 +157,7 @@ elf_plt_init(void *plt, caddr_t lmp)
 #else
 	.global	elf_plt_init
 	.type	elf_plt_init, #function
-	.align	4
+	.balign	4
 
 elf_plt_init:
 	save	%sp, -SA(MINFRAME), %sp	! Make a frame
@@ -200,7 +200,7 @@ elf_plt_trace()
 #else
 	.global	elf_plt_trace
 	.type   elf_plt_trace, #function
-	.align	4
+	.balign	4
 
 /*
  * The dyn_plt that called us has already created a stack-frame for
