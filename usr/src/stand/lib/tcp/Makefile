@@ -33,6 +33,8 @@ CMNDIR  = $(CMNNETDIR)/dhcp
 LDLIBS += -linet
 CPPFLAGS += -I../inet $(SOCKCPPFLAGS)
 
+CSTD	= $(CSTD_GNU99)
+
 CERRWARN += -_gcc=-Wno-unused-label
 CERRWARN += $(CNOWARN_UNINIT)
 
