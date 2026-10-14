@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"__time.s"
+	.file	"__time.S"
 
 /*
  * raw system calls:

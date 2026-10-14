@@ -23,8 +23,11 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
-	.file	"_stack_grow.s"
+	.file	"_stack_grow.S"
 
 #include "SYS.h"
 #include <../assym.h>
@@ -52,9 +55,9 @@
  */
 
 #if defined(__sparcv9)
-#define	PN	,pn %xcc,
+#define	_PN(cmd, label) cmd,pn %xcc, label
 #else
-#define	PN
+#define	_PN(cmd, label) cmd label
 #endif
 
 	/*
@@ -67,7 +70,7 @@
 
 	sub	%o0, %o3, %o4
 	cmp	%o2, %o4
-	bleu PN	1f
+	_PN(bgeu, 1f)
 	tst	%o2
 
 	retl
@@ -76,7 +79,7 @@
 	/*
 	 * If the stack size is 0, stack checking is disabled.
 	 */
-	bnz PN	2f
+	_PN(bnz, 2f)
 	nop
 	retl
 	nop
@@ -86,7 +89,7 @@
 	 */
 	sub	%sp, %o3, %o4
 	cmp	%o2, %o4
-	bleu PN	3f
+	_PN(bleu, 3f)
 	nop
 	sub	%o3, STACK_ALIGN, %sp
 3:

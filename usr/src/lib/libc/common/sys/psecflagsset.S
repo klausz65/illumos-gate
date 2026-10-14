@@ -11,7 +11,7 @@
 
 /* Copyright 2015, Richard Lowe */
 
-	.file	"psecflagsset.s"
+	.file	"psecflagsset.S"
 
 #include <sys/asm_linkage.h>
 #include "SYS.h"

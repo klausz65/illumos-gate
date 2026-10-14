@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"sigsendset.s"
+	.file	"sigsendset.S"
 
 /* C library -- sigsendset					*/
 /* int sigsendset(procset_t *psp, int sig)			*/

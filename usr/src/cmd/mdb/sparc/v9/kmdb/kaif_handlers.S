@@ -51,7 +51,7 @@
  * The handlers have a debugging feature, enabled when KMDB_TRAPCOUNT is
  * defined, which allows them to keep a running count of the number of times
  * a given trap has occurred. The counter is stored in the padding at the end
- * of the handler.  Write access is of course required to allow the values to
+ * of the handler. Write access is of course required to allow the values to
  * be updated, so KMDB_TRAPCOUNT also enables the installation of DTLB entries
  * for each trap table page. Finally, the code in this file is copied into
  * the actual location used by the handler, so we can't perform compile-time
@@ -74,6 +74,10 @@ kaif_itlb_handler(void)
 }
 
 #else /* lint */
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 #ifdef sun4v
 
@@ -245,13 +249,13 @@ patch_lbl:							\
 	/* NOTREACHED */
 
 #ifdef KMDB_TRAPCOUNT
-	.align 8
+	.balign 8
 .count:	.xword 0			/* counter goes here */
 .daddr:	.xword 0			/* miss address goes here */
 .ecode:	.xword 0			/* sun4v: g1 contains err code */
 #endif
 
-	.align 32*4			/* force length to 32 instr. */
+	.balign 32*4			/* force length to 32 instr. */
 	SET_SIZE(kaif_hdlr_dmiss)
 
 
@@ -296,11 +300,11 @@ patch_lbl:							\
 	/* NOTREACHED */
 
 #ifdef KMDB_TRAPCOUNT
-	.align	8
+	.balign	8
 .count:	.xword	0
 #endif
 
-	.align	32*4			/* force length to 32 instr. */
+	.balign	32*4			/* force length to 32 instr. */
 	SET_SIZE(kaif_hdlr_imiss)
 
 
@@ -320,11 +324,11 @@ patch_lbl:							\
 	/* NOTREACHED */
 
 #ifdef	KMDB_TRAPCOUNT
-	.align	8
+	.balign	8
 .count:	.xword	0			/* counter goes here */
 #endif
 
-	.align	32*4			/* force length to 32 instr. */
+	.balign	32*4			/* force length to 32 instr. */
 	SET_SIZE(kaif_hdlr_generic)
 
 #endif /* lint */

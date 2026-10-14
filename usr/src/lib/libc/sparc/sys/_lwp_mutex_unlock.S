@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_lwp_mutex_unlock.s"
+	.file	"_lwp_mutex_unlock.S"
 
 #include "SYS.h"
 #include <../assym.h>
@@ -34,18 +34,18 @@
 	add	%o0, MUTEX_LOCK_WORD, %o1
 	ld	[%o1], %o2
 1:
-	clr	%o3				! clear lock/get waiter field
-	cas	[%o1], %o2, %o3			! atomically
+	clr	%o3				/* clear lock/get waiter field */
+	cas	[%o1], %o2, %o3			/* atomically */
 	cmp	%o2, %o3
 	bne,a,pn %icc, 1b
-	  mov	%o3, %o2
-	btst	WAITER_MASK, %o3		! check for waiters
-	beq,a,pt %icc,2f			! if no waiters
-	  clr 	%o0				! 	return 0
-						! else (note that %o0 is still
-						!	&mutex)
-	clr	%o1				! call kernel to wakeup waiter:
-	SYSTRAP_RVAL1(lwp_mutex_wakeup)		!    lwp_mutex_wakeup(mp, 0)
+	mov	%o3, %o2
+	btst	WAITER_MASK, %o3		/* check for waiters */
+	beq,a,pt %icc,2f			/* if no waiters */
+	clr 	%o0				/* 	return 0 */
+						/* else (note that %o0 is still */
+						/*	&mutex) */
+	clr	%o1				/* call kernel to wakeup waiter: */
+	SYSTRAP_RVAL1(lwp_mutex_wakeup)		/*    lwp_mutex_wakeup(mp, 0) */
 	SYSLWPERR
-2: 	RET
+2:	RET
 	SET_SIZE(_lwp_mutex_unlock)

@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_send.s"
+	.file	"_so_send.S"
 
 /* C library -- __so_send						*/
 /* int __so_send(int socket, const void *buffer, size_t len, int flags)	*/

@@ -18,7 +18,7 @@
  * Get the stack at entry and call a function with it as an argument.
  */
 
-	.file	"stack_sparc.s"
+	.file	"stack_sparc.S"
 
 #include <sys/asm_linkage.h>
 
@@ -66,6 +66,6 @@
  * Passes the stack pointer during init to initmain() (defined elsewhere).
  * Tests alignment in section .init.
  */
-	.section ".init"
+	.section .init
 	call	initmain, 0
 	add	%sp, STACK_BIAS, %o0

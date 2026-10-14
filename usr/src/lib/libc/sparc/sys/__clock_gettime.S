@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"__clock_gettime.s"
+	.file	"__clock_gettime.S"
 
 #include <sys/time_impl.h>
 #include "SYS.h"
@@ -34,11 +34,11 @@
  */
 
 	ENTRY(__clock_gettime)
-	cmp	%o0, __CLOCK_REALTIME0		! if (clock_id)
-	beq	2f				! equal to __CLOCK_REALTIME0
-	cmp	%o0, CLOCK_REALTIME		! or
-	bne	1f				! equal to CLOCK_REALTIME
-	.empty					! optimize for CLOCK_REALTIME
+	cmp	%o0, __CLOCK_REALTIME0		/* if (clock_id) */
+	beq	2f				/* equal to __CLOCK_REALTIME0 */
+	cmp	%o0, CLOCK_REALTIME		/* or */
+	bne	1f				/* equal to CLOCK_REALTIME */
+	.empty					/* optimize for CLOCK_REALTIME */
 2:
 	mov	%o1, %o5
 	SYSFASTTRAP(GETHRESTIME)

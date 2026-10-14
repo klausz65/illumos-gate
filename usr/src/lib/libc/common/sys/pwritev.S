@@ -13,7 +13,7 @@
  * Copyright (c) 2015, Joyent, Inc.  All rights reserved.
  */
 
-	.file	"pwritev.s"
+	.file	"pwritev.S"
 
 /* C library -- pwritev							*/
 /* ssize_t __pwritev(int, const struct iovec *, int, off_t, off_t);	*/

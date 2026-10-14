@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"getuid.s"
+	.file	"getuid.S"
 
 /* C library -- getuid						*/
 /* uid_t getuid (void);						*/

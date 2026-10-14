@@ -45,7 +45,7 @@
 	.section	".init"
 	.global		_init
 	.type		_init, #function
-	.align	4
+	.balign	4
 _init:
 	save	%sp, -SA(MINFRAME), %sp
 
@@ -55,6 +55,6 @@ _init:
 	.section	".fini"
 	.global		_fini
 	.type		_fini, #function
-	.align	4
+	.balign	4
 _fini:
 	save	%sp, -SA(MINFRAME), %sp

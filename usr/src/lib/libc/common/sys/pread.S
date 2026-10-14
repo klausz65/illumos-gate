@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"pread.s"
+	.file	"pread.S"
 
 /* C library -- pread					*/
 /* ssize_t __pread(int, void *, size_t, off_t);		*/

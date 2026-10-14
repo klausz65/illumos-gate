@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"exit.s"
+	.file	"exit.S"
 
 /* C library -- _exit
  *

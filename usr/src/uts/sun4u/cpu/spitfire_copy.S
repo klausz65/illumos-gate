@@ -24,6 +24,10 @@
  * Use is subject to license terms.
  */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 #include <sys/param.h>
 #include <sys/errno.h>
 #include <sys/asm_linkage.h>
@@ -50,37 +54,37 @@
  *		caller_error_handler = TRUE		! %l6 |= 2
  *	}
  *
- * 	if (length < VIS_COPY)
- * 		goto regular_copy;
+ *	if (length < VIS_COPY)
+ *		goto regular_copy;
  *
- * 	if (!use_vis)
- * 		goto_regular_copy;
+ *	if (!use_vis)
+ *		goto_regular_copy;
  *
  * 	if (curthread->t_lwp == NULL) {
  *		! Kernel threads do not have pcb's in which to store
  *		! the floating point state, disallow preemption during
  *		! the copy.
- * 		kpreempt_disable(curthread);
+ *		kpreempt_disable(curthread);
  *	}
  *
- * 	old_fprs = %fprs;
- * 	old_gsr = %gsr;
- * 	if (%fprs.fef) {
- *              ! If we need to save 4 blocks of fpregs then make sure
+ *	old_fprs = %fprs;
+ *	old_gsr = %gsr;
+ *	if (%fprs.fef) {
+ *		! If we need to save 4 blocks of fpregs then make sure
  *		! the length is still appropriate for that extra overhead.
- * 		if (length < (large_length + (64 * 4))) {
- * 			if (curthread->t_lwp == NULL)
- * 				kpreempt_enable(curthread);
- * 			goto regular_copy;
- * 		}
- * 		%fprs.fef = 1;
- * 		save current fpregs on stack using blockstore
- * 	} else {
- * 		%fprs.fef = 1;
- * 	}
+ *		if (length < (large_length + (64 * 4))) {
+ *			if (curthread->t_lwp == NULL)
+ *				kpreempt_enable(curthread);
+ *			goto regular_copy;
+ *		}
+ *		%fprs.fef = 1;
+ *		save current fpregs on stack using blockstore
+ *	} else {
+ *		%fprs.fef = 1;
+ *	}
  *
- * 	used_block_copy = 1;				! %l6 |= 1
- * 	do_blockcopy_here;
+ *	used_block_copy = 1;				! %l6 |= 1
+ *	do_blockcopy_here;
  *
  * In lofault handler:
  *	curthread->t_lofault = .copyerr2;
@@ -88,22 +92,22 @@
  *
  * On exit:
  *	call_kpreempt = 0;
- * 	if (used_block_copy) {				! %l6 & 1
- * 		%gsr = old_gsr;
- * 		if (old_fprs & FPRS_FEF)
- * 			restore fpregs from stack using blockload
+ *	if (used_block_copy) {				! %l6 & 1
+ *		%gsr = old_gsr;
+ *		if (old_fprs & FPRS_FEF)
+ *			restore fpregs from stack using blockload
  *		else
  *			zero fpregs
- * 		%fprs = old_fprs;
- * 		if (curthread->t_lwp == NULL) {
+ *		%fprs = old_fprs;
+ *		if (curthread->t_lwp == NULL) {
  *			kpreempt_enable(curthread);
  *			call_kpreempt = 1;
  *		}
- * 	}
- * 	curthread->t_lofault = (%l6 & ~3);
+ *	}
+ *	curthread->t_lofault = (%l6 & ~3);
  *	if (call_kpreempt)
  *		kpreempt(%pil);
- * 	return (0)
+ *	return (0)
  *
  * In second lofault handler (.copyerr2):
  *	We've tried to restore fp state from the stack and failed.  To
@@ -114,9 +118,9 @@
  * Notes on preserving existing fp state:
  *
  * When a copyOP decides to use fp we may have to preserve existing
- * floating point state.  It is not the caller's state that we need to
+ * floating point state. It is not the caller's state that we need to
  * preserve - the rest of the kernel does not use fp and, anyway, fp
- * registers are volatile across a call.  Some examples:
+ * registers are volatile across a call. Some examples:
  *
  *	- userland has fp state and is interrupted (device interrupt
  *	  or trap) and within the interrupt/trap handling we use
@@ -137,15 +141,15 @@
  * correctly, the following "big rules" must be followed when the floating
  * point registers will be used:
  *
- * 1. %l6 always holds the caller's lofault handler.  Also in this register,
+ * 1. %l6 always holds the caller's lofault handler. Also in this register,
  *    Bit 1 (FPUSED_FLAG) indicates that the floating point registers are in
- *    use.  Bit 2 (BCOPY_FLAG) indicates that the call was to bcopy.
+ *    use. Bit 2 (BCOPY_FLAG) indicates that the call was to bcopy.
  *
  * 2. The FPUSED flag indicates that all FP state has been successfully stored
- *    on the stack.  It should not be set until this save has been completed.
+ *    on the stack. It should not be set until this save has been completed.
  *
  * 3. The FPUSED flag should not be cleared on exit until all FP state has
- *    been restored from the stack.  If an error occurs while restoring
+ *    been restored from the stack. If an error occurs while restoring
  *    data from the stack, the error handler can check this flag to see if
  *    a restore is necessary.
  *
@@ -158,7 +162,7 @@
  * This shadows sys/machsystm.h which can't be included due to the lack of
  * _ASM guards in include files it references. Change it here, change it there.
  */
-#define VIS_COPY_THRESHOLD 900
+#define	VIS_COPY_THRESHOLD 900
 
 /*
  * Less then or equal this number of bytes we will always copy byte-for-byte
@@ -175,7 +179,7 @@
  * KPREEMPT_FLAG: kpreempt needs to be called
  */
 #define	FPUSED_FLAG	1
-#define BCOPY_FLAG	2
+#define	BCOPY_FLAG	2
 #define	COPY_FLAGS	(FPUSED_FLAG | BCOPY_FLAG)
 #define	KPREEMPT_FLAG	4
 
@@ -478,22 +482,22 @@
 
 
 
-	.seg	".text"
-	.align	4
+	.section	.text
+	.balign	4
 
 	ENTRY(kcopy)
 
 	save	%sp, -SA(MINFRAME + HWCOPYFRAMESIZE), %sp
-	set	.copyerr, %l6		! copyerr is lofault value
-	ldn	[THREAD_REG + T_LOFAULT], %l7	! save existing handler
-	membar	#Sync			! sync error barrier (see copy.s)
-	stn	%l6, [THREAD_REG + T_LOFAULT]	! set t_lofault
+	set	.copyerr, %l6			/* copyerr is lofault value */
+	ldn	[THREAD_REG + T_LOFAULT], %l7	/* save existing handler */
+	membar	#Sync				/* sync error barrier (see copy.s) */
+	stn	%l6, [THREAD_REG + T_LOFAULT]	/* set t_lofault */
 	!
 	! Note that we carefully do *not* flag the setting of
 	! t_lofault.
 	!
-	ba,pt	%ncc, .do_copy		! common code
-	  mov	%l7, %l6
+	ba,pt	%ncc, .do_copy			/* common code */
+	mov	%l7, %l6
 
 /*
  * We got here because of a fault during kcopy or bcopy if a fault
@@ -502,21 +506,21 @@
  */
 .copyerr:
 	set	.copyerr2, %l1
-	membar	#Sync			! sync error barrier
-	stn	%l1, [THREAD_REG + T_LOFAULT]	! set t_lofault
+	membar	#Sync				/* sync error barrier */
+	stn	%l1, [THREAD_REG + T_LOFAULT]	/* set t_lofault */
 	btst	FPUSED_FLAG, %l6
 	bz	%icc, 1f
-	  and	%l6, BCOPY_FLAG, %l1	! copy flag to %l1
+	and	%l6, BCOPY_FLAG, %l1		/* copy flag to %l1 */
 
 	membar	#Sync
 
-	ld	[%fp + STACK_BIAS - SAVED_GSR_OFFSET], %o2	! restore gsr
+	ld	[%fp + STACK_BIAS - SAVED_GSR_OFFSET], %o2	/* restore gsr */
 	wr	%o2, 0, %gsr
 
 	ld	[%fp + STACK_BIAS - SAVED_FPRS_OFFSET], %o3
 	btst	FPRS_FEF, %o3
 	bz	%icc, 4f
-	  nop
+	nop
 
 	! restore fpregs from stack
 	membar	#Sync
@@ -532,28 +536,28 @@
 	membar	#Sync
 
 	ba,pt	%ncc, 2f
-	  wr	%o3, 0, %fprs		! restore fprs
+	wr	%o3, 0, %fprs		/* restore fprs */
 
 4:
-	FZERO				! zero all of the fpregs
-	wr	%o3, 0, %fprs		! restore fprs
+	FZERO				/* zero all of the fpregs */
+	wr	%o3, 0, %fprs		/* restore fprs */
 
 2:	ldn	[THREAD_REG + T_LWP], %o2
 	tst	%o2
 	bnz,pt	%ncc, 1f
-	  nop
+	nop
 
 	ldsb	[THREAD_REG + T_PREEMPT], %l0
 	deccc	%l0
 	bnz,pn	%ncc, 1f
-	  stb	%l0, [THREAD_REG + T_PREEMPT]
+	stb	%l0, [THREAD_REG + T_PREEMPT]
 
 	! Check for a kernel preemption request
 	ldn	[THREAD_REG + T_CPU], %l0
 	ldub	[%l0 + CPU_KPRUNRUN], %l0
 	tst	%l0
-	bnz,a,pt	%ncc, 1f	! Need to call kpreempt?
-	  or	%l1, KPREEMPT_FLAG, %l1	! If so, set the flag
+	bnz,a,pt	%ncc, 1f	/* Need to call kpreempt? */
+	or	%l1, KPREEMPT_FLAG, %l1	/* If so, set the flag */
 
 	!
 	! Need to cater for the different expectations of kcopy
@@ -566,20 +570,20 @@
 	! t_lofault value.
 	!
 1:
-	andn	%l6, COPY_FLAGS, %l6	! remove flags from lofault address
-	membar	#Sync			! sync error barrier
-	stn	%l6, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
+	andn	%l6, COPY_FLAGS, %l6	/* remove flags from lofault address */
+	membar	#Sync			/* sync error barrier */
+	stn	%l6, [THREAD_REG + T_LOFAULT]	/* restore old t_lofault */
 
 	! call kpreempt if necessary
 	btst	KPREEMPT_FLAG, %l1
 	bz,pt	%icc, 2f
-	  nop
+	nop
 	call	kpreempt
-	  rdpr	%pil, %o0	! pass %pil
+	rdpr	%pil, %o0	/* pass %pil */
 2:
 	btst	BCOPY_FLAG, %l1
 	bnz,pn	%ncc, 3f
-	  nop
+	nop
 	ret
 	restore	%g1, 0, %o0
 
@@ -588,8 +592,8 @@
 	! We're here via bcopy. There *must* have been an error handler
 	! in place otheerwise we would have died a nasty death already.
 	!
-	jmp	%l6				! goto real handler
-	restore	%g0, 0, %o0			! dispose of copy window
+	jmp	%l6				/* goto real handler */
+	restore	%g0, 0, %o0			/* dispose of copy window */
 
 /*
  * We got here because of a fault in .copyerr.  We can't safely restore fp
@@ -598,11 +602,11 @@
 fp_panic_msg:
 	.asciz	"Unable to restore fp state after copy operation"
 
-	.align	4
+	.balign	4
 .copyerr2:
 	set	fp_panic_msg, %o0
 	call	panic
-	  nop
+	nop
 	SET_SIZE(kcopy)
 
 
@@ -617,30 +621,30 @@ fp_panic_msg:
 	ENTRY(bcopy)
 
 	save	%sp, -SA(MINFRAME + HWCOPYFRAMESIZE), %sp
-	ldn	[THREAD_REG + T_LOFAULT], %l6	! save t_lofault
+	ldn	[THREAD_REG + T_LOFAULT], %l6	/* save t_lofault */
 	tst	%l6
-        !
-        ! We've already captured whether t_lofault was zero on entry.
-        ! We need to mark ourselves as being from bcopy since both
-        ! kcopy and bcopy use the same code path. If BCOPY_FLAG is set
-        ! and the saved lofault was zero, we won't reset lofault on
-        ! returning.
-        !
+	!
+	! We've already captured whether t_lofault was zero on entry.
+	! We need to mark ourselves as being from bcopy since both
+	! kcopy and bcopy use the same code path. If BCOPY_FLAG is set
+	! and the saved lofault was zero, we won't reset lofault on
+	! returning.
+	!
 	or	%l6, BCOPY_FLAG, %l6
 	bz,pt	%ncc, .do_copy
 	sethi	%hi(.copyerr), %o2
 	or	%o2, %lo(.copyerr), %o2
-	membar	#Sync			! sync error barrier
-	stn	%o2, [THREAD_REG + T_LOFAULT]	! install new vector
+	membar	#Sync			/* sync error barrier */
+	stn	%o2, [THREAD_REG + T_LOFAULT]	/* install new vector */
 
 .do_copy:
-	cmp	%i2, 12			! for small counts
-	blu	%ncc, .bytecp		! just copy bytes
-	  .empty
+	cmp	%i2, 12			/* for small counts */
+	blu	%ncc, .bytecp		/* just copy bytes */
+	.empty
 
-	cmp	%i2, VIS_COPY_THRESHOLD	! for large counts
+	cmp	%i2, VIS_COPY_THRESHOLD	/* for large counts */
 	blu,pt	%ncc, .bcb_punt
-	  .empty
+	.empty
 
 	!
 	! Check to see if VIS acceleration is enabled
@@ -649,7 +653,7 @@ fp_panic_msg:
 	ld	[%o2 + %lo(use_hw_bcopy)], %o2
 	tst	%o2
 	bz,pn	%icc, .bcb_punt
-	  nop
+	nop
 
 	subcc	%i1, %i0, %i3
 	bneg,a,pn %ncc, 1f
@@ -662,12 +666,12 @@ fp_panic_msg:
 	 */
 	cmp	%i3, 256
 	blu,pn	%ncc, .bcb_punt
-	  nop
+	nop
 
 	ldn	[THREAD_REG + T_LWP], %o3
 	tst	%o3
 	bnz,pt	%ncc, 1f
-	  nop
+	nop
 
 	! kpreempt_disable();
 	ldsb	[THREAD_REG + T_PREEMPT], %o2
@@ -675,39 +679,39 @@ fp_panic_msg:
 	stb	%o2, [THREAD_REG + T_PREEMPT]
 
 1:
-	rd	%fprs, %o2		! check for unused fp
-	st	%o2, [%fp + STACK_BIAS - SAVED_FPRS_OFFSET] ! save orig %fprs
+	rd	%fprs, %o2		/* check for unused fp */
+	st	%o2, [%fp + STACK_BIAS - SAVED_FPRS_OFFSET] /* save orig %fprs */
 	btst	FPRS_FEF, %o2
 	bz,a	%icc, .do_blockcopy
-	  wr	%g0, FPRS_FEF, %fprs
+	wr	%g0, FPRS_FEF, %fprs
 
 .bcb_fpregs_inuse:
-	cmp	%i2, VIS_COPY_THRESHOLD+(64*4) ! for large counts (larger
-	bgeu	%ncc, 1f		!  if we have to save the fpregs)
-	  nop
+	cmp	%i2, VIS_COPY_THRESHOLD+(64*4) /* for large counts (larger */
+	bgeu	%ncc, 1f		/*  if we have to save the fpregs) */
+	nop
 
 	tst	%o3
 	bnz,pt	%ncc, .bcb_punt
-	  nop
+	nop
 
 	ldsb	[THREAD_REG + T_PREEMPT], %l0
 	deccc	%l0
 	bnz,pn	%icc, .bcb_punt
-	  stb	%l0, [THREAD_REG + T_PREEMPT]
+	stb	%l0, [THREAD_REG + T_PREEMPT]
 
 	! Check for a kernel preemption request
 	ldn	[THREAD_REG + T_CPU], %l0
 	ldub	[%l0 + CPU_KPRUNRUN], %l0
 	tst	%l0
 	bz,pt	%icc, .bcb_punt
-	  nop
+	nop
 
 	! Attempt to preempt
 	call	kpreempt
-	  rdpr	  %pil, %o0		  ! pass %pil
+	rdpr	%pil, %o0			/* pass %pil */
 
 	ba,pt	%ncc, .bcb_punt
-	  nop
+	nop
 
 1:
 	wr	%g0, FPRS_FEF, %fprs
@@ -729,7 +733,7 @@ fp_panic_msg:
 	membar	#StoreStore|#StoreLoad|#LoadStore
 
 	rd	%gsr, %o2
-	st	%o2, [%fp + STACK_BIAS - SAVED_GSR_OFFSET]	! save gsr
+	st	%o2, [%fp + STACK_BIAS - SAVED_GSR_OFFSET]	/* save gsr */
 
 	! Set the lower bit in the saved t_lofault to indicate
 	! that we need to clear the %fprs register on the way
@@ -762,10 +766,10 @@ fp_panic_msg:
 	stb	%o4, [%i0 - 1]
 blkcpy:
 	andcc	%i0, 63, %i3
-	bz,pn	%ncc, blalign		! now block aligned
+	bz,pn	%ncc, blalign		/* now block aligned */
 	sub	%i3, 64, %i3
-	neg	%i3			! bytes till block aligned
-	sub	%i2, %i3, %i2		! update %i2 with new count
+	neg	%i3			/* bytes till block aligned */
+	sub	%i2, %i3, %i2		/* update %i2 with new count */
 
 	! Copy %i3 bytes till dst is block (64 byte) aligned. use
 	! double word copies.
@@ -804,11 +808,11 @@ blalign:
 	sub	%i2, %i4, %i2
 	sub	%i2, %i3, %i2
 
-	andn	%i1, 0x3f, %l7		! blk aligned address
-	alignaddr %i1, %g0, %g0		! gen %gsr
+	andn	%i1, 0x3f, %l7		/* blk aligned address */
+	alignaddr %i1, %g0, %g0		/* gen %gsr */
 
-	srl	%i1, 3, %l5		! bits 3,4,5 are now least sig in  %l5
-	andcc	%l5, 7, %i5		! mask everything except bits 1,2 3
+	srl	%i1, 3, %l5		/* bits 3,4,5 are now least sig in  %l5 */
+	andcc	%l5, 7, %i5		/* mask everything except bits 1,2 3 */
 	add	%i1, %i4, %i1
 	add	%i1, %i3, %i1
 
@@ -822,35 +826,35 @@ blalign:
 
 	! switch statement to get us to the right 8 byte blk within a
 	! 64 byte block
-	cmp	 %i5, 4
-	bgeu,a	 hlf
-	cmp	 %i5, 6
-	cmp	 %i5, 2
-	bgeu,a	 sqtr
+	cmp	%i5, 4
+	bgeu,a	hlf
+	cmp	%i5, 6
+	cmp	%i5, 2
+	bgeu,a	sqtr
 	nop
-	cmp	 %i5, 1
-	be,a	 seg1
+	cmp	%i5, 1
+	be,a	seg1
 	nop
-	ba,pt	 %ncc, seg0
+	ba,pt	%ncc, seg0
 	nop
 sqtr:
-	be,a	 seg2
+	be,a	seg2
 	nop
-	ba,pt	 %ncc, seg3
+	ba,pt	%ncc, seg3
 	nop
 
 hlf:
-	bgeu,a	 fqtr
+	bgeu,a	fqtr
 	nop
-	cmp	 %i5, 5
-	be,a	 seg5
+	cmp	%i5, 5
+	be,a	seg5
 	nop
-	ba,pt	 %ncc, seg4
+	ba,pt	%ncc, seg4
 	nop
 fqtr:
-	be,a	 seg6
+	be,a	seg6
 	nop
-	ba,pt	 %ncc, seg7
+	ba,pt	%ncc, seg7
 	nop
 
 
@@ -1475,31 +1479,31 @@ blkleft:
 blkdone:
 	tst	%i2
 	bz,pt	%ncc, .bcb_exit
-	and	%l3, 0x4, %l3		! fprs.du = fprs.dl = 0
+	and	%l3, 0x4, %l3		/* fprs.du = fprs.dl = 0 */
 
 7:	ldub	[%i1], %i4
 	inc	%i1
 	inc	%i0
 	deccc	%i2
 	bgu,pt	%ncc, 7b
-	  stb	  %i4, [%i0 - 1]
+	stb	%i4, [%i0 - 1]
 
 .bcb_exit:
 	membar	#StoreLoad|#StoreStore
 	btst	FPUSED_FLAG, %l6
 	bz	%icc, 1f
-	  and	%l6, COPY_FLAGS, %l1	! Store flags in %l1
-					! We can't clear the flags from %l6 yet.
-					! If there's an error, .copyerr will
-					! need them
+	and	%l6, COPY_FLAGS, %l1	/* Store flags in %l1 */
+					/* We can't clear the flags from %l6 yet. */
+					/* If there's an error, .copyerr will */
+					/* need them */
 
-	ld	[%fp + STACK_BIAS - SAVED_GSR_OFFSET], %o2	! restore gsr
+	ld	[%fp + STACK_BIAS - SAVED_GSR_OFFSET], %o2	/* restore gsr */
 	wr	%o2, 0, %gsr
 
 	ld	[%fp + STACK_BIAS - SAVED_FPRS_OFFSET], %o3
 	btst	FPRS_FEF, %o3
 	bz	%icc, 4f
-	  nop
+	nop
 
 	! restore fpregs from stack
 	membar	#Sync
@@ -1515,33 +1519,33 @@ blkdone:
 	membar	#Sync
 
 	ba,pt	%ncc, 2f
-	  wr	%o3, 0, %fprs		! restore fprs
+	wr	%o3, 0, %fprs		/* restore fprs */
 
 4:
-	FZERO				! zero all of the fpregs
-	wr	%o3, 0, %fprs		! restore fprs
+	FZERO				/* zero all of the fpregs */
+	wr	%o3, 0, %fprs		/* restore fprs */
 
 2:	ldn	[THREAD_REG + T_LWP], %o2
 	tst	%o2
 	bnz,pt	%ncc, 1f
-	  nop
+	nop
 
 	ldsb	[THREAD_REG + T_PREEMPT], %l0
 	deccc	%l0
 	bnz,pn	%ncc, 1f
-	  stb	%l0, [THREAD_REG + T_PREEMPT]
+	stb	%l0, [THREAD_REG + T_PREEMPT]
 
 	! Check for a kernel preemption request
 	ldn	[THREAD_REG + T_CPU], %l0
 	ldub	[%l0 + CPU_KPRUNRUN], %l0
 	tst	%l0
-	bnz,a,pt	%ncc, 1f	! Need to call kpreempt?
-	  or	%l1, KPREEMPT_FLAG, %l1	! If so, set the flag
+	bnz,a,pt	%ncc, 1f	/* Need to call kpreempt? */
+	or	%l1, KPREEMPT_FLAG, %l1	/* If so, set the flag */
 
 1:
 	btst	BCOPY_FLAG, %l1
 	bz,pn	%icc, 3f
-	  andncc	%l6, COPY_FLAGS, %l6
+	andncc	%l6, COPY_FLAGS, %l6
 
 	!
 	! Here via bcopy. Check to see if the handler was NULL.
@@ -1549,7 +1553,7 @@ blkdone:
 	! handler and go home.
 	!
 	bnz,pn	%ncc, 3f
-	  nop
+	nop
 
 	!
 	! Null handler.  Check for kpreempt flag, call if necessary,
@@ -1557,12 +1561,12 @@ blkdone:
 	!
 	btst	KPREEMPT_FLAG, %l1
 	bz,pt	%icc, 2f
-	  nop
+	nop
 	call	kpreempt
-	  rdpr	%pil, %o0	! pass %pil
+	rdpr	%pil, %o0	/* pass %pil */
 2:
 	ret
-	  restore	%g0, 0, %o0
+	restore	%g0, 0, %o0
 
 	!
 	! Here via kcopy or bcopy with a handler.Reset the
@@ -1570,31 +1574,31 @@ blkdone:
 	!
 3:
 	membar	#Sync
-	stn	%l6, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
+	stn	%l6, [THREAD_REG + T_LOFAULT]	/* restore old t_lofault */
 
 	! call kpreempt if necessary
 	btst	KPREEMPT_FLAG, %l1
 	bz,pt	%icc, 4f
-	  nop
+	nop
 	call	kpreempt
-	  rdpr	%pil, %o0
+	rdpr	%pil, %o0
 4:
 	ret
-	  restore	%g0, 0, %o0
+	restore	%g0, 0, %o0
 
 .bcb_punt:
 	!
 	! use aligned transfers where possible
 	!
-	xor	%i0, %i1, %o4		! xor from and to address
-	btst	7, %o4			! if lower three bits zero
-	bz	%icc, .aldoubcp		! can align on double boundary
-	.empty	! assembler complaints about label
+	xor	%i0, %i1, %o4		/* xor from and to address */
+	btst	7, %o4			/* if lower three bits zero */
+	bz	%icc, .aldoubcp		/* can align on double boundary */
+	.empty				/* assembler complaints about label */
 
-	xor	%i0, %i1, %o4		! xor from and to address
-	btst	3, %o4			! if lower two bits zero
-	bz	%icc, .alwordcp		! can align on word boundary
-	btst	3, %i0			! delay slot, from address unaligned?
+	xor	%i0, %i1, %o4		/* xor from and to address */
+	btst	3, %o4			/* if lower two bits zero */
+	bz	%icc, .alwordcp		/* can align on word boundary */
+	btst	3, %i0			/* delay slot, from address unaligned? */
 	!
 	! use aligned reads and writes where possible
 	! this differs from wordcp in that it copes
@@ -1611,128 +1615,128 @@ blkdone:
 	! l4 number of bytes leftover after aligned transfers complete
 	! l5 the number 32
 	!
-	mov	32, %l5			! load an oft-needed constant
+	mov	32, %l5			/* load an oft-needed constant */
 	bz	.align_dst_only
-	btst	3, %i1			! is destnation address aligned?
-	clr	%i4			! clear registers used in either case
+	btst	3, %i1			/* is destnation address aligned? */
+	clr	%i4			/* clear registers used in either case */
 	bz	%icc, .align_src_only
 	clr	%l0
 	!
 	! both source and destination addresses are unaligned
 	!
-1:					! align source
-	ldub	[%i0], %i3		! read a byte from source address
-	add	%i0, 1, %i0		! increment source address
-	or	%i4, %i3, %i4		! or in with previous bytes (if any)
-	btst	3, %i0			! is source aligned?
-	add	%l0, 8, %l0		! increment size of upper source (US)
+1:					/* align source */
+	ldub	[%i0], %i3		/* read a byte from source address */
+	add	%i0, 1, %i0		/* increment source address */
+	or	%i4, %i3, %i4		/* or in with previous bytes (if any) */
+	btst	3, %i0			/* is source aligned? */
+	add	%l0, 8, %l0		/* increment size of upper source (US) */
 	bnz,a	1b
-	sll	%i4, 8, %i4		! make room for next byte
+	sll	%i4, 8, %i4		/* make room for next byte */
 
-	sub	%l5, %l0, %l1		! generate shift left count (LS)
-	sll	%i4, %l1, %i4		! prepare to get rest
-	ld	[%i0], %i3		! read a word
-	add	%i0, 4, %i0		! increment source address
-	srl	%i3, %l0, %i5		! upper src bits into lower dst bits
-	or	%i4, %i5, %i5		! merge
-	mov	24, %l3			! align destination
+	sub	%l5, %l0, %l1		/* generate shift left count (LS) */
+	sll	%i4, %l1, %i4		/* prepare to get rest */
+	ld	[%i0], %i3		/* read a word */
+	add	%i0, 4, %i0		/* increment source address */
+	srl	%i3, %l0, %i5		/* upper src bits into lower dst bits */
+	or	%i4, %i5, %i5		/* merge */
+	mov	24, %l3			/* align destination */
 1:
-	srl	%i5, %l3, %i4		! prepare to write a single byte
-	stb	%i4, [%i1]		! write a byte
-	add	%i1, 1, %i1		! increment destination address
-	sub	%i2, 1, %i2		! decrement count
-	btst	3, %i1			! is destination aligned?
+	srl	%i5, %l3, %i4		/* prepare to write a single byte */
+	stb	%i4, [%i1]		/* write a byte */
+	add	%i1, 1, %i1		/* increment destination address */
+	sub	%i2, 1, %i2		/* decrement count */
+	btst	3, %i1			/* is destination aligned? */
 	bnz,a	1b
-	sub	%l3, 8, %l3		! delay slot, decrement shift count (LD)
-	sub	%l5, %l3, %l2		! generate shift left count (UD)
-	sll	%i5, %l2, %i5		! move leftover into upper bytes
-	cmp	%l2, %l0		! cmp # reqd to fill dst w old src left
-	bgu	%ncc, .more_needed	! need more to fill than we have
+	sub	%l3, 8, %l3		/* delay slot, decrement shift count (LD) */
+	sub	%l5, %l3, %l2		/* generate shift left count (UD) */
+	sll	%i5, %l2, %i5		/* move leftover into upper bytes */
+	cmp	%l2, %l0		/* cmp # reqd to fill dst w old src left */
+	bgu	%ncc, .more_needed	/* need more to fill than we have */
 	nop
 
-	sll	%i3, %l1, %i3		! clear upper used byte(s)
+	sll	%i3, %l1, %i3		/* clear upper used byte(s) */
 	srl	%i3, %l1, %i3
 	! get the odd bytes between alignments
-	sub	%l0, %l2, %l0		! regenerate shift count
-	sub	%l5, %l0, %l1		! generate new shift left count (LS)
-	and	%i2, 3, %l4		! must do remaining bytes if count%4 > 0
-	andn	%i2, 3, %i2		! # of aligned bytes that can be moved
+	sub	%l0, %l2, %l0		/* regenerate shift count */
+	sub	%l5, %l0, %l1		/* generate new shift left count (LS) */
+	and	%i2, 3, %l4		/* must do remaining bytes if count%4 > 0 */
+	andn	%i2, 3, %i2		/* # of aligned bytes that can be moved */
 	srl	%i3, %l0, %i4
 	or	%i5, %i4, %i5
-	st	%i5, [%i1]		! write a word
-	subcc	%i2, 4, %i2		! decrement count
+	st	%i5, [%i1]		/* write a word */
+	subcc	%i2, 4, %i2		/* decrement count */
 	bz	%ncc, .unalign_out
-	add	%i1, 4, %i1		! increment destination address
+	add	%i1, 4, %i1		/* increment destination address */
 
 	b	2f
-	sll	%i3, %l1, %i5		! get leftover into upper bits
+	sll	%i3, %l1, %i5		/* get leftover into upper bits */
 .more_needed:
-	sll	%i3, %l0, %i3		! save remaining byte(s)
+	sll	%i3, %l0, %i3		/* save remaining byte(s) */
 	srl	%i3, %l0, %i3
-	sub	%l2, %l0, %l1		! regenerate shift count
-	sub	%l5, %l1, %l0		! generate new shift left count
-	sll	%i3, %l1, %i4		! move to fill empty space
+	sub	%l2, %l0, %l1		/* regenerate shift count */
+	sub	%l5, %l1, %l0		/* generate new shift left count */
+	sll	%i3, %l1, %i4		/* move to fill empty space */
 	b	3f
-	or	%i5, %i4, %i5		! merge to complete word
+	or	%i5, %i4, %i5		/* merge to complete word */
 	!
 	! the source address is aligned and destination is not
 	!
 .align_dst_only:
-	ld	[%i0], %i4		! read a word
-	add	%i0, 4, %i0		! increment source address
-	mov	24, %l0			! initial shift alignment count
+	ld	[%i0], %i4		/* read a word */
+	add	%i0, 4, %i0		/* increment source address */
+	mov	24, %l0			/* initial shift alignment count */
 1:
-	srl	%i4, %l0, %i3		! prepare to write a single byte
-	stb	%i3, [%i1]		! write a byte
-	add	%i1, 1, %i1		! increment destination address
-	sub	%i2, 1, %i2		! decrement count
-	btst	3, %i1			! is destination aligned?
+	srl	%i4, %l0, %i3		/* prepare to write a single byte */
+	stb	%i3, [%i1]		/* write a byte */
+	add	%i1, 1, %i1		/* increment destination address */
+	sub	%i2, 1, %i2		/* decrement count */
+	btst	3, %i1			/* is destination aligned? */
 	bnz,a	1b
-	sub	%l0, 8, %l0		! delay slot, decrement shift count
+	sub	%l0, 8, %l0		/* delay slot, decrement shift count */
 .xfer:
-	sub	%l5, %l0, %l1		! generate shift left count
-	sll	%i4, %l1, %i5		! get leftover
+	sub	%l5, %l0, %l1		/* generate shift left count */
+	sll	%i4, %l1, %i5		/* get leftover */
 3:
-	and	%i2, 3, %l4		! must do remaining bytes if count%4 > 0
-	andn	%i2, 3, %i2		! # of aligned bytes that can be moved
+	and	%i2, 3, %l4		/* must do remaining bytes if count%4 > 0 */
+	andn	%i2, 3, %i2		/* # of aligned bytes that can be moved */
 2:
-	ld	[%i0], %i3		! read a source word
-	add	%i0, 4, %i0		! increment source address
-	srl	%i3, %l0, %i4		! upper src bits into lower dst bits
-	or	%i5, %i4, %i5		! merge with upper dest bits (leftover)
-	st	%i5, [%i1]		! write a destination word
-	subcc	%i2, 4, %i2		! decrement count
-	bz	%ncc, .unalign_out	! check if done
-	add	%i1, 4, %i1		! increment destination address
-	b	2b			! loop
-	sll	%i3, %l1, %i5		! get leftover
+	ld	[%i0], %i3		/* read a source word */
+	add	%i0, 4, %i0		/* increment source address */
+	srl	%i3, %l0, %i4		/* upper src bits into lower dst bits */
+	or	%i5, %i4, %i5		/* merge with upper dest bits (leftover) */
+	st	%i5, [%i1]		/* write a destination word */
+	subcc	%i2, 4, %i2		/* decrement count */
+	bz	%ncc, .unalign_out	/* check if done */
+	add	%i1, 4, %i1		/* increment destination address */
+	b	2b			/* loop */
+	sll	%i3, %l1, %i5		/* get leftover */
 .unalign_out:
-	tst	%l4			! any bytes leftover?
+	tst	%l4			/* any bytes leftover? */
 	bz	%ncc, .cpdone
-	.empty				! allow next instruction in delay slot
+	.empty				/* allow next instruction in delay slot */
 1:
-	sub	%l0, 8, %l0		! decrement shift
-	srl	%i3, %l0, %i4		! upper src byte into lower dst byte
-	stb	%i4, [%i1]		! write a byte
-	subcc	%l4, 1, %l4		! decrement count
-	bz	%ncc, .cpdone		! done?
-	add	%i1, 1, %i1		! increment destination
-	tst	%l0			! any more previously read bytes
-	bnz	%ncc, 1b		! we have leftover bytes
-	mov	%l4, %i2		! delay slot, mv cnt where dbytecp wants
-	b	.dbytecp		! let dbytecp do the rest
-	sub	%i0, %i1, %i0		! i0 gets the difference of src and dst
+	sub	%l0, 8, %l0		/* decrement shift */
+	srl	%i3, %l0, %i4		/* upper src byte into lower dst byte */
+	stb	%i4, [%i1]		/* write a byte */
+	subcc	%l4, 1, %l4		/* decrement count */
+	bz	%ncc, .cpdone		/* done? */
+	add	%i1, 1, %i1		/* increment destination */
+	tst	%l0			/* any more previously read bytes */
+	bnz	%ncc, 1b		/* we have leftover bytes */
+	mov	%l4, %i2		/* delay slot, mv cnt where dbytecp wants */
+	b	.dbytecp		/* let dbytecp do the rest */
+	sub	%i0, %i1, %i0		/* i0 gets the difference of src and dst */
 	!
 	! the destination address is aligned and the source is not
 	!
 .align_src_only:
-	ldub	[%i0], %i3		! read a byte from source address
-	add	%i0, 1, %i0		! increment source address
-	or	%i4, %i3, %i4		! or in with previous bytes (if any)
-	btst	3, %i0			! is source aligned?
-	add	%l0, 8, %l0		! increment shift count (US)
+	ldub	[%i0], %i3		/* read a byte from source address */
+	add	%i0, 1, %i0		/* increment source address */
+	or	%i4, %i3, %i4		/* or in with previous bytes (if any) */
+	btst	3, %i0			/* is source aligned? */
+	add	%l0, 8, %l0		/* increment shift count (US) */
 	bnz,a	.align_src_only
-	sll	%i4, 8, %i4		! make room for next byte
+	sll	%i4, 8, %i4		/* make room for next byte */
 	b,a	.xfer
 	!
 	! if from address unaligned for double-word moves,
@@ -1741,64 +1745,64 @@ blkdone:
 	! in word size chunks right away
 	!
 .aldoubcp:
-	cmp	%i2, 56			! if count < 56, use wordcp, it takes
-	blu,a	%ncc, .alwordcp		! longer to align doubles than words
-	mov	3, %o0			! mask for word alignment
-	call	.alignit		! copy bytes until aligned
-	mov	7, %o0			! mask for double alignment
+	cmp	%i2, 56			/* if count < 56, use wordcp, it takes */
+	blu,a	%ncc, .alwordcp		/* longer to align doubles than words */
+	mov	3, %o0			/* mask for word alignment */
+	call	.alignit		/* copy bytes until aligned */
+	mov	7, %o0			/* mask for double alignment */
 	!
 	! source and destination are now double-word aligned
 	! i3 has aligned count returned by alignit
 	!
-	and	%i2, 7, %i2		! unaligned leftover count
-	sub	%i0, %i1, %i0		! i0 gets the difference of src and dst
+	and	%i2, 7, %i2		/* unaligned leftover count */
+	sub	%i0, %i1, %i0		/* i0 gets the difference of src and dst */
 5:
-	ldx	[%i0+%i1], %o4		! read from address
-	stx	%o4, [%i1]		! write at destination address
-	subcc	%i3, 8, %i3		! dec count
+	ldx	[%i0+%i1], %o4		/* read from address */
+	stx	%o4, [%i1]		/* write at destination address */
+	subcc	%i3, 8, %i3		/* dec count */
 	bgu	%ncc, 5b
-	add	%i1, 8, %i1		! delay slot, inc to address
-	cmp	%i2, 4			! see if we can copy a word
-	blu	%ncc, .dbytecp		! if 3 or less bytes use bytecp
+	add	%i1, 8, %i1		/* delay slot, inc to address */
+	cmp	%i2, 4			/* see if we can copy a word */
+	blu	%ncc, .dbytecp		/* if 3 or less bytes use bytecp */
 	.empty
 	!
 	! for leftover bytes we fall into wordcp, if needed
 	!
 .wordcp:
-	and	%i2, 3, %i2		! unaligned leftover count
+	and	%i2, 3, %i2		/* unaligned leftover count */
 5:
-	ld	[%i0+%i1], %o4		! read from address
-	st	%o4, [%i1]		! write at destination address
-	subcc	%i3, 4, %i3		! dec count
+	ld	[%i0+%i1], %o4		/* read from address */
+	st	%o4, [%i1]		/* write at destination address */
+	subcc	%i3, 4, %i3		/* dec count */
 	bgu	%ncc, 5b
-	add	%i1, 4, %i1		! delay slot, inc to address
+	add	%i1, 4, %i1		/* delay slot, inc to address */
 	b,a	.dbytecp
 
 	! we come here to align copies on word boundaries
 .alwordcp:
-	call	.alignit		! go word-align it
-	mov	3, %o0			! bits that must be zero to be aligned
+	call	.alignit		/* go word-align it */
+	mov	3, %o0			/* bits that must be zero to be aligned */
 	b	.wordcp
-	sub	%i0, %i1, %i0		! i0 gets the difference of src and dst
+	sub	%i0, %i1, %i0		/* i0 gets the difference of src and dst */
 
 	!
 	! byte copy, works with any alignment
 	!
 .bytecp:
 	b	.dbytecp
-	sub	%i0, %i1, %i0		! i0 gets difference of src and dst
+	sub	%i0, %i1, %i0		/* i0 gets difference of src and dst */
 
 	!
 	! differenced byte copy, works with any alignment
 	! assumes dest in %i1 and (source - dest) in %i0
 	!
 1:
-	stb	%o4, [%i1]		! write to address
-	inc	%i1			! inc to address
+	stb	%o4, [%i1]		/* write to address */
+	inc	%i1			/* inc to address */
 .dbytecp:
-	deccc	%i2			! dec count
-	bgeu,a	%ncc, 1b		! loop till done
-	ldub	[%i0+%i1], %o4		! read from address
+	deccc	%i2			/* dec count */
+	bgeu,a	%ncc, 1b		/* loop till done */
+	ldub	[%i0+%i1], %o4		/* read from address */
 	!
 	! FPUSED_FLAG will not have been set in any path leading to
 	! this point. No need to deal with it.
@@ -1825,27 +1829,27 @@ blkdone:
 	!
 2:
   	membar	#Sync
-	stn	%l6, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
+	stn	%l6, [THREAD_REG + T_LOFAULT]	/* restore old t_lofault */
 	ret
-	restore	%g0, 0, %o0		! return (0)
+	restore	%g0, 0, %o0		/* return (0) */
 
 /*
  * Common code used to align transfers on word and doubleword
- * boudaries.  Aligns source and destination and returns a count
+ * boudaries. Aligns source and destination and returns a count
  * of aligned bytes to transfer in %i3
  */
 1:
-	inc	%i0			! inc from
-	stb	%o4, [%i1]		! write a byte
-	inc	%i1			! inc to
-	dec	%i2			! dec count
+	inc	%i0			/* inc from */
+	stb	%o4, [%i1]		/* write a byte */
+	inc	%i1			/* inc to */
+	dec	%i2			/* dec count */
 .alignit:
-	btst	%o0, %i0		! %o0 is bit mask to check for alignment
+	btst	%o0, %i0		/* %o0 is bit mask to check for alignment */
 	bnz,a	1b
-	ldub	[%i0], %o4		! read next byte
+	ldub	[%i0], %o4		/* read next byte */
 
 	retl
-	andn	%i2, %o0, %i3		! return size of aligned bytes
+	andn	%i2, %o0, %i3		/* return size of aligned bytes */
 	SET_SIZE(bcopy)
 
 /*
@@ -1853,51 +1857,51 @@ blkdone:
  */
 
 	ENTRY(ovbcopy)
-	tst	%o2			! check count
-	bgu,a	%ncc, 1f		! nothing to do or bad arguments
-	subcc	%o0, %o1, %o3		! difference of from and to address
+	tst	%o2			/* check count */
+	bgu,a	%ncc, 1f		/* nothing to do or bad arguments */
+	subcc	%o0, %o1, %o3		/* difference of from and to address */
 
-	retl				! return
+	retl				/* return */
 	nop
 1:
 	bneg,a	%ncc, 2f
-	neg	%o3			! if < 0, make it positive
-2:	cmp	%o2, %o3		! cmp size and abs(from - to)
-	bleu	%ncc, bcopy		! if size <= abs(diff): use bcopy,
-	.empty				!   no overlap
-	cmp	%o0, %o1		! compare from and to addresses
-	blu	%ncc, .ov_bkwd		! if from < to, copy backwards
+	neg	%o3			/* if < 0, make it positive */
+2:	cmp	%o2, %o3		/* cmp size and abs(from - to) */
+	bleu	%ncc, bcopy		/* if size <= abs(diff): use bcopy, */
+	.empty				/*   no overlap */
+	cmp	%o0, %o1		/* compare from and to addresses */
+	blu	%ncc, .ov_bkwd		/* if from < to, copy backwards */
 	nop
 	!
 	! Copy forwards.
 	!
 .ov_fwd:
-	ldub	[%o0], %o3		! read from address
-	inc	%o0			! inc from address
-	stb	%o3, [%o1]		! write to address
-	deccc	%o2			! dec count
-	bgu	%ncc, .ov_fwd		! loop till done
-	inc	%o1			! inc to address
+	ldub	[%o0], %o3		/* read from address */
+	inc	%o0			/* inc from address */
+	stb	%o3, [%o1]		/* write to address */
+	deccc	%o2			/* dec count */
+	bgu	%ncc, .ov_fwd		/* loop till done */
+	inc	%o1			/* inc to address */
 
-	retl				! return
+	retl				/* return */
 	nop
 	!
 	! Copy backwards.
 	!
 .ov_bkwd:
-	deccc	%o2			! dec count
-	ldub	[%o0 + %o2], %o3	! get byte at end of src
-	bgu	%ncc, .ov_bkwd		! loop till done
-	stb	%o3, [%o1 + %o2]	! delay slot, store at end of dst
+	deccc	%o2			/* dec count */
+	ldub	[%o0 + %o2], %o3	/* get byte at end of src */
+	bgu	%ncc, .ov_bkwd		/* loop till done */
+	stb	%o3, [%o1 + %o2]	/* delay slot, store at end of dst */
 
-	retl				! return
+	retl				/* return */
 	nop
 	SET_SIZE(ovbcopy)
 
 /*
  * hwblkpagecopy()
  *
- * Copies exactly one page.  This routine assumes the caller (ppcopy)
+ * Copies exactly one page. This routine assumes the caller (ppcopy)
  * has already disabled kernel preemption and has checked
  * use_hw_bcopy.
  */
@@ -1911,7 +1915,7 @@ blkdone:
 	! %l0 - saved fprs
 	! %l1 - pointer to saved fpregs
 
-	rd	%fprs, %l0		! check for unused fp
+	rd	%fprs, %l0		/* check for unused fp */
 	btst	FPRS_FEF, %l0
 	bz	1f
 	membar	#Sync
@@ -1973,7 +1977,7 @@ blkdone:
 	add	%l3, 64, %l3
 	ldda	[%l3]ASI_BLK_P, %d32
 
-4:	wr	%l0, 0, %fprs		! restore fprs
+4:	wr	%l0, 0, %fprs		/* restore fprs */
 	membar #Sync
 	ret
 	restore	%g0, 0, %o0
@@ -2076,10 +2080,10 @@ blkdone:
  * details.
  *
  * Fault handlers are invoked if we reference memory that has no
- * current mapping.  All forms share the same copyio_fault handler.
+ * current mapping. All forms share the same copyio_fault handler.
  * This routine handles fixing up the stack and general housecleaning.
  * Each copy operation has a simple fault handler that is then called
- * to do the work specific to the invidual operation.  The handlers
+ * to do the work specific to the invidual operation. The handlers
  * for default_copyOP and copyOP_noerr are found at the end of
  * default_copyout. The handlers for default_xcopyOP are found at the
  * end of xdefault_copyin.
@@ -2103,30 +2107,30 @@ blkdone:
 #define	SAVED_LOFAULT		%g6
 
 /*
- * Generic copyio fault handler.  This is the first line of defense when a
- * fault occurs in (x)copyin/(x)copyout.  In order for this to function
+ * Generic copyio fault handler. This is the first line of defense when a
+ * fault occurs in (x)copyin/(x)copyout. In order for this to function
  * properly, the value of the 'real' lofault handler should be in REAL_LOFAULT.
  * This allows us to share common code for all the flavors of the copy
  * operations, including the _noerr versions.
  *
  * Note that this function will restore the original input parameters before
- * calling REAL_LOFAULT.  So the real handler can vector to the appropriate
+ * calling REAL_LOFAULT. So the real handler can vector to the appropriate
  * member of the t_copyop structure, if needed.
  */
 	ENTRY(copyio_fault)
 	btst	FPUSED_FLAG, SAVED_LOFAULT
 	bz	1f
-	  andn	SAVED_LOFAULT, FPUSED_FLAG, SAVED_LOFAULT
+	andn	SAVED_LOFAULT, FPUSED_FLAG, SAVED_LOFAULT
 
 	membar	#Sync
 
 	ld	[%fp + STACK_BIAS - SAVED_GSR_OFFSET], %o2
-	wr	%o2, 0, %gsr		! restore gsr
+	wr	%o2, 0, %gsr		/* restore gsr */
 
 	ld	[%fp + STACK_BIAS - SAVED_FPRS_OFFSET], %o3
 	btst	FPRS_FEF, %o3
 	bz	4f
-	  nop
+	nop
 
 	! restore fpregs from stack
 	membar	#Sync
@@ -2142,11 +2146,11 @@ blkdone:
 	membar	#Sync
 
 	ba,pt	%ncc, 1f
-	  wr	%o3, 0, %fprs		! restore fprs
+	wr	%o3, 0, %fprs		/* restore fprs */
 
 4:
-	FZERO				! zero all of the fpregs
-	wr	%o3, 0, %fprs		! restore fprs
+	FZERO				/* zero all of the fpregs */
+	wr	%o3, 0, %fprs		/* restore fprs */
 
 1:
 
@@ -2155,17 +2159,17 @@ blkdone:
 	mov	SAVE_SRC, %o0
 	mov	SAVE_DST, %o1
 	jmp	REAL_LOFAULT
-	  mov	SAVE_COUNT, %o2
+	mov	SAVE_COUNT, %o2
 	SET_SIZE(copyio_fault)
 
 	ENTRY(copyio_fault_nowindow)
 	membar	#Sync
-	stn	SAVED_LOFAULT, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
+	stn	SAVED_LOFAULT, [THREAD_REG + T_LOFAULT]	/* restore old t_lofault */
 
 	mov	SAVE_SRC, %o0
 	mov	SAVE_DST, %o1
 	jmp	REAL_LOFAULT
-	  mov	SAVE_COUNT, %o2
+	mov	SAVE_COUNT, %o2
 	SET_SIZE(copyio_fault_nowindow)
 
 	ENTRY(copyout)
@@ -2178,9 +2182,9 @@ blkdone:
 	!
 	tst	%o2
 	bnz,pt	%ncc, 1f
-	  nop
+	nop
 	retl
-	  clr	%o0
+	clr	%o0
 1:
 	sethi	%hi(copyio_fault), %o4
 	or	%o4, %lo(copyio_fault), %o4
@@ -2206,11 +2210,11 @@ blkdone:
 	! Do full differenced copy.
 	!
 .dcobcp:
-	sub	%g0, %o2, %o3		! negate count
-	add	%o0, %o2, %o0		! make %o0 point at the end
-	add	%o1, %o2, %o1		! make %o1 point at the end
+	sub	%g0, %o2, %o3		/* negate count */
+	add	%o0, %o2, %o0		/* make %o0 point at the end */
+	add	%o1, %o2, %o1		/* make %o1 point at the end */
 	ba,pt	%ncc, .dcocl
-	ldub	[%o0 + %o3], %o4	! load first byte
+	ldub	[%o0 + %o3], %o4	/* load first byte */
 	!
 	! %o0 and %o2 point at the end and remain pointing at the end
 	! of their buffers. We pull things out by adding %o3 (which is
@@ -2219,7 +2223,7 @@ blkdone:
 	! through both buffers without having to bump each buffer's
 	! pointer. A very fast 4 instruction loop.
 	!
-	.align 16
+	.balign 16
 .dcocl:
 	stba	%o4, [%o1 + %o3]ASI_USER
 	inccc	%o3
@@ -2323,7 +2327,7 @@ blkdone:
 	add	%o1, %o2, %o1
 	sub	%g0, %o2, %o3
 	ba,pt	%ncc, .dodebc
-	srl	%o2, 3, %o2		! Number of 8 byte chunks to copy
+	srl	%o2, 3, %o2		/* Number of 8 byte chunks to copy */
 	!
 	! 4 byte aligned?
 	!
@@ -2361,7 +2365,7 @@ blkdone:
 	add	%o1, %o2, %o1
 	sub	%g0, %o2, %o3
 	ba,pt	%ncc, .dodfbc
-	srl	%o2, 2, %o2		! Number of 4 byte chunks to copy
+	srl	%o2, 2, %o2		/* Number of 4 byte chunks to copy */
 	!
 	! We must be 2 byte aligned. Off we go.
 	! The check for small copies was done in the
@@ -2386,7 +2390,7 @@ blkdone:
 	add	%o1, %o2, %o1
 	sub	%g0, %o2, %o3
 	ba,pt	%ncc, .dodtbc
-	srl	%o2, 1, %o2		! Number of 2 byte chunks to copy
+	srl	%o2, 1, %o2		/* Number of 2 byte chunks to copy */
 .small_copyout:
 	!
 	! Why are we doing this AGAIN? There are certain conditions in
@@ -2400,7 +2404,7 @@ blkdone:
 	!
 	or	%o0, %o1, %o3
 	btst	1, %o3
-	bnz	%icc, .dcobcp		! Most likely
+	bnz	%icc, .dcobcp		/* Most likely */
 	btst	7, %o3
 	bz	%icc, .dcos8
 	btst	3, %o3
@@ -2408,7 +2412,7 @@ blkdone:
 	nop
 	ba,pt	%ncc, .dcos2
 	nop
-	.align 32
+	.balign 32
 .dodebc:
 	ldx	[%o0 + %o3], %o4
 	deccc	%o2
@@ -2425,11 +2429,11 @@ blkdone:
 	! Something is left - do it byte for byte.
 	!
 	ba,pt	%ncc, .dcocl
-	ldub	[%o0 + %o3], %o4	! load next byte
+	ldub	[%o0 + %o3], %o4	/* load next byte */
 	!
 	! Four byte copy loop. %o2 is the number of 4 byte chunks to copy.
 	!
-	.align 32
+	.balign 32
 .dodfbc:
 	lduw	[%o0 + %o3], %o4
 	deccc	%o2
@@ -2446,12 +2450,12 @@ blkdone:
 	! Something is left. Do it byte for byte.
 	!
 	ba,pt	%ncc, .dcocl
-	ldub	[%o0 + %o3], %o4	! load next byte
+	ldub	[%o0 + %o3], %o4	/* load next byte */
 	!
 	! two byte aligned copy loop. %o2 is the number of 2 byte chunks to
 	! copy.
 	!
-	.align 32
+	.balign 32
 .dodtbc:
 	lduh	[%o0 + %o3], %o4
 	deccc	%o2
@@ -2470,7 +2474,7 @@ blkdone:
 	stba	%o4, [%o1 + %o3]ASI_USER
 .dcofh:
 	membar	#Sync
-	stn	SAVED_LOFAULT, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
+	stn	SAVED_LOFAULT, [THREAD_REG + T_LOFAULT]	/* restore old t_lofault */
 	retl
 	clr	%o0
 
@@ -2478,7 +2482,7 @@ blkdone:
 	!
 	! Are we using the FP registers?
 	!
-	rd	%fprs, %o3			! check for unused fp
+	rd	%fprs, %o3			/* check for unused fp */
 	btst	FPRS_FEF, %o3
 	bnz	%icc, .copyout_fpregs_inuse
 	nop
@@ -2494,17 +2498,17 @@ blkdone:
 	! %o3 is now %i3. Save original %fprs.
 	!
 	st	%i3, [%fp + STACK_BIAS - SAVED_FPRS_OFFSET]
-	ba,pt	%ncc, .do_block_copyout		! Not in use. Go off and do it.
-	wr	%g0, FPRS_FEF, %fprs		! clear %fprs
+	ba,pt	%ncc, .do_block_copyout		/* Not in use. Go off and do it. */
+	wr	%g0, FPRS_FEF, %fprs		/* clear %fprs */
 	!
 .copyout_fpregs_inuse:
 	!
 	! We're here if the FP regs are in use. Need to see if the request
 	! exceeds our suddenly larger minimum.
 	!
-	cmp	%i2, VIS_COPY_THRESHOLD+(64*4) ! for large counts (larger
+	cmp	%i2, VIS_COPY_THRESHOLD+(64*4) /* for large counts (larger */
 	bl	%ncc, .small_copyout
-	  nop
+	nop
 	!
 	! We're going to go off and do a block copy.
 	! Change to the heavy duty fault handler and grab a window first.
@@ -2532,7 +2536,7 @@ blkdone:
 	membar	#StoreStore|#StoreLoad|#LoadStore
 
 	rd	%gsr, %o2
-	st	%o2, [%fp + STACK_BIAS - SAVED_GSR_OFFSET]	! save gsr
+	st	%o2, [%fp + STACK_BIAS - SAVED_GSR_OFFSET]	/* save gsr */
 
 	! Set the lower bit in the saved t_lofault to indicate
 	! that we need to clear the %fprs register on the way
@@ -2562,13 +2566,13 @@ blkdone:
 	stba	%o4, [%i0]ASI_USER
 	deccc	%o3
 	bgu	%ncc, 2b
-	  inc	%i0
+	inc	%i0
 copyout_blkcpy:
 	andcc	%i0, 63, %i3
-	bz,pn	%ncc, copyout_blalign	! now block aligned
+	bz,pn	%ncc, copyout_blalign	/* now block aligned */
 	sub	%i3, 64, %i3
-	neg	%i3			! bytes till block aligned
-	sub	%i2, %i3, %i2		! update %i2 with new count
+	neg	%i3			/* bytes till block aligned */
+	sub	%i2, %i3, %i2		/* update %i2 with new count */
 
 	! Copy %i3 bytes till dst is block (64 byte) aligned. use
 	! double word copies.
@@ -2581,7 +2585,7 @@ copyout_blkcpy:
 	add	%g1, 8, %g1
 	subcc	%i3, 8, %i3
 	faligndata %d0, %d2, %d8
-	stda	 %d8, [%i0]ASI_USER
+	stda	%d8, [%i0]ASI_USER
 	add	%i1, 8, %i1
 	bz,pn	%ncc, copyout_blalign
 	add	%i0, 8, %i0
@@ -2589,7 +2593,7 @@ copyout_blkcpy:
 	add	%g1, 8, %g1
 	subcc	%i3, 8, %i3
 	faligndata %d2, %d0, %d8
-	stda	 %d8, [%i0]ASI_USER
+	stda	%d8, [%i0]ASI_USER
 	add	%i1, 8, %i1
 	bgu,pn	%ncc, 6b
 	add	%i0, 8, %i0
@@ -2607,11 +2611,11 @@ copyout_blalign:
 	sub	%i2, %i4, %i2
 	sub	%i2, %i3, %i2
 
-	andn	%i1, 0x3f, %l7		! blk aligned address
-	alignaddr %i1, %g0, %g0		! gen %gsr
+	andn	%i1, 0x3f, %l7		/* blk aligned address */
+	alignaddr %i1, %g0, %g0		/* gen %gsr */
 
-	srl	%i1, 3, %l5		! bits 3,4,5 are now least sig in  %l5
-	andcc	%l5, 7, %i5		! mask everything except bits 1,2 3
+	srl	%i1, 3, %l5		/* bits 3,4,5 are now least sig in  %l5 */
+	andcc	%l5, 7, %i5		/* mask everything except bits 1,2 3 */
 	add	%i1, %i4, %i1
 	add	%i1, %i3, %i1
 
@@ -2626,35 +2630,35 @@ copyout_blalign:
 	! switch statement to get us to the right 8 byte blk within a
 	! 64 byte block
 
-	cmp	 %i5, 4
-	bgeu,a	 copyout_hlf
-	cmp	 %i5, 6
-	cmp	 %i5, 2
-	bgeu,a	 copyout_sqtr
+	cmp	%i5, 4
+	bgeu,a	copyout_hlf
+	cmp	%i5, 6
+	cmp	%i5, 2
+	bgeu,a	copyout_sqtr
 	nop
-	cmp	 %i5, 1
-	be,a	 copyout_seg1
+	cmp	%i5, 1
+	be,a	copyout_seg1
 	nop
-	ba,pt	 %ncc, copyout_seg0
+	ba,pt	%ncc, copyout_seg0
 	nop
 copyout_sqtr:
-	be,a	 copyout_seg2
+	be,a	copyout_seg2
 	nop
-	ba,pt	 %ncc, copyout_seg3
+	ba,pt	%ncc, copyout_seg3
 	nop
 
 copyout_hlf:
-	bgeu,a	 copyout_fqtr
+	bgeu,a	copyout_fqtr
 	nop
-	cmp	 %i5, 5
-	be,a	 copyout_seg5
+	cmp	%i5, 5
+	be,a	copyout_seg5
 	nop
-	ba,pt	 %ncc, copyout_seg4
+	ba,pt	%ncc, copyout_seg4
 	nop
 copyout_fqtr:
-	be,a	 copyout_seg6
+	be,a	copyout_seg6
 	nop
-	ba,pt	 %ncc, copyout_seg7
+	ba,pt	%ncc, copyout_seg7
 	nop
 
 copyout_seg0:
@@ -3278,7 +3282,7 @@ copyout_blkleft:
 copyout_blkdone:
 	tst	%i2
 	bz,pt	%ncc, .copyout_exit
-	and	%l3, 0x4, %l3		! fprs.du = fprs.dl = 0
+	and	%l3, 0x4, %l3		/* fprs.du = fprs.dl = 0 */
 
 7:	ldub	[%i1], %i4
 	inc	%i1
@@ -3286,21 +3290,21 @@ copyout_blkdone:
 	inc	%i0
 	deccc	%i2
 	bgu	%ncc, 7b
-	  nop
+	nop
 
 .copyout_exit:
 	membar	#StoreLoad|#StoreStore
 	btst	FPUSED_FLAG, SAVED_LOFAULT
 	bz	1f
-	  nop
+	nop
 
 	ld	[%fp + STACK_BIAS - SAVED_GSR_OFFSET], %o2
-	wr	%o2, 0, %gsr		! restore gsr
+	wr	%o2, 0, %gsr		/* restore gsr */
 
 	ld	[%fp + STACK_BIAS - SAVED_FPRS_OFFSET], %o3
 	btst	FPRS_FEF, %o3
 	bz	4f
-	  nop
+	nop
 
 	! restore fpregs from stack
 	membar	#Sync
@@ -3316,16 +3320,16 @@ copyout_blkdone:
 	membar	#Sync
 
 	ba,pt	%ncc, 1f
-	  wr	%o3, 0, %fprs		! restore fprs
+	wr	%o3, 0, %fprs		/* restore fprs */
 
 4:
-	FZERO				! zero all of the fpregs
-	wr	%o3, 0, %fprs		! restore fprs
+	FZERO				/* zero all of the fpregs */
+	wr	%o3, 0, %fprs		/* restore fprs */
 
 1:
 	andn	SAVED_LOFAULT, FPUSED_FLAG, SAVED_LOFAULT
-	membar	#Sync			! sync error barrier
-	stn	SAVED_LOFAULT, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
+	membar	#Sync			/* sync error barrier */
+	stn	SAVED_LOFAULT, [THREAD_REG + T_LOFAULT]	/* restore old t_lofault */
 	ret
 	restore	%g0, 0, %o0
 
@@ -3345,7 +3349,7 @@ copyout_blkdone:
 	ENTRY(xcopyout)
 	sethi	%hi(.xcopyout_err), REAL_LOFAULT
 	b	.do_copyout
-	  or	REAL_LOFAULT, %lo(.xcopyout_err), REAL_LOFAULT
+	or	REAL_LOFAULT, %lo(.xcopyout_err), REAL_LOFAULT
 .xcopyout_err:
 	ldn	[THREAD_REG + T_COPYOPS], %o4
 	brz	%o4, 2f
@@ -3362,27 +3366,27 @@ copyout_blkdone:
 	sethi	%hi(.little_err), %o4
 	ldn	[THREAD_REG + T_LOFAULT], %o5
 	or	%o4, %lo(.little_err), %o4
-	membar	#Sync			! sync error barrier
+	membar	#Sync			/* sync error barrier */
 	stn	%o4, [THREAD_REG + T_LOFAULT]
 
 	subcc	%g0, %o2, %o3
 	add	%o0, %o2, %o0
-	bz,pn	%ncc, 2f		! check for zero bytes
+	bz,pn	%ncc, 2f		/* check for zero bytes */
 	sub	%o2, 1, %o4
-	add	%o0, %o4, %o0		! start w/last byte
+	add	%o0, %o4, %o0		/* start w/last byte */
 	add	%o1, %o2, %o1
 	ldub	[%o0+%o3], %o4
 
 1:	stba	%o4, [%o1+%o3]ASI_AIUSL
 	inccc	%o3
-	sub	%o0, 2, %o0		! get next byte
+	sub	%o0, 2, %o0		/* get next byte */
 	bcc,a,pt %ncc, 1b
-	  ldub	[%o0+%o3], %o4
+	ldub	[%o0+%o3], %o4
 
-2:	membar	#Sync			! sync error barrier
-	stn	%o5, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
+2:	membar	#Sync			/* sync error barrier */
+	stn	%o5, [THREAD_REG + T_LOFAULT]	/* restore old t_lofault */
 	retl
-	mov	%g0, %o0		! return (0)
+	mov	%g0, %o0		/* return (0) */
 	SET_SIZE(xcopyout_little)
 
 /*
@@ -3399,9 +3403,9 @@ copyout_blkdone:
 	!
 	tst	%o2
 	bnz,pt	%ncc, 1f
-	  nop
+	nop
 	retl
-	  clr	%o0
+	clr	%o0
 1:
 	sethi	%hi(copyio_fault), %o4
 	or	%o4, %lo(copyio_fault), %o4
@@ -3425,7 +3429,7 @@ copyout_blkdone:
 	! What was previously ".small_copyin"
 	!
 .dcibcp:
-	sub	%g0, %o2, %o3		! setup for copy loop
+	sub	%g0, %o2, %o3		/* setup for copy loop */
 	add	%o0, %o2, %o0
 	add	%o1, %o2, %o1
 	ba,pt	%ncc, .dcicl
@@ -3438,7 +3442,7 @@ copyout_blkdone:
 	! through both buffers without having to bump each buffer's
 	! pointer. A very fast 4 instruction loop.
 	!
-	.align 16
+	.balign 16
 .dcicl:
 	stb	%o4, [%o1 + %o3]
 	inccc	%o3
@@ -3520,7 +3524,7 @@ copyout_blkdone:
 	add	%o1, %o2, %o1
 	sub	%g0, %o2, %o3
 	ba,pt	%ncc, .didebc
-	srl	%o2, 3, %o2		! Number of 8 byte chunks to copy
+	srl	%o2, 3, %o2		/* Number of 8 byte chunks to copy */
 	!
 	! 4 byte aligned?
 	!
@@ -3552,7 +3556,7 @@ copyout_blkdone:
 	add	%o1, %o2, %o1
 	sub	%g0, %o2, %o3
 	ba,pt	%ncc, .didfbc
-	srl	%o2, 2, %o2		! Number of 4 byte chunks to copy
+	srl	%o2, 2, %o2		/* Number of 4 byte chunks to copy */
 .dcih2:
 	!
 	! We're two byte aligned. Check for "smallness"
@@ -3586,7 +3590,7 @@ copyout_blkdone:
 	add	%o1, %o2, %o1
 	sub	%g0, %o2, %o3
 	ba,pt	%ncc, .didtbc
-	srl	%o2, 1, %o2		! Number of 2 byte chunks to copy
+	srl	%o2, 1, %o2		/* Number of 2 byte chunks to copy */
 	!
 .small_copyin:
 	!
@@ -3602,7 +3606,7 @@ copyout_blkdone:
 	!
 	or	%o0, %o1, %o3
 	btst	1, %o3
-	bnz	%icc, .dcibcp		! Most likely
+	bnz	%icc, .dcibcp		/* Most likely */
 	btst	7, %o3
 	bz	%icc, .dcis8
 	btst	3, %o3
@@ -3616,7 +3620,7 @@ copyout_blkdone:
 	! done, we examine %o3. If this is < 0, we have 1 - 7 bytes more
 	! to copy.
 	!
-	.align 32
+	.balign 32
 .didebc:
 	ldxa	[%o0 + %o3]ASI_USER, %o4
 	deccc	%o2
@@ -3636,7 +3640,7 @@ copyout_blkdone:
 	!
 	! 4 byte copy loop. %o2 is number of 4 byte chunks to copy.
 	!
-	.align 32
+	.balign 32
 .didfbc:
 	lduwa	[%o0 + %o3]ASI_USER, %o4
 	deccc	%o2
@@ -3657,7 +3661,7 @@ copyout_blkdone:
 	! 2 byte aligned copy loop. %o2 is number of 2 byte chunks to
 	! copy.
 	!
-	.align 32
+	.balign 32
 .didtbc:
 	lduha	[%o0 + %o3]ASI_USER, %o4
 	deccc	%o2
@@ -3676,7 +3680,7 @@ copyout_blkdone:
 	stb	%o4, [%o1 + %o3]
 .dcifh:
 	membar	#Sync
-	stn     SAVED_LOFAULT, [THREAD_REG + T_LOFAULT]   ! restore old t_lofault
+	stn     SAVED_LOFAULT, [THREAD_REG + T_LOFAULT]   /* restore old t_lofault */
 	retl
 	clr	%o0
 
@@ -3684,7 +3688,7 @@ copyout_blkdone:
 	!
 	! Are we using the FP registers?
 	!
-	rd	%fprs, %o3		! check for unused fp
+	rd	%fprs, %o3		/* check for unused fp */
 	btst	FPRS_FEF, %o3
 	bnz	%ncc, .copyin_fpregs_inuse
 	nop
@@ -3740,7 +3744,7 @@ copyout_blkdone:
 	membar	#StoreStore|#StoreLoad|#LoadStore
 
 	rd	%gsr, %o2
-	st	%o2, [%fp + STACK_BIAS - SAVED_GSR_OFFSET]	! save gsr
+	st	%o2, [%fp + STACK_BIAS - SAVED_GSR_OFFSET]	/* save gsr */
 
 	! Set the lower bit in the saved t_lofault to indicate
 	! that we need to clear the %fprs register on the way
@@ -3773,10 +3777,10 @@ copyout_blkdone:
 	stb	%o4, [%i0-1]
 copyin_blkcpy:
 	andcc	%i0, 63, %i3
-	bz,pn	%ncc, copyin_blalign	! now block aligned
+	bz,pn	%ncc, copyin_blalign	/* now block aligned */
 	sub	%i3, 64, %i3
-	neg	%i3			! bytes till block aligned
-	sub	%i2, %i3, %i2		! update %i2 with new count
+	neg	%i3			/* bytes till block aligned */
+	sub	%i2, %i3, %i2		/* update %i2 with new count */
 
 	! Copy %i3 bytes till dst is block (64 byte) aligned. use
 	! double word copies.
@@ -3815,11 +3819,11 @@ copyin_blalign:
 	sub	%i2, %i4, %i2
 	sub	%i2, %i3, %i2
 
-	andn	%i1, 0x3f, %l7		! blk aligned address
-	alignaddr %i1, %g0, %g0		! gen %gsr
+	andn	%i1, 0x3f, %l7		/* blk aligned address */
+	alignaddr %i1, %g0, %g0		/* gen %gsr */
 
-	srl	%i1, 3, %l5		! bits 3,4,5 are now least sig in  %l5
-	andcc	%l5, 7, %i5		! mask everything except bits 1,2 3
+	srl	%i1, 3, %l5		/* bits 3,4,5 are now least sig in  %l5 */
+	andcc	%l5, 7, %i5		/* mask everything except bits 1,2 3 */
 	add	%i1, %i4, %i1
 	add	%i1, %i3, %i1
 
@@ -3834,35 +3838,35 @@ copyin_blalign:
 	! switch statement to get us to the right 8 byte blk within a
 	! 64 byte block
 
-	cmp	 %i5, 4
-	bgeu,a	 copyin_hlf
-	cmp	 %i5, 6
-	cmp	 %i5, 2
-	bgeu,a	 copyin_sqtr
+	cmp	%i5, 4
+	bgeu,a	copyin_hlf
+	cmp	%i5, 6
+	cmp	%i5, 2
+	bgeu,a	copyin_sqtr
 	nop
-	cmp	 %i5, 1
-	be,a	 copyin_seg1
+	cmp	%i5, 1
+	be,a	copyin_seg1
 	nop
-	ba,pt	 %ncc, copyin_seg0
+	ba,pt	%ncc, copyin_seg0
 	nop
 copyin_sqtr:
-	be,a	 copyin_seg2
+	be,a	copyin_seg2
 	nop
-	ba,pt	 %ncc, copyin_seg3
+	ba,pt	%ncc, copyin_seg3
 	nop
 
 copyin_hlf:
-	bgeu,a	 copyin_fqtr
+	bgeu,a	copyin_fqtr
 	nop
-	cmp	 %i5, 5
-	be,a	 copyin_seg5
+	cmp	%i5, 5
+	be,a	copyin_seg5
 	nop
-	ba,pt	 %ncc, copyin_seg4
+	ba,pt	%ncc, copyin_seg4
 	nop
 copyin_fqtr:
-	be,a	 copyin_seg6
+	be,a	copyin_seg6
 	nop
-	ba,pt	 %ncc, copyin_seg7
+	ba,pt	%ncc, copyin_seg7
 	nop
 
 copyin_seg0:
@@ -4485,28 +4489,28 @@ copyin_blkleft:
 copyin_blkdone:
 	tst	%i2
 	bz,pt	%ncc, .copyin_exit
-	and	%l3, 0x4, %l3		! fprs.du = fprs.dl = 0
+	and	%l3, 0x4, %l3		/* fprs.du = fprs.dl = 0 */
 
 7:	lduba	[%i1]ASI_USER, %i4
 	inc	%i1
 	inc	%i0
 	deccc	%i2
 	bgu	%ncc, 7b
-	  stb	  %i4, [%i0 - 1]
+	stb	%i4, [%i0 - 1]
 
 .copyin_exit:
 	membar	#StoreLoad|#StoreStore
 	btst	FPUSED_FLAG, SAVED_LOFAULT
 	bz	%icc, 1f
-	  nop
+	nop
 
-	ld	[%fp + STACK_BIAS - SAVED_GSR_OFFSET], %o2	! restore gsr
+	ld	[%fp + STACK_BIAS - SAVED_GSR_OFFSET], %o2	/* restore gsr */
 	wr	%o2, 0, %gsr
 
 	ld	[%fp + STACK_BIAS - SAVED_FPRS_OFFSET], %o3
 	btst	FPRS_FEF, %o3
 	bz	%icc, 4f
-	  nop
+	nop
 
 	! restore fpregs from stack
 	membar	#Sync
@@ -4522,16 +4526,16 @@ copyin_blkdone:
 	membar	#Sync
 
 	ba,pt	%ncc, 1f
-	  wr	%o3, 0, %fprs		! restore fprs
+	wr	%o3, 0, %fprs		/* restore fprs */
 
 4:
-	FZERO				! zero all of the fpregs
-	wr	%o3, 0, %fprs		! restore fprs
+	FZERO				/* zero all of the fpregs */
+	wr	%o3, 0, %fprs		/* restore fprs */
 
 1:
 	andn	SAVED_LOFAULT, FPUSED_FLAG, SAVED_LOFAULT
-	membar	#Sync				! sync error barrier
-	stn	SAVED_LOFAULT, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
+	membar	#Sync				/* sync error barrier */
+	stn	SAVED_LOFAULT, [THREAD_REG + T_LOFAULT]	/* restore old t_lofault */
 	ret
 	restore	%g0, 0, %o0
 .copyin_err:
@@ -4549,7 +4553,7 @@ copyin_blkdone:
 	ENTRY(xcopyin)
 	sethi	%hi(.xcopyin_err), REAL_LOFAULT
 	b	.do_copyin
-	  or	REAL_LOFAULT, %lo(.xcopyin_err), REAL_LOFAULT
+	or	REAL_LOFAULT, %lo(.xcopyin_err), REAL_LOFAULT
 .xcopyin_err:
 	ldn	[THREAD_REG + T_COPYOPS], %o4
 	brz	%o4, 2f
@@ -4566,31 +4570,31 @@ copyin_blkdone:
 	sethi	%hi(.little_err), %o4
 	ldn	[THREAD_REG + T_LOFAULT], %o5
 	or	%o4, %lo(.little_err), %o4
-	membar	#Sync				! sync error barrier
+	membar	#Sync				/* sync error barrier */
 	stn	%o4, [THREAD_REG + T_LOFAULT]
 
 	subcc	%g0, %o2, %o3
 	add	%o0, %o2, %o0
-	bz,pn	%ncc, 2f		! check for zero bytes
+	bz,pn	%ncc, 2f		/* check for zero bytes */
 	sub	%o2, 1, %o4
-	add	%o0, %o4, %o0		! start w/last byte
+	add	%o0, %o4, %o0		/* start w/last byte */
 	add	%o1, %o2, %o1
 	lduba	[%o0+%o3]ASI_AIUSL, %o4
 
 1:	stb	%o4, [%o1+%o3]
 	inccc	%o3
-	sub	%o0, 2, %o0		! get next byte
+	sub	%o0, 2, %o0		/* get next byte */
 	bcc,a,pt %ncc, 1b
-	  lduba	[%o0+%o3]ASI_AIUSL, %o4
+	lduba	[%o0+%o3]ASI_AIUSL, %o4
 
-2:	membar	#Sync				! sync error barrier
-	stn	%o5, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
+2:	membar	#Sync				/* sync error barrier */
+	stn	%o5, [THREAD_REG + T_LOFAULT]	/* restore old t_lofault */
 	retl
-	mov	%g0, %o0		! return (0)
+	mov	%g0, %o0		/* return (0) */
 
 .little_err:
-	membar	#Sync				! sync error barrier
-	stn	%o5, [THREAD_REG + T_LOFAULT]	! restore old t_lofault
+	membar	#Sync				/* sync error barrier */
+	stn	%o5, [THREAD_REG + T_LOFAULT]	/* restore old t_lofault */
 	retl
 	mov	%g1, %o0
 	SET_SIZE(xcopyin_little)
@@ -4604,10 +4608,10 @@ copyin_blkdone:
 	ENTRY(copyin_noerr)
 	sethi	%hi(.copyio_noerr), REAL_LOFAULT
 	b	.do_copyin
-	  or	REAL_LOFAULT, %lo(.copyio_noerr), REAL_LOFAULT
+	or	REAL_LOFAULT, %lo(.copyio_noerr), REAL_LOFAULT
 .copyio_noerr:
 	jmp	SAVED_LOFAULT
-	  nop
+	nop
 	SET_SIZE(copyin_noerr)
 
 /*
@@ -4615,13 +4619,14 @@ copyin_blkdone:
  * No fault handler installed (to be called under on_fault())
  */
 
+	.section	.text
 	ENTRY(copyout_noerr)
 	sethi	%hi(.copyio_noerr), REAL_LOFAULT
 	b	.do_copyout
-	  or	REAL_LOFAULT, %lo(.copyio_noerr), REAL_LOFAULT
+	or	REAL_LOFAULT, %lo(.copyio_noerr), REAL_LOFAULT
 	SET_SIZE(copyout_noerr)
 
-	.align	4
+	.balign	4
 	DGDEF(use_hw_bcopy)
 	.word	1
 	DGDEF(use_hw_copyio)
@@ -4637,15 +4642,15 @@ copyin_blkdone:
 	DGDEF(hw_copy_limit_8)
 	.word	0
 
-	.align	64
-	.section ".text"
+	.section	.text
+	.balign	64
 
 
 /*
  * hwblkclr - clears block-aligned, block-multiple-sized regions that are
- * longer than 256 bytes in length using spitfire's block stores.  If
+ * longer than 256 bytes in length using spitfire's block stores. If
  * the criteria for using this routine are not met then it calls bzero
- * and returns 1.  Otherwise 0 is returned indicating success.
+ * and returns 1. Otherwise 0 is returned indicating success.
  * Caller is responsible for ensuring use_hw_bzero is true and that
  * kpreempt_disable() has been called.
  */
@@ -4662,29 +4667,29 @@ copyin_blkdone:
 	! Must be block-aligned
 	andcc	%i0, (64-1), %g0
 	bnz,pn	%ncc, 1f
-	  nop
+	nop
 
 	! ... and must be 256 bytes or more
 	cmp	%i1, 256
 	blu,pn	%ncc, 1f
-	  nop
+	nop
 
 	! ... and length must be a multiple of 64
 	andcc	%i1, (64-1), %g0
 	bz,pn	%ncc, 2f
-	  nop
+	nop
 
 1:	! punt, call bzero but notify the caller that bzero was used
 	mov	%i0, %o0
 	call	bzero
-	  mov	%i1, %o1
+	mov	%i1, %o1
 	ret
-	restore	%g0, 1, %o0	! return (1) - did not use block operations
+	restore	%g0, 1, %o0	/* return (1) - did not use block operations */
 
-2:	rd	%fprs, %l0		! check for unused fp
+2:	rd	%fprs, %l0	/* check for unused fp */
 	btst	FPRS_FEF, %l0
 	bz	1f
-	  nop
+	nop
 
 	! save in-use fpregs on stack
 	membar	#Sync
@@ -4708,7 +4713,7 @@ copyin_blkdone:
 
 	mov	256, %i3
 	ba	.pz_doblock
-	  nop
+	nop
 
 .pz_blkstart:
       ! stda	%d0, [%i0+192]%asi  ! in dly slot of branch that got us here
@@ -4721,32 +4726,32 @@ copyin_blkdone:
 .pz_doblock:
 	cmp	%i1, 256
 	bgeu,a	%ncc, .pz_blkstart
-	  stda	%d0, [%i0+192]%asi
+	stda	%d0, [%i0+192]%asi
 
 	cmp	%i1, 64
 	blu	%ncc, .pz_finish
 
 	andn	%i1, (64-1), %i3
-	srl	%i3, 4, %i2		! using blocks, 1 instr / 16 words
+	srl	%i3, 4, %i2		/* using blocks, 1 instr / 16 words */
 	set	.pz_zinst, %i4
 	sub	%i4, %i2, %i4
 	jmp	%i4
-	  nop
+	nop
 
 .pz_finish:
 	membar	#Sync
 	btst	FPRS_FEF, %l0
 	bz,a	.pz_finished
-	  wr	%l0, 0, %fprs		! restore fprs
+	wr	%l0, 0, %fprs		/* restore fprs */
 
 	! restore fpregs from stack
 	ldda	[%l1]ASI_BLK_P, %d0
 	membar	#Sync
-	wr	%l0, 0, %fprs		! restore fprs
+	wr	%l0, 0, %fprs		/* restore fprs */
 
 .pz_finished:
 	ret
-	restore	%g0, 0, %o0		! return (bzero or not)
+	restore	%g0, 0, %o0		/* return (bzero or not) */
 	SET_SIZE(hwblkclr)
 
 	/*
@@ -4775,5 +4780,5 @@ copyin_blkdone:
 
 	membar	#Sync
 	retl
-	  wrpr    %g0, %g1, %pstate
+	wrpr    %g0, %g1, %pstate
 	SET_SIZE(hw_pa_bcopy32)

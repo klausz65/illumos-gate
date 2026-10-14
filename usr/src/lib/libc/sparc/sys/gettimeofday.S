@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"gettimeofday.s"
+	.file	"gettimeofday.S"
 
 /*
  * C library -- gettimeofday
@@ -45,7 +45,7 @@
  *
  * The algorithm used to perform the division by 1000 is based upon
  * algorithms for division based upon multiplication by invariant
- * integers.  Relevant sources for these algorithms are:
+ * integers. Relevant sources for these algorithms are:
  *
  * Granlund, T.; Montgomery, P.L.: "Division by Invariant Integers using
  * Multiplication". SIGPLAN Notices, Vol. 29, June 1994, page 61.

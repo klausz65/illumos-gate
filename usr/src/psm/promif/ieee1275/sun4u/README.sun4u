@@ -22,7 +22,6 @@
 # Copyright 1995 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-#ident	"%Z%%M%	%I%	%E% SMI"
 
 This directory contains sun4u implementations of promif routines.
 The implementation of the functions are platform dependent and/or

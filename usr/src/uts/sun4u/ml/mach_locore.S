@@ -22,6 +22,9 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include <sys/asm_linkage.h>
 #include <sys/intreg.h>
@@ -59,11 +62,15 @@
  * the fact that it is small enough to share pages with others).
  */
 
-	.seg	".data"
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
+	.section	.data
 	.global	panicbuf
 
-PROM	= 0xFFE00000			! address of prom virtual area
-panicbuf = SYSBASE32 + PAGESIZE		! address of panic buffer
+PROM	= 0xFFE00000			/* address of prom virtual area */
+panicbuf = SYSBASE32 + PAGESIZE		/* address of panic buffer */
 
 	.type	panicbuf, #object
 	.size	panicbuf, PANICBUFSIZE
@@ -77,7 +84,7 @@ panicbuf = SYSBASE32 + PAGESIZE		! address of panic buffer
  */
 	.global intr_vec_table
 
-intr_vec_table = SYSBASE32 + PAGESIZE + PANICBUFSIZE ! address of interrupt table
+intr_vec_table = SYSBASE32 + PAGESIZE + PANICBUFSIZE /* address of interrupt table */
 
 	.type	intr_vec_table, #object
 	.size	intr_vec_table, MAXIVNUM * CPTRSIZE + MAX_RSVD_IV * IV_SIZE + MAX_RSVD_IVX * (IV_SIZE + CPTRSIZE * (NCPU - 1))
@@ -91,29 +98,29 @@ intr_vec_table = SYSBASE32 + PAGESIZE + PANICBUFSIZE ! address of interrupt tabl
  */
 
 	.global	t0stack
-	.align	16
+	.balign	16
 	.type	t0stack, #object
 t0stack:
-	.skip	T0STKSZ			! thread 0 stack
+	.skip	T0STKSZ			/* thread 0 stack */
 t0stacktop:
 	.size	t0stack, T0STKSZ
 
 /*
- * cpu0 and its ptl1_panic stack.  The cpu structure must be allocated
+ * cpu0 and its ptl1_panic stack. The cpu structure must be allocated
  * on a single page for ptl1_panic's physical address accesses.
  */
 	.global	cpu0
-	.align	MMU_PAGESIZE
+	.balign	MMU_PAGESIZE
 cpu0:
 	.type	cpu0, #object
 	.skip	CPU_ALLOC_SIZE
 	.size	cpu0, CPU_ALLOC_SIZE
 
 	.global t0
-	.align	PTR24_ALIGN		! alignment for mutex.
+	.balign	PTR24_ALIGN		/* alignment for mutex. */
 	.type	t0, #object
 t0:
-	.skip	THREAD_SIZE		! thread 0
+	.skip	THREAD_SIZE		/* thread 0 */
 	.size	t0, THREAD_SIZE
 
 #ifdef	TRAPTRACE
@@ -123,31 +130,31 @@ t0:
 	.global	trap_freeze
 	.global	trap_freeze_pc
 
-	.align	4
+	.balign	4
 trap_trace_bufsize:
-	.word	TRAP_TSIZE		! default trap buffer size
+	.word	TRAP_TSIZE		/* default trap buffer size */
 trap_freeze:
 	.word	0
 
-	.align	64
+	.balign	64
 trap_trace_ctl:
-	.skip	NCPU * TRAPTR_SIZE	! NCPU control headers
+	.skip	NCPU * TRAPTR_SIZE	/* NCPU control headers */
 
-	.align	16
+	.balign	16
 trap_tr0:
-	.skip	TRAP_TSIZE		! one buffer for the boot cpu
+	.skip	TRAP_TSIZE		/* one buffer for the boot cpu */
 
 /*
  * When an assertion in TRACE_PTR was failed, %pc is saved in trap_freeze_pc to
  * show in which TRACE_PTR the assertion failure happened.
  */
-	.align	8
+	.balign	8
 trap_freeze_pc:
 	.nword	0
 #endif	/* TRAPTRACE */
 
-	.align 4
-	.seg	".text"
+	.balign 4
+	.section	.text
 
 #ifdef	NOPROM
 	.global availmem
@@ -155,11 +162,11 @@ availmem:
 	.word	0
 #endif	/* NOPROM */
 
-	.align	8
+	.balign	8
 _local_p1275cis:
 	.nword	0
 
-	.seg	".data"
+	.section	.data
 
 	.global nwindows, nwin_minus_one, winmask
 nwindows:
@@ -177,7 +184,7 @@ afsrbuf:
  * System initialization
  *
  * Our contract with the boot prom specifies that the MMU is on and the
- * first 16 meg of memory is mapped with a level-1 pte.  We are called
+ * first 16 meg of memory is mapped with a level-1 pte. We are called
  * with p1275cis ptr in %o0 and kdi_dvec in %o1; we start execution
  * directly from physical memory, so we need to get up into our proper
  * addresses quickly: all code before we do this must be position
@@ -221,7 +228,7 @@ afsrbuf:
 	call	kobj_start
 	mov	%o4, %o0
 
-	CLEARTICKNPT			! allow user rdtick
+	CLEARTICKNPT			/* allow user rdtick */
 	!
 	! Get maxwin from %ver
 	!
@@ -273,7 +280,7 @@ afsrbuf:
 	!
 	! Initialize thread 0's stack.
 	!
-	set	t0stacktop, %g1		! setup kernel stack pointer
+	set	t0stacktop, %g1		/* setup kernel stack pointer */
 	sub	%g1, SA(KFPUSIZE+GSR_SIZE), %g2
 	and	%g2, 0x3f, %g3
 	sub	%g2, %g3, %o1
@@ -290,17 +297,17 @@ afsrbuf:
 	! boot cpu is inserted in cpu[] based on cpuid.
 	!
 	CPU_INDEX(%g2, %g1)
-	sll	%g2, CPTRSHIFT, %g2		! convert cpuid to cpu[] offset
-	set	cpu0, %o0			! &cpu0
-	set	cpu, %g1			! &cpu[]
-	stn	%o0, [%g1 + %g2]		! cpu[cpuid] = &cpu0
+	sll	%g2, CPTRSHIFT, %g2		/* convert cpuid to cpu[] offset */
+	set	cpu0, %o0			/* &cpu0 */
+	set	cpu, %g1			/* &cpu[] */
+	stn	%o0, [%g1 + %g2]		/* cpu[cpuid] = &cpu0 */
 
-	stn	%o0, [THREAD_REG + T_CPU]	! threadp()->t_cpu = cpu[cpuid]
-	stn	THREAD_REG, [%o0 + CPU_THREAD]	! cpu[cpuid]->cpu_thread = threadp()
+	stn	%o0, [THREAD_REG + T_CPU]	/* threadp()->t_cpu = cpu[cpuid] */
+	stn	THREAD_REG, [%o0 + CPU_THREAD]	/* cpu[cpuid]->cpu_thread = threadp() */
 
 
-	!  We do NOT need to bzero our BSS...boot has already done it for us.
-	!  Just need to reference edata so that we don't break /dev/ksyms
+	! We do NOT need to bzero our BSS...boot has already done it for us.
+	! Just need to reference edata so that we don't break /dev/ksyms
 	set	edata, %g0
 
 	!
@@ -329,7 +336,7 @@ afsrbuf:
 
 .mainretmsg:
 	.asciz	"main returned"
-	.align	4
+	.balign	4
 
 
 /*
@@ -406,22 +413,22 @@ afsrbuf:
 	! set pcontext to run kernel
 	!
 	sethi	%hi(kcontextreg), %l0
-	ldx     [%l0 + %lo(kcontextreg)], %l0
-	mov	MMU_PCONTEXT, %l1	! if kcontextreg==PCONTEXT, do nothing
-	ldxa	[%l1]ASI_MMU_CTX, %l2
+	ldx	[%l0 + %lo(kcontextreg)], %l0
+	mov	MMU_PCONTEXT, %l1	/* if kcontextreg==PCONTEXT, do nothing */
+	ldxa	[%l1] ASI_MMU_CTX, %l2
 	xor	%l0, %l2, %l2
 	srlx	%l2, CTXREG_NEXT_SHIFT, %l2
-	brz	%l2, 2f			! if N_pgsz0/1 changed, need demap
+	brz	%l2, 2f			/* if N_pgsz0/1 changed, need demap */
 	sethi	%hi(FLUSH_ADDR), %l3
 	mov	DEMAP_ALL_TYPE, %l2
-	stxa	%g0, [%l2]ASI_DTLB_DEMAP
-	stxa	%g0, [%l2]ASI_ITLB_DEMAP
+	stxa	%g0, [%l2] ASI_DTLB_DEMAP
+	stxa	%g0, [%l2] ASI_ITLB_DEMAP
 2:
-	stxa	%l0, [%l1]ASI_MMU_CTX
-	flush	%l3			! flush required by immu
+	stxa	%l0, [%l1] ASI_MMU_CTX
+	flush	%l3			/* flush required by immu */
 1:
 
-	set	utl0, %g6		! bounce to utl0
+	set	utl0, %g6		/* bounce to utl0 */
 have_win:
 	SYSTRAP_TRACE(%o1, %o2, %o3)
 
@@ -432,12 +439,12 @@ have_win:
 	!
 	! save needed current globals
 	!
-	mov	%g1, %l3	! pc
-	mov	%g2, %o1	! arg #1
-	mov	%g3, %o2	! arg #2
-	srlx	%g3, 32, %o3	! pseudo arg #3
-	srlx	%g2, 32, %o4	! pseudo arg #4
-	mov	%g5, %l6	! curthread if user trap, %pil if priv trap
+	mov	%g1, %l3	/* pc */
+	mov	%g2, %o1	/* arg #1 */
+	mov	%g3, %o2	/* arg #2 */
+	srlx	%g3, 32, %o3	/* pseudo arg #3 */
+	srlx	%g2, 32, %o4	/* pseudo arg #4 */
+	mov	%g5, %l6	/* curthread if user trap, %pil if priv trap */
 	!
 	! save trap state on stack
 	!
@@ -460,15 +467,15 @@ have_win:
 	rdpr	%pil, %l0
 	cmp	%g4, %l0
 	bge,pt	%xcc, 0f
-	nop				! yes, nop; to avoid anull
+	nop				/* yes, nop; to avoid anull */
 	set	bad_g4_called, %l3
 	mov	1, %o1
 	st	%o1, [%l3]
-	set	bad_g4, %l3		! pc
-	set	sys_trap_wrong_pil, %o1	! arg #1
-	mov	%g4, %o2		! arg #2
-	ba	1f			! stay at the current %pil
-	mov	%l0, %o3		! arg #3
+	set	bad_g4, %l3		/* pc */
+	set	sys_trap_wrong_pil, %o1	/* arg #1 */
+	mov	%g4, %o2		/* arg #2 */
+	ba	1f			/* stay at the current %pil */
+	mov	%l0, %o3		/* arg #3 */
 0:
 #endif /* DEBUG */
 	wrpr		%g0, %g4, %pil
@@ -509,26 +516,26 @@ have_win:
 	set	OFW_END_ADDR, %g6
 	cmp	%g5, %g6
 	bgu,a,pn %xcc, 1f
-	  rdpr	%pil, %g5
+	rdpr	%pil, %g5
 	set	OFW_START_ADDR, %g6
 	cmp	%g5, %g6
 	bgeu,pn	%xcc, prom_trap
-	  rdpr	%pil, %g5
+	rdpr	%pil, %g5
 1:
 	!
 	! check if the primary context is of kernel.
 	!
-	mov     MMU_PCONTEXT, %g6
-	ldxa    [%g6]ASI_MMU_CTX, %g5
-	sllx    %g5, CTXREG_CTX_SHIFT, %g5      ! keep just the ctx bits
-	brnz,pn %g5, 2f				! assumes KCONTEXT == 0
-	  rdpr  %pil, %g5
+	mov	MMU_PCONTEXT, %g6
+	ldxa	[%g6] ASI_MMU_CTX, %g5
+	sllx	%g5, CTXREG_CTX_SHIFT, %g5	/* keep just the ctx bits */
+	brnz,pn %g5, 2f				/* assumes KCONTEXT == 0 */
+	rdpr	%pil, %g5
 	!
 	! primary context is of kernel.
 	!
-        set     ktl0, %g6
-        save    %sp, -SA(REGOFF + REGSIZE), %sp
-        ba,a,pt %xcc, have_win
+	set	ktl0, %g6
+	save	%sp, -SA(REGOFF + REGSIZE), %sp
+	ba,a,pt	%xcc, have_win
 2:
 	!
 	! primary context is of user. caller of sys_trap()
@@ -538,7 +545,7 @@ have_win:
 	!
 	rdpr	%ver, %g5
 	srlx	%g5, VER_MAXTL_SHIFT, %g5
-	and	%g5, VER_MAXTL_MASK, %g5	! %g5 = MAXTL
+	and	%g5, VER_MAXTL_MASK, %g5	/* %g5 = MAXTL */
 	sub	%g5, 1, %g5
 	wrpr	%g0, %g5, %tl
 	mov	PTL1_BAD_CTX, %g1
@@ -549,8 +556,8 @@ have_win:
 	SAVE_GLOBALS(%l7)
 	SAVE_OUTS(%l7)
 	mov	%l6, THREAD_REG
-	wrpr	%g0, PSTATE_KERN, %pstate	! enable ints
-	jmpl	%l3, %o7			! call trap handler
+	wrpr	%g0, PSTATE_KERN, %pstate	/* enable ints */
+	jmpl	%l3, %o7			/* call trap handler */
 	mov	%l7, %o0
 	!
 	ALTENTRY(user_rtt)
@@ -572,10 +579,10 @@ have_win:
 	!
 	! call trap to do ast processing
 	!
-	wrpr	%g0, %l4, %pil			! pil = cpu_base_spl
+	wrpr	%g0, %l4, %pil			/* pil = cpu_base_spl */
 	mov	%l7, %o0
 	call	trap
-	  mov	T_AST, %o2
+	mov	T_AST, %o2
 	ba,a,pt	%xcc, user_rtt
 1:
 	brz,pt	%l3, 2f
@@ -583,16 +590,16 @@ have_win:
 	!
 	! call restore_wbuf to push wbuf windows to stack
 	!
-	wrpr	%g0, %l4, %pil			! pil = cpu_base_spl
+	wrpr	%g0, %l4, %pil			/* pil = cpu_base_spl */
 	mov	%l7, %o0
 	call	trap
-	  mov	T_FLUSH_PCB, %o2
+	mov	T_FLUSH_PCB, %o2
 	ba,a,pt	%xcc, user_rtt
 2:
 #ifdef TRAPTRACE
 	TRACE_RTT(TT_SYS_RTT_USER, %l0, %l1, %l2, %l3)
 #endif /* TRAPTRACE */
-	ld	[%sp + STACK_BIAS + MPCB_WSTATE], %l3	! get wstate
+	ld	[%sp + STACK_BIAS + MPCB_WSTATE], %l3	/* get wstate */
 
 	!
 	! restore user globals and outs
@@ -602,7 +609,7 @@ have_win:
 	RESTORE_GLOBALS(%l7)
 	! switch to alternate globals, saving THREAD_REG in %l6
 	wrpr	%l1, PSTATE_IE | PSTATE_AG, %pstate
-	mov	%sp, %g6	! remember the mpcb pointer in %g6
+	mov	%sp, %g6	/* remember the mpcb pointer in %g6 */
 	RESTORE_OUTS(%l7)
 	!
 	! set %pil from cpu_base_spl
@@ -616,23 +623,23 @@ have_win:
 	! switch "other" windows back to "normal" windows.
 	rdpr	%otherwin, %g1
 	wrpr	%g0, 0, %otherwin
-	add	%l3, WSTATE_CLEAN_OFFSET, %l3	! convert to "clean" wstate
+	add	%l3, WSTATE_CLEAN_OFFSET, %l3	/* convert to "clean" wstate */
 	wrpr	%g0, %l3, %wstate
 	wrpr	%g0, %g1, %canrestore
 
 	! set pcontext to scontext for user execution
 	mov	MMU_SCONTEXT, %g3
-	ldxa	[%g3]ASI_MMU_CTX, %g2
+	ldxa	[%g3] ASI_MMU_CTX, %g2
 
 	mov	MMU_PCONTEXT, %g3
-	ldxa    [%g3]ASI_MMU_CTX, %g4		! need N_pgsz0/1 bits
-        srlx    %g4, CTXREG_NEXT_SHIFT, %g4
-        sllx    %g4, CTXREG_NEXT_SHIFT, %g4
-        or      %g4, %g2, %g2                   ! Or in Nuc pgsz bits
+	ldxa	[%g3] ASI_MMU_CTX, %g4		/* need N_pgsz0/1 bits */
+	srlx	%g4, CTXREG_NEXT_SHIFT, %g4
+	sllx	%g4, CTXREG_NEXT_SHIFT, %g4
+	or	%g4, %g2, %g2			/* Or in Nuc pgsz bits */
 
 	sethi	%hi(FLUSH_ADDR), %g4
-	stxa	%g2, [%g3]ASI_MMU_CTX
-	flush	%g4				! flush required by immu
+	stxa	%g2, [%g3] ASI_MMU_CTX
+	flush	%g4				/* flush required by immu */
 	!
 	! Within the code segment [rtt_ctx_start - rtt_ctx_end],
 	! PCONTEXT is set to run user code. If a trap happens in this
@@ -663,15 +670,15 @@ rtt_ctx_start:
 	!
 	tst	%g1
 	bne,a	1f
-	  clrn	[%g6 + STACK_BIAS + MPCB_RSP0]
+	stx	%g0, [%g6 + STACK_BIAS + MPCB_RSP0]
 	tst	%fp
 	be,a	1f
-	  clrn	[%g6 + STACK_BIAS + MPCB_RSP0]
+	stx	%g0, [%g6 + STACK_BIAS + MPCB_RSP0]
 	! test for user return window in pcb
 	ldn	[%g6 + STACK_BIAS + MPCB_RSP0], %g1
 	cmp	%fp, %g1
 	bne	1f
-	  clrn	[%g6 + STACK_BIAS + MPCB_RSP0]
+	stx	%g0, [%g6 + STACK_BIAS + MPCB_RSP0]
 	restored
 	restore
 	! restore from user return window
@@ -680,18 +687,18 @@ rtt_ctx_start:
 	! Attempt to restore from the scond watchpoint saved register window
 	tst	%fp
 	be,a	2f
-	  clrn	[%g6 + STACK_BIAS + MPCB_RSP1]
+	stx	%g0, [%g6 + STACK_BIAS + MPCB_RSP1]
 	ldn	[%g6 + STACK_BIAS + MPCB_RSP1], %g1
 	cmp	%fp, %g1
 	bne	2f
-	  clrn	[%g6 + STACK_BIAS + MPCB_RSP1]
+	stx	%g0, [%g6 + STACK_BIAS + MPCB_RSP1]
 	restored
 	restore
 	RESTORE_V9WINDOW(%g6 + STACK_BIAS + MPCB_RWIN1)
 	save
 	b,a	2f
 1:
-	restore				! should not trap
+	restore				/* should not trap */
 2:
 	!
 	! set %cleanwin to %canrestore
@@ -714,10 +721,10 @@ rtt_ctx_end:
 	SAVE_OUTS(%l7)
 	CPU_ADDR(%g5, %g6)
 	ldn	[%g5 + CPU_THREAD], THREAD_REG
-	wrpr	%g0, PSTATE_KERN, %pstate	! enable ints
-	jmpl	%l3, %o7			! call trap handler
+	wrpr	%g0, PSTATE_KERN, %pstate	/* enable ints */
+	jmpl	%l3, %o7			/* call trap handler */
 	mov	%l7, %o0
-	!
+
 	ALTENTRY(prom_rtt)
 #ifdef TRAPTRACE
 	TRACE_RTT(TT_SYS_RTT_PROM, %l0, %l1, %l2, %l3)
@@ -729,11 +736,11 @@ rtt_ctx_end:
 
 	ENTRY_NP(ktl0)
 	SAVE_GLOBALS(%l7)
-	SAVE_OUTS(%l7)				! for the call bug workaround
-	wrpr	%g0, PSTATE_KERN, %pstate	! enable ints
-	jmpl	%l3, %o7			! call trap handler
+	SAVE_OUTS(%l7)				/* for the call bug workaround */
+	wrpr	%g0, PSTATE_KERN, %pstate	/* enable ints */
+	jmpl	%l3, %o7			/* call trap handler */
 	mov	%l7, %o0
-	!
+
 	ALTENTRY(priv_rtt)
 #ifdef TRAPTRACE
 	TRACE_RTT(TT_SYS_RTT_PRIV, %l0, %l1, %l2, %l3)
@@ -753,18 +760,18 @@ rtt_ctx_end:
 	!
 	! Attempt to preempt
 	!
-	ldstub	[THREAD_REG + T_PREEMPT_LK], %l0	! load preempt lock
-	brnz,pn	%l0, 1f			! can't call kpreempt if this thread is
-	nop				!   already in it...
+	ldstub	[THREAD_REG + T_PREEMPT_LK], %l0	/* load preempt lock */
+	brnz,pn	%l0, 1f			/* can't call kpreempt if this thread is */
+	nop				/*   already in it... */
 
 	call	kpreempt
-	mov	%l6, %o0		! pass original interrupt level
+	mov	%l6, %o0		/* pass original interrupt level */
 
-	stub	%g0, [THREAD_REG + T_PREEMPT_LK]	! nuke the lock
+	stb	%g0, [THREAD_REG + T_PREEMPT_LK]	/* nuke the lock */
 
-	rdpr	%pil, %o0		! compare old pil level
-	cmp	%l6, %o0		!   with current pil level
-	movg	%xcc, %o0, %l6		! if current is lower, drop old pil
+	rdpr	%pil, %o0		/* compare old pil level */
+	cmp	%l6, %o0		/*   with current pil level */
+	movg	%xcc, %o0, %l6		/* if current is lower, drop old pil */
 1:
 	!
 	! If we interrupted the mutex_owner_running() critical region we
@@ -777,7 +784,7 @@ rtt_ctx_end:
 	cmp	%l0, mutex_owner_running_critical_size
 	bgeu,pt	%xcc, 2f
 	mov	THREAD_REG, %l0
-	stn	%l1, [%l7 + PC_OFF]	! restart mutex_owner_running()
+	stn	%l1, [%l7 + PC_OFF]	/* restart mutex_owner_running() */
 	add	%l1, 4, %l1
 	ba,pt	%xcc, common_rtt
 	stn	%l1, [%l7 + nPC_OFF]
@@ -794,7 +801,7 @@ rtt_ctx_end:
 	cmp	%l0, mutex_exit_critical_size
 	bgeu,pt	%xcc, common_rtt
 	mov	THREAD_REG, %l0
-	stn	%l1, [%l7 + PC_OFF]	! restart mutex_exit()
+	stn	%l1, [%l7 + PC_OFF]	/* restart mutex_exit() */
 	add	%l1, 4, %l1
 	stn	%l1, [%l7 + nPC_OFF]
 
@@ -841,8 +848,8 @@ common_rtt:
 	SET_SIZE(ktl0)
 
 #ifdef DEBUG
-	.seg	".data"
-	.align	4
+	.section	.data
+	.balign	4
 
 	.global bad_g4_called
 bad_g4_called:
@@ -850,8 +857,8 @@ bad_g4_called:
 
 sys_trap_wrong_pil:
 	.asciz	"sys_trap: %g4(%d) is lower than %pil(%d)"
-	.align	4
-	.seg	".text"
+	.balign	4
+	.section	.text
 
 	ENTRY_NP(bad_g4)
 	mov	%o1, %o0
@@ -884,12 +891,12 @@ sys_trap_wrong_pil:
  * used to turn on/off the led.
  */
 
-	.seg	".data"
-	.align	4
+	.section	.data
+	.balign	4
 auxio_panic:
 	.asciz	"set_auxioreg: interrupts already disabled on entry"
-	.align	4
-	.seg	".text"
+	.balign	4
+	.section	.text
 
 	ENTRY_NP(set_auxioreg)
 	/*
@@ -902,10 +909,10 @@ auxio_panic:
 #ifdef	DEBUG
 	andcc	%o2, PSTATE_IE, %g0	/* if interrupts already */
 	bnz,a,pt %icc, 1f		/* disabled, panic */
-	  nop
+	nop
 	sethi	%hi(auxio_panic), %o0
 	call	panic
-	  or	%o0, %lo(auxio_panic), %o0
+	or	%o0, %lo(auxio_panic), %o0
 1:
 #endif /* DEBUG */
 	wrpr	%o2, PSTATE_IE, %pstate		/* disable interrupts */
@@ -914,13 +921,13 @@ auxio_panic:
 	ldub	[%o4], %g1			/* read aux i/o register */
 	tst	%o1
 	bnz,a	2f
-	 bset	%o0, %g1		/* on */
+	bset	%o0, %g1		/* on */
 	bclr	%o0, %g1		/* off */
 2:
 	or	%g1, AUX_MBO, %g1	/* Must Be Ones */
 	stb	%g1, [%o4]		/* write aux i/o register */
 	retl
-	 wrpr	%g0, %o2, %pstate	/* enable interrupt */
+	wrpr	%g0, %o2, %pstate	/* enable interrupt */
 	SET_SIZE(set_auxioreg)
 
 /*
@@ -970,7 +977,7 @@ auxio_panic:
 	brnz	%g1, 1b
 	add	%g2, 1, %g2
 2:
-	sub	%g2, 1, %g2		! restore back to orig window
+	sub	%g2, 1, %g2		/* restore back to orig window */
 	brnz	%g2, 2b
 	restore
 3:
@@ -987,7 +994,7 @@ auxio_panic:
 
 	ENTRY_NP(trash_user_windows)
 	rdpr	%otherwin, %g1
-	brz	%g1, 3f			! no user windows?
+	brz	%g1, 3f			/* no user windows? */
 	ldn	[THREAD_REG + T_STACK], %g5
 
 	!
@@ -999,14 +1006,14 @@ auxio_panic:
 	rdpr	%pstate, %g2
 	wrpr	%g2, PSTATE_IE, %pstate
 	rdpr	%cansave, %g3
-	rdpr	%otherwin, %g1		! re-read in case of interrupt
+	rdpr	%otherwin, %g1		/* re-read in case of interrupt */
 	add	%g3, %g1, %g3
 	wrpr	%g0, 0, %otherwin
 	wrpr	%g0, %g3, %cansave
 	wrpr	%g0, %g2, %pstate
 3:
 	retl
- 	clr     [%g5 + MPCB_WBCNT]       ! zero window buffer cnt
+	clr	[%g5 + MPCB_WBCNT]	/* zero window buffer cnt */
 	SET_SIZE(trash_user_windows)
 
 
@@ -1016,7 +1023,7 @@ auxio_panic:
 
 	ENTRY_NP(set_tbr)
 	retl
-	ta	72		! no tbr, stop simulation
+	ta	72		/* no tbr, stop simulation */
 	SET_SIZE(set_tbr)
 
 
@@ -1053,22 +1060,22 @@ auxio_panic:
 
 /*
  * ptl1_panic is called when the kernel detects that it is in an invalid state
- * and the trap level is greater than 0.  ptl1_panic is responsible to save the
+ * and the trap level is greater than 0. ptl1_panic is responsible to save the
  * current CPU state, to restore the CPU state to normal, and to call panic.
- * The CPU state must be saved reliably without causing traps.  ptl1_panic saves
+ * The CPU state must be saved reliably without causing traps. ptl1_panic saves
  * it in the ptl1_state structure, which is a member of the machcpu structure.
  * In order to access the ptl1_state structure without causing traps, physical
- * addresses are used so that we can avoid MMU miss traps.  The restriction of
+ * addresses are used so that we can avoid MMU miss traps. The restriction of
  * physical memory accesses is that the ptl1_state structure must be on a single
- * physical page.  This is because (1) a single physical address for each
+ * physical page. This is because (1) a single physical address for each
  * ptl1_state structure is needed and (2) it simplifies physical address
  * calculation for each member of the structure.
  * ptl1_panic is a likely spot for stack overflows to wind up; thus, the current
- * stack may not be usable.  In order to call panic reliably in such a state,
+ * stack may not be usable. In order to call panic reliably in such a state,
  * each CPU needs a dedicated ptl1 panic stack.
  * CPU_ALLOC_SIZE, which is defined to be MMU_PAGESIZE, is used to allocate the
- * cpu structure and a ptl1 panic stack.  They are put together on the same page
- * for memory space efficiency.  The low address part is used for the cpu
+ * cpu structure and a ptl1 panic stack. They are put together on the same page
+ * for memory space efficiency. The low address part is used for the cpu
  * structure, and the high address part is for a ptl1 panic stack.
  * The cpu_pa array holds the physical addresses of the allocated cpu structures,
  * as the cpu array holds their virtual addresses.
@@ -1080,7 +1087,7 @@ auxio_panic:
 	ENTRY_NP(ptl1_panic)
 	!
 	! flush D$ first, so that stale data will not be accessed later.
-	! Data written via ASI_MEM bypasses D$.  If D$ contains data at the same
+	! Data written via ASI_MEM bypasses D$. If D$ contains data at the same
 	! address, where data was written via ASI_MEM, a load from that address
 	! using a virtual address and the default ASI still takes the old data.
 	! Flushing D$ erases old data in D$, so that it will not be loaded.
@@ -1091,7 +1098,7 @@ auxio_panic:
 	!
 	GET_CPU_IMPL(%g2)
 	cmp	%g2, SPITFIRE_IMPL
-	blt,pn	%icc, 1f		! Skip flushing for OPL processors
+	blt,pn	%icc, 1f		/* Skip flushing for OPL processors */
 	 nop
 	sethi	%hi(dcache_size), %g2
 	ld	[%g2 + %lo(dcache_size)], %g2
@@ -1101,15 +1108,15 @@ auxio_panic:
 0:	stxa	%g0, [%g2] ASI_DC_TAG
 	membar	#Sync
 	brnz,pt	%g2, 0b
-	  sub	%g2, %g3, %g2
+	sub	%g2, %g3, %g2
 1:
 	!
 	! increment the entry counter.
 	! save CPU state if this is the first entry.
 	!
 	CPU_PADDR(%g2, %g3);
-	add	%g2, CPU_PTL1, %g2		! pstate = &CPU->mcpu.ptl1_state
-	wr	%g0, ASI_MEM, %asi		! physical address access
+	add	%g2, CPU_PTL1, %g2		/* pstate = &CPU->mcpu.ptl1_state */
+	wr	%g0, ASI_MEM, %asi		/* physical address access */
 	!
 	! pstate->ptl1_entry_count++
 	!
@@ -1118,12 +1125,12 @@ auxio_panic:
 	stuwa	%g3, [%g2 + PTL1_ENTRY_COUNT] %asi
 	!
 	! CPU state saving is skipped from the 2nd entry to ptl1_panic since we
-	! do not want to clobber the state from the original failure.  panic()
+	! do not want to clobber the state from the original failure. panic()
 	! is responsible for handling multiple or recursive panics.
 	!
-	cmp	%g3, 2				! if (ptl1_entry_count >= 2)
-	bge,pn	%icc, state_saved		!	goto state_saved
-	  add	%g2, PTL1_REGS, %g3		! %g3 = &pstate->ptl1_regs[0]
+	cmp	%g3, 2				/* if (ptl1_entry_count >= 2) */
+	bge,pn	%icc, state_saved		/*	goto state_saved */
+	add	%g2, PTL1_REGS, %g3		/* %g3 = &pstate->ptl1_regs[0] */
 	!
 	! save CPU state
 	!
@@ -1142,23 +1149,23 @@ save_cpu_state:
 	! %tl, %tt, %tstate, %tpc, %tnpc for each TL
 	!
 	rdpr	%tl, %g1
-	brz	%g1, 1f				! if(trap_level == 0) -------+
-	add	%g3, PTL1_TRAP_REGS, %g4	! %g4 = &ptl1_trap_regs[0];  !
-0:						! -----------<----------+    !
-	stwa	%g1, [%g4 + PTL1_TL] %asi				!    !
-	rdpr	%tt, %g5						!    !
-	stwa	%g5, [%g4 + PTL1_TT] %asi				!    !
-	rdpr	%tstate, %g5						!    !
-	stxa	%g5, [%g4 + PTL1_TSTATE] %asi				!    !
-	rdpr	%tpc, %g5						!    !
-	stxa	%g5, [%g4 + PTL1_TPC] %asi				!    !
-	rdpr	%tnpc, %g5						!    !
-	stxa	%g5, [%g4 + PTL1_TNPC] %asi				!    !
-	add	%g4, PTL1_TRAP_REGS_INCR, %g4				!    !
-	deccc	%g1							!    !
-	bnz,a,pt %icc, 0b			! if(trap_level != 0) --+    !
-	  wrpr	%g1, %tl						     !
-1:						! ----------<----------------+
+	brz	%g1, 1f				/* if(trap_level == 0) --------+ */
+	add	%g3, PTL1_TRAP_REGS, %g4	/* %g4 = &ptl1_trap_regs[0];   | */
+0:						/* -----------<------------+   | */
+	stwa	%g1, [%g4 + PTL1_TL] %asi				/* |   | */
+	rdpr	%tt, %g5						/* |   | */
+	stwa	%g5, [%g4 + PTL1_TT] %asi				/* |   | */
+	rdpr	%tstate, %g5						/* |   | */
+	stxa	%g5, [%g4 + PTL1_TSTATE] %asi				/* |   | */
+	rdpr	%tpc, %g5						/* |   | */
+	stxa	%g5, [%g4 + PTL1_TPC] %asi				/* |   | */
+	rdpr	%tnpc, %g5						/* |   | */
+	stxa	%g5, [%g4 + PTL1_TNPC] %asi				/* |   | */
+	add	%g4, PTL1_TRAP_REGS_INCR, %g4				/* |   | */
+	deccc	%g1							/* |   | */
+	bnz,a,pt %icc, 0b			/* if(trap_level != 0) ----+   | */
+	wrpr	%g1, %tl			/*			       | */
+1:						/* ----------<-----------------+ */
 	!
 	! %pstate, %pil, SOFTINT, (S)TICK
 	! Pending interrupts is also cleared in order to avoid a recursive call
@@ -1171,10 +1178,10 @@ save_cpu_state:
 	rd	SOFTINT, %g1
 	sta	%g1, [%g3 + PTL1_SOFTINT] %asi
 	wr	%g1, CLEAR_SOFTINT
-	sethi   %hi(traptrace_use_stick), %g1
-	ld      [%g1 + %lo(traptrace_use_stick)], %g1
+	sethi	%hi(traptrace_use_stick), %g1
+	ld	[%g1 + %lo(traptrace_use_stick)], %g1
 	brz,a,pn %g1, 2f
-	  rdpr	%tick, %g1
+	rdpr	%tick, %g1
 	rd	STICK, %g1
 2:	stxa	%g1, [%g3 + PTL1_TICK] %asi
 
@@ -1182,19 +1189,19 @@ save_cpu_state:
 	! MMU registers because ptl1_panic may be called from
 	! the MMU trap handlers.
 	!
-	mov     MMU_SFAR, %g1
-	ldxa    [%g1]ASI_DMMU, %g4
-	stxa	%g4, [%g3 + PTL1_DMMU_SFAR]%asi
-	mov     MMU_SFSR, %g1
-	ldxa    [%g1]ASI_DMMU, %g4
-	stxa	%g4, [%g3 + PTL1_DMMU_SFSR]%asi
-	ldxa    [%g1]ASI_IMMU, %g4
-	stxa	%g4, [%g3 + PTL1_IMMU_SFSR]%asi
-	mov     MMU_TAG_ACCESS, %g1
-	ldxa    [%g1]ASI_DMMU, %g4
-	stxa	%g4, [%g3 + PTL1_DMMU_TAG_ACCESS]%asi
-	ldxa    [%g1]ASI_IMMU, %g4
-	stxa	%g4, [%g3 + PTL1_IMMU_TAG_ACCESS]%asi
+	mov	MMU_SFAR, %g1
+	ldxa	[%g1] ASI_DMMU, %g4
+	stxa	%g4, [%g3 + PTL1_DMMU_SFAR] %asi
+	mov	MMU_SFSR, %g1
+	ldxa	[%g1] ASI_DMMU, %g4
+	stxa	%g4, [%g3 + PTL1_DMMU_SFSR] %asi
+	ldxa	[%g1] ASI_IMMU, %g4
+	stxa	%g4, [%g3 + PTL1_IMMU_SFSR] %asi
+	mov	MMU_TAG_ACCESS, %g1
+	ldxa	[%g1] ASI_DMMU, %g4
+	stxa	%g4, [%g3 + PTL1_DMMU_TAG_ACCESS] %asi
+	ldxa	[%g1] ASI_IMMU, %g4
+	stxa	%g4, [%g3 + PTL1_IMMU_TAG_ACCESS] %asi
 
 	!
 	! Save register window state and register windows.
@@ -1215,17 +1222,17 @@ save_cpu_state:
 	PTL1_RESET_RWINDOWS(%g1)
 	clr	%g1
 	wrpr	%g1, %cwp
-	add	%g3, PTL1_RWINDOW, %g4		! %g4 = &ptl1_rwindow[0];
+	add	%g3, PTL1_RWINDOW, %g4		/* %g4 = &ptl1_rwindow[0]; */
 
-3:	PTL1_SAVE_WINDOW(%g4)	! <-------------+
-	inc	%g1				!
-	cmp	%g1, MAXWIN			!
-	bgeu,pn	%icc, 5f			!
-	wrpr	%g1, %cwp			!
-	rdpr	%cwp, %g2			!
-	cmp	%g1, %g2			! saturation check
-	be,pt	%icc, 3b			!
-	  PTL1_NEXT_WINDOW(%g4)		! ------+
+3:	PTL1_SAVE_WINDOW(%g4)	/* <---------------+ */
+	inc	%g1				/* | */
+	cmp	%g1, MAXWIN			/* | */
+	bgeu,pn	%icc, 5f			/* | */
+	wrpr	%g1, %cwp			/* | */
+	rdpr	%cwp, %g2			/* | */
+	cmp	%g1, %g2			/* | saturation check */
+	be,pt	%icc, 3b			/* | */
+	PTL1_NEXT_WINDOW(%g4)	/* ----------------+ */
 5:
 	!
 	! most crucial CPU state was saved.
@@ -1243,7 +1250,7 @@ state_saved:
 	! Set pcontext to run kernel.
 	!
 	! For OPL, load kcontexreg instead of clearing primary
-	! context register.  This is to avoid changing nucleus page
+	! context register. This is to avoid changing nucleus page
 	! size bits after boot initialization.
 	!
 #ifdef _OPL
@@ -1255,13 +1262,13 @@ state_saved:
 	sethi	%hi(FLUSH_ADDR), %g3
 	set	MMU_PCONTEXT, %g2
 
-	stxa	%g0, [%g1]ASI_DTLB_DEMAP
-	stxa	%g0, [%g1]ASI_ITLB_DEMAP
+	stxa	%g0, [%g1] ASI_DTLB_DEMAP
+	stxa	%g0, [%g1] ASI_ITLB_DEMAP
 
 #ifdef _OPL
-	stxa	%g4, [%g2]ASI_MMU_CTX
+	stxa	%g4, [%g2] ASI_MMU_CTX
 #else /* _OPL */
-	stxa	%g0, [%g2]ASI_MMU_CTX
+	stxa	%g0, [%g2] ASI_MMU_CTX
 #endif /* _OPL */
 
 	flush	%g3
@@ -1271,27 +1278,27 @@ state_saved:
 	wrpr	%g3, %g1, %tstate
 	set	ptl1_panic_tl0, %g3
 	wrpr	%g0, %g3, %tnpc
-	done					! go to -->-+	TL:1
-							    !
-ptl1_panic_tl0:					! ----<-----+	TL:0
-	CPU_ADDR(%l0, %l1)			! %l0 = cpu[cpuid]
-	add	%l0, CPU_PTL1, %l1		! %l1 = &CPU->mcpu.ptl1_state
+	done					/* go to -->-+	TL:1 */
+							  /* |	     */
+ptl1_panic_tl0:					/* ----<-----+	TL:0 */
+	CPU_ADDR(%l0, %l1)			/* %l0 = cpu[cpuid] */
+	add	%l0, CPU_PTL1, %l1		/* %l1 = &CPU->mcpu.ptl1_state */
 	!
 	! prepare to call panic()
 	!
-	ldn	[%l0 + CPU_THREAD], THREAD_REG	! restore %g7
-	ldn	[%l1 + PTL1_STKTOP], %l2	! %sp = ptl1_stktop
+	ldn	[%l0 + CPU_THREAD], THREAD_REG	/* restore %g7 */
+	ldn	[%l1 + PTL1_STKTOP], %l2	/* %sp = ptl1_stktop */
 	sub	%l2, SA(MINFRAME) + STACK_BIAS, %sp
-	clr	%fp				! no frame below this window
+	clr	%fp				/* no frame below this window */
 	clr	%i7
 	!
 	! enable limited interrupts
 	!
 	wrpr	%g0, CLOCK_LEVEL, %pil
 	wrpr	%g0, PSTATE_KERN, %pstate
-	!
+
 	ba,pt	%xcc, ptl1_panic_handler
-	  mov	%l1, %o0
+	mov	%l1, %o0
 	/*NOTREACHED*/
 	SET_SIZE(ptl1_panic)
 
@@ -1305,26 +1312,26 @@ ptl1_panic_tl0:					! ----<-----+	TL:0
  * registers to a known state to facilitate debugging.
  */
 	ENTRY_NP(ptl1_recurse)
-	save    %sp, -SA(MINFRAME), %sp
+	save	%sp, -SA(MINFRAME), %sp
 
-	set 	ptl1_recurse_call, %o7
-	cmp	%o7, %i7			! if ptl1_recurse is called
-	be,pt  %icc, 0f				! by itself, then skip
-	  nop					! register initialization
+	set	ptl1_recurse_call, %o7
+	cmp	%o7, %i7			/* if ptl1_recurse is called */
+	be,pt  %icc, 0f				/* by itself, then skip */
+	nop					/* register initialization */
 
 	/*
 	 * Initialize Out Registers to Known Values
 	 */
-	set	0x01000, %l0			! %i0 is the ...
-						! recursion_depth_count
+	set	0x01000, %l0			/* %i0 is the ... */
+						/* recursion_depth_count */
 	sub	%i0, 1, %o0;
-	sub 	%i1, 1, %o1;
+	sub	%i1, 1, %o1;
 	add	%l0, %o0, %o2;
 	add	%l0, %o2, %o3;
 	add	%l0, %o3, %o4;
 	add	%l0, %o4, %o5;
 	ba,a	1f
-	  nop
+	nop
 
 0:	/* Outs = Ins - 1 */
 	sub	%i0, 1, %o0;
@@ -1349,32 +1356,32 @@ ptl1_panic_tl0:					! ----<-----+	TL:0
 	add	%g5, %g3, %g4
 	add	%g5, %g4, %g5
 
-	brz,pn %i1, ptl1_recurse_trap		! if trpp_count == 0) {
-	  nop					!    trap to ptl1_panic
-						!
-	brz,pn %i0, ptl1_recure_exit		! if(depth_count == 0) {
-	  nop					!    skip recursive call
-						! }
+	brz,pn %i1, ptl1_recurse_trap		/* if trpp_count == 0) { */
+	nop					/*    trap to ptl1_panic */
+
+	brz,pn %i0, ptl1_recure_exit		/* if(depth_count == 0) { */
+	nop					/*    skip recursive call */
+						/* } */
 ptl1_recurse_call:
 	call	ptl1_recurse
-	  nop
+	nop
 
 ptl1_recure_exit:
 	ret
 	restore
 
 ptl1_recurse_trap:
-	ta	PTL1_DEBUG_TRAP; 		! Trap Always to ptl1_panic()
-	  nop 					! NOTREACHED
-        SET_SIZE(ptl1_recurse)
+	ta	PTL1_DEBUG_TRAP;		/* Trap Always to ptl1_panic() */
+	nop					/* NOTREACHED */
+	SET_SIZE(ptl1_recurse)
 
 	/*
 	 * Asm function to handle a cross trap to call ptl1_panic()
 	 */
 	ENTRY_NP(ptl1_panic_xt)
 	ba	ptl1_panic
-	  mov	PTL1_BAD_DEBUG, %g1
-        SET_SIZE(ptl1_panic_xt)
+	mov	PTL1_BAD_DEBUG, %g1
+	SET_SIZE(ptl1_panic_xt)
 
 #endif	/* PTL1_PANIC_DEBUG */
 
@@ -1382,7 +1389,7 @@ ptl1_recurse_trap:
 
 	ENTRY_NP(trace_ptr_panic)
 	!
-	! freeze the trap trace to disable the assertions.  Otherwise,
+	! freeze the trap trace to disable the assertions. Otherwise,
 	! ptl1_panic is likely to be repeatedly called from there.
 	! %g2 and %g3 are used as scratch registers in ptl1_panic.
 	!
@@ -1407,11 +1414,11 @@ ptl1_recurse_trap:
  * if PCONTEXT==kctx, do nothing
  * if N_pgsz0|N_pgsz1 differ, do demap all first
  */
-        ENTRY_NP(set_kcontextreg)
+	ENTRY_NP(set_kcontextreg)
 	! SET_KCONTEXTREG(reg0, reg1, reg2, reg3, reg4, label1, label2, label3)
 	SET_KCONTEXTREG(%o0, %o1, %o2, %o3, %o4, l1, l2, l3)
 	retl
-        nop
+	nop
 	SET_SIZE(set_kcontextreg)
 
 /*
@@ -1420,11 +1427,11 @@ ptl1_recurse_trap:
  */
 
 	ENTRY(client_handler)
-	save	%sp, -SA64(MINFRAME64), %sp	! 32 bit frame, 64 bit sized
+	save	%sp, -SA64(MINFRAME64), %sp	/* 32 bit frame, 64 bit sized */
 	sethi	%hi(tba_taken_over), %l2
 	ld	[%l2+%lo(tba_taken_over)], %l3
-	brz	%l3, 1f				! is the tba_taken_over = 1 ?
-	rdpr	%wstate, %l5			! save %wstate
+	brz	%l3, 1f				/* is the tba_taken_over = 1 ? */
+	rdpr	%wstate, %l5			/* save %wstate */
 	andn	%l5, WSTATE_MASK, %l6
 	wrpr	%l6, WSTATE_KMIX, %wstate
 
@@ -1433,58 +1440,58 @@ ptl1_recurse_trap:
 	!
 #ifndef _OPL
 	mov	MMU_PCONTEXT, %o2
-	ldxa	[%o2]ASI_DMMU, %o2
+	ldxa	[%o2] ASI_DMMU, %o2
 	srlx	%o2, CTXREG_NEXT_SHIFT, %o2
-	brz,pt	%o2, 1f				! nucleus pgsz is 0, no problem
-	  nop
-	rdpr	%pstate, %l4			! disable interrupts
+	brz,pt	%o2, 1f				/* nucleus pgsz is 0, no problem */
+	nop
+	rdpr	%pstate, %l4			/* disable interrupts */
 	andn	%l4, PSTATE_IE, %o2
 	wrpr	%g0, %o2, %pstate
-	mov	DEMAP_ALL_TYPE, %o2		! set PCONTEXT=0
-	stxa	%g0, [%o2]ASI_DTLB_DEMAP
-	stxa	%g0, [%o2]ASI_ITLB_DEMAP
+	mov	DEMAP_ALL_TYPE, %o2		/* set PCONTEXT=0 */
+	stxa	%g0, [%o2] ASI_DTLB_DEMAP
+	stxa	%g0, [%o2] ASI_ITLB_DEMAP
 	mov	MMU_PCONTEXT, %o2
-	stxa	%g0, [%o2]ASI_DMMU
-        membar  #Sync
+	stxa	%g0, [%o2] ASI_DMMU
+	membar	#Sync
 	sethi	%hi(FLUSH_ADDR), %o2
-	flush	%o2				! flush required by immu
-	wrpr	%g0, %l4, %pstate		! restore interrupt state
+	flush	%o2				/* flush required by immu */
+	wrpr	%g0, %l4, %pstate		/* restore interrupt state */
 #endif /* _OPL */
 
 1:	mov	%i1, %o0
-	rdpr	%pstate, %l4			! Get the present pstate value
+	rdpr	%pstate, %l4			/* Get the present pstate value */
 	andn	%l4, PSTATE_AM, %l6
-	wrpr	%l6, 0, %pstate			! Set PSTATE_AM = 0
-	jmpl	%i0, %o7			! Call cif handler
+	wrpr	%l6, 0, %pstate			/* Set PSTATE_AM = 0 */
+	jmpl	%i0, %o7			/* Call cif handler */
 	nop
-	wrpr	%l4, 0, %pstate			! restore pstate
-	brz	%l3, 1f				! is the tba_taken_over = 1
-	  nop
-	wrpr	%g0, %l5, %wstate		! restore wstate
+	wrpr	%l4, 0, %pstate			/* restore pstate */
+	brz	%l3, 1f				/* is the tba_taken_over = 1 */
+	nop
+	wrpr	%g0, %l5, %wstate		/* restore wstate */
 
 	!
 	! switch to PCONTEXT=kcontexreg
 	!
 #ifndef _OPL
 	sethi	%hi(kcontextreg), %o3
-	ldx     [%o3 + %lo(kcontextreg)], %o3
+	ldx	[%o3 + %lo(kcontextreg)], %o3
 	brz	%o3, 1f
-	  nop
-	rdpr	%pstate, %l4			! disable interrupts
+	nop
+	rdpr	%pstate, %l4			/* disable interrupts */
 	andn	%l4, PSTATE_IE, %o2
 	wrpr	%g0, %o2, %pstate
 	mov	DEMAP_ALL_TYPE, %o2
-	stxa	%g0, [%o2]ASI_DTLB_DEMAP
-	stxa	%g0, [%o2]ASI_ITLB_DEMAP
+	stxa	%g0, [%o2] ASI_DTLB_DEMAP
+	stxa	%g0, [%o2] ASI_ITLB_DEMAP
 	mov	MMU_PCONTEXT, %o2
-	stxa	%o3, [%o2]ASI_DMMU
-        membar  #Sync
+	stxa	%o3, [%o2] ASI_DMMU
+	membar	#Sync
 	sethi	%hi(FLUSH_ADDR), %o2
-	flush	%o2				! flush required by immu
-	wrpr	%g0, %l4, %pstate		! restore interrupt state
+	flush	%o2				/* flush required by immu */
+	wrpr	%g0, %l4, %pstate		/* restore interrupt state */
 #endif /* _OPL */
 
-1:	ret					! Return result ...
-	restore	%o0, %g0, %o0			! delay; result in %o0
+1:	ret					/* Return result ... */
+	restore	%o0, %g0, %o0			/* delay; result in %o0 */
 	SET_SIZE(client_handler)
 

@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"kill.s"
+	.file	"kill.S"
 
 /* C library -- kill						*/
 /* int kill (pid_t pid, int sig);				*/

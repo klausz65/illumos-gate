@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"setuid.s"
+	.file	"setuid.S"
 
 /* C library -- setuid						*/
 /* int setuid (uid_t uid);					*/

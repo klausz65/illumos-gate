@@ -23,15 +23,15 @@
  * Use is subject to license terms.
  */
 
-	.file	"sparc_utrap_install.s"
+	.file	"sparc_utrap_install.S"
 
 #include "SYS.h"
 
 /*
  * int
  * __sparc_utrap_install(utrap_entry_t type,
- *       utrap_handler_t new_precise, utrap_handler_t new_deferred,
- *       utrap_handler_t *old_precise, utrap_handler_t *old_deferred)
+ *	utrap_handler_t new_precise, utrap_handler_t new_deferred,
+ *	utrap_handler_t *old_precise, utrap_handler_t *old_deferred)
  */
 	SYSCALL2_RVAL1(__sparc_utrap_install,sparc_utrap_install)
 	RET

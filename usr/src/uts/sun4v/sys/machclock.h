@@ -20,6 +20,7 @@
  */
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2026 Klaus Ziegler
  */
 
 #ifndef _SYS_MACHCLOCK_H
@@ -53,14 +54,14 @@ extern "C" {
  * which does not check for native_tick_offset changing.
  */
 #define	RD_STICK(out, scr1, scr2, label)			\
-.rd_stick.label:						\
+1:								\
 	sethi	%hi(native_stick_offset), scr1;			\
 	ldx	[scr1 + %lo(native_stick_offset)], scr2;	\
-	rd	STICK, out;					\
+	rd	%stick, out;					\
 	ldx	[scr1 + %lo(native_stick_offset)], scr1;	\
 	sub	scr1, scr2, scr2;				\
 /* CSTYLED */							\
-	brnz,pn	scr2, .rd_stick.label;				\
+	brnz,pn	scr2, 1b;					\
 	sllx	out, 1, out;					\
 	srlx	out, 1, out;					\
 	add	out, scr1, out
@@ -101,14 +102,14 @@ extern u_longlong_t gettick(void);
 
 
 #define	RD_TICK(out, scr1, scr2, label)				\
-.rd_tick.label:							\
+2:								\
 	sethi	%hi(native_tick_offset), scr1;			\
 	ldx	[scr1 + %lo(native_tick_offset)], scr2;		\
 	rd	%tick, out;					\
 	ldx	[scr1 + %lo(native_tick_offset)], scr1;		\
 	sub	scr1, scr2, scr2;				\
 /* CSTYLED */							\
-	brnz,pn	scr2, .rd_tick.label;				\
+	brnz,pn	scr2, 2b;					\
 	sllx	out, 1, out;					\
 	srlx	out, 1, out;					\
 	add	out, scr1, out
@@ -165,21 +166,21 @@ extern u_longlong_t gettick(void);
 	add	out, scr1, out;
 
 #define	RD_TICKCMPR(out, scr1, scr2, label)			\
-.rd_stickcmpr.label: 						\
+3:								\
 	sethi	%hi(native_stick_offset), scr1;			\
 	ldx	[scr1 + %lo(native_stick_offset)], scr2;	\
-	rd	STICK_COMPARE, out;				\
+	rd	%asr25, out;					\
 	ldx	[scr1 + %lo(native_stick_offset)], scr1;	\
 	sub	scr1, scr2, scr2;				\
 /* CSTYLED */							\
-	brnz,pn	scr2, .rd_stickcmpr.label;			\
+	brnz,pn	scr2, 3b;					\
 	add	out, scr1, out
 
 #define	WR_TICKCMPR(in, scr1, scr2, label)			\
 	sethi	%hi(native_stick_offset), scr1;			\
 	ldx	[scr1 + %lo(native_stick_offset)], scr1;	\
 	sub	in, scr1, scr1;					\
-	wr	scr1, STICK_COMPARE
+	wr	scr1, 0, %asr25
 
 #define	GET_NATIVE_TIME(out, scr1, scr2, label)			\
 /* CSTYLED */							\
@@ -207,7 +208,7 @@ extern u_longlong_t gettick(void);
 /*
  * NOTE: the macros below assume that the various time-related variables
  * (hrestime, hrestime_adj, hres_last_tick, timedelta, nsec_scale, etc)
- * are all stored together on a 64-byte boundary.  The primary motivation
+ * are all stored together on a 64-byte boundary. The primary motivation
  * is cache performance, but we also take advantage of a convenient side
  * effect: these variables all have the same high 22 address bits, so only
  * one sethi is needed to access them all.

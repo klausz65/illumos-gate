@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"getpid.s"
+	.file	"getpid.S"
 
 /* C library -- getpid						*/
 /* pid_t getpid (void)						*/

@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_listen.s"
+	.file	"_so_listen.S"
 
 /* C library -- _so_listen					*/
 /* int _so_listen (int socket, int backlog, int vers);	 	*/

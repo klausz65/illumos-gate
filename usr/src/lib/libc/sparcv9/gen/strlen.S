@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"strlen.s"
+	.file	"strlen.S"
 
 /*
  * strlen(s)
@@ -49,29 +49,29 @@
 #include <sys/asm_linkage.h>
 
 	! The object of strlen is to, as quickly as possible, find the
-	! null byte.  To this end, we attempt to get our string aligned
+	! null byte. To this end, we attempt to get our string aligned
 	! and then blast across it using Alan Mycroft's algorithm for
 	! finding null bytes. If we are not aligned, the string is
-	! checked a byte at a time until it is.  Once this occurs,
-	! we can proceed word-wise across it.  Once a word with a
+	! checked a byte at a time until it is. Once this occurs,
+	! we can proceed word-wise across it. Once a word with a
 	! zero byte has been found, we then check the word a byte
 	! at a time until we've located the zero byte, and return
 	! the proper length.
 
-	.align 32
+	.balign 32
 	ENTRY(strlen)
-	andcc		%o0, 3, %o4	! is src word aligned
+	andcc		%o0, 3, %o4	/* is src word aligned */
 	bz,pt		%icc, .nowalgnd
 	mov		%o0, %o2
 
-	cmp		%o4, 2		! is src half-word aligned
+	cmp		%o4, 2		/* is src half-word aligned */
 	be,a,pn		%icc, .s2algn
 	lduh		[%o2], %o1
 
 	ldub		[%o2], %o1
-	tst		%o1		! byte zero?
+	tst		%o1		/* byte zero? */
 	bz,pn		%icc, .done
-	cmp		%o4, 3		! src is byte aligned
+	cmp		%o4, 3		/* src is byte aligned */
 
 	be,pn		%icc, .nowalgnd
 	inc		1, %o2
@@ -105,10 +105,10 @@
 	ld		[%o2+4], %o1
 	inc		4, %o2
 
-.loop:						! this should be aligned to 32
+.loop:						/* this should be aligned to 32 */
 	inc		4, %o2
-	andn		%o5, %o1, %o3		! %o5 = ~word & 0x80808080
-	sub		%o1, %o4, %g1		! %g1 = word - 0x01010101
+	andn		%o5, %o1, %o3		/* %o5 = ~word & 0x80808080 */
+	sub		%o1, %o4, %g1		/* %g1 = word - 0x01010101 */
 	andcc		%o3, %g1, %g0
 	bz,a,pt		%icc, .loop
 	ld		[%o2], %o1
@@ -117,19 +117,19 @@
 	sethi		%hi(0xff000000), %o4
 .nullfound:
 	andcc		%o1, %o4, %g0
-	bz,pn		%icc, .done		! first byte zero
+	bz,pn		%icc, .done		/* first byte zero */
 	srl		%o4, 8, %o4
 
 	andcc		%o1, %o4, %g0
-	bz,pn		%icc, .done		! second byte zero
+	bz,pn		%icc, .done		/* second byte zero */
 	inc		1, %o2
 
 	srl		%o4, 8, %o4
 	andcc		%o1, %o4, %g0
-	bz,pn		%icc, .done		! thrid byte zero
+	bz,pn		%icc, .done		/* thrid byte zero */
 	inc		1, %o2
 
-	inc		1, %o2			! fourth byte zero
+	inc		1, %o2			/* fourth byte zero */
 .done:
 	retl
 	sub		%o2, %o0, %o0

@@ -43,9 +43,9 @@ pics/%.o: $(COMDIR)/sha1/%.c
 		$(COMPILE.c) -I$(COMDIR)/sha1 -o $@ $<
 		$(POST_PROCESS_O)
 
-pics/sha1_asm.o: $(COMDIR)/sha1/sparc/$(PLATFORM)/sha1_asm.s
+pics/sha1_asm.o: $(COMDIR)/sha1/sparc/$(PLATFORM)/sha1_asm.S
 		$(COMPILE.s) -o pics/sha1_asm.o \
-		$(COMDIR)/sha1/sparc/$(PLATFORM)/sha1_asm.s
+		$(COMDIR)/sha1/sparc/$(PLATFORM)/sha1_asm.S
 		$(POST_PROCESS_S_O)
 
 pics/%.o: $(COMDIR)/sha2/%.c

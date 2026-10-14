@@ -26,8 +26,8 @@
 include		../Makefile.com
 include		$(SRC)/lib/Makefile.lib.64
 
-AS_CPPFLAGS +=	-D__sparcv9
-ASFLAGS +=	-xarch=v9 -I$(LIBCBASE)/$(MACH64)
+AS_CPPFLAGS +=	-I$(LIBCBASE)/$(MACH64) -D__sparcv9
+ASFLAGS +=	-xarch=v9c
 
 all install:	$(SYMCAP)
 

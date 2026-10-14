@@ -23,6 +23,9 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 /*
  * This file is through cpp before being used as
@@ -49,6 +52,10 @@
 #include <sys/fsr.h>
 #include <sys/cheetahregs.h>
 #include <sys/cheetahasm.h>
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * Invalidating the E$ tags is only needed on Cheetah following

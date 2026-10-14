@@ -25,20 +25,9 @@
  * Use is subject to license terms.
  */
 
-#if !defined(__lint)
-	.file	"dapl_tavor_atomic_copy.s"
-#endif
+	.file	"dapl_tavor_atomic_copy.S"
 
 #include <sys/asm_linkage.h>
-
-#if defined(__lint)
-
-/* ARGSUSED */
-void
-dapls_atomic_assign_64(uint64_t src, uint64_t *dst)
-{}
-
-#else	/* __lint */
 
 	ENTRY(dapls_atomic_assign_64)
 	std	%o0, [%o2]
@@ -46,4 +35,3 @@ dapls_atomic_assign_64(uint64_t src, uint64_t *dst)
 	nop
 
 	SET_SIZE(dapls_atomic_assign_64)
-#endif

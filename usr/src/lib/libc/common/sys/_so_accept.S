@@ -29,7 +29,7 @@
 
 /* Copyright (c) 2013, OmniTI Computer Consulting, Inc. All rights reserved. */
 
-	.file	"_so_accept.s"
+	.file	"_so_accept.S"
 
 /* C library -- __so_accept						*/
 /*

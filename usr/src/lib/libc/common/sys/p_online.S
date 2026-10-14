@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"p_online.s"
+	.file	"p_online.S"
 
 /*
  * C library -- p_online

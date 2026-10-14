@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"gethrtime.s"
+	.file	"gethrtime.S"
 
 #include "SYS.h"
 

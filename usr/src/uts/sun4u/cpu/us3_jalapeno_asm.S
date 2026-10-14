@@ -50,6 +50,10 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /* BEGIN CSTYLED */
 
 #if defined(JALAPENO) && defined(JALAPENO_ERRATA_85)
@@ -228,7 +232,7 @@
 	add	scr2, 1, scr2;						\
 	cmp	scr2, 3;						\
 	bne,pt	%icc, 7f;						\
-	  nop;								\
+	nop;								\
 	set	TOM_SLOW_SPEED, scr2;					\
 	/* scr2 contains tom speed according to intended jp speed */	\
 7:									\
@@ -251,7 +255,7 @@
 	JP_ESTAR_TRIGGER(scr3, scr4);					\
 	andcc	old_lvl, TOM_SLOW_SPEED, %g0;				\
 	bz,pt	%icc, 9f;	/* intended 1:2, already at 1:2 */	\
-	  nop;								\
+	nop;								\
 									\
 	/* go to 1:32 speed */						\
 	SET_JP_SPEED(JBUS_CONFIG_ECLK_32, scr3, scr4);			\
@@ -292,7 +296,7 @@
 	JP_EC_DIAG_ACCESS_MEMBAR
 
 /*
- * Jalapeno version of ecache_flush_line.  Uses Jalapeno Ecache Displacement
+ * Jalapeno version of ecache_flush_line. Uses Jalapeno Ecache Displacement
  * Flush feature to flush all 4 sets/ways.
  */
 #define	ECACHE_FLUSH_LINE(physaddr, ec_set_size, scr1, scr2)		\
@@ -322,9 +326,9 @@
  * Ship mondo to aid using implicit busy/nack pair (bn ignored)
  */
 	ENTRY_NP(shipit)
-	sll	%o0, IDCR_PID_SHIFT, %g1	! IDCR<18:14> = agent id
-	or	%g1, IDCR_OFFSET, %g1		! IDCR<13:0> = 0x70
-	stxa	%g0, [%g1]ASI_INTR_DISPATCH	! interrupt vector dispatch
+	sll	%o0, IDCR_PID_SHIFT, %g1	/* IDCR<18:14> = agent id */
+	or	%g1, IDCR_OFFSET, %g1		/* IDCR<13:0> = 0x70 */
+	stxa	%g0, [%g1]ASI_INTR_DISPATCH	/* interrupt vector dispatch */
 	membar	#Sync
 	retl
 	nop
@@ -362,7 +366,7 @@ flush_ecache_2:
 
 
 	.section ".text"
-	.align	64
+	.balign	64
 	ENTRY_NP(fast_ecc_err)
 
 	/*
@@ -371,7 +375,7 @@ flush_ecache_2:
 	ldxa	[%g0]ASI_ESTATE_ERR, %g3
 	andn	%g3, EN_REG_NCEEN + EN_REG_CEEN, %g4
 	stxa	%g4, [%g0]ASI_ESTATE_ERR
-	membar	#Sync			! membar sync required
+	membar	#Sync			/* membar sync required */
 
 	/*
 	 * Do the CPU log out capture.
@@ -386,12 +390,12 @@ flush_ecache_2:
 	 *   %g3 = scr3
 	 *   %g4 = scr4
 	 */
-	and	%g3, EN_REG_CEEN, %g4		! store the CEEN value, TL=0
+	and	%g3, EN_REG_CEEN, %g4		/* store the CEEN value, TL=0 */
 	set	CHPR_FECCTL0_LOGOUT, %g6
 	DO_CPU_LOGOUT(%g3, %g2, %g6, %g4, %g5, %g6, %g3, %g4)
 
 	/*
-	 * Flush the Ecache to get the error out of the Ecache.  If the UCC
+	 * Flush the Ecache to get the error out of the Ecache. If the UCC
 	 * or UCU is on a dirty line, then the following flush will turn
 	 * that into a WDC or WDU, respectively.
 	 */
@@ -403,9 +407,9 @@ flush_ecache_2:
 	ld	[%g4 + ECACHE_SIZE], %g4
 #if defined(JALAPENO) && defined(JALAPENO_ERRATA_85)
 	CHK_JP_ERRATA85_ENABLED(%g6, fast_ecc_err_1);
-        set     jp_estar_tl0_data, %g6
-        stx     %g2, [%g6 + 0]
-        stx     %g3, [%g6 + 8]
+	set	jp_estar_tl0_data, %g6
+	stx	%g2, [%g6 + 0]
+	stx	%g3, [%g6 + 8]
 	JP_FORCE_FULL_SPEED(%g2, %g3, %g6, %g7)		/* %g2: saved speed */
 fast_ecc_err_1:
 #endif	/* JALAPENO && JALAPENO_ERRATA_85 */
@@ -413,9 +417,9 @@ fast_ecc_err_1:
 #if defined(JALAPENO) && defined(JALAPENO_ERRATA_85)
 	CHK_JP_ERRATA85_ENABLED(%g6, fast_ecc_err_2);
 	JP_RESTORE_SPEED(%g2, %g3, %g6, %g7)		/* %g2: saved speed */
-        set     jp_estar_tl0_data, %g6
-        ldx     [%g6 + 0], %g2
-        ldx     [%g6 + 8], %g3
+	set	jp_estar_tl0_data, %g6
+	ldx	[%g6 + 0], %g2
+	ldx	[%g6 + 8], %g3
 fast_ecc_err_2:
 #endif	/* JALAPENO && JALAPENO_ERRATA_85 */
 
@@ -435,7 +439,7 @@ fast_ecc_err_2:
 	GET_CPU_PRIVATE_PTR(%g0, %g5, %g7, fast_ecc_err_4);
 	ld	[%g5 + CHPR_ICACHE_LINESIZE], %g6
 	ba,pt	%icc, 5f
-	  ld	[%g5 + CHPR_ICACHE_SIZE], %g5
+	ld	[%g5 + CHPR_ICACHE_SIZE], %g5
 fast_ecc_err_4:
 	ASM_LD(%g5, icache_size)
 	ASM_LD(%g6, icache_linesize)
@@ -453,7 +457,7 @@ fast_ecc_err_4:
 	 */
 	cmp	%g3, %g0
 	be	8f
-	  nop
+	nop
 
 	/*
 	 * If the logout structure had been busy, how many times have
@@ -464,10 +468,10 @@ fast_ecc_err_4:
 	 */
 	cmp	%g3, CLO_NESTING_MAX
 	blt	7f
-	  nop
+	nop
 
-        call ptl1_panic
-          mov   PTL1_BAD_ECC, %g1
+	call	ptl1_panic
+	mov	PTL1_BAD_ECC, %g1
 
 7:
 	/*
@@ -487,14 +491,14 @@ fast_ecc_err_4:
 	rdpr	%pil, %g4
 	cmp	%g4, PIL_14
 	ba	sys_trap
-	  movl	%icc, PIL_14, %g4
+	movl	%icc, PIL_14, %g4
 
 	SET_SIZE(fast_ecc_err)
 
 
 /*
  * Fast ECC error at TL>0 handler
- * We get here via trap 70 at TL>0->Software trap 0 at TL>0.  We enter
+ * We get here via trap 70 at TL>0->Software trap 0 at TL>0. We enter
  * this routine with %g1 and %g2 already saved in %tpc, %tnpc and %tstate.
  * For a complete description of the Fast ECC at TL>0 handling see the
  * comment block "Cheetah/Cheetah+ Fast ECC at TL>0 trap strategy" in
@@ -502,7 +506,7 @@ fast_ecc_err_4:
  */
 
 	.section ".text"
-	.align	64
+	.balign	64
 	ENTRY_NP(fast_ecc_tl1_err)
 
 	/*
@@ -511,13 +515,13 @@ fast_ecc_err_4:
 	 * ch_err_tl1_data structure, updates the ch_err_tl1_flags and saves
 	 * the %tpc in ch_err_tl1_tpc.  At the end of this macro, %g1 will
 	 * point to the ch_err_tl1_data structure and the original D$/I$ state
-	 * will be saved in ch_err_tl1_tmp.  All %g registers except for %g1
+	 * will be saved in ch_err_tl1_tmp. All %g registers except for %g1
 	 * will be available.
 	 */
 	CH_ERR_TL1_FECC_ENTER;
 
 	/*
-	 * Get the diagnostic logout data.  %g4 must be initialized to
+	 * Get the diagnostic logout data. %g4 must be initialized to
 	 * current CEEN state, %g5 must point to logout structure in
 	 * ch_err_tl1_data_t.  %g3 will contain the nesting count upon
 	 * return.
@@ -533,7 +537,7 @@ fast_ecc_err_4:
 	 */
 	cmp	%g3, CLO_NESTING_MAX
 	bge	fecc_tl1_err
-	  nop
+	nop
 
 	/*
 	 * Save the current CEEN and NCEEN state in %g7 and turn them off
@@ -552,9 +556,9 @@ fast_ecc_err_4:
 	set	JP_ECACHE_MAX_SIZE, %g4
 #if defined(JALAPENO) && defined(JALAPENO_ERRATA_85)
 	CHK_JP_ERRATA85_ENABLED(%g6, fast_ecc_tl1_err_1);
-        set     jp_estar_tl1_data, %g6
-        stx     %g2, [%g6 + 0]
-        stx     %g3, [%g6 + 8]
+	set	jp_estar_tl1_data, %g6
+	stx	%g2, [%g6 + 0]
+	stx	%g3, [%g6 + 8]
 	JP_FORCE_FULL_SPEED(%g2, %g3, %g5, %g6)
 fast_ecc_tl1_err_1:
 #endif	/* JALAPENO && JALAPENO_ERRATA_85 */
@@ -562,9 +566,9 @@ fast_ecc_tl1_err_1:
 #if defined(JALAPENO) && defined(JALAPENO_ERRATA_85)
 	CHK_JP_ERRATA85_ENABLED(%g6, fast_ecc_tl1_err_2);
 	JP_RESTORE_SPEED(%g2, %g3, %g5, %g6)
-        set     jp_estar_tl1_data, %g6
-        ldx     [%g6 + 0], %g2
-        ldx     [%g6 + 8], %g3
+	set	jp_estar_tl1_data, %g6
+	ldx	[%g6 + 0], %g2
+	ldx	[%g6 + 8], %g3
 fast_ecc_tl1_err_2:
 #endif	/* JALAPENO && JALAPENO_ERRATA_85 */
 
@@ -632,7 +636,7 @@ fast_ecc_tl1_err_2:
 	ld	[%g6 + TRAPTR_LIMIT], %g5
 	tst	%g5
 	be	%icc, skip_traptrace
-	  nop
+	nop
 	ldx	[%g6 + TRAPTR_PBASE], %g5
 	ld	[%g6 + TRAPTR_OFFSET], %g4
 	add	%g5, %g4, %g5
@@ -688,7 +692,7 @@ skip_traptrace:
 	 */
 	ldxa	[%g1 + CH_ERR_TL1_NEST_CNT]%asi, %g2
 	brnz	%g2, 6f
-	  nop
+	nop
 
 	/*
 	 * If a UCU followed by a WDU has occurred go ahead and panic
@@ -698,14 +702,14 @@ skip_traptrace:
 	ldxa	[%g1 + CH_ERR_TL1_AFSR]%asi, %g3
 	set	1, %g4
 	sllx	%g4, C_AFSR_UCU_SHIFT, %g4
-	btst	%g4, %g3		! UCU in original AFSR?
+	btst	%g4, %g3		/* UCU in original AFSR? */
 	bz	%xcc, 6f
-	  nop
-	ldxa	[%g0]ASI_AFSR, %g4	! current AFSR
-	or	%g3, %g4, %g3		! %g3 = original + current AFSR
+	nop
+	ldxa	[%g0]ASI_AFSR, %g4	/* current AFSR */
+	or	%g3, %g4, %g3		/* %g3 = original + current AFSR */
 	set	1, %g4
 	sllx	%g4, C_AFSR_WDU_SHIFT, %g4
-	btst	%g4, %g3		! WDU in original or current AFSR?
+	btst	%g4, %g3		/* WDU in original or current AFSR? */
 	bnz	%xcc, fecc_tl1_err
 	  nop
 
@@ -716,6 +720,25 @@ skip_traptrace:
 	 * it up and log it.  %g1 must point to the ch_err_tl1_data structure.
 	 * Restores the %g registers and issues retry.
 	 */
+
+#undef	CH_ERR_TL1_EXIT
+#define	CH_ERR_TL1_EXIT				\
+	CPU_INDEX(%g2, %g3);			\
+	set	ch_err_tl1_pending, %g3;	\
+	or	%g0, -1, %g4;			\
+	stb	%g4, [%g2 + %g3];		\
+	mov	1, %g2;				\
+	sll	%g2, PIL_15, %g2;		\
+	wr	%g2, SET_SOFTINT;		\
+	ldxa	[%g1 + CH_ERR_TL1_G7]%asi, %g7;	\
+	ldxa	[%g1 + CH_ERR_TL1_G6]%asi, %g6;	\
+	ldxa	[%g1 + CH_ERR_TL1_G5]%asi, %g5;	\
+	ldxa	[%g1 + CH_ERR_TL1_G4]%asi, %g4;	\
+	ldxa	[%g1 + CH_ERR_TL1_G3]%asi, %g3;	\
+	ldxa	[%g1 + CH_ERR_TL1_G2]%asi, %g2;	\
+	ldxa	[%g1 + CH_ERR_TL1_G1]%asi, %g1;	\
+	retry
+
 	CH_ERR_TL1_EXIT;
 	/*
 	 * Establish panic exit label.
@@ -740,14 +763,14 @@ skip_traptrace:
 
 
 	ENTRY(get_mcu_ctl_reg1)
-	ldxa	[%g0]ASI_MCU_CTRL, %o0	! MCU control reg1 is at offset 0
+	ldxa	[%g0]ASI_MCU_CTRL, %o0	/* MCU control reg1 is at offset 0 */
 	retl
 	nop
 	SET_SIZE(get_mcu_ctl_reg1)
 
 
 	ENTRY(set_mcu_ctl_reg1)
-	stxa	%o0, [%g0]ASI_MCU_CTRL	! MCU control reg1 is at offset 0
+	stxa	%o0, [%g0]ASI_MCU_CTRL	/* MCU control reg1 is at offset 0 */
 	membar	#Sync
 	retl
 	nop
@@ -779,7 +802,7 @@ skip_traptrace:
 	ENTRY(scrubphys)
 	rdpr	%pstate, %o4
 	andn	%o4, PSTATE_IE | PSTATE_AM, %o5
-	wrpr	%o5, %g0, %pstate	! clear IE, AM bits
+	wrpr	%o5, %g0, %pstate	/* clear IE, AM bits */
 
 #if defined(JALAPENO) && defined(JALAPENO_ERRATA_85)
 	CHK_JP_ERRATA85_ENABLED(%g1, scrubphys_1);
@@ -797,10 +820,10 @@ scrubphys_1:
 scrubphys_2:
 #endif	/* JALAPENO && JALAPENO_ERRATA_85 */
 
-	wrpr	%g0, %o4, %pstate	! restore earlier pstate register value
+	wrpr	%g0, %o4, %pstate	/* restore earlier pstate register value */
 
 	retl
-	membar	#Sync			! move the data out of the load buffer
+	membar	#Sync			/* move the data out of the load buffer */
 	SET_SIZE(scrubphys)
 
 /*
@@ -834,7 +857,7 @@ scrubphys_2:
 	subcc	%o2, 8, %o2
 	ldxa	[%g1 + %o2]ASI_MEM, %g2
 	bge	1b
-	  stxa	%g2, [%g1 + %o2]ASI_MEM
+	stxa	%g2, [%g1 + %o2]ASI_MEM
 
 	/* now overwrite the bad data */
 	setx	0xbadecc00badecc01, %g1, %g2
@@ -869,7 +892,7 @@ clearphys_2:
 
 	/* return and re-enable IE and AM */
 	retl
-	  wrpr	%g0, %o4, %pstate
+	wrpr	%g0, %o4, %pstate
 	SET_SIZE(clearphys)
 
 
@@ -897,7 +920,7 @@ ecache_flush_line_2:
 #endif	/* JALAPENO && JALAPENO_ERRATA_85 */
 
 	retl
-	  nop
+	nop
 	SET_SIZE(ecache_flush_line)
 
 
@@ -909,21 +932,21 @@ ecache_flush_line_2:
 
 #define	VIS_BLOCKSIZE	64
 
-	.seg    ".data"
-	.align  VIS_BLOCKSIZE
-	.type   sync_buf, #object
+	.section	.data
+	.balign		VIS_BLOCKSIZE
+	.type		sync_buf, #object
 sync_buf:
-	.skip   VIS_BLOCKSIZE
-	.size   sync_buf, VIS_BLOCKSIZE
+	.skip	VIS_BLOCKSIZE
+	.size	sync_buf, VIS_BLOCKSIZE
 
 	ENTRY(jbus_stst_order)
 	set	sync_buf, %o1
 
-	rd	%fprs, %o2			! %o2 = saved fprs
+	rd	%fprs, %o2			/* %o2 = saved fprs */
 	or	%o2, FPRS_FEF, %o3
-	wr	%g0, %o3, %fprs			! make sure fp is enabled
-	stda    %d0, [%o1]ASI_BLK_COMMIT_P
-	wr	%o2, 0, %fprs			! restore fprs
+	wr	%g0, %o3, %fprs			/* make sure fp is enabled */
+	stda	%d0, [%o1]ASI_BLK_COMMIT_P
+	wr	%o2, 0, %fprs			/* restore fprs */
 
 	retl
 	membar  #Sync

@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_connect.s"
+	.file	"_so_connect.S"
 
 /* C library -- __so_connect						*/
 /* int __so_connect(int sock, struct sockaddr *addr, int addrlen, int vers) */

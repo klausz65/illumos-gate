@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"pollsys.s"
+	.file	"pollsys.S"
 
 /*
  * C library -- __pollsys

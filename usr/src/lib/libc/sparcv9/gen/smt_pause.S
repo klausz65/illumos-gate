@@ -22,7 +22,7 @@
  * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
-	.file	"smt_pause.s"
+	.file	"smt_pause.S"
 
 #include <sys/asm_linkage.h>
 #include <../assym.h>
@@ -42,13 +42,13 @@ smt_pause(void)
 #define	BANKS	(4 * 64)
 	ENTRY(smt_pause)
 	save %sp, -SA(MINFRAME+BANKS), %sp
-	ld      [%g7 + UL_LWPID], %i3   ! curthread->ul_lwpid
+	ld	[%g7 + UL_LWPID], %i3	/* curthread->ul_lwpid */
 	add	%fp, STACK_BIAS-BANKS, %i0
-	and     %i3, 0x3, %i2           ! save last 2 bits
-	sllx    %i2, 0x6, %i1           ! pick a slot
-	add     %i1, %i0, %o0
-	casx    [%o0], %g0, %g0
-	casx    [%o0], %g0, %g0
+	and	%i3, 0x3, %i2		/* save last 2 bits */
+	sllx	%i2, 0x6, %i1		/* pick a slot */
+	add	%i1, %i0, %o0
+	casx	[%o0], %g0, %g0
+	casx	[%o0], %g0, %g0
 	ret
 	restore
 	SET_SIZE(smt_pause)

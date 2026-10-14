@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"write.s"
+	.file	"write.S"
 
 /* C library -- write						*/
 /* ssize_t __write(int fildes, const void *buf, size_t nbyte);	*/

@@ -23,7 +23,6 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
 /*
  * Hypervisor calls called by niu leaf driver.
  */
@@ -31,6 +30,9 @@
 #include <sys/asm_linkage.h>
 #include <sys/hypervisor_api.h>
 #include <sys/nxge/nxge_impl.h>
+
+	/* GNU assembler */
+	.register	%g2, #scratch
 
 #if defined(sun4v)
 

@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"setjmp.s"
+	.file	"setjmp.S"
 
 #include <sys/asm_linkage.h>
 
@@ -37,8 +37,8 @@
 #include <../assym.h>
 #include <sys/trap.h>
 
-JB_FLAGS	= (0*8)	! offsets in jmpbuf (see siglongjmp.c)
-JB_SP		= (1*8)	! words 5 through 11 are unused!
+JB_FLAGS	= (0*8)	/* offsets in jmpbuf (see siglongjmp.c) */
+JB_SP		= (1*8)	/* words 5 through 11 are unused! */
 JB_PC		= (2*8)
 JB_FP		= (3*8)
 JB_I7		= (4*8)
@@ -54,18 +54,18 @@ JB_CLEARLINK	= 0x10
  */
 	ENTRY(setjmp)
 	clr	%o2
-	ldx	[%g7 + UL_SIGLINK], %o1	! are we in a signal context?
+	ldx	[%g7 + UL_SIGLINK], %o1	/* are we in a signal context? */
 	tst	%o1
 	be,a,pt	%xcc, 1f
-	mov	JB_CLEARLINK, %o2	! no, tell longjmp to clear ul_siglink
+	mov	JB_CLEARLINK, %o2	/* no, tell longjmp to clear ul_siglink */
 1:	stx	%o2, [%o0 + JB_FLAGS]
-	stx	%sp, [%o0 + JB_SP]	! save caller's sp
-	add	%o7, 8, %o1		! compute return pc
-	stx	%o1, [%o0 + JB_PC]	! save pc
-	stx	%fp, [%o0 + JB_FP]	! save fp
-	stx	%i7, [%o0 + JB_I7]	! save %i7
+	stx	%sp, [%o0 + JB_SP]	/* save caller's sp */
+	add	%o7, 8, %o1		/* compute return pc */
+	stx	%o1, [%o0 + JB_PC]	/* save pc */
+	stx	%fp, [%o0 + JB_FP]	/* save fp */
+	stx	%i7, [%o0 + JB_I7]	/* save %i7 */
 	retl
-	clr	%o0			! return (0)
+	clr	%o0			/* return (0) */
 
 	SET_SIZE(setjmp)
 
@@ -80,16 +80,16 @@ JB_CLEARLINK	= 0x10
  * will function correctly.
  *
  * sp, fp, and %i7, the caller's return address, are all restored
- * to the values they had at the time of the call to setjmp().  All
+ * to the values they had at the time of the call to setjmp(). All
  * other locals, ins and outs are set to potentially random values
- * (as per the man page).  This is sufficient to permit the correct
+ * (as per the man page). This is sufficient to permit the correct
  * operation of normal code.
  *
- * Actually, the above description is not quite correct.  If the routine
+ * Actually, the above description is not quite correct. If the routine
  * that called setjmp() has not altered the sp value of their frame we
  * will restore the remaining locals and ins to the values these
  * registers had in the this frame at the time of the call to longjmp()
- * (not setjmp()!).  This is intended to help compilers, typically not
+ * (not setjmp()!). This is intended to help compilers, typically not
  * C compilers, that have some registers assigned to fixed purposes,
  * and that only alter the values of these registers on function entry
  * and exit.
@@ -103,9 +103,9 @@ JB_CLEARLINK	= 0x10
  * routines that call setjmp() must not be flat.
  */
 	ENTRY(longjmp)
-	ta	ST_FLUSH_WINDOWS	! flush all reg windows to the stack.
-	ldx	[%o0 + JB_SP], %o2	! sp in %o2 until safe to puke there
-	ldx	[%o2 + STACK_BIAS], %l0	! restore locals and ins if we can
+	ta	ST_FLUSH_WINDOWS	/* flush all reg windows to the stack. */
+	ldx	[%o0 + JB_SP], %o2	/* sp in %o2 until safe to puke there */
+	ldx	[%o2 + STACK_BIAS], %l0	/* restore locals and ins if we can */
 	ldx	[%o2 + (1*8) + STACK_BIAS], %l1
 	ldx	[%o2 + (2*8) + STACK_BIAS], %l2
 	ldx	[%o2 + (3*8) + STACK_BIAS], %l3
@@ -119,21 +119,21 @@ JB_CLEARLINK	= 0x10
 	ldx	[%o2 + (11*8) + STACK_BIAS], %i3
 	ldx	[%o2 + (12*8) + STACK_BIAS], %i4
 	ldx	[%o2 + (13*8) + STACK_BIAS], %i5
-	ldx	[%o0 + JB_FP], %fp	! restore fp
-	mov	%o2, %sp		! restore sp
+	ldx	[%o0 + JB_FP], %fp	/* restore fp */
+	mov	%o2, %sp		/* restore sp */
 	ldx	[%o0 + JB_FLAGS], %o2
-	btst	JB_CLEARLINK, %o2	! test JB_CLEARLINK flag
+	btst	JB_CLEARLINK, %o2	/* test JB_CLEARLINK flag */
 	bne,a,pt %xcc, 1f
-	clrx	[%g7 + UL_SIGLINK]	! if set, clear ul_siglink
+	clrx	[%g7 + UL_SIGLINK]	/* if set, clear ul_siglink */
 1:
-	ldx	[%o0 + JB_I7], %i7	! restore %i7
-	ldx	[%o0 + JB_PC], %o3	! get new return pc
-	tst	%o1			! is return value 0?
-	bnz	1f			! no - leave it alone
-	sub	%o3, 8, %o7		! normalize return (for adb) (dly slot)
-	mov	1, %o1			! yes - set it to one
+	ldx	[%o0 + JB_I7], %i7	/* restore %i7 */
+	ldx	[%o0 + JB_PC], %o3	/* get new return pc */
+	tst	%o1			/* is return value 0? */
+	bnz	1f			/* no - leave it alone */
+	sub	%o3, 8, %o7		/* normalize return (for adb) (dly slot) */
+	mov	1, %o1			/* yes - set it to one */
 1:
 	retl
-	mov	%o1, %o0		! return (val)
+	mov	%o1, %o0		/* return (val) */
 
 	SET_SIZE(longjmp)

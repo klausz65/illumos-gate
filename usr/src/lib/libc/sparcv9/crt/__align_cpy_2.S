@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"__align_cpy_2.s"
+	.file	"__align_cpy_2.S"
 
 /*
  * __align_cpy_2(s1, s2, len)
@@ -40,33 +40,33 @@
 
 	ENTRY(__align_cpy_2)
 	cmp	%o0, %o1
-	be,pn	%xcc, .done		! Identical addresses--done.
-	mov	%o0, %g5		! save des address for return val
-	cmp	%o2, 18			! for small counts copy bytes
+	be,pn	%xcc, .done		/* Identical addresses--done. */
+	mov	%o0, %g5		/* save des address for return val */
+	cmp	%o2, 18			/* for small counts copy bytes */
 	ble,pn	%xcc, .dbytecp
-	andcc	%o1, 6, %o5		! is src 8-byte aligned
+	andcc	%o1, 6, %o5		/* is src 8-byte aligned */
 	bz,pn	%xcc, .aldst
-	cmp	%o5, 4			! is src 4-byte aligned
+	cmp	%o5, 4			/* is src 4-byte aligned */
 	be,pt	%xcc, .s2algn
-	cmp	%o5, 6			! src is 2-byte aligned
-.s1algn:lduh	[%o1], %o3		! move 2 or 6 bytes to align it
+	cmp	%o5, 6			/* src is 2-byte aligned */
+.s1algn:lduh	[%o1], %o3		/* move 2 or 6 bytes to align it */
 	inc	2, %o1
-	sth	%o3, [%g5]		! move 2 bytes to align src
+	sth	%o3, [%g5]		/* move 2 bytes to align src */
 	inc	2, %g5
 	bne,pt	%xcc, .s2algn
 	dec	2, %o2
-	b	.ald			! now go align dest
+	b	.ald			/* now go align dest */
 	andcc	%g5, 6, %o5
 
-.s2algn:lduw	[%o1], %o3		! know src is 4-byte aligned
+.s2algn:lduw	[%o1], %o3		/* know src is 4-byte aligned */
 	inc	4, %o1
 	srlx	%o3, 16, %o4
-	sth	%o4, [%g5]		! have to do 2-bytes,
-	sth	%o3, [%g5 + 2]		! don't know dst alignment
+	sth	%o4, [%g5]		/* have to do 2-bytes, */
+	sth	%o3, [%g5 + 2]		/* don't know dst alignment */
 	inc	4, %g5
 	dec	4, %o2
 
-.aldst:	andcc	%g5, 6, %o5		! align the destination address
+.aldst:	andcc	%g5, 6, %o5		/* align the destination address */
 .ald:	bz,pn	%xcc, .w4cp
 	cmp	%o5, 4
 	bz,pn	%xcc, .w2cp
@@ -78,18 +78,18 @@
 	bne,pt	%xcc, .w1cp
 	inc	2, %g5
 	dec	2, %o2
-	andn	%o2, 6, %o3		! o3 is aligned word count
-	sub	%o1, %g5, %o1		! g5 gets the difference
+	andn	%o2, 6, %o3		/* o3 is aligned word count */
+	sub	%o1, %g5, %o1		/* g5 gets the difference */
 
-1:	sllx	%o4, 16, %g1		! save residual bytes
+1:	sllx	%o4, 16, %g1		/* save residual bytes */
 	ldx	[%o1+%g5], %o4
 	deccc	8, %o3
-	srlx	%o4, 48, %o5		! merge with residual
+	srlx	%o4, 48, %o5		/* merge with residual */
 	or	%o5, %g1, %g1
 	stx	%g1, [%g5]
 	bnz,pt	%xcc, 1b
 	inc	8, %g5
-	sub	%o1, 6, %o1		! used two bytes of last word read
+	sub	%o1, 6, %o1		/* used two bytes of last word read */
 	b	7f
 	and	%o2, 6, %o2
 
@@ -98,17 +98,17 @@
 	inc	4, %g5
 	dec	6, %o2
 	andn	%o2, 6, %o3
-	sub	%o1, %g5, %o1		! g5 gets the difference
+	sub	%o1, %g5, %o1		/* g5 gets the difference */
 
-2:	sllx	%o4, 48, %g1		! save residual bytes
+2:	sllx	%o4, 48, %g1		/* save residual bytes */
 	ldx	[%o1+%g5], %o4
 	deccc	8, %o3
-	srlx	%o4, 16, %o5		! merge with residual
+	srlx	%o4, 16, %o5		/* merge with residual */
 	or	%o5, %g1, %g1
 	stx	%g1, [%g5]
 	bnz,pt	%xcc, 2b
 	inc	8, %g5
-	sub	%o1, 2, %o1		! used six bytes of last word read
+	sub	%o1, 2, %o1		/* used six bytes of last word read */
 	b	7f
 	and	%o2, 6, %o2
 
@@ -118,44 +118,44 @@
 	st	%o5, [%g5]
 	inc	4, %g5
 	dec	4, %o2
-	andn	%o2, 6, %o3		! o3 is aligned word count
-	sub	%o1, %g5, %o1		! g5 gets the difference
+	andn	%o2, 6, %o3		/* o3 is aligned word count */
+	sub	%o1, %g5, %o1		/* g5 gets the difference */
 
-3:	sllx	%o4, 32, %g1		! save residual bytes
+3:	sllx	%o4, 32, %g1		/* save residual bytes */
 	ldx	[%o1+%g5], %o4
 	deccc	8, %o3
-	srlx	%o4, 32, %o5		! merge with residual
+	srlx	%o4, 32, %o5		/* merge with residual */
 	or	%o5, %g1, %g1
 	stx	%g1, [%g5]
 	bnz,pt	%xcc, 3b
 	inc	8, %g5
-	sub	%o1, 4, %o1		! used four bytes of last word read
+	sub	%o1, 4, %o1		/* used four bytes of last word read */
 	b	7f
 	and	%o2, 6, %o2
 
-.w4cp:	andn	%o2, 6, %o3		! o3 is aligned word count
-	sub	%o1, %g5, %o1		! g5 gets the difference
+.w4cp:	andn	%o2, 6, %o3		/* o3 is aligned word count */
+	sub	%o1, %g5, %o1		/* g5 gets the difference */
 
-1:	ldx	[%o1+%g5], %o4		! read from address
-	deccc	8, %o3			! decrement count
-	stx	%o4, [%g5]		! write at destination address
+1:	ldx	[%o1+%g5], %o4		/* read from address */
+	deccc	8, %o3			/* decrement count */
+	stx	%o4, [%g5]		/* write at destination address */
 	bg,pt	%xcc, 1b
-	inc	8, %g5			! increment to address
+	inc	8, %g5			/* increment to address */
 	b	7f
-	and	%o2, 6, %o2		! number of leftover bytes, if any
+	and	%o2, 6, %o2		/* number of leftover bytes, if any */
 
 	!
 	! differenced byte copy, works with any alignment
 	!
 .dbytecp:
 	b	7f
-	sub	%o1, %g5, %o1		! g5 gets the difference
+	sub	%o1, %g5, %o1		/* g5 gets the difference */
 
-4:	sth	%o4, [%g5]		! write to address
-	inc	2, %g5			! inc to address
-7:	deccc	2, %o2			! decrement count
-	bge,a,pt %xcc,4b		! loop till done
-	lduh	[%o1+%g5], %o4		! read from address
+4:	sth	%o4, [%g5]		/* write to address */
+	inc	2, %g5			/* inc to address */
+7:	deccc	2, %o2			/* decrement count */
+	bge,a,pt %xcc,4b		/* loop till done */
+	lduh	[%o1+%g5], %o4		/* read from address */
 .done:
 	retl
 	nop

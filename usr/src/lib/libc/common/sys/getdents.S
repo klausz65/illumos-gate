@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"getdents.s"
+	.file	"getdents.S"
 
 /* C library -- getdents					*/
 /* int getdents (int fildes, struct dirent *buf, size_t count)	*/

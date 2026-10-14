@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"fstatfs.s"
+	.file	"fstatfs.S"
 
 /* C library -- fstatfs						*/
 /* int fstatfs(int fildes, struct statfs *buf, int len,

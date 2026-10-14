@@ -23,7 +23,7 @@
  * All rights reserved.
  */
 
-	.file	"sync_instruction_memory.s"
+	.file	"sync_instruction_memory.S"
 
 #include <sys/asm_linkage.h>
 
@@ -33,19 +33,6 @@
  * Make the memory at {addr, addr+len} valid for instruction execution.
  */
 
-#ifdef lint
-#define	nop
-void
-sync_instruction_memory(caddr_t addr, size_t len)
-{
-	caddr_t end = addr + len;
-	caddr_t start = addr & ~7;
-	for (; start < end; start += 8)
-		flush(start);
-	nop; nop; nop; nop; nop;
-	return;
-}
-#else
 	ENTRY(sync_instruction_memory)
 	add	%o0, %o1, %o2
 	andn	%o0, 7, %o0
@@ -68,4 +55,3 @@ sync_instruction_memory(caddr_t addr, size_t len)
 	retl
 	nop
 	SET_SIZE(nop)
-#endif

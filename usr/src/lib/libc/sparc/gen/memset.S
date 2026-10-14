@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"memset.s"
+	.file	"memset.S"
 
 /*
  * char *memset(sp, c, n)
@@ -53,34 +53,34 @@
 	ANSI_PRAGMA_WEAK(memset,function)
 
 	ENTRY(memset)
-	mov	%o0, %o5		! copy sp before using it
-	cmp	%o2, 7			! if small counts, just write bytes
+	mov	%o0, %o5		/* copy sp before using it */
+	cmp	%o2, 7			/* if small counts, just write bytes */
 	blu	.wrchar
-	.empty				! following lable is ok in delay slot
+	.empty				/* following lable is ok in delay slot */
 
-.walign:btst	3, %o5			! if bigger, align to 4 bytes
+.walign:btst	3, %o5			/* if bigger, align to 4 bytes */
 	bz	.wrword
-	andn	%o2, 3, %o3		! create word sized count in %o3
-	dec	%o2			! decrement count
-	stb	%o1, [%o5]		! clear a byte
+	andn	%o2, 3, %o3		/* create word sized count in %o3 */
+	dec	%o2			/* decrement count */
+	stb	%o1, [%o5]		/* clear a byte */
 	b	.walign
-	inc	%o5			! next byte
+	inc	%o5			/* next byte */
 
-.wrword:and	%o1, 0xff, %o1		! generate a word filled with c
+.wrword:and	%o1, 0xff, %o1		/* generate a word filled with c */
 	sll	%o1, 8, %o4
 	or 	%o1, %o4, %o1
 	sll	%o1, 16, %o4
 	or	%o1, %o4, %o1
-1:	st	%o1, [%o5]		! word writing loop
+1:	st	%o1, [%o5]		/* word writing loop */
 	subcc	%o3, 4, %o3
 	bnz	1b
 	inc	4, %o5
 
-	and	%o2, 3, %o2		! leftover count, if any
-.wrchar:deccc	%o2			! byte clearing loop
+	and	%o2, 3, %o2		/* leftover count, if any */
+.wrchar:deccc	%o2			/* byte clearing loop */
 	inc	%o5
 	bgeu,a	.wrchar
-	stb	%o1, [%o5 + -1]		! we've already incremented the address
+	stb	%o1, [%o5 + -1]		/* we've already incremented the address */
 
 	retl
 	nop

@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_getsockname.s"
+	.file	"_so_getsockname.S"
 
 /* C library -- _so_getsockname						*/
 /* int _so_getsockname (int fildes, struct sockaddr *name, int namelen,	*/

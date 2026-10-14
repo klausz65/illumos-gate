@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"statvfs.s"
+	.file	"statvfs.S"
 
 /* C library -- statvfs						*/
 /* int statvfs(const char *path, struct statvfs *statbuf)	*/

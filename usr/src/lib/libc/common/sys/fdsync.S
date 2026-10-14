@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"fdsync.s"
+	.file	"fdsync.S"
 
 /*
  * Underlying function for the functions fsync(3C), fdatasync(3C), and

@@ -75,20 +75,20 @@ struct hv_tsb_block {
 #define	SET_SECCTX(cnum, is_shctx, tmp1, tmp2, label)			\
 	mov	MMU_SCONTEXT, tmp1;					\
 	movrnz	is_shctx, MMU_SCONTEXT1, tmp1;				\
-	stxa    cnum, [tmp1]ASI_MMU_CTX;  /* set 2nd ctx reg. */	\
-	membar  #Sync;							\
+	stxa	cnum, [tmp1]ASI_MMU_CTX;  /* set 2nd ctx reg. */	\
+	membar	#Sync;							\
 
 /*
  * This macro is used in the MMU code to check if TL should be lowered from
- * 2 to 1 to pop trapstat's state.  See the block comment in trapstat.c
+ * 2 to 1 to pop trapstat's state. See the block comment in trapstat.c
  * for details.
  */
 
 #define	TSTAT_CHECK_TL1(label, scr1, scr2)			\
 	rdpr	%tpc, scr1;					\
 	sethi	%hi(KERNELBASE), scr2;				\
-	or	scr2, %lo(KERNELBASE), scr2; 			\
-	cmp	scr1, scr2; 					\
+	or	scr2, %lo(KERNELBASE), scr2;			\
+	cmp	scr1, scr2;					\
 	bgeu	%xcc, 9f;					\
 	nop;							\
 	wrpr	%g0, 1, %gl;					\
@@ -119,7 +119,7 @@ struct hv_tsb_block {
 	wrpr	%g0, val, %gl
 
 /*
- * Get pseudo-tagacc value and context from the MMU fault area.  Pseudo-tagacc
+ * Get pseudo-tagacc value and context from the MMU fault area. Pseudo-tagacc
  * is the faulting virtual address OR'd with 0 for KCONTEXT, INVALID_CONTEXT
  * (1) for invalid context, and USER_CONTEXT (2) for user context.
  *
@@ -206,7 +206,7 @@ struct hv_tsb_block {
 	ldx	[scr1 + MMFSA_D_ADDR], daddr
 
 /*
- * Get pseudo-tagacc value and context from the MMU fault area.  Pseudo-tagacc
+ * Get pseudo-tagacc value and context from the MMU fault area. Pseudo-tagacc
  * is the faulting virtual address OR'd with 0 for KCONTEXT, INVALID_CONTEXT
  * (1) for invalid context, and USER_CONTEXT (2) for user context.
  *
@@ -246,7 +246,7 @@ struct hv_tsb_block {
 	ta	MMU_MAP_ADDR;				\
 	/* BEGIN CSTYLED */				\
 	brnz,a,pn %o0, ptl1_panic;			\
-	  mov	PTL1_BAD_HCALL, %g1;			\
+	mov	PTL1_BAD_HCALL, %g1;			\
 	/* END CSTYLED */				\
 	mov	scr1, %o0;				\
 	mov	scr2, %o1;				\
@@ -273,7 +273,7 @@ struct hv_tsb_block {
 	ta	MMU_MAP_ADDR;				\
 	/* BEGIN CSTYLED */				\
 	brnz,a,pn %o0, ptl1_panic;			\
-	  mov	PTL1_BAD_HCALL, %g1;			\
+	mov	PTL1_BAD_HCALL, %g1;			\
 	/* END CSTYLED */				\
 	mov	scr1, %o0;				\
 	mov	scr2, %o1;				\
@@ -297,7 +297,7 @@ struct hv_tsb_block {
 	add	scr2, scr1, scr2;		/* mulx 3 */		\
 	add	scr2, MMU_PAGESHIFT + TTE_PA_LSHIFT, scr3;		\
 	/* CSTYLED */							\
-	brz,pt	scr2, label##1;					\
+	brz,pt	scr2, label##1;						\
 	srlx	tte, scr3, tte;						\
 	sllx	tte, scr2, tte;						\
 	set	1, scr1;						\
@@ -327,12 +327,12 @@ label##1:
 	/* BEGIN CSTYLED */						\
 	/* check reference bit */					\
 	btst	TTE_REF_INT, tte;					\
-	bnz,pt	%xcc, label##2;	/* if ref bit set-skip ahead */	\
+	bnz,pt	%xcc, label##2;	/* if ref bit set-skip ahead */		\
 	nop;								\
 	/* update reference bit */					\
 label##1:								\
 	or	tte, TTE_REF_INT, tmp1;					\
-	casxa	[ttepa]ASI_MEM, tte, tmp1; 	/* update ref bit */	\
+	casxa	[ttepa]ASI_MEM, tte, tmp1;	/* update ref bit */	\
 	cmp	tte, tmp1;						\
 	bne,a,pn %xcc, label##1;					\
 	ldxa	[ttepa]ASI_MEM, tte;	/* MMU_READTTE through pa */	\
@@ -361,16 +361,16 @@ label##2:								\
 	/* check reference bit */					\
 	btst	TTE_WRPRM_INT, tte;					\
 	bz,pn	%xcc, exitlabel;	/* exit if wr_perm no set */	\
-	  btst	TTE_HWWR_INT, tte;					\
-	bnz,pn	%xcc, label##2;	/* nothing to do */		\
-	  nop;								\
+	btst	TTE_HWWR_INT, tte;					\
+	bnz,pn	%xcc, label##2;	/* nothing to do */			\
+	nop;								\
 	/* update reference bit */					\
 label##1:								\
 	or	tte, TTE_HWWR_INT | TTE_REF_INT, tmp1;			\
 	casxa	[ttepa]ASI_MEM, tte, tmp1; /* update ref/mod bit */	\
 	cmp	tte, tmp1;						\
 	bne,a,pn %xcc, label##1;					\
-	  ldxa	[ttepa]ASI_MEM, tte;	/* MMU_READTTE through pa */	\
+	ldxa	[ttepa]ASI_MEM, tte;	/* MMU_READTTE through pa */	\
 	or	tte, TTE_HWWR_INT | TTE_REF_INT, tte;			\
 label##2:								\
 	/* END CSTYLED */
@@ -408,7 +408,7 @@ label##2:								\
 	mov	TSB_ENTRIES(0), tmp1	/* nentries in TSB size 0 */	;\
 	sllx	tmp1, tmp2, tmp1	/* tmp1 = nentries in TSB */	;\
 	sub	tmp1, 1, tmp1		/* mask = nentries - 1 */	;\
-	srlx	tagacc, MMU_PAGESHIFT, tmp2 				;\
+	srlx	tagacc, MMU_PAGESHIFT, tmp2				;\
 	and	tmp2, tmp1, tmp1	/* tsbent = virtpage & mask */	;\
 	sllx	tmp1, TSB_ENTRY_SHIFT, tmp1	/* entry num --> ptr */	;\
 	add	tsbe, tmp1, tsbe	/* add entry offset to TSB base */ ;\
@@ -432,10 +432,10 @@ label##2:								\
 	/* BEGIN CSTYLED */						\
 	ldda	[tsbe_ptr]ASI_QUAD_LDD_PHYS, %g4 /* g4 = tag, g5 = data */ ;\
 	cmp	%g4, vpg_4m		/* compare tag w/ TSB */	;\
-	bne,pn	%xcc, label##1	/* branch if !match */		;\
-	  nop								;\
-	brgez,pn %g5, label##1					;\
-	  nop								;\
+	bne,pn	%xcc, label##1	/* branch if !match */			;\
+	nop								;\
+	brgez,pn %g5, label##1						;\
+	nop								;\
 	TT_TRACE(trace_tsbhit)						;\
 	DTLB_STUFF(%g5, %g1, %g2, %g3, %g4)				;\
 	/* trapstat expects tte in %g5 */				;\
@@ -452,13 +452,13 @@ label##1:								\
 	/* BEGIN CSTYLED */						\
 	ldda	[tsbe_ptr]ASI_QUAD_LDD_PHYS, %g4 /* g4 = tag, g5 = data */ ;\
 	cmp	%g4, vpg_4m		/* compare tag w/ TSB */	;\
-	bne,pn	%xcc, label##1	/* branch if !match */		;\
-	  nop								;\
-	brgez,pn %g5, label##1					;\
-	  nop								;\
+	bne,pn	%xcc, label##1	/* branch if !match */			;\
+	nop								;\
+	brgez,pn %g5, label##1						;\
+	nop								;\
 	andcc	%g5, TTE_EXECPRM_INT, %g0  /* check execute bit */	;\
 	bz,pn	%icc, exec_fault					;\
-	  nop								;\
+	nop								;\
 	TT_TRACE(trace_tsbhit)						;\
 	ITLB_STUFF(%g5, %g1, %g2, %g3, %g4)				;\
 	retry				/* retry faulted instruction */	;\
@@ -479,10 +479,10 @@ label##1:								\
 	ldda	[tsbe_ptr]ASI_QUAD_LDD_PHYS, %g4  /* g4 = tag, g5 = data */ ;\
 	/* since we are looking at 2nd tsb, if it's valid, it must be 4M */ ;\
 	cmp	%g4, vpg_4m						;\
-	bne,pn	%xcc, label##1					;\
-	  nop								;\
-	brgez,pn %g5, label##1					;\
-	  nop								;\
+	bne,pn	%xcc, label##1						;\
+	nop								;\
+	brgez,pn %g5, label##1						;\
+	nop								;\
 	mov	tsbe_ptr, %g1		/* trace_tsbhit wants ptr in %g1 */ ;\
 	TT_TRACE(trace_tsbhit)						;\
 	DTLB_STUFF(%g5, %g1, %g2, %g3, %g4)				;\
@@ -495,19 +495,19 @@ label##1:								\
 /*
  * Same as above, with the following additions:
  * If the TTE found is not executable, branch directly
- * to exec_fault.  If a TSB miss, branch to TSB miss handler.
+ * to exec_fault. If a TSB miss, branch to TSB miss handler.
  */
 #define	PROBE_2ND_ITSB(tsbe_ptr, vpg_4m)				\
 	/* BEGIN CSTYLED */						\
 	ldda	[tsbe_ptr]ASI_QUAD_LDD_PHYS, %g4 /* g4 = tag, g5 = data */ ;\
 	cmp	%g4, vpg_4m		/* compare tag w/ TSB */	;\
 	bne,pn	%xcc, sfmmu_tsb_miss_tt	/* branch if !match */		;\
-	  nop								;\
+	nop								;\
 	brgez,pn %g5, sfmmu_tsb_miss_tt					;\
-	  nop								;\
+	nop								;\
 	andcc	%g5, TTE_EXECPRM_INT, %g0  /* check execute bit */	;\
 	bz,pn	%icc, exec_fault					;\
-	  mov	tsbe_ptr, %g1		/* trap trace wants ptr in %g1 */ ;\
+	mov	tsbe_ptr, %g1		/* trap trace wants ptr in %g1 */ ;\
 	TT_TRACE(trace_tsbhit)						;\
 	ITLB_STUFF(%g5, %g1, %g2, %g3, %g4)				;\
 	retry				/* retry faulted instruction */	\
@@ -524,12 +524,12 @@ label##1:								\
 	mov	MMU_SCONTEXT1, tmp					;\
 	ldxa	[tmp]ASI_MMU_CTX, ctx1					;\
 	MMU_FAULT_STATUS_AREA(tmp)					;\
-	cmp     traptype, FAST_IMMU_MISS_TT				;\
+	cmp	traptype, FAST_IMMU_MISS_TT				;\
+	be,a,pn	%icc, label						;\
+	stx	ctx1, [tmp + MMFSA_I_CTX]				;\
+	cmp	traptype, T_INSTR_MMU_MISS				;\
 	be,a,pn %icc, label						;\
-	  stx	ctx1, [tmp + MMFSA_I_CTX] 				;\
-	cmp     traptype, T_INSTR_MMU_MISS				;\
-	be,a,pn %icc, label						;\
-	  stx	ctx1, [tmp + MMFSA_I_CTX]				;\
+	stx	ctx1, [tmp + MMFSA_I_CTX]				;\
 	stx	ctx1, [tmp + MMFSA_D_CTX]				;\
 label:
 	/* END CSTYLED */

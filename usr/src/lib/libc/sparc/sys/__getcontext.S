@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"__getcontext.s"
+	.file	"__getcontext.S"
 
 /*
  * __getcontext() must be implemented in assembler, as opposed

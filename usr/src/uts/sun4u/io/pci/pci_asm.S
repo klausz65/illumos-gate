@@ -35,6 +35,10 @@
 
 /*LINTLIBRARY*/
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+
+
 ! pci_do_phys_peek: Do physical address read.
 !
 ! %o0 is size in bytes - Must be 8, 4, 2 or 1.  Invalid sizes default to 1.
@@ -51,28 +55,28 @@
 
 	ENTRY(pci_do_phys_peek)
 
-	rdpr	%pstate, %o4		! Disable interrupts if not already
-	andcc	%o4, PSTATE_IE, %g2	! Save original state first
+	rdpr	%pstate, %o4		/* Disable interrupts if not already */
+	andcc	%o4, PSTATE_IE, %g2	/* Save original state first */
 	bz	.peek_ints_disabled
 	nop
 	wrpr	%o4, PSTATE_IE, %pstate
 .peek_ints_disabled:
 
-	tst	%o3			! Set up %asi with modifier for
-	movz	%xcc, ASI_IOL, %g1	! Big/little endian physical space
+	tst	%o3			/* Set up %asi with modifier for */
+	movz	%xcc, ASI_IOL, %g1	/* Big/little endian physical space */
 	movnz	%xcc, ASI_IO, %g1
-	mov	%g1, %asi
+	wr	%g1, %g0, %asi
 
-	cmp	%o0, 8			! 64-bit?
+	cmp	%o0, 8			/* 64-bit? */
 	bne	.peek_int
-	cmp	%o0, 4			! 32-bit?
+	cmp	%o0, 4			/* 32-bit? */
 	ldxa	[%o1]%asi, %g1
 	ba	.peekdone
 	stx	%g1, [%o2]
 
 .peek_int:
 	bne	.peek_half
-	cmp	%o0, 2			! 16-bit?
+	cmp	%o0, 2			/* 16-bit? */
 	lduwa	[%o1]%asi, %g1
 	ba	.peekdone
 	stuw	%g1, [%o2]
@@ -85,13 +89,13 @@
 	stuh	%g1, [%o2]
 
 .peek_byte:
-	lduba	[%o1]%asi, %g1	! 8-bit!
+	lduba	[%o1]%asi, %g1		/* 8-bit! */
 	stub	%g1, [%o2]
 
 .peekdone:
-	membar	#Sync			! Make sure the loads take
-	tst	%g2			! No need to reenable interrupts
-	bz	.peek_ints_done		! 	if not enabled at entry
+	membar	#Sync			/* Make sure the loads take */
+	tst	%g2			/* No need to reenable interrupts */
+	bz	.peek_ints_done		/* 	if not enabled at entry */
 	rdpr	%pstate, %o4
 	wrpr	%o4, PSTATE_IE, %pstate
 .peek_ints_done:
@@ -116,20 +120,20 @@
 
 	tst	%o3
 	bz	.poke_asi_set
-	mov	ASI_IOL, %asi
-	mov	ASI_IO, %asi
+	wr	%g0, ASI_IOL, %asi
+	wr	%g0, ASI_IO, %asi
 .poke_asi_set:
 
-	cmp	%o0, 8			! 64 bit?
+	cmp	%o0, 8			/* 64 bit? */
 	bne	.poke_int
-	cmp	%o0, 4			! 32-bit?
+	cmp	%o0, 4			/* 32-bit? */
 	ldx	[%o2], %g1
 	ba	.pokedone
 	stxa	%g1, [%o1]%asi
 
 .poke_int:
 	bne	.poke_half
-	cmp	%o0, 2			! 16-bit?
+	cmp	%o0, 2			/* 16-bit? */
 	lduw	[%o2], %g1
 	ba	.pokedone
 	stuwa	%g1, [%o1]%asi
@@ -142,7 +146,7 @@
 	stuha	%g1, [%o1]%asi
 
 .poke_byte:
-	ldub	[%o2], %g1		! 8-bit!
+	ldub	[%o2], %g1		/* 8-bit! */
 	stuba	%g1, [%o1]%asi
 
 .pokedone:

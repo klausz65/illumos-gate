@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"cerror.s"
+	.file	"cerror.S"
 
 #include "SYS.h"
 

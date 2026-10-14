@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"unwind_frame.s"
+	.file	"unwind_frame.S"
 
 #include "SYS.h"
 #include <../assym.h>
@@ -43,8 +43,8 @@
 	ENTRY(_ex_unwind_local)
 	restore
 	restore
-	ba	_t_cancel		! tailcall _t_cancel(fp)
-	mov	%fp, %o0		! passing the frame pointer
+	ba	_t_cancel		/* tailcall _t_cancel(fp) */
+	mov	%fp, %o0		/* passing the frame pointer */
 	SET_SIZE(_ex_unwind_local)
 
 /*
@@ -55,14 +55,14 @@
  * restored frame, then jump to _t_cancel(fp) again from the restored frame.
  */
 	ENTRY(_ex_clnup_handler)
-	mov	%o1, %i1		! handler address -> %o1 after restore
-	restore	%o0, %g0, %o0		! handler arg -> %o0 after restore
-	stn	%o7, [%g7 + UL_UNWIND_RET]	! save caller's return address
-	jmpl	%o1, %o7		! invoke func with arg
-	nop				! and return here
-	ldn	[%g7 + UL_UNWIND_RET], %o7	! restore return address
-	ba	_t_cancel		! tailcall _t_cancel(fp)
-	mov	%fp, %o0		! passing the frame pointer
+	mov	%o1, %i1		/* handler address -> %o1 after restore */
+	restore	%o0, %g0, %o0		/* handler arg -> %o0 after restore */
+	stn	%o7, [%g7 + UL_UNWIND_RET]	/* save caller's return address */
+	jmpl	%o1, %o7		/* invoke func with arg */
+	nop				/* and return here */
+	ldn	[%g7 + UL_UNWIND_RET], %o7	/* restore return address */
+	ba	_t_cancel		/* tailcall _t_cancel(fp) */
+	mov	%fp, %o0		/* passing the frame pointer */
 	SET_SIZE(_ex_clnup_handler)
 
 /*
@@ -71,6 +71,6 @@
  * Ignore the argument; jump to _t_cancel(fp) with caller's fp
  */
 	ENTRY(_thrp_unwind)
-	ba	_t_cancel		! tailcall _t_cancel(fp)
-	mov	%fp, %o0		! passing the frame pointer
+	ba	_t_cancel		/* tailcall _t_cancel(fp) */
+	mov	%fp, %o0		/* passing the frame pointer */
 	SET_SIZE(_thrp_unwind)

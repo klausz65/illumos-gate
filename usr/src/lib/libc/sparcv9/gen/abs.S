@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"abs.s"
+	.file	"abs.S"
 
 #include "SYS.h"
 

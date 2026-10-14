@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"pause.s"
+	.file	"pause.S"
 
 /* C library - pause						*/
 /* int __pause(void);						*/

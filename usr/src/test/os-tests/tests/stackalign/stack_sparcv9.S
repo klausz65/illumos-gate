@@ -18,7 +18,7 @@
  * Get the stack at entry and call a function with it as an argument.
  */
 
-	.file	"stack_sparcv9.s"
+	.file	"stack_sparcv9.S"
 
 #include <sys/asm_linkage.h>
 
@@ -34,7 +34,7 @@
  */
 	ENTRY(get_stack_at_entry)
 	.register	%g2, #scratch
-	save    %sp, -SA(MINFRAME), %sp
+	save	%sp, -SA(MINFRAME), %sp
 	stx	%i0, [%fp + STACK_BIAS + ARGPUSHSIZE]
 	ldx	[%fp + STACK_BIAS + ARGPUSHSIZE], %g1
 	ldx	[%g1], %g1				/* func */
@@ -56,7 +56,7 @@
  * Tests alignment in section .init_array.
  */
 	ENTRY(get_stack_at_init)
-	save    %sp, -SA(MINFRAME), %sp
+	save	%sp, -SA(MINFRAME), %sp
 	call	initarray, 0
 	add	%sp, STACK_BIAS, %o0
 	ret
@@ -67,7 +67,7 @@
  * Passes the stack pointer during init to initmain() (defined elsewhere).
  * Tests alignment in section .init.
  */
-	.section ".init"
+	.section .init
 	call	initmain, 0
 	add	%sp, STACK_BIAS, %o0
 

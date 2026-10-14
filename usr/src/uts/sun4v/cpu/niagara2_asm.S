@@ -42,17 +42,17 @@
 	 * hv_niagara_getperf(uint64_t perfreg, uint64_t *datap)
 	 */
 	ENTRY(hv_niagara_getperf)
-	mov     %o1, %o4                        ! save datap
+	mov	%o1, %o4				/* save datap */
 #if defined(NIAGARA2_IMPL)
-	mov     HV_NIAGARA2_GETPERF, %o5
+	mov	HV_NIAGARA2_GETPERF, %o5
 #elif defined(VFALLS_IMPL)
 	mov	HV_VFALLS_GETPERF, %o5
 #elif defined(KT_IMPL)
 	mov	HV_KT_GETPERF, %o5
 #endif
-	ta      FAST_TRAP
-	brz,a   %o0, 1f
-	stx     %o1, [%o4]
+	ta	FAST_TRAP
+	brz,a	%o0, 1f
+	stx	%o1, [%o4]
 1:
 	retl
 	nop
@@ -63,13 +63,13 @@
 	 */
 	ENTRY(hv_niagara_setperf)
 #if defined(NIAGARA2_IMPL)
-	mov     HV_NIAGARA2_SETPERF, %o5
+	mov	HV_NIAGARA2_SETPERF, %o5
 #elif defined(VFALLS_IMPL)
-	mov     HV_VFALLS_SETPERF, %o5
+	mov	HV_VFALLS_SETPERF, %o5
 #elif defined(KT_IMPL)
-	mov     HV_KT_SETPERF, %o5
+	mov	HV_KT_SETPERF, %o5
 #endif
-	ta      FAST_TRAP
+	ta	FAST_TRAP
 	retl
 	nop
 	SET_SIZE(hv_niagara_setperf)
@@ -94,31 +94,31 @@
 
 	wr	%g0, ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
 	set	TSBTAG_INVALID, %o2
-	sllx	%o2, 32, %o2		! INV bit in upper 32 bits of the tag
+	sllx	%o2, 32, %o2		/* INV bit in upper 32 bits of the tag */
 1:
-	stxa	%o2, [%o0+0x0]%asi
-	stxa	%o2, [%o0+0x40]%asi
-	stxa	%o2, [%o0+0x80]%asi
-	stxa	%o2, [%o0+0xc0]%asi
+	stxa	%o2, [%o0+0x0] %asi
+	stxa	%o2, [%o0+0x40] %asi
+	stxa	%o2, [%o0+0x80] %asi
+	stxa	%o2, [%o0+0xc0] %asi
 
-	stxa	%o2, [%o0+0x10]%asi
-	stxa	%o2, [%o0+0x20]%asi
-	stxa	%o2, [%o0+0x30]%asi
+	stxa	%o2, [%o0+0x10] %asi
+	stxa	%o2, [%o0+0x20] %asi
+	stxa	%o2, [%o0+0x30] %asi
 
-	stxa	%o2, [%o0+0x50]%asi
-	stxa	%o2, [%o0+0x60]%asi
-	stxa	%o2, [%o0+0x70]%asi
+	stxa	%o2, [%o0+0x50] %asi
+	stxa	%o2, [%o0+0x60] %asi
+	stxa	%o2, [%o0+0x70] %asi
 
-	stxa	%o2, [%o0+0x90]%asi
-	stxa	%o2, [%o0+0xa0]%asi
-	stxa	%o2, [%o0+0xb0]%asi
+	stxa	%o2, [%o0+0x90] %asi
+	stxa	%o2, [%o0+0xa0] %asi
+	stxa	%o2, [%o0+0xb0] %asi
 
-	stxa	%o2, [%o0+0xd0]%asi
-	stxa	%o2, [%o0+0xe0]%asi
-	stxa	%o2, [%o0+0xf0]%asi
+	stxa	%o2, [%o0+0xd0] %asi
+	stxa	%o2, [%o0+0xe0] %asi
+	stxa	%o2, [%o0+0xf0] %asi
 
 	subcc	%o1, 0x100, %o1
-	bgu,pt	%ncc, 1b
+	bgu,pt	%xcc, 1b
 	add	%o0, 0x100, %o0
 
 	membar	#Sync

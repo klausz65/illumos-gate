@@ -27,20 +27,20 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"fpgetmask.s"
+	.file	"fpgetmask.S"
 
 #include "SYS.h"
 
 	ANSI_PRAGMA_WEAK(fpgetmask,function)
 
 	ENTRY(fpgetmask)
-	add	%sp, -SA(MINFRAME), %sp	! get an additional word of storage
-	set	0x0f800000, %o4		! mask of trap enable bits
-	st	%fsr, [%sp+STACK_BIAS+ARGPUSH]	! get fsr value
-	ld	[%sp+STACK_BIAS+ARGPUSH], %o0	! load into register
-	and	%o0, %o4, %o0		! mask off bits of interest
-	srl	%o0, 23, %o0		! return trap enable value
+	add	%sp, -SA(MINFRAME), %sp	/* get an additional word of storage */
+	set	0x0f800000, %o4		/* mask of trap enable bits */
+	st	%fsr, [%sp+STACK_BIAS+ARGPUSH]	/* get fsr value */
+	ld	[%sp+STACK_BIAS+ARGPUSH], %o0	/* load into register */
+	and	%o0, %o4, %o0		/* mask off bits of interest */
+	srl	%o0, 23, %o0		/* return trap enable value */
 	retl
-	add	%sp, SA(MINFRAME), %sp	! reclaim stack space
+	add	%sp, SA(MINFRAME), %sp	/* reclaim stack space */
 
 	SET_SIZE(fpgetmask)

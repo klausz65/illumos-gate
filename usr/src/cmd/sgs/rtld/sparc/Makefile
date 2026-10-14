@@ -62,6 +62,7 @@ include		$(SRC)/cmd/sgs/rtld/Makefile.com
 # Add any machine specific flags.
 
 CPPFLAGS +=	-I../../../../uts/sparc/krtld
+CFLAGS += 	-xregs=no%appl
 ASFLAGS +=	$(AS_PICFLAGS)
 ADBGENFLAGS +=	-milp32
 ADBSUB=		$(ADBSUB32)
@@ -70,6 +71,11 @@ SONAME=		/lib/ld.so.1
 SGSMSGTARG +=	$(SGSMSGSPARC) $(SGSMSGSPARC32) $(SGSMSG32)
 
 .KEEP_STATE:
+
+pics/crti.o:
+	$(CC) $(ASFLAGS) $(AS_CPPFLAGS) \
+	-c -o $@ $(CRTSRCS)/crti.S
+	$(POST_PROCESS_O)
 
 all:		$(RTLD)
 

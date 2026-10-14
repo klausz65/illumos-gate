@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_recvmsg.s"
+	.file	"_so_recvmsg.S"
 
 /* C library -- __so_recvmsg					*/
 /* int __so_recvmsg(int sock, struct msghdr *msg, int flags)	*/

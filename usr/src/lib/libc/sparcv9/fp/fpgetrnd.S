@@ -27,18 +27,18 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"fpgetrnd.s"
+	.file	"fpgetrnd.S"
 
 #include "SYS.h"
 
 	ANSI_PRAGMA_WEAK(fpgetround,function)
 
 	ENTRY(fpgetround)
-	add	%sp, -SA(MINFRAME), %sp	! get an additional word of storage
-	st	%fsr, [%sp+STACK_BIAS+ARGPUSH]	! get fsr value
-	ld	[%sp+STACK_BIAS+ARGPUSH], %o0	! load into register
-	srl	%o0, 30, %o0		! return round control value
+	add	%sp, -SA(MINFRAME), %sp	/* get an additional word of storage */
+	st	%fsr, [%sp+STACK_BIAS+ARGPUSH]	/* get fsr value */
+	ld	[%sp+STACK_BIAS+ARGPUSH], %o0	/* load into register */
+	srl	%o0, 30, %o0		/* return round control value */
 	retl
-	add	%sp, SA(MINFRAME), %sp	! reclaim stack space
+	add	%sp, SA(MINFRAME), %sp	/* reclaim stack space */
 
 	SET_SIZE(fpgetround)

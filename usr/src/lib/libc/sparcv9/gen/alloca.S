@@ -23,7 +23,7 @@
  * All rights reserved.
  */
 
-	.file	"alloca.s"
+	.file	"alloca.S"
 
 #include <sys/asm_linkage.h>
 #include <sys/stack.h>
@@ -39,15 +39,15 @@
 	! be in the middle of a complicated expression.
 	!
 	ENTRY(__builtin_alloca)
-	add	%sp, STACK_BIAS, %g1	! save current sp + STACK_BIAS
-	sub	%sp, %o0, %sp		! bump to new value
+	add	%sp, STACK_BIAS, %g1	/* save current sp + STACK_BIAS */
+	sub	%sp, %o0, %sp		/* bump to new value */
 	add	%sp, STACK_BIAS, %g5
 	! copy loop: should do nothing gracefully
 	b	2f
-	subcc	%o2, %o1, %o5		! number of bytes to move
+	subcc	%o2, %o1, %o5		/* number of bytes to move */
 1:
-	ldx	[%g1 + %o1], %o4	! load from old temp area
-	stx	%o4, [%g5 + %o1]	! store to new temp area
+	ldx	[%g1 + %o1], %o4	/* load from old temp area */
+	stx	%o4, [%g5 + %o1]	/* store to new temp area */
 	add	%o1, 8, %o1
 2:	bg,pt	%xcc, 1b
 	subcc	%o5, 8, %o5

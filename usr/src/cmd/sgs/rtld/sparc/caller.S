@@ -26,70 +26,9 @@
  * Return the pc of the calling routine.
  */
 
-#if	defined(lint)
-
-#include	<sys/types.h>
-
-caddr_t
-caller()
-{
-	return (0);
-}
-
-/* ARGSUSED */
-void
-set_sparc_g1(ulong_t val)
-{
-	return;
-}
-
-/* ARGSUSED */
-void
-set_sparc_g2(ulong_t val)
-{
-	return;
-}
-
-/* ARGSUSED */
-void
-set_sparc_g3(ulong_t val)
-{
-	return;
-}
-
-/* ARGSUSED */
-void
-set_sparc_g4(ulong_t val)
-{
-	return;
-}
-
-/* ARGSUSED */
-void
-set_sparc_g5(ulong_t val)
-{
-	return;
-}
-
-/* ARGSUSED */
-void
-set_sparc_g6(ulong_t val)
-{
-	return;
-}
-
-/* ARGSUSED */
-void
-set_sparc_g7(ulong_t val)
-{
-	return;
-}
-
-#else
-
 #include	<sys/asm_linkage.h>
 
-	.file	"caller.s"
+	.file	"caller.S"
 
 	ENTRY(caller)
 	retl
@@ -130,4 +69,3 @@ set_sparc_g7(ulong_t val)
 	retl
 	mov	%o0, %g7
 	SET_SIZE(set_sparc_g7)
-#endif

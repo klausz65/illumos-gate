@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"cladm.s"
+	.file	"cladm.S"
 
 #include "SYS.h"
 

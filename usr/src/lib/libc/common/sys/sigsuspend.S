@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"sigsuspend.s"
+	.file	"sigsuspend.S"
 
 /* C library -- sigsuspend trap					*/
 /* int __sigsuspend (sigset_t *set);				*/

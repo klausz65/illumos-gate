@@ -22,8 +22,11 @@
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
-	.file	"memset.s"
+	.file	"memset.S"
 
 /*
  * char *memset(sp, c, n)
@@ -69,50 +72,50 @@
 	ANSI_PRAGMA_WEAK(memset,function)
 
 	.section        ".text"
-	.align 32
+	.balign 32
 
 	ENTRY(memset)
 
-	mov	%o0, %o5		! copy sp1 before using it
-	cmp	%o2, 7			! if small counts, just write bytes
+	mov	%o0, %o5		/* copy sp1 before using it */
+	cmp	%o2, 7			/* if small counts, just write bytes */
 	blu,pn	%ncc, .wrchar
-	and	%o1, 0xff, %o1		! o1 is (char)c
+	and	%o1, 0xff, %o1		/* o1 is (char)c */
 
 	sll	%o1, 8, %o3
-	or	%o1, %o3, %o1		! now o1 has 2 bytes of c
+	or	%o1, %o3, %o1		/* now o1 has 2 bytes of c */
 	sll	%o1, 16, %o3
 
 	cmp	%o2, 0x20
 	blu,pn	%ncc, .wdalign
-	or	%o1, %o3, %o1		! now o1 has 4 bytes of c
+	or	%o1, %o3, %o1		/* now o1 has 4 bytes of c */
 
 	sllx	%o1, 32, %o3
-	or	%o1, %o3, %o1		! now o1 has 8 bytes of c
+	or	%o1, %o3, %o1		/* now o1 has 8 bytes of c */
 
 .dbalign:
-	andcc	%o5, 7, %o3		! is sp1 aligned on a 8 byte bound
-	bz,pt	%ncc, .blkalign		! already double aligned
-	sub	%o3, 8, %o3		! -(bytes till double aligned)
-	add	%o2, %o3, %o2		! update o2 with new count
+	andcc	%o5, 7, %o3		/* is sp1 aligned on a 8 byte bound */
+	bz,pt	%ncc, .blkalign		/* already double aligned */
+	sub	%o3, 8, %o3		/* -(bytes till double aligned) */
+	add	%o2, %o3, %o2		/* update o2 with new count */
 
 	! Set -(%o3) bytes till sp1 double aligned
-1:	stb	%o1, [%o5]		! there is at least 1 byte to set
-	inccc	%o3			! byte clearing loop
+1:	stb	%o1, [%o5]		/* there is at least 1 byte to set */
+	inccc	%o3			/* byte clearing loop */
 	bl,pt	%ncc, 1b
 	inc	%o5
 
 	! Now sp1 is double aligned (sp1 is found in %o5)
 .blkalign:
-	mov	ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
+	wr	%g0, ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
 
-	cmp	%o2, 0x40		! check if there are 64 bytes to set
+	cmp	%o2, 0x40		/* check if there are 64 bytes to set */
 	blu,pn	%ncc, 5f
 	mov	%o2, %o3
 
-	andcc	%o5, 63, %o3		! is sp1 block aligned?
-	bz,pt	%ncc, .blkwr		! now block aligned
-	sub	%o3, 64, %o3		! o3 is -(bytes till block aligned)
-	add	%o2, %o3, %o2		! o2 is the remainder
+	andcc	%o5, 63, %o3		/* is sp1 block aligned? */
+	bz,pt	%ncc, .blkwr		/* now block aligned */
+	sub	%o3, 64, %o3		/* o3 is -(bytes till block aligned) */
+	add	%o2, %o3, %o2		/* o2 is the remainder */
 
 	! Store -(%o3) bytes till dst is block (64 byte) aligned.
 	! Use double word stores.
@@ -125,10 +128,10 @@
 
 	! Now sp1 is block aligned
 .blkwr:
-	and	%o2, 63, %o3		! calc bytes left after blk store.
-	andn	%o2, 63, %o4		! calc size of blocks in bytes
+	and	%o2, 63, %o3		/* calc bytes left after blk store. */
+	andn	%o2, 63, %o4		/* calc size of blocks in bytes */
 
-	cmp	%o4, 0x100		! check if there are 256 bytes to set
+	cmp	%o4, 0x100		/* check if there are 256 bytes to set */
 	blu,pn	%ncc, 3f
 	nop
 2:
@@ -175,7 +178,7 @@
 	add	%o5, 0x100, %o5
 
 3:
-	cmp	%o4, 0x40		! check if 64 bytes to set
+	cmp	%o4, 0x40		/* check if 64 bytes to set */
 	blu	%ncc, 5f
 	nop
 4:
@@ -195,14 +198,14 @@
 5:
 	! Set the remaining doubles
 	membar	#Sync
-	mov	ASI_PNF, %asi		! restore %asi to default
-					! ASI_PRIMARY_NOFAULT value
-	subcc	%o3, 8, %o3		! Can we store any doubles?
+	wr	%g0, ASI_PNF, %asi	/* restore %asi to default */
+					/* ASI_PRIMARY_NOFAULT value */
+	subcc	%o3, 8, %o3		/* Can we store any doubles? */
 	blu,pn	%ncc, .wrchar
-	and	%o2, 7, %o2		! calc bytes left after doubles
+	and	%o2, 7, %o2		/* calc bytes left after doubles */
 
 6:
-	stx	%o1, [%o5]		! store the doubles
+	stx	%o1, [%o5]		/* store the doubles */
 	subcc	%o3, 8, %o3
 	bgeu,pt	%ncc, 6b
 	add	%o5, 8, %o5
@@ -211,22 +214,22 @@
 	nop
 
 .wdalign:
-	andcc	%o5, 3, %o3		! is sp1 aligned on a word boundary
+	andcc	%o5, 3, %o3		/* is sp1 aligned on a word boundary */
 	bz,pn	%ncc, .wrword
-	andn	%o2, 3, %o3		! create word sized count in %o3
+	andn	%o2, 3, %o3		/* create word sized count in %o3 */
 
-	dec	%o2			! decrement count
-	stb	%o1, [%o5]		! clear a byte
+	dec	%o2			/* decrement count */
+	stb	%o1, [%o5]		/* clear a byte */
 	b	.wdalign
-	inc	%o5			! next byte
+	inc	%o5			/* next byte */
 
 .wrword:
-	st	%o1, [%o5]		! 4-byte writing loop
+	st	%o1, [%o5]		/* 4-byte writing loop */
 	subcc	%o3, 4, %o3
 	bnz,pt	%ncc, .wrword
 	inc	4, %o5
 
-	and	%o2, 3, %o2		! leftover count, if any
+	and	%o2, 3, %o2		/* leftover count, if any */
 
 .wrchar:
 	! Set the remaining bytes, if any
@@ -241,7 +244,7 @@
 	inc	%o5
 
 .exit:
-	retl				! %o0 was preserved
+	retl				/* %o0 was preserved */
 	nop
 
 	SET_SIZE(memset)

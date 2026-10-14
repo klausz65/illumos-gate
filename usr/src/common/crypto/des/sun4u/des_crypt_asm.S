@@ -23,6 +23,9 @@
  * Copyright 2004 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 /*
  * Unified version for both position independent and non position independent
@@ -78,18 +81,13 @@
  * the next key schedule item to the partially computed next R).
  */
 
-#if defined(lint) || defined(__lint)
-	/* LINTED */
-	/* Nothing to be linted in this file, its pure assembly source */
-#else	/* lint || __lint */
-
 	.register	%g2,#scratch
 	.register	%g3,#scratch
 
 	.file	"encrypt_asm.S"
 
-	.section	".text",#alloc
-	.align	32
+	.text
+	.balign	32
 
 !
 ! CONSTANT POOL
@@ -1123,7 +1121,7 @@ des_sbox_table:
 	.type	des_sbox_table,#object
 	.size	des_sbox_table,4096
 
-	.align 32
+	.balign 32
 !
 ! CONSTANT POOL
 !
@@ -2158,8 +2156,8 @@ des_ip_table:
 	.size	des_ip_table,4096
 
 
-	.section	".data",#alloc
-		.align	32
+	.data
+		.balign	32
 
 
 des_enc_const:
@@ -2243,7 +2241,7 @@ des_enc_const:
 
 
 	.section	".text",#alloc,#execinstr
-/* 000000	   0 */		.align	32
+/* 000000	   0 */		.balign	32
 /* 000000	     */		.skip	32
 !
 ! SUBROUTINE des_crypt_impl
@@ -3377,7 +3375,7 @@ des_enc_const:
 	.type	des_crypt_impl,2
 	.size	des_crypt_impl,(.-des_crypt_impl)
 
-	.align	32
+	.balign	32
 !
 ! CONSTANT POOL
 !
@@ -3640,5 +3638,3 @@ des_fp_table:
 	.word	-1061109568
 	.type	des_fp_table,#object
 	.size	des_fp_table,1024
-
-#endif	/* lint || __lint */

@@ -42,7 +42,7 @@ LDBLDIR		= $(LDBLDIR_$(MACH))
 
 CFLAGS		+= $(C_PICFLAGS)
 CFLAGS64	+= $(C_PICFLAGS)
-sparc_CFLAGS	+= -Wa,-xarch=v8plus
+sparc_CFLAGS	+= -Wa,-xarch=v8plusa
 
 CPPFLAGS	+= -I$(LIBMSRC)/C \
 		-I$(LIBMSRC)/$(LDBLDIR) -I$(LIBMDIR)/$(TARGET_ARCH)/src
@@ -76,8 +76,8 @@ FPDEF		= $(FPDEF_$(TARGET_ARCH))
 ASFLAGS		+= -D_ASM $(FPDEF)
 ASFLAGS64	+= -D_ASM $(FPDEF)
 
-XARCH_sparc	= v8plus
-XARCH_sparcv9	= v9
+XARCH_sparc	= v8plusa
+XARCH_sparcv9	= v9a
 XARCH_i386	= f80387
 XARCH_amd64	= amd64
 XARCH		= $(XARCH_$(TARGET_ARCH))

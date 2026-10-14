@@ -31,13 +31,13 @@
 
 #include <sys/asm_linkage.h>
 
- 	! This routine is to get content of Memory Control Registers
- 	ENTRY(get_mcr)
- 	! input
- 	! %i0 is the VA for Memory Control Registers
- 	!
- 	ldxa	[%o0]ASI_MCU_CTRL,	%o0
- 	retl
- 	  nop
- 	SET_SIZE(get_mcr)
+	! This routine is to get content of Memory Control Registers
+	ENTRY(get_mcr)
+	! input
+	! %i0 is the VA for Memory Control Registers
+	!
+	ldxa	[%o0]ASI_MCU_CTRL,	%o0
+	retl
+	nop
+	SET_SIZE(get_mcr)
 

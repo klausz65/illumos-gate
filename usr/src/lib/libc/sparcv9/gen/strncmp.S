@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"strncmp.s"
+	.file	"strncmp.S"
 
 /*
  * strncmp(s1, s2, n)
@@ -52,55 +52,55 @@
 	ENTRY(strncmp)
 	save	%sp, -SA(WINDOWSIZE), %sp
 	cmp	%i2, 8
-	blu,a,pn %xcc, .cmp_bytes	! for small counts go do bytes
-	sub	%i0, %i1, %i0		! delay slot, get diff from s1 - s2
-	andcc	%i0, 3, %g0		! is s1 aligned
-1:	bz,pn	%icc, .iss2		! if so go check s2
-	andcc	%i1, 3, %i3		! is s2 aligned
+	blu,a,pn %xcc, .cmp_bytes	/* for small counts go do bytes */
+	sub	%i0, %i1, %i0		/* delay slot, get diff from s1 - s2 */
+	andcc	%i0, 3, %g0		/* is s1 aligned */
+1:	bz,pn	%icc, .iss2		/* if so go check s2 */
+	andcc	%i1, 3, %i3		/* is s2 aligned */
 
-	deccc	%i2			! --n >= 0 ?
+	deccc	%i2			/* --n >= 0 ? */
 	bcs,pn	%xcc, .doneq
-	nop				! delay slot
+	nop				/* delay slot */
 
-	ldub	[%i0], %i4		! else cmp one byte
+	ldub	[%i0], %i4		/* else cmp one byte */
 	ldub	[%i1], %i5
 	inc	%i0
 	cmp	%i4, %i5
 	bne,pn	%icc, .noteqb
 	inc	%i1
-	tst	%i4			! terminating zero
+	tst	%i4			/* terminating zero */
 	bnz,pt	%icc, 1b
 	andcc	%i0, 3, %g0
 	b,a	.doneq
 
 .iss2:
-	set     0x7efefeff, %l6
-	set     0x81010100, %l7
-	sethi	%hi(0xff000000), %l0	! masks to test for terminating null
+	set	0x7efefeff, %l6
+	set	0x81010100, %l7
+	sethi	%hi(0xff000000), %l0	/* masks to test for terminating null */
 	sethi	%hi(0x00ff0000), %l1
-	srl	%l1, 8, %l2		! generate 0x0000ff00 mask
+	srl	%l1, 8, %l2		/* generate 0x0000ff00 mask */
 
-	bz,pn	%icc, .w4cmp		! if s2 word aligned, compare words
-	cmp	%i3, 2			! check if s2 half aligned
+	bz,pn	%icc, .w4cmp		/* if s2 word aligned, compare words */
+	cmp	%i3, 2			/* check if s2 half aligned */
 	be,pn	%icc, .w2cmp
-	cmp	%i3, 1			! check if aligned to 1 or 3 bytes
+	cmp	%i3, 1			/* check if aligned to 1 or 3 bytes */
 .w3cmp:	ldub	[%i1], %i5
 	inc	1, %i1
 	be,pt	%icc, .w1cmp
 	sll	%i5, 24, %i5
 	sub	%i0, %i1, %i0
 2:
-	deccc	4, %i2			! n >= 4 ?
+	deccc	4, %i2			/* n >= 4 ? */
 	bgeu,a,pt %xcc, 3f
-	lduw	[%i1], %i3		! delay slot
-	dec	%i1			! reset s2
-	inc	%i0			! reset s1 diff
-	b	.cmp_bytes		! do a byte at a time if n < 4
+	lduw	[%i1], %i3		/* delay slot */
+	dec	%i1			/* reset s2 */
+	inc	%i0			/* reset s1 diff */
+	b	.cmp_bytes		/* do a byte at a time if n < 4 */
 	inc	4, %i2
 3:
 	lduw	[%i0 + %i1], %i4
 	inc	4, %i1
-	srl	%i3, 8, %l4		! merge with the other half
+	srl	%i3, 8, %l4		/* merge with the other half */
 	or	%l4, %i5, %i5
 	cmp	%i4, %i5
 	be,pn	%icc, 1f
@@ -118,15 +118,15 @@
 	! 8-bit characters, the zero detection algorithm gives some false
 	! triggers ... check every byte individually.
 	!
-	andcc	%i4, %l0, %g0		! check if first byte was zero
+	andcc	%i4, %l0, %g0		/* check if first byte was zero */
 	bnz,pt	%icc, 1f
-	andcc	%i4, %l1, %g0		! check if second byte was zero
+	andcc	%i4, %l1, %g0		/* check if second byte was zero */
 	b,a	.doneq
 1:	bnz,pt	%icc, 1f
-	andcc 	%i4, %l2, %g0		! check if third byte was zero
+	andcc 	%i4, %l2, %g0		/* check if third byte was zero */
 	b,a	.doneq
 1:	bnz,pt	%icc, 1f
-	andcc	%i4, 0xff, %g0		! check if last byte is zero
+	andcc	%i4, 0xff, %g0		/* check if last byte is zero */
 	b,a	.doneq
 1:	bnz,pn	%icc, 2b
 	sll	%i3, 24, %i5
@@ -140,17 +140,17 @@
 
 	sub	%i0, %i1, %i0
 3:
-	deccc	4, %i2			! n >= 4 ?
+	deccc	4, %i2			/* n >= 4 ? */
 	bgeu,a,pt %xcc, 4f
-	lduw	[%i1], %i3		! delay slot
-	dec	3, %i1			! reset s2
-	inc	3, %i0			! reset s1 diff
-	b	.cmp_bytes		! do a byte at a time if n < 4
+	lduw	[%i1], %i3		/* delay slot */
+	dec	3, %i1			/* reset s2 */
+	inc	3, %i0			/* reset s1 diff */
+	b	.cmp_bytes		/* do a byte at a time if n < 4 */
 	inc	4, %i2
 4:
 	lduw	[%i0 + %i1], %i4
 	inc	4, %i1
-	srl	%i3, 24, %l4		! merge with the other half
+	srl	%i3, 24, %l4		/* merge with the other half */
 	or	%l4, %i5, %i5
 	cmp	%i4, %i5
 	be,pt	%icc, 1f
@@ -163,75 +163,75 @@
 	be,a,pt	%icc, 3b
 	sll	%i3, 8, %i5
 
-	andcc	%i4, %l0, %g0		! check if first byte was zero
+	andcc	%i4, %l0, %g0		/* check if first byte was zero */
 	bnz,pt	%icc, 1f
-	andcc	%i4, %l1, %g0		! check if second byte was zero
+	andcc	%i4, %l1, %g0		/* check if second byte was zero */
 	b,a	.doneq
 1:	bnz,pt	%icc, 1f
-	andcc 	%i4, %l2, %g0		! check if third byte was zero
+	andcc 	%i4, %l2, %g0		/* check if third byte was zero */
 	b,a	.doneq
 1:	bnz,pt	%icc, 1f
-	andcc	%i4, 0xff, %g0		! check if last byte is zero
+	andcc	%i4, 0xff, %g0		/* check if last byte is zero */
 	b,a	.doneq
 1:	bnz,pn	%icc, 3b
 	sll	%i3, 8, %i5
 	b,a	.doneq
 
 .w2cmp:
-	lduh	[%i1], %i5		! read a halfword to align s2
+	lduh	[%i1], %i5		/* read a halfword to align s2 */
 	inc	2, %i1
 	sll	%i5, 16, %i5
 
 	sub	%i0, %i1, %i0
 4:
-	deccc	4, %i2			! n >= 4 ?
+	deccc	4, %i2			/* n >= 4 ? */
 	bgeu,a,pt %xcc, 5f
-	lduw	[%i1], %i3		! delay slot
-	dec	2, %i1			! reset s2
-	inc	2, %i0			! reset s1 diff
-	b	.cmp_bytes		! do a byte at a time if n < 4
-	inc	4, %i2			! delay slot
+	lduw	[%i1], %i3		/* delay slot */
+	dec	2, %i1			/* reset s2 */
+	inc	2, %i0			/* reset s1 diff */
+	b	.cmp_bytes		/* do a byte at a time if n < 4 */
+	inc	4, %i2			/* delay slot */
 5:
-	lduw	[%i1 + %i0], %i4	! read a word from s2
+	lduw	[%i1 + %i0], %i4	/* read a word from s2 */
 	inc	4, %i1
-	srl	%i3, 16, %l4		! merge with the other half
+	srl	%i3, 16, %l4		/* merge with the other half */
 	or	%l4, %i5, %i5
 	cmp	%i4, %i5
 	be,pt	%icc, 1f
 
 	add	%i4, %l6, %l3
 	b,a	.noteq
-1:	xor	%l3, %i4, %l3		! are any bytes 0?
+1:	xor	%l3, %i4, %l3		/* are any bytes 0? */
 	and	%l3, %l7, %l3
 	cmp	%l3, %l7
 	be,a,pt	%icc, 4b
 	sll	%i3, 16, %i5
 
-	andcc	%i4, %l0, %g0		! check if first byte was zero
+	andcc	%i4, %l0, %g0		/* check if first byte was zero */
 	bnz,pt	%icc, 1f
-	andcc	%i4, %l1, %g0		! check if second byte was zero
+	andcc	%i4, %l1, %g0		/* check if second byte was zero */
 	b,a	.doneq
 1:	bnz,pt	%icc, 1f
-	andcc 	%i4, %l2, %g0		! check if third byte was zero
+	andcc 	%i4, %l2, %g0		/* check if third byte was zero */
 	b,a	.doneq
 1:	bnz,pt	%icc, 1f
-	andcc	%i4, 0xff, %g0		! check if last byte is zero
+	andcc	%i4, 0xff, %g0		/* check if last byte is zero */
 	b,a	.doneq
 1:	bnz,pn	%icc, 4b
 	sll	%i3, 16, %i5
 	b,a	.doneq
 
 .w4cmp:	sub	%i0, %i1, %i0
-	lduw	[%i1], %i5		! read a word from s1
+	lduw	[%i1], %i5		/* read a word from s1 */
 5:	cmp	%i2, 0
 	be,a,pn	%xcc, .doneq
 	nop
-	lduw	[%i1], %i5		! read a word from s1
-	deccc	4, %i2			! n >= 4 ?
-	bcs,a,pn %xcc, .cmp_bytes	! do a byte at a time if n < 4
+	lduw	[%i1], %i5		/* read a word from s1 */
+	deccc	4, %i2			/* n >= 4 ? */
+	bcs,a,pn %xcc, .cmp_bytes	/* do a byte at a time if n < 4 */
 	inc	4, %i2
 
-	lduw	[%i1 + %i0], %i4	! read a word from s2
+	lduw	[%i1 + %i0], %i4	/* read a word from s2 */
 	cmp	%i4, %i5
 	inc	4, %i1
 	be,pt	%icc, 1f
@@ -244,20 +244,20 @@
 	be,pt	%icc, 5b
 	nop
 
-	andcc	%i4, %l0, %g0		! check if first byte was zero
+	andcc	%i4, %l0, %g0		/* check if first byte was zero */
 	bnz,pt	%icc, 1f
-	andcc	%i4, %l1, %g0		! check if second byte was zero
+	andcc	%i4, %l1, %g0		/* check if second byte was zero */
 	b,a	.doneq
 1:	bnz,pt	%icc, 1f
-	andcc 	%i4, %l2, %g0		! check if third byte was zero
+	andcc 	%i4, %l2, %g0		/* check if third byte was zero */
 	b,a	.doneq
 1:	bnz,pt	%icc, 1f
-	andcc	%i4, 0xff, %g0		! check if last byte is zero
+	andcc	%i4, 0xff, %g0		/* check if last byte is zero */
 	b,a	.doneq
 1:	bnz,a,pn %icc, 5b
 	lduw	[%i1], %i5
 .doneq:	ret
-	restore	%g0, %g0, %o0		! equal return zero
+	restore	%g0, %g0, %o0		/* equal return zero */
 
 .noteq:	srl	%i4, 24, %l4
 	srl	%i5, 24, %l5
@@ -291,19 +291,19 @@
 
 	! Do a byte by byte comparison, disregarding alignments
 .cmp_bytes:
-	deccc	%i2			! --n >= 0 ?
+	deccc	%i2			/* --n >= 0 ? */
 1:
 	bcs,pn	%xcc, .doneq
-	nop				! delay slot
-	ldub	[%i1 + %i0], %i4	! read a byte from s1
-	ldub	[%i1], %i5		! read a byte from s2
+	nop				/* delay slot */
+	ldub	[%i1 + %i0], %i4	/* read a byte from s1 */
+	ldub	[%i1], %i5		/* read a byte from s2 */
 
 	inc	%i1
 	cmp	%i4, %i5
 	bne,pt	%icc, .noteqb
-	tst	%i4			! terminating zero
+	tst	%i4			/* terminating zero */
 	bnz,pt	%icc, 1b
-	deccc	%i2			! --n >= 0
+	deccc	%i2			/* --n >= 0 */
 	b,a	.doneq
 
 	SET_SIZE(strncmp)

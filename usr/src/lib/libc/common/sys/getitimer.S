@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"getitimer.s"
+	.file	"getitimer.S"
 
 /* C library -- getgid						*/
 /* int getitimer (int, struct itimerval *value);		*/

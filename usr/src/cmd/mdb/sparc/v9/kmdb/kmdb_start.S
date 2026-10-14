@@ -39,12 +39,9 @@
  * before entering the debugger. Subsequent re-entries will longjmp their
  * way in.
  */
-#if defined(__lint)
-void
-kmdb_first_start(void)
-{
-}
-#else	/* __lint */
+
+	/* GNU assembler */
+	.register	%g2, #scratch
 
 	ENTRY(kmdb_first_start)
 
@@ -73,5 +70,3 @@ kmdb_first_start(void)
 	nop
 
 	SET_SIZE(kmdb_first_start)
-#endif
-

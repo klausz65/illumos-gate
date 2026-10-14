@@ -22,6 +22,9 @@
  * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include <sys/param.h>
 #include <sys/errno.h>
@@ -56,19 +59,23 @@
  *	u_int maxlength, *lencopied;
  */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 	ENTRY(copystr)
-	orcc	%o2, %g0, %o4		! save original count
-	bg,a	%ncc, 1f
-	  sub	%o0, %o1, %o0		! o0 gets the difference of src and dst
+	orcc	%o2, %g0, %o4		/* save original count */
+	bg,a	%xcc, 1f
+	sub	%o0, %o1, %o0		/* o0 gets the difference of src and dst */
 
 	!
 	! maxlength <= 0
 	!
-	bz	%ncc, .cs_out		! maxlength = 0
+	bz	%xcc, .cs_out		/* maxlength = 0 */
 	mov	ENAMETOOLONG, %o0
 
-	b	2f			! maxlength < 0
-	mov	EFAULT, %o0		! return failure
+	b	2f			/* maxlength < 0 */
+	mov	EFAULT, %o0		/* return failure */
 
 	!
 	! Do a byte by byte loop.
@@ -76,24 +83,24 @@
 	! are small and this takes a small number of cache lines.
 	!
 0:
-	stb	%g1, [%o1]		! store byte
+	stb	%g1, [%o1]		/* store byte */
 	tst	%g1
 	bnz,pt	%icc, 1f
-	add	%o1, 1, %o1		! incr dst addr
+	add	%o1, 1, %o1		/* incr dst addr */
 
-	ba,pt	%ncc, .cs_out		! last byte in string
-	mov	0, %o0			! ret code = 0
+	ba,pt	%xcc, .cs_out		/* last byte in string */
+	mov	0, %o0			/* ret code = 0 */
 1:
-	subcc	%o2, 1, %o2		! test count
-	bgeu,a	%ncc, 0b
-	ldub	[%o0 + %o1], %g1	! delay slot, get source byte
+	subcc	%o2, 1, %o2		/* test count */
+	bgeu,a	%xcc, 0b
+	ldub	[%o0 + %o1], %g1	/* delay slot, get source byte */
 
-	mov	0, %o2			! max number of bytes moved
-	mov	ENAMETOOLONG, %o0	! ret code = ENAMETOOLONG
+	mov	0, %o2			/* max number of bytes moved */
+	mov	ENAMETOOLONG, %o0	/* ret code = ENAMETOOLONG */
 .cs_out:
 	tst	%o3
-	bz	%ncc, 2f
-	sub	%o4, %o2, %o4		! compute length and store it
+	bz	%xcc, 2f
+	sub	%o4, %o2, %o4		/* compute length and store it */
 	stn	%o4, [%o3]
 2:
 	retl
@@ -107,20 +114,20 @@
  */
 
 	ENTRY(copyinstr)
-	sethi	%hi(.copyinstr_err), %o4
-	ldn	[THREAD_REG + T_LOFAULT], %o5	! catch faults
+	set	.copyinstr_err, %o4
+	ldn	[THREAD_REG + T_LOFAULT], %o5	/* catch faults */
 	or	%o4, %lo(.copyinstr_err), %o4
-	membar	#Sync				! sync error barrier
+	membar	#Sync				/* sync error barrier */
 	stn	%o4, [THREAD_REG + T_LOFAULT]
 
 	brz,a,pn %o2, .copyinstr_out
 	mov	ENAMETOOLONG, %o0
 
-	mov	%o2, %g3		! g3 is the current count
-	mov	%o1, %g4		! g4 is the dest addr
+	mov	%o2, %g3		/* g3 is the current count */
+	mov	%o1, %g4		/* g4 is the dest addr */
 
 	b	1f
-	sub	%o0, %o1, %g2		! g2 gets the difference of src and dst
+	sub	%o0, %o1, %g2		/* g2 gets the difference of src and dst */
 
 	!
 	! Do a byte by byte loop.
@@ -128,28 +135,28 @@
 	! are small and this takes a small number of cache lines.
 	!
 0:
-	stb	%g1, [%g4]		! store byte
+	stb	%g1, [%g4]		/* store byte */
 	tst	%g1
 	bnz,pt	%icc, 1f
-	add	%g4, 1, %g4		! incr dst addr
+	add	%g4, 1, %g4		/* incr dst addr */
 
-	ba,pt	%ncc, .copyinstr_out	! last byte in string
-	mov	0, %o0			! ret code = 0
+	ba,pt	%xcc, .copyinstr_out	/* last byte in string */
+	mov	0, %o0			/* ret code = 0 */
 1:
-	subcc	%g3, 1, %g3		! test count
-	bgeu,a	%ncc, 0b
-	lduba	[%g2+%g4]ASI_USER, %g1	! delay slot, get source byte
+	subcc	%g3, 1, %g3		/* test count */
+	bgeu,a	%xcc, 0b
+	lduba	[%g2+%g4]ASI_USER, %g1	/* delay slot, get source byte */
 
-	mov	0, %g3			! max number of bytes moved
-	ba,pt	%ncc, .copyinstr_out
-	  mov	ENAMETOOLONG, %o0	! ret code = ENAMETOOLONG
+	mov	0, %g3			/* max number of bytes moved */
+	ba,pt	%xcc, .copyinstr_out
+	mov	ENAMETOOLONG, %o0	/* ret code = ENAMETOOLONG */
 
 /*
  * Fault while trying to move from or to user space.
  * Set and return error code.
  */
 .copyinstr_err:
-	membar	#Sync			! sync error barrier
+	membar	#Sync			/* sync error barrier */
 	stn	%o5, [THREAD_REG + T_LOFAULT]
 	ldn	[THREAD_REG + T_COPYOPS], %o4
 	brz	%o4, 1f
@@ -161,25 +168,25 @@
 	retl
 	mov	EFAULT, %o0
 .copyinstr_out:
-	tst	%o3			! want length?
-	bz	%ncc, 2f
-	sub	%o2, %g3, %o2		! compute length and store it
+	tst	%o3			/* want length? */
+	bz	%xcc, 2f
+	sub	%o2, %g3, %o2		/* compute length and store it */
 	stn	%o2, [%o3]
 2:
-	membar	#Sync			! sync error barrier
+	membar	#Sync			/* sync error barrier */
 	retl
-	stn	%o5, [THREAD_REG + T_LOFAULT]	! stop catching faults
+	stn	%o5, [THREAD_REG + T_LOFAULT]	/* stop catching faults */
 	SET_SIZE(copyinstr)
 
 	ENTRY(copyinstr_noerr)
-	mov	%o2, %o4		! save original count
+	mov	%o2, %o4		/* save original count */
 
 	! maxlength is unsigned so the only error is if it's 0
 	brz,a,pn %o2, .copyinstr_noerr_out
 	mov	ENAMETOOLONG, %o0
 
 	b	1f
-	sub	%o0, %o1, %o0		! o0 gets the difference of src and dst
+	sub	%o0, %o1, %o0		/* o0 gets the difference of src and dst */
 
 	!
 	! Do a byte by byte loop.
@@ -187,24 +194,24 @@
 	! are small and this takes a small number of cache lines.
 	!
 0:
-	stb	%g1, [%o1]		! store byte
-	tst	%g1			! null byte?
+	stb	%g1, [%o1]		/* store byte */
+	tst	%g1			/* null byte? */
 	bnz	1f
-	add	%o1, 1, %o1		! incr dst addr
+	add	%o1, 1, %o1		/* incr dst addr */
 
-	ba,pt	%ncc, .copyinstr_noerr_out	! last byte in string
-	mov	0, %o0			! ret code = 0
+	ba,pt	%xcc, .copyinstr_noerr_out	/* last byte in string */
+	mov	0, %o0			/* ret code = 0 */
 1:
-	subcc	%o2, 1, %o2		! test count
-	bgeu,a	%ncc, 0b
-	lduba	[%o0 + %o1]ASI_USER, %g1	! delay slot, get source byte
+	subcc	%o2, 1, %o2		/* test count */
+	bgeu,a	%xcc, 0b
+	lduba	[%o0 + %o1]ASI_USER, %g1	/* delay slot, get source byte */
 
-	mov	0, %o2			! max number of bytes moved
+	mov	0, %o2			/* max number of bytes moved */
 	b	.copyinstr_noerr_out
-	  mov	ENAMETOOLONG, %o0	! ret code = ENAMETOOLONG
+	mov	ENAMETOOLONG, %o0	/* ret code = ENAMETOOLONG */
 .copyinstr_noerr_out:
-	tst	%o3			! want length?
-	bz	%ncc, 2f
+	tst	%o3			/* want length? */
+	bz	%xcc, 2f
 	sub	%o4, %o2, %o4
 	stn	%o4, [%o3]
 2:
@@ -218,21 +225,21 @@
  */
 
 	ENTRY(copyoutstr)
-	sethi	%hi(.copyoutstr_err), %o5
-	ldn	[THREAD_REG + T_LOFAULT], %o4	! catch faults
+	set	.copyoutstr_err, %o5
+	ldn	[THREAD_REG + T_LOFAULT], %o4	/* catch faults */
 	or	%o5, %lo(.copyoutstr_err), %o5
-	membar	#Sync				! sync error barrier
+	membar	#Sync				/* sync error barrier */
 	stn	%o5, [THREAD_REG + T_LOFAULT]
 	mov	%o4, %o5
 
 	brz,a,pn %o2, .copyoutstr_out
 	mov	ENAMETOOLONG, %o0
 
-	mov	%o2, %g3		! g3 is the current count
-	mov	%o1, %g4		! g4 is the dest addr
+	mov	%o2, %g3		/* g3 is the current count */
+	mov	%o1, %g4		/* g4 is the dest addr */
 
 	b	1f
-	sub	%o0, %o1, %g2		! g2 gets the difference of src and dst
+	sub	%o0, %o1, %g2		/* g2 gets the difference of src and dst */
 
 	!
 	! Do a byte by byte loop.
@@ -240,28 +247,28 @@
 	! are small and this takes a small number of cache lines.
 	!
 0:
-	stba	%g1, [%g4]ASI_USER	! store byte
+	stba	%g1, [%g4]ASI_USER	/* store byte */
 	tst	%g1
 	bnz,pt	%icc, 1f
-	add	%g4, 1, %g4		! incr dst addr
+	add	%g4, 1, %g4		/* incr dst addr */
 
-	ba,pt	%ncc, .copyoutstr_out	! last byte in string
-	mov	0, %o0			! ret code = 0
+	ba,pt	%xcc, .copyoutstr_out	/* last byte in string */
+	mov	0, %o0			/* ret code = 0 */
 1:
-	subcc	%g3, 1, %g3		! test count
-	bgeu,a	%ncc, 0b
-	ldub	[%g2 + %g4], %g1	! delay slot, get source byte
+	subcc	%g3, 1, %g3		/* test count */
+	bgeu,a	%xcc, 0b
+	ldub	[%g2 + %g4], %g1	/* delay slot, get source byte */
 
-	mov	0, %g3			! max number of bytes moved
-	ba,pt	%ncc, .copyoutstr_out
-	  mov	ENAMETOOLONG, %o0	! ret code = ENAMETOOLONG
+	mov	0, %g3			/* max number of bytes moved */
+	ba,pt	%xcc, .copyoutstr_out
+	mov	ENAMETOOLONG, %o0	/* ret code = ENAMETOOLONG */
 
 /*
  * Fault while trying to move from or to user space.
  * Set and return error code.
  */
 .copyoutstr_err:
-	membar	#Sync			! sync error barrier
+	membar	#Sync			/* sync error barrier */
 	stn	%o5, [THREAD_REG + T_LOFAULT]
 	ldn	[THREAD_REG + T_COPYOPS], %o4
 	brz	%o4, 1f
@@ -273,24 +280,24 @@
 	retl
 	mov	EFAULT, %o0
 .copyoutstr_out:
-	tst	%o3			! want length?
-	bz	%ncc, 2f
-	sub	%o2, %g3, %o2		! compute length and store it
+	tst	%o3			/* want length? */
+	bz	%xcc, 2f
+	sub	%o2, %g3, %o2		/* compute length and store it */
 	stn	%o2, [%o3]
 2:
-	membar	#Sync			! sync error barrier
+	membar	#Sync			/* sync error barrier */
 	retl
-	stn	%o5, [THREAD_REG + T_LOFAULT]	! stop catching faults
+	stn	%o5, [THREAD_REG + T_LOFAULT]	/* stop catching faults */
 	SET_SIZE(copyoutstr)
 
 	ENTRY(copyoutstr_noerr)
-	mov	%o2, %o4		! save original count
+	mov	%o2, %o4		/* save original count */
 
 	brz,a,pn %o2, .copyoutstr_noerr_out
 	mov	ENAMETOOLONG, %o0
 
 	b	1f
-	sub	%o0, %o1, %o0		! o0 gets the difference of src and dst
+	sub	%o0, %o1, %o0		/* o0 gets the difference of src and dst */
 
 	!
 	! Do a byte by byte loop.
@@ -298,24 +305,24 @@
 	! are small and this takes a small number of cache lines.
 	!
 0:
-	stba	%g1, [%o1]ASI_USER	! store byte
-	tst	%g1			! null byte?
+	stba	%g1, [%o1]ASI_USER	/* store byte */
+	tst	%g1			/* null byte? */
 	bnz	1f
-	add	%o1, 1, %o1		! incr dst addr
+	add	%o1, 1, %o1		/* incr dst addr */
 
-	b	.copyoutstr_noerr_out	! last byte in string
-	mov	0, %o0			! ret code = 0
+	b	.copyoutstr_noerr_out	/* last byte in string */
+	mov	0, %o0			/* ret code = 0 */
 1:
-	subcc	%o2, 1, %o2		! test count
-	bgeu,a	%ncc, 0b
-	ldub	[%o0+%o1], %g1	! delay slot, get source byte
+	subcc	%o2, 1, %o2		/* test count */
+	bgeu,a	%xcc, 0b
+	ldub	[%o0+%o1], %g1	/* delay slot, get source byte */
 
-	mov	0, %o2			! max number of bytes moved
+	mov	0, %o2			/* max number of bytes moved */
 	b	.copyoutstr_noerr_out
-	  mov	ENAMETOOLONG, %o0	! ret code = ENAMETOOLONG
+	mov	ENAMETOOLONG, %o0	/* ret code = ENAMETOOLONG */
 .copyoutstr_noerr_out:
-	tst	%o3			! want length?
-	bz	%ncc, 2f
+	tst	%o3			/* want length? */
+	bz	%xcc, 2f
 	sub	%o4, %o2, %o4
 	stn	%o4, [%o3]
 2:
@@ -325,37 +332,37 @@
 
 
 /*
- * Copy a block of storage.  If the source and target regions overlap,
+ * Copy a block of storage. If the source and target regions overlap,
  * one or both of the regions will be silently corrupted.
  * No fault handler installed (to be called under on_fault())
  */
 
 	ENTRY(ucopy)
-	save	%sp, -SA(MINFRAME), %sp ! get another window
+	save	%sp, -SA(MINFRAME), %sp /* get another window */
 
 	subcc	%g0, %i2, %i3
 	add	%i0, %i2, %i0
-	bz,pn	%ncc, 5f
+	bz,pn	%xcc, 5f
 	add	%i1, %i2, %i1
 	lduba	[%i0 + %i3]ASI_USER, %i4
 4:	stba	%i4, [%i1 + %i3]ASI_USER
 	inccc	%i3
-	bcc,a,pt %ncc, 4b
-	lduba  [%i0 + %i3]ASI_USER, %i4
+	bcc,a,pt %xcc, 4b
+	lduba	[%i0 + %i3]ASI_USER, %i4
 5:
 	ret
-	restore %g0, 0, %o0		! return (0)
+	restore %g0, 0, %o0		/* return (0) */
 
 	SET_SIZE(ucopy)
 
 /*
- * Copy a user-land string.  If the source and target regions overlap,
+ * Copy a user-land string. If the source and target regions overlap,
  * one or both of the regions will be silently corrupted.
  * No fault handler installed (to be called under on_fault())
  */
 
 	ENTRY(ucopystr)
-	save	%sp, -SA(MINFRAME), %sp ! get another window
+	save	%sp, -SA(MINFRAME), %sp /* get another window */
 
 	brz	%i2, 5f
 	clr	%i5
@@ -365,13 +372,13 @@
 	brz,pn	%i4, 5f
 	inc	%i5
 	deccc	%i2
-	bnz,a,pt %ncc, 4b
+	bnz,a,pt %xcc, 4b
 	lduba	[%i0 + %i5]ASI_USER, %i4
 5:
 	brnz,a,pt %i3, 6f
 	stn	%i5, [%i3]
 6:
 	ret
-	restore %g0, 0, %o0		! return (0)
+	restore %g0, 0, %o0		/* return (0) */
 
 	SET_SIZE(ucopystr)

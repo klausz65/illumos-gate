@@ -23,19 +23,19 @@
  * Copyright (c) 1987 Sun Microsystems, Inc.
  */
 
-	.file	"stret.s"
+	.file	"stret.S"
 
 #include <sys/asm_linkage.h>
 
-#define FROM	%o0
-#define SIZE	%o1
-#define TO	%i0
-#define MEMWORD	%o3	/* use o-registers as temps */
-#define TEMP	%o4
-#define TEMP2	%o5
-#define UNIMP	0
-#define MASK	0x00000fff
-#define STRUCT_VAL_OFF	(16*4)
+#define	FROM	%o0
+#define	SIZE	%o1
+#define	TO	%i0
+#define	MEMWORD	%o3	/* use o-registers as temps */
+#define	TEMP	%o4
+#define	TEMP2	%o5
+#define	UNIMP	0
+#define	MASK	0x00000fff
+#define	STRUCT_VAL_OFF	(16*4)
 #if STRET4
 #    define BYTES_PER_MOVE	4
 #    define LD	ld

@@ -28,22 +28,12 @@
  * Utility Assembly routines used by the debugger.
  */
 
-#if defined(__lint)
-#include <sys/types.h>
-#include <kmdb/kmdb_asmutil.h>
-#endif
-
 #include <sys/asm_linkage.h>
 #include <sys/privregs.h>
 #include "mach_asmutil.h"
 
-#if defined(__lint)
-int
-get_nwin(void)
-{
-	return (0);	/* wouldn't that be amusing */
-}
-#else
+	/* GNU assembler */
+	.register	%g3, #scratch
 
 	ENTRY(get_nwin)
 	GET_NWIN(%g4, %g3);	/* %g4 is scratch, %g3 set to nwin-1 */
@@ -52,29 +42,10 @@ get_nwin(void)
 	add	%o0, 1, %o0
 	SET_SIZE(get_nwin)
 
-#endif
-
-#if defined(__lint)
-uintptr_t
-get_fp(void)
-{
-	return (0);
-}
-#else
-
 	ENTRY(get_fp)
 	retl
 	mov	%fp, %o0
 	SET_SIZE(get_fp)
-
-#endif
-
-#if defined(__lint)
-void
-interrupts_on(void)
-{
-}
-#else
 
 	ENTRY(interrupts_on)
 	rdpr	%pstate, %o0
@@ -83,15 +54,6 @@ interrupts_on(void)
 	wrpr	%o0, %pstate
 	SET_SIZE(interrupts_on)
 
-#endif
-
-#if defined(__lint)
-void
-interrupts_off(void)
-{
-}
-#else
-
 	ENTRY(interrupts_off)
 	rdpr	%pstate, %o0
 	bclr	PSTATE_IE, %o0
@@ -99,35 +61,12 @@ interrupts_off(void)
 	wrpr	%o0, %pstate
 	SET_SIZE(interrupts_off)
 
-#endif
-
-#if defined(__lint)
-caddr_t
-get_tba(void)
-{
-	return (0);
-}
-#else
-
 	ENTRY(get_tba)
 	retl
 	rdpr	%tba, %o0
 	SET_SIZE(get_tba)
 
-#endif
-
-#if defined(__lint)
-/*ARGSUSED*/
-void *
-set_tba(void *new)
-{
-	return (0);
-}
-#else
-
 	ENTRY(set_tba)
 	retl
 	wrpr	%o0, %tba
 	SET_SIZE(set_tba)
-
-#endif

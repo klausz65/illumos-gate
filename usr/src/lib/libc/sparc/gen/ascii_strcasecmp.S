@@ -122,226 +122,226 @@
 
 	ENTRY(ascii_strcasecmp)
 
-	.align 32
+	.balign 32
 
 	save	%sp, -SA(WINDOWSIZE), %sp
-	subcc	%i0, %i1, %i2		! s1 == s2 ?
-	bz	.stringsequal		! yup, done, strings equal
-	andcc	%i0, 3, %i3		! s1 word-aligned ?
-	bz	.s1aligned1		! yup
-	sethi	%hi(0x80808080), %i4	! start loading Mycroft's magic1
+	subcc	%i0, %i1, %i2		/* s1 == s2 ? */
+	bz	.stringsequal		/* yup, done, strings equal */
+	andcc	%i0, 3, %i3		/* s1 word-aligned ? */
+	bz	.s1aligned1		/* yup */
+	sethi	%hi(0x80808080), %i4	/* start loading Mycroft's magic1 */
 
-	ldub	[%i1 + %i2], %i0	! s1[0]
-	ldub	[%i1], %g1		! s2[0]
-	sub	%i0, 'A', %l0		! transform for faster uppercase check
-	sub	%g1, 'A', %l1		! transform for faster uppercase check
-	cmp	%l0, ('Z' - 'A')	! s1[0] uppercase?
-	bleu,a	.noxlate11		! yes
-	add	%i0, ('a' - 'A'), %i0	! s1[0] = tolower(s1[0])
+	ldub	[%i1 + %i2], %i0	/* s1[0] */
+	ldub	[%i1], %g1		/* s2[0] */
+	sub	%i0, 'A', %l0		/* transform for faster uppercase check */
+	sub	%g1, 'A', %l1		/* transform for faster uppercase check */
+	cmp	%l0, ('Z' - 'A')	/* s1[0] uppercase? */
+	bleu,a	.noxlate11		/* yes */
+	add	%i0, ('a' - 'A'), %i0	/* s1[0] = tolower(s1[0]) */
 .noxlate11:
-	cmp	%l1, ('Z' - 'A')	! s2[0] uppercase?
-	bleu,a	.noxlate12		! yes
-	add	%g1, ('a' - 'A'), %g1	! s2[0] = tolower(s2[0])
+	cmp	%l1, ('Z' - 'A')	/* s2[0] uppercase? */
+	bleu,a	.noxlate12		/* yes */
+	add	%g1, ('a' - 'A'), %g1	/* s2[0] = tolower(s2[0]) */
 .noxlate12:
-	subcc	%i0, %g1, %i0		! tolower(s1[0]) != tolower(s2[0]) ?
-	bne	.done			! yup, done
-	inc	%i1			! s1++, s2++
-	addcc	%i0, %g1, %i0		! s1[0] == 0 ?
-	bz	.done			! yup, done, strings equal
-	cmp	%i3, 3			! s1 aligned now?
-	bz	.s1aligned2		! yup
-	sethi	%hi(0x01010101), %i5	! start loading Mycroft's magic2
+	subcc	%i0, %g1, %i0		/* tolower(s1[0]) != tolower(s2[0]) ? */
+	bne	.done			/* yup, done */
+	inc	%i1			/* s1++, s2++ */
+	addcc	%i0, %g1, %i0		/* s1[0] == 0 ? */
+	bz	.done			/* yup, done, strings equal */
+	cmp	%i3, 3			/* s1 aligned now? */
+	bz	.s1aligned2		/* yup */
+	sethi	%hi(0x01010101), %i5	/* start loading Mycroft's magic2 */
 
-	ldub	[%i1 + %i2], %i0	! s1[1]
-	ldub	[%i1], %g1		! s2[1]
-	sub	%i0, 'A', %l0		! transform for faster uppercase check
-	sub	%g1, 'A', %l1		! transform for faster uppercase check
-	cmp	%l0, ('Z' - 'A')	! s1[1] uppercase?
-	bleu,a	.noxlate21		! yes
-	add	%i0, ('a' - 'A'), %i0	! s1[1] = tolower(s1[1])
+	ldub	[%i1 + %i2], %i0	/* s1[1] */
+	ldub	[%i1], %g1		/* s2[1] */
+	sub	%i0, 'A', %l0		/* transform for faster uppercase check */
+	sub	%g1, 'A', %l1		/* transform for faster uppercase check */
+	cmp	%l0, ('Z' - 'A')	/* s1[1] uppercase? */
+	bleu,a	.noxlate21		/* yes */
+	add	%i0, ('a' - 'A'), %i0	/* s1[1] = tolower(s1[1]) */
 .noxlate21:
-	cmp	%l1, ('Z' - 'A')	! s2[1] uppercase?
-	bleu,a	.noxlate22		! yes
-	add	%g1, ('a' - 'A'), %g1	! s2[1] = tolower(s2[1])
+	cmp	%l1, ('Z' - 'A')	/* s2[1] uppercase? */
+	bleu,a	.noxlate22		/* yes */
+	add	%g1, ('a' - 'A'), %g1	/* s2[1] = tolower(s2[1]) */
 .noxlate22:
-	subcc	%i0, %g1, %i0		! tolower(s1[1]) != tolower(s2[1]) ?
-	bne	.done			! yup, done
-	inc	%i1			! s1++, s2++
-	addcc	%i0, %g1, %i0		! s1[1] == 0 ?
-	bz	.done			! yup, done, strings equal
-	cmp	%i3, 2			! s1 aligned now?
-	bz	.s1aligned3		! yup
-	or	%i4, %lo(0x80808080),%i4! finish loading Mycroft's magic1
+	subcc	%i0, %g1, %i0		/* tolower(s1[1]) != tolower(s2[1]) ? */
+	bne	.done			/* yup, done */
+	inc	%i1			/* s1++, s2++ */
+	addcc	%i0, %g1, %i0		/* s1[1] == 0 ? */
+	bz	.done			/* yup, done, strings equal */
+	cmp	%i3, 2			/* s1 aligned now? */
+	bz	.s1aligned3		/* yup */
+	or	%i4, %lo(0x80808080),%i4! finish loading Mycroft's magic1 */
 
-	ldub	[%i1 + %i2], %i0	! s1[2]
-	ldub	[%i1], %g1		! s2[2]
-	sub	%i0, 'A', %l0		! transform for faster uppercase check
-	sub	%g1, 'A', %l1		! transform for faster uppercase check
-	cmp	%l0, ('Z' - 'A')	! s1[2] uppercase?
-	bleu,a	.noxlate31		! yes
-	add	%i0, ('a' - 'A'), %i0	! s1[2] = tolower(s1[2])
+	ldub	[%i1 + %i2], %i0	/* s1[2] */
+	ldub	[%i1], %g1		/* s2[2] */
+	sub	%i0, 'A', %l0		/* transform for faster uppercase check */
+	sub	%g1, 'A', %l1		/* transform for faster uppercase check */
+	cmp	%l0, ('Z' - 'A')	/* s1[2] uppercase? */
+	bleu,a	.noxlate31		/* yes */
+	add	%i0, ('a' - 'A'), %i0	/* s1[2] = tolower(s1[2]) */
 .noxlate31:
-	cmp	%l1, ('Z' - 'A')	! s2[2] uppercase?
-	bleu,a	.noxlate32		! yes
-	add	%g1, ('a' - 'A'), %g1	! s2[2] = tolower(s2[2])
+	cmp	%l1, ('Z' - 'A')	/* s2[2] uppercase? */
+	bleu,a	.noxlate32		/* yes */
+	add	%g1, ('a' - 'A'), %g1	/* s2[2] = tolower(s2[2]) */
 .noxlate32:
-	subcc	%i0, %g1, %i0		! tolower(s1[2]) != tolower(s2[2]) ?
-	bne	.done			! yup, done
-	inc	%i1			! s1++, s2++
-	addcc	%i0, %g1, %i0		! s1[2] == 0 ?
-	bz	.done			! yup, done, strings equal
-	or	%i5, %lo(0x01010101),%i5! finish loading Mycroft's magic2
-	ba	.s1aligned4		! s1 aligned now
-	andcc	%i1, 3, %i3		! s2 word-aligned ?
+	subcc	%i0, %g1, %i0		/* tolower(s1[2]) != tolower(s2[2]) ? */
+	bne	.done			/* yup, done */
+	inc	%i1			/* s1++, s2++ */
+	addcc	%i0, %g1, %i0		/* s1[2] == 0 ? */
+	bz	.done			/* yup, done, strings equal */
+	or	%i5, %lo(0x01010101),%i5/* finish loading Mycroft's magic2 */
+	ba	.s1aligned4		/* s1 aligned now */
+	andcc	%i1, 3, %i3		/* s2 word-aligned ? */
 
 	! Here, we initialize our checks for a zero byte and decide
 	! whether or not we can optimize further if we're fortunate
 	! enough to have a word aligned desintation
 
 .s1aligned1:
-	sethi	%hi(0x01010101), %i5	! start loading Mycroft's magic2
+	sethi	%hi(0x01010101), %i5	/* start loading Mycroft's magic2 */
 .s1aligned2:
-	or	%i4, %lo(0x80808080),%i4! finish loading Mycroft's magic1
+	or	%i4, %lo(0x80808080),%i4/* finish loading Mycroft's magic1 */
 .s1aligned3:
-	or	%i5, %lo(0x01010101),%i5! finish loading Mycroft's magic2
-	andcc	%i1, 3, %i3		! s2 word aligned ?
+	or	%i5, %lo(0x01010101),%i5/* finish loading Mycroft's magic2 */
+	andcc	%i1, 3, %i3		/* s2 word aligned ? */
 .s1aligned4:
-	sethi	%hi(0x3f3f3f3f), %l2	! load m2 for parallel tolower()
-	sethi	%hi(0x25252525), %l3	! load m3 for parallel tolower()
-	or 	%l2, %lo(0x3f3f3f3f),%l2! finish loading m2
-	bz	.word4			! yup, s2 word-aligned
-	or 	%l3, %lo(0x25252525),%l3! finish loading m3
+	sethi	%hi(0x3f3f3f3f), %l2	/* load m2 for parallel tolower() */
+	sethi	%hi(0x25252525), %l3	/* load m3 for parallel tolower() */
+	or 	%l2, %lo(0x3f3f3f3f),%l2/* finish loading m2 */
+	bz	.word4			/* yup, s2 word-aligned */
+	or 	%l3, %lo(0x25252525),%l3/* finish loading m3 */
 
-	add	%i2, %i3, %i2		! start adjusting offset s1-s2
-	sll     %i3, 3, %l6    		! shift factor for left shifts
-	andn	%i1, 3, %i1		! round s1 pointer down to next word
-	sub	%g0, %l6, %l7		! shift factor for right shifts
-	orn	%i3, %g0, %i3		! generate all ones
-	lduw	[%i1], %i0		! new lower word from s2
-	srl	%i3, %l6, %i3		! mask for fixing up bytes
-	sll	%i0, %l6, %g1		! partial unaligned word from s2
-	orn	%i0, %i3, %i0		! force start bytes to non-zero
-	nop				! pad to align loop to 16-byte boundary
-	nop				! pad to align loop to 16-byte boundary
+	add	%i2, %i3, %i2		/* start adjusting offset s1-s2 */
+	sll	%i3, 3, %l6    		/* shift factor for left shifts */
+	andn	%i1, 3, %i1		/* round s1 pointer down to next word */
+	sub	%g0, %l6, %l7		/* shift factor for right shifts */
+	orn	%i3, %g0, %i3		/* generate all ones */
+	lduw	[%i1], %i0		/* new lower word from s2 */
+	srl	%i3, %l6, %i3		/* mask for fixing up bytes */
+	sll	%i0, %l6, %g1		/* partial unaligned word from s2 */
+	orn	%i0, %i3, %i0		/* force start bytes to non-zero */
+	nop				/* pad to align loop to 16-byte boundary */
+	nop				/* pad to align loop to 16-byte boundary */
 
 	! This is the comparision procedure used if the destination is not
 	! word aligned, if it is, we use word4 & cmp4
 
 .cmp:
-	andn	%i4, %i0, %l4		! ~word & 0x80808080
-	sub	%i0, %i5, %l5		! word - 0x01010101
-	andcc	%l5, %l4, %g0		! (word - 0x01010101) & ~word & 0x80808080
-	bz,a	.doload			! null byte in previous aligned s2 word
-	lduw	[%i1 + 4], %i0		! load next aligned word from s2
+	andn	%i4, %i0, %l4		/* ~word & 0x80808080 */
+	sub	%i0, %i5, %l5		/* word - 0x01010101 */
+	andcc	%l5, %l4, %g0		/* (word - 0x01010101) & ~word & 0x80808080 */
+	bz,a	.doload			/* null byte in previous aligned s2 word */
+	lduw	[%i1 + 4], %i0		/* load next aligned word from s2 */
 .doload:
-	srl	%i0, %l7, %i3		! byte(s) from new aligned word from s2
-	or	%g1, %i3, %g1		! merge to get unaligned word from s2
-	lduw	[%i1 + %i2], %i3	! x1 = word from s1
-	andn	%i3, %i4, %l0		! q1 = x1 & ~m1
-	andn	%g1, %i4, %l4		! q2 = x2 & ~m1
-	add	%l0, %l2, %l1		! p1 = q1 + m2
-	add	%l4, %l2, %l5		! p2 = q2 + m2
-	add	%l0, %l3, %l0		! q1 = q1 + m3
-	add	%l4, %l3, %l4		! q2 = q2 + m3
-	andn	%l1, %l0, %l1		! p1 = p1 & ~q1
-	andn	%l5, %l4, %l5		! p2 = p2 & ~q2
-	andn	%i4, %i3, %l0		! q1 = m1 & ~x1
-	andn	%i4, %g1, %l4		! q2 = m1 & ~x2
-	and	%l0, %l1, %l0		! q1 = p1 & q1
-	and	%l4, %l5, %l4		! q2 = p2 & q2
-	srl	%l0, 2, %l0		! q1 = q1 >> 2
-	srl	%l4, 2, %l4		! q2 = q2 >> 2
-	add	%l0, %i3, %i3		! lowercase word from s1
-	add	%l4, %g1, %g1		! lowercase word from s2
-	cmp	%i3, %g1		! tolower(*s1) != tolower(*s2) ?
-	bne	.wordsdiffer		! yup, now find byte that is different
-	add	%i1, 4, %i1		! s1+=4, s2+=4
-	andn	%i4, %i3, %l4		! ~word & 0x80808080
-	sub	%i3, %i5, %l5		! word - 0x01010101
-	andcc	%l5, %l4, %g0		! (word - 0x01010101) & ~word & 0x80808080
-	bz	.cmp			! no null-byte in s1 yet
-	sll	%i0, %l6, %g1		! bytes from old aligned word from s2
+	srl	%i0, %l7, %i3		/* byte(s) from new aligned word from s2 */
+	or	%g1, %i3, %g1		/* merge to get unaligned word from s2 */
+	lduw	[%i1 + %i2], %i3	/* x1 = word from s1 */
+	andn	%i3, %i4, %l0		/* q1 = x1 & ~m1 */
+	andn	%g1, %i4, %l4		/* q2 = x2 & ~m1 */
+	add	%l0, %l2, %l1		/* p1 = q1 + m2 */
+	add	%l4, %l2, %l5		/* p2 = q2 + m2 */
+	add	%l0, %l3, %l0		/* q1 = q1 + m3 */
+	add	%l4, %l3, %l4		/* q2 = q2 + m3 */
+	andn	%l1, %l0, %l1		/* p1 = p1 & ~q1 */
+	andn	%l5, %l4, %l5		/* p2 = p2 & ~q2 */
+	andn	%i4, %i3, %l0		/* q1 = m1 & ~x1 */
+	andn	%i4, %g1, %l4		/* q2 = m1 & ~x2 */
+	and	%l0, %l1, %l0		/* q1 = p1 & q1 */
+	and	%l4, %l5, %l4		/* q2 = p2 & q2 */
+	srl	%l0, 2, %l0		/* q1 = q1 >> 2 */
+	srl	%l4, 2, %l4		/* q2 = q2 >> 2 */
+	add	%l0, %i3, %i3		/* lowercase word from s1 */
+	add	%l4, %g1, %g1		/* lowercase word from s2 */
+	cmp	%i3, %g1		/* tolower(*s1) != tolower(*s2) ? */
+	bne	.wordsdiffer		/* yup, now find byte that is different */
+	add	%i1, 4, %i1		/* s1+=4, s2+=4 */
+	andn	%i4, %i3, %l4		/* ~word & 0x80808080 */
+	sub	%i3, %i5, %l5		/* word - 0x01010101 */
+	andcc	%l5, %l4, %g0		/* (word - 0x01010101) & ~word & 0x80808080 */
+	bz	.cmp			/* no null-byte in s1 yet */
+	sll	%i0, %l6, %g1		/* bytes from old aligned word from s2 */
 
 	! words are equal but the end of s1 has been reached
 	! this means the strings must be equal
 .stringsequal:
-	ret				! return
-	restore	%g0, %g0, %o0		! return 0, i.e. strings are equal
-	nop				! pad
+	ret				/* return */
+	restore	%g0, %g0, %o0		/* return 0, i.e. strings are equal */
+	nop				/* pad */
 
 	! we have a word aligned source and destination!  This means
 	! things get to go fast!
 
 .word4:
-	lduw	[%i1 + %i2], %i3	! x1 = word from s1
+	lduw	[%i1 + %i2], %i3	/* x1 = word from s1 */
 
 .cmp4:
-	andn	%i3, %i4, %l0		! q1 = x1 & ~m1
-	lduw	[%i1], %g1		! x2 = word from s2
-	andn	%g1, %i4, %l4		! q2 = x2 & ~m1
-	add	%l0, %l2, %l1		! p1 = q1 + m2
-	add	%l4, %l2, %l5		! p2 = q2 + m2
-	add	%l0, %l3, %l0		! q1 = q1 + m3
-	add	%l4, %l3, %l4		! q2 = q2 + m3
-	andn	%l1, %l0, %l1		! p1 = p1 & ~q1
-	andn	%l5, %l4, %l5		! p2 = p2 & ~q2
-	andn	%i4, %i3, %l0		! q1 = m1 & ~x1
-	andn	%i4, %g1, %l4		! q2 = m1 & ~x2
-	and	%l0, %l1, %l0		! q1 = p1 & q1
-	and	%l4, %l5, %l4		! q2 = p2 & q2
-	srl	%l0, 2, %l0		! q1 = q1 >> 2
-	srl	%l4, 2, %l4		! q2 = q2 >> 2
-	add	%l0, %i3, %i3		! lowercase word from s1
-	add	%l4, %g1, %g1		! lowercase word from s2
-	cmp	%i3, %g1		! tolower(*s1) != tolower(*s2) ?
-	bne	.wordsdiffer		! yup, now find mismatching character
-	add	%i1, 4, %i1		! s1+=4, s2+=4
-	andn	%i4, %i3, %l4		! ~word & 0x80808080
-	sub	%i3, %i5, %l5		! word - 0x01010101
-	andcc	%l5, %l4, %g0		! (word - 0x01010101) & ~word & 0x80808080
-	bz,a	.cmp4			! no null-byte in s1 yet
-	lduw	[%i1 + %i2], %i3	! load word from s1
+	andn	%i3, %i4, %l0		/* q1 = x1 & ~m1 */
+	lduw	[%i1], %g1		/* x2 = word from s2 */
+	andn	%g1, %i4, %l4		/* q2 = x2 & ~m1 */
+	add	%l0, %l2, %l1		/* p1 = q1 + m2 */
+	add	%l4, %l2, %l5		/* p2 = q2 + m2 */
+	add	%l0, %l3, %l0		/* q1 = q1 + m3 */
+	add	%l4, %l3, %l4		/* q2 = q2 + m3 */
+	andn	%l1, %l0, %l1		/* p1 = p1 & ~q1 */
+	andn	%l5, %l4, %l5		/* p2 = p2 & ~q2 */
+	andn	%i4, %i3, %l0		/* q1 = m1 & ~x1 */
+	andn	%i4, %g1, %l4		/* q2 = m1 & ~x2 */
+	and	%l0, %l1, %l0		/* q1 = p1 & q1 */
+	and	%l4, %l5, %l4		/* q2 = p2 & q2 */
+	srl	%l0, 2, %l0		/* q1 = q1 >> 2 */
+	srl	%l4, 2, %l4		/* q2 = q2 >> 2 */
+	add	%l0, %i3, %i3		/* lowercase word from s1 */
+	add	%l4, %g1, %g1		/* lowercase word from s2 */
+	cmp	%i3, %g1		/* tolower(*s1) != tolower(*s2) ? */
+	bne	.wordsdiffer		/* yup, now find mismatching character */
+	add	%i1, 4, %i1		/* s1+=4, s2+=4 */
+	andn	%i4, %i3, %l4		/* ~word & 0x80808080 */
+	sub	%i3, %i5, %l5		/* word - 0x01010101 */
+	andcc	%l5, %l4, %g0		/* (word - 0x01010101) & ~word & 0x80808080 */
+	bz,a	.cmp4			/* no null-byte in s1 yet */
+	lduw	[%i1 + %i2], %i3	/* load word from s1 */
 
 	! words are equal but the end of s1 has been reached
 	! this means the strings must be equal
 .stringsequal4:
-	ret				! return
-	restore	%g0, %g0, %o0		! return 0, i.e. strings are equal
+	ret				/* return */
+	restore	%g0, %g0, %o0		/* return 0, i.e. strings are equal */
 
 .wordsdiffer:
-	srl	%g1, 24, %i2		! first byte of mismatching word in s2
-	srl	%i3, 24, %i1		! first byte of mismatching word in s1
-	subcc	%i1, %i2, %i0		! *s1-*s2
-	bnz	.done			! bytes differ, return difference
-	srl	%g1, 16, %i2		! second byte of mismatching word in s2
-	andcc	%i1, 0xff, %i0		! *s1 == 0 ?
-	bz	.done			! yup, done, strings equal
+	srl	%g1, 24, %i2		/* first byte of mismatching word in s2 */
+	srl	%i3, 24, %i1		/* first byte of mismatching word in s1 */
+	subcc	%i1, %i2, %i0		/* *s1-*s2 */
+	bnz	.done			/* bytes differ, return difference */
+	srl	%g1, 16, %i2		/* second byte of mismatching word in s2 */
+	andcc	%i1, 0xff, %i0		/* *s1 == 0 ? */
+	bz	.done			/* yup, done, strings equal */
 
 	! we know byte 1 is equal, so can compare bytes 1,2 as a group
 
-	srl	%i3, 16, %i1		! second byte of mismatching word in s1
-	subcc	%i1, %i2, %i0		! *s1-*s2
-	bnz	.done			! bytes differ, return difference
-	srl	%g1, 8, %i2		! third byte of mismatching word in s2
-	andcc	%i1, 0xff, %i0		! *s1 == 0 ?
-	bz	.done			! yup, done, strings equal
+	srl	%i3, 16, %i1		/* second byte of mismatching word in s1 */
+	subcc	%i1, %i2, %i0		/* *s1-*s2 */
+	bnz	.done			/* bytes differ, return difference */
+	srl	%g1, 8, %i2		/* third byte of mismatching word in s2 */
+	andcc	%i1, 0xff, %i0		/* *s1 == 0 ? */
+	bz	.done			/* yup, done, strings equal */
 
 	! we know bytes 1, 2 are equal, so can compare bytes 1,2,3 as a group
 
-	srl	%i3, 8, %i1		! third byte of mismatching word in s1
-	subcc	%i1, %i2, %i0		! *s1-*s2
-	bnz	.done			! bytes differ, return difference
-	andcc	%i1, 0xff, %g0		! *s1 == 0 ?
-	bz	.stringsequal		! yup, done, strings equal
+	srl	%i3, 8, %i1		/* third byte of mismatching word in s1 */
+	subcc	%i1, %i2, %i0		/* *s1-*s2 */
+	bnz	.done			/* bytes differ, return difference */
+	andcc	%i1, 0xff, %g0		/* *s1 == 0 ? */
+	bz	.stringsequal		/* yup, done, strings equal */
 
 	! we know bytes 1,2,3 are equal, so can compare bytes 1,2,3,4 as group
 
-	subcc	%i3, %g1, %i0		! *s1-*s2
-	bz,a	.done			! bytes differ, return difference
-	andcc	%i3, 0xff, %i0		! *s1 == 0, strings equal
+	subcc	%i3, %g1, %i0		/* *s1-*s2 */
+	bz,a	.done			/* bytes differ, return difference */
+	andcc	%i3, 0xff, %i0		/* *s1 == 0, strings equal */
 
 .done:
-	ret				! return
-	restore	%i0, %g0, %o0		! return 0 or byte difference
+	ret				/* return */
+	restore	%i0, %g0, %o0		/* return 0 or byte difference */
 
 	SET_SIZE(ascii_strcasecmp)

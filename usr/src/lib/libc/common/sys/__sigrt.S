@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"__sigrt.s"
+	.file	"__sigrt.S"
 
 #include "SYS.h"
 

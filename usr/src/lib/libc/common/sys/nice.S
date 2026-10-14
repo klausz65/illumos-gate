@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"nice.s"
+	.file	"nice.S"
 
 /* C library -- nice						*/
 /* int nice (int incr);						*/

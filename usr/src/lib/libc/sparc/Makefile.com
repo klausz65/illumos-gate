@@ -1145,8 +1145,11 @@ MAPFILES =	$(LIBCDIR)/port/mapfile-vers
 CFLAGS +=	$(EXTN_CFLAGS)
 CPPFLAGS=	-D_REENTRANT -Dsparc $(EXTN_CPPFLAGS) $(THREAD_DEBUG) \
 		-I$(LIBCBASE)/inc -I$(LIBCDIR)/inc $(CPPFLAGS.master)
-ASFLAGS=	$(EXTN_ASFLAGS) $(AS_WITH_CPP) -D__STDC__ \
-		-D_ASM $(CPPFLAGS) $(sparc_XARCH)
+
+# __XOPEN_OR_POSIX is necessary to avoid implicit _LARGEFILE_SOURCE which
+# breaks the libc compilation environment.
+ASFLAGS=	$(AS_PICFLAGS) -D_ASM \
+		$(CPPFLAGS) $(sparc_XARCH) -D__XOPEN_OR_POSIX=1
 
 # As a favor to the dtrace syscall provider, libc still calls the
 # old syscall traps that have been obsoleted by the *at() interfaces.
@@ -1207,7 +1210,7 @@ $(DYNLIB) := CRTN = crtn.o
 
 # special kludge for inlines with 'cas':
 pics/rwlock.o pics/synch.o pics/lwp.o pics/door_calls.o := \
-	sparc_CFLAGS += -_gcc=-Wa,-xarch=v8plus
+	sparc_CFLAGS += -_gcc=-Wa,-xarch=v8plusa
 
 pics/_Q%.o := sparc_COPTFLAG = -xO4
 pics/__quad%.o := sparc_COPTFLAG = -xO4
@@ -1279,19 +1282,19 @@ $(LIB_PIC): pics $$(PICS)
 	$(POST_PROCESS_A)
 
 # special cases
-$(STRETS:%=pics/%): $(LIBCBASE)/crt/stret.s
-	$(AS) $(ASFLAGS) -DSTRET$(@F:stret%.o=%) $(LIBCBASE)/crt/stret.s -o $@
+$(STRETS:%=pics/%): $(LIBCBASE)/crt/stret.S
+	$(AS) $(ASFLAGS) -DSTRET$(@F:stret%.o=%) $(LIBCBASE)/crt/stret.S -c -o $@
 	$(POST_PROCESS_S_O)
 
 $(LIBCBASE)/crt/_rtbootld.S:	$(LIBCBASE)/crt/_rtboot.S $(LIBCBASE)/crt/_rtld.c
-	$(CC) $(CPPFLAGS) $(CTF_FLAGS) -O -S $(C_PICFLAGS) \
+	$(CC) -m32 $(CPPFLAGS) $(CTF_FLAGS) -O -S $(C_PICFLAGS) \
 	    $(LIBCBASE)/crt/_rtld.c -o $(LIBCBASE)/crt/_rtld.s
 	$(CAT) $(LIBCBASE)/crt/_rtboot.S $(LIBCBASE)/crt/_rtld.s > $@
 	$(RM) $(LIBCBASE)/crt/_rtld.s
 
 # partially built from C source
 pics/_rtbootld.o: $(LIBCBASE)/crt/_rtbootld.S
-	$(AS) $(ASFLAGS) $(LIBCBASE)/crt/_rtbootld.S -o $@
+	$(AS) $(ASFLAGS) $(LIBCBASE)/crt/_rtbootld.S -c -o $@
 	$(CTFCONVERT_O)
 
 ASSYMDEP_OBJS=			\

@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"pathconf.s"
+	.file	"pathconf.S"
 
 /* C library -- pathconf					*/
 /* long pathconf(char *path, int name)				*/

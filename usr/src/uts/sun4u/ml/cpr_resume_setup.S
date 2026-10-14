@@ -38,6 +38,10 @@
 #include <sys/intreg.h>
 #include <sys/clock.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * resume kernel entry point from cprboot
  * 	1. restore I/D TSB registers
@@ -60,23 +64,26 @@
 	! reserve 4k for cpr tmp stack; tstack should be first,
 	! any new data symbols should be added after tstack.
 	!
-	.seg	".data"
+	.section	.data
 	.global	i_cpr_data_page, i_cpr_tstack_size
 	.global	i_cpr_orig_cif
 
-	.align	MMU_PAGESIZE
+	.balign	MMU_PAGESIZE
 i_cpr_data_page:
 	.skip	4096
 i_cpr_tstack:
 	.word	0
+
 i_cpr_tstack_size:
 	.word	4096
 
-	.align	8
+	.balign	8
 prom_tba:
 	.word	0, 0
+
 i_cpr_orig_cif:
 	.nword	0
+
 i_cpr_tmp_cif:
 	.nword	0
 
@@ -85,8 +92,8 @@ i_cpr_tmp_cif:
 	! set text to begin at a page boundary so we can
 	! map this one page and jump to it from cprboot
 	!
-	.seg	".text"
-	.align	MMU_PAGESIZE
+	.section	.text
+	.balign	MMU_PAGESIZE
 
 	ENTRY(i_cpr_resume_setup)
 	!
@@ -99,7 +106,7 @@ i_cpr_tmp_cif:
 	! Restore PCONTEXT
 	!
 	sethi	%hi(FLUSH_ADDR), %g3
-	ld	[%l5 + CPR_MD_PRI], %g1		! mdp->mmu_ctx_pri
+	ld	[%l5 + CPR_MD_PRI], %g1		/* mdp->mmu_ctx_pri */
 	set	MMU_PCONTEXT, %g2
 	stxa	%g1, [%g2]ASI_DMMU
 	flush	%g3
@@ -109,7 +116,7 @@ i_cpr_tmp_cif:
 	! registers.  Since we are restoring INVALID_CONTEXT into
 	! the secondary context the HAT will do that for us.
 	!
-	ld	[%l5 + CPR_MD_SEC], %g1		! mdp->mmu_ctx_sec
+	ld	[%l5 + CPR_MD_SEC], %g1		/* mdp->mmu_ctx_sec */
 	set	MMU_SCONTEXT, %g2
 	stxa	%g1, [%g2]ASI_DMMU
 	flush	%g3
@@ -122,15 +129,15 @@ i_cpr_tmp_cif:
 	!
 	! copy saved thread pointer to %g7
 	!
-	ldx	[%l5 + CPR_MD_THRP], THREAD_REG		! mdp->thrp
+	ldx	[%l5 + CPR_MD_THRP], THREAD_REG		/* mdp->thrp */
 
 	!
 	! since csu_md_t lives in a cprboot data page,
 	! copy select data to registers for later use
 	! before freeing cprboot text/data pages
 	!
-	ldx	[%l5 + CPR_MD_QSAV_PC], %l7	! l7 = mdp->qsav_pc
-	ldx	[%l5 + CPR_MD_QSAV_SP], %l6	! l6 = mdp->qsav_sp
+	ldx	[%l5 + CPR_MD_QSAV_PC], %l7	/* l7 = mdp->qsav_pc */
+	ldx	[%l5 + CPR_MD_QSAV_SP], %l6	/* l6 = mdp->qsav_sp */
 
 	!
 	! save cookie from the new/tmp prom
@@ -164,10 +171,10 @@ i_cpr_tmp_cif:
 	! special shortened version of longjmp
 	! Don't need to flushw
 	!
-	mov	%l7, %i7		! i7 = saved pc
-	mov	%l6, %fp		! i6 = saved sp
-	ret				! return 1
-	restore	%g0, 1, %o0		! takes underflow, switches stack
+	mov	%l7, %i7		/* i7 = saved pc */
+	mov	%l6, %fp		/* i6 = saved sp */
+	ret				/* return 1 */
+	restore	%g0, 1, %o0		/* takes underflow, switches stack */
 	SET_SIZE(i_cpr_resume_setup)
 
 
@@ -191,24 +198,24 @@ i_cpr_tmp_cif:
 	!
 	ENTRY(i_cpr_cif_wrapper)
 	save	%sp, -SA64(MINFRAME64 + 8), %sp
-	rdpr	%tba, %o5		! read original %tba
+	rdpr	%tba, %o5		/* read original %tba */
 	stx	%o5, [%fp + V9BIAS64 - 8]
 	set	prom_tba, %l4
-	ldx	[%l4], %o4		! read prom_tba
-	wrpr	%o4, %tba		! switch to prom trap table
+	ldx	[%l4], %o4		/* read prom_tba */
+	wrpr	%o4, %tba		/* switch to prom trap table */
 
-	set	i_cpr_tmp_cif, %g3	! cookie for new/tmp prom
+	set	i_cpr_tmp_cif, %g3	/* cookie for new/tmp prom */
 	ldn	[%g3], %g4
-	jmpl	%g4, %o7		! call prom service
+	jmpl	%g4, %o7		/* call prom service */
 	mov	%i0, %o0
 
-	ldx	[%l4], %o4		! read prom_tba
-	rdpr	%tba, %o3		! read current %tba
-	cmp	%o3, %o4		! did prom change %tba ?
-	bne,pn	%xcc, 1f		! yes, dont reset %tba
+	ldx	[%l4], %o4		/* read prom_tba */
+	rdpr	%tba, %o3		/* read current %tba */
+	cmp	%o3, %o4		/* did prom change %tba ? */
+	bne,pn	%xcc, 1f		/* yes, dont reset %tba */
 	nop
 	ldx	[%fp + V9BIAS64 - 8], %o5
-	wrpr	%o5, %tba		! no change, restore orignal
+	wrpr	%o5, %tba		/* no change, restore orignal */
 1:
 	ret
 	restore	%g0, %o0, %o0
@@ -219,11 +226,11 @@ i_cpr_tmp_cif:
 	! write dtlb entry at index
 	!
 	ENTRY(dtlb_wr_entry)
-	sllx    %o0, 3, %o0			! index << 3
-	ldx	[%o1], %o5			! o5 = tte.ll
-	ldx	[%o2], %o4			! o4 = va_tag
-	srlx	%o4, MMU_PAGESHIFT, %o4		! clear any page offset
-	sllx	%o4, MMU_PAGESHIFT, %o4		! o4 = va_tag & PAGEMASK
+	sllx	%o0, 3, %o0			/* index << 3 */
+	ldx	[%o1], %o5			/* o5 = tte.ll */
+	ldx	[%o2], %o4			/* o4 = va_tag */
+	srlx	%o4, MMU_PAGESHIFT, %o4		/* clear any page offset */
+	sllx	%o4, MMU_PAGESHIFT, %o4		/* o4 = va_tag & PAGEMASK */
 	set	MMU_TAG_ACCESS, %o3
 	stxa	%o4, [%o3]ASI_DMMU
 	stxa	%o5, [%o0]ASI_DTLB_ACCESS
@@ -237,11 +244,11 @@ i_cpr_tmp_cif:
 	! write itlb entry at index
 	!
 	ENTRY(itlb_wr_entry)
-	sllx    %o0, 3, %o0			! index << 3
-	ldx	[%o1], %o5			! o5 = tte.ll
-	ldx	[%o2], %o4			! o4 = va_tag
-	srlx	%o4, MMU_PAGESHIFT, %o4		! clear any page offset
-	sllx	%o4, MMU_PAGESHIFT, %o4		! o4 = va_tag & PAGEMASK
+	sllx	%o0, 3, %o0			/* index << 3 */
+	ldx	[%o1], %o5			/* o5 = tte.ll */
+	ldx	[%o2], %o4			/* o4 = va_tag */
+	srlx	%o4, MMU_PAGESHIFT, %o4		/* clear any page offset */
+	sllx	%o4, MMU_PAGESHIFT, %o4		/* o4 = va_tag & PAGEMASK */
 	set	MMU_TAG_ACCESS, %o3
 	stxa	%o4, [%o3]ASI_IMMU
 	stxa	%o5, [%o0]ASI_ITLB_ACCESS

@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"setrlimit.s"
+	.file	"setrlimit.S"
 
 /* C library -- setrlimit					*/
 /* int setrlimit(int resource, const struct rlimit *rlp)	*/

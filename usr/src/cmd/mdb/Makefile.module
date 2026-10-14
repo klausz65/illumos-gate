@@ -117,6 +117,7 @@ SMOFF += all_func_returns,index_overflow
 $(MODOBJS) :=	CFLAGS += $(C_BIGPICFLAGS)
 $(MODOBJS) :=	CFLAGS64 += $(C_BIGPICFLAGS)
 $(KMODOBJS) :=	CPPFLAGS += -D_KMDB
+$(KMODOBJS) :=	V9CODESIZE = -Wc,-xcode=abs32
 $(KMODOBJS) :=	DTS_ERRNO =
 $(KMODFILE) :=	STACKPROTECT = none
 

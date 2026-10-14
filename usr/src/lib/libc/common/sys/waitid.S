@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"waitid.s"
+	.file	"waitid.S"
 
 /* C library -- waitid						*/
 /* int waitid(idtype_t idtype, id_t id, siginfo_t *infop,

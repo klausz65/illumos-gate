@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"chroot.s"
+	.file	"chroot.S"
 
 /* C library -- chroot						*/
 /* int chroot(const char *path)					*/

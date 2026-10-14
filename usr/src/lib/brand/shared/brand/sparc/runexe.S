@@ -26,22 +26,13 @@
 #include <sys/asm_linkage.h>
 #include <brand_misc.h>
 
-#if defined(lint)
-
-/*ARGSUSED*/
-void
-brand_runexe(void *argv, ulong_t entry)
-{
-}
-
-#else	/* lint */
-	.section	".text"
+	.section	.text
 	ENTRY_NP(brand_runexe)
 	/*
 	 * Prepare to jump to the target program we actually want to run.
 	 * If this program is dynamically linked then we'll be jumping to
-	 * another copy of the linker.  If it's a statically linked program
-	 * we'll be jumping directy to it's main entry point.  In any case,
+	 * another copy of the linker. If it's a statically linked program
+	 * we'll be jumping directy to it's main entry point. In any case,
 	 * we need to reset our current state stack and register state to
 	 * something similar to the initial process state setup by the kernel
 	 * and documented at:
@@ -62,7 +53,7 @@ brand_runexe(void *argv, ulong_t entry)
 	/*
 	 * We also have to make sure to clear %g1 since nornally ld.so.1 will
 	 * set that to non-zero if there is an exit function that should be
-	 * invoked when the process is terminating.  This isn't actually
+	 * invoked when the process is terminating. This isn't actually
 	 * necessary if the target program we're jumping to is a dynamically
 	 * linked program since in that case we're actually jumping to another
 	 * copy of ld.so.1 and it will just reset %g1, but if the target
@@ -72,10 +63,9 @@ brand_runexe(void *argv, ulong_t entry)
 	 */
 	clr	%g1
 
-	jmp	%o1	! jump to the target processes entry point
+	jmp	%o1	/* jump to the target processes entry point */
 	nop
 	/*
 	 * target will never return.
 	 */
 	SET_SIZE(brand_runexe)
-#endif	/* lint */

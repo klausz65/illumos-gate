@@ -22,6 +22,7 @@
  * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  * Copyright 2018, Joyent, Inc.
  * Copyright 2023-2026 RackTop Systems, Inc.
+ * Copyright 2026 Klaus Ziegler.
  */
 
 /*
@@ -159,7 +160,11 @@ gcm_mul(uint64_t *x_in, uint64_t *y, uint64_t *res)
 /*
  * helper factored out of gcm_mode_encrypt_contiguous_blocks
  */
+#ifdef __sparc
+static void
+#else
 static inline void
+#endif
 gcm_encrypt_block(gcm_ctx_t *ctx, uint8_t *datap, crypto_data_t *out,
     size_t block_size, uint8_t *blockp, void *iov_or_mp, offset_t *offset,
     int (*encrypt_block)(const void *, const uint8_t *, uint8_t *),

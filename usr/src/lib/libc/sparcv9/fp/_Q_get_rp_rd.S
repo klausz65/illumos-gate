@@ -24,16 +24,16 @@
  * Use is subject to license terms.
  */
 
-	.file	"_Q_get_rp_rd.s"
+	.file	"_Q_get_rp_rd.S"
 
 #include <sys/asm_linkage.h>
 
 	ENTRY(_QgetRD)
-	add     %sp,-SA(MINFRAME),%sp
-        st      %fsr,[%sp+STACK_BIAS+ARGPUSH]
-        ld      [%sp+STACK_BIAS+ARGPUSH],%o0	! o0 = fsr
-        srl     %o0,30,%o0              ! return round control value
-        retl
-	add     %sp,SA(MINFRAME),%sp
+	add	%sp,-SA(MINFRAME),%sp
+	st	%fsr,[%sp+STACK_BIAS+ARGPUSH]
+	ld	[%sp+STACK_BIAS+ARGPUSH],%o0	/* o0 = fsr */
+	srl	%o0,30,%o0			/* return round control value */
+	retl
+	add	%sp,SA(MINFRAME),%sp
 
 	SET_SIZE(_QgetRD)

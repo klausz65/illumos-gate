@@ -24,14 +24,9 @@
 
 #include <brand_misc.h>
 
-#if defined(lint)
-
-void
-brand_handler(void)
-{
-}
-
-#else	/* !lint */
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 #define	PIC_SETUP(r)						\
 	mov	%o7, %g1;					\
@@ -42,8 +37,8 @@ brand_handler(void)
 	mov	%g1, %o7
 
 /*
- * Translate a global symbol into an address.  The resulting address
- * is returned in the first register parameter.  The second register
+ * Translate a global symbol into an address. The resulting address
+ * is returned in the first register parameter. The second register
  * is just for scratch space.
  */
 #if defined(__sparcv9)
@@ -58,7 +53,7 @@ brand_handler(void)
 	ld	[r1 + name], r1
 #endif /* !__sparcv9 */
 
-	.section	".text"
+	.section	.text
 
 	/*
 	 * When we get here, %g1 should contain the system call and
@@ -78,7 +73,7 @@ brand_handler(void)
 	/*
 	 * Save the current caller state into gregs and gwins.
 	 * Note that this state isn't exact, %g1 and %g5 have been
-	 * already been lost.  Also, we've pushed a stack frame so
+	 * already been lost. Also, we've pushed a stack frame so
 	 * the callers output registers are our input registers.
 	 */
 	stn	%g0, [%sp + EH_LOCALS_GREG(REG_G1)]	/* %g1 is lost */
@@ -193,7 +188,7 @@ args_copied:
 	cmp	%g0, %o0
 	be	success
 	nop
-	subcc   %g0, 1, %g0			/* failure, set carry flag */
+	subcc	%g0, 1, %g0			/* failure, set carry flag */
 	ba	return
 	mov	%o0, %i0			/* return, %o0 == errno */
 
@@ -209,8 +204,8 @@ clear_carry:
 
 return:
 	/*
-	 * Our syscall emulation is complete.  Return to the caller that
-	 * originally invoked a system which needed emulation.  Note that
+	 * Our syscall emulation is complete. Return to the caller that
+	 * originally invoked a system which needed emulation. Note that
 	 * we have to load the return address that we saved earlier because
 	 * it's possible that %g5 was overwritten by a nested call into
 	 * this emulation library.
@@ -219,6 +214,3 @@ return:
 	jmp	%g5
 	restore					/* delay slot */
 	SET_SIZE(brand_handler)
-
-
-#endif	/* !lint */

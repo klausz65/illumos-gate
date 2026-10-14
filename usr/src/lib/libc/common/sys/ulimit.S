@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"ulimit.s"
+	.file	"ulimit.S"
 
 /* C library -- ulimit						*/
 /* long ulimit (int cmd, long newlimit);			*/

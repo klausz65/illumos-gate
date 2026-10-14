@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"uucopy.s"
+	.file	"uucopy.S"
 
 #include "SYS.h"
 

@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"synonyms.s"
+	.file	"synonyms.S"
 
 #define	SYN(name)				\
 	.align	4;				\

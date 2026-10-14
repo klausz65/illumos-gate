@@ -25,7 +25,7 @@
 
 include		../Makefile.com
 
-ASFLAGS +=	-xarch=v8plusa
+ASFLAGS +=	-xarch=v8plusc
 
 all install:	$(SYMCAP)
 

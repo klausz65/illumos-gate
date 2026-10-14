@@ -26,20 +26,12 @@
 #include <sys/asm_linkage.h>
 #include <sys/link.h>
 
-#if defined(lint)
-
-void
-_start(void)
-{
-}
-
-#else	/* lint */
-	.section	".text"
+	.section	.text
 	/*
 	 * Initial entry point for the brand emulation library.
 	 *
 	 * This platform specific assembly entry point exists just to invoke
-	 * the common brand library startup routine.  That routine expects to
+	 * the common brand library startup routine. That routine expects to
 	 * be called with the following arguments:
 	 *	brand_init(int argc, char *argv[], char *envp[])
 	 *
@@ -67,13 +59,12 @@ _start(void)
 	add	%fp, + WINDOWSIZE + CPTRSIZE + STACK_BIAS, %o1
 
 	/* get envp */
-	add	%o0, 1, %l0		! add 1 to argc for last element of 0
-	sll	%l0, CPTRSHIFT, %l0	! multiply argc by pointer size
-	add	%o1, %l0, %o2		!  and add to argv to get first env ptr
+	add	%o0, 1, %l0		/* add 1 to argc for last element of 0 */
+	sll	%l0, CPTRSHIFT, %l0	/* multiply argc by pointer size */
+	add	%o1, %l0, %o2		/*  and add to argv to get first env ptr */
 
 	call	brand_init
 	nop
 
 	/*NOTREACHED*/
 	SET_SIZE(_start)
-#endif	/* lint */

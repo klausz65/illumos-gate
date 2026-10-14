@@ -27,9 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-.ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.6	*/
-
-	.file	"cerror.s"
+	.file	"cerror.S"
 
 #include "SYS.h"
 

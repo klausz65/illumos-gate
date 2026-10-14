@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"modctl.s"
+	.file	"modctl.S"
 
 /* C library -- modctl						*/
 /* int modctl(int opcode, char *arg)				*/

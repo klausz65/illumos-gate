@@ -61,18 +61,18 @@
 	 *         uint64_t *wstatus)
 	 */
 	ENTRY(hv_rng_ctl_read_v2)
-        save    %sp, -SA(MINFRAME64), %sp
-        mov     %i0, %o0
-        mov     %i1, %o1
-        mov     HV_RNG_CTL_READ, %o5
-        ta      FAST_TRAP
-        mov     %o0, %i0        ! trap status
-        stx     %o1, [%i2]      ! save status
-        stx     %o2, [%i3]      ! save delta
-        stx     %o3, [%i4]      ! save watchdog
-        stx     %o4, [%i5]      ! save write status
-        ret
-        restore
+	save	%sp, -SA(MINFRAME64), %sp
+	mov	%i0, %o0
+	mov	%i1, %o1
+	mov	HV_RNG_CTL_READ, %o5
+	ta	FAST_TRAP
+	mov	%o0, %i0	! trap status
+	stx	%o1, [%i2]	! save status
+	stx	%o2, [%i3]	! save delta
+	stx	%o3, [%i4]	! save watchdog
+	stx	%o4, [%i5]	! save write status
+	ret
+	restore
 	SET_SIZE(hv_rng_ctl_read_v2)
 
 	/*

@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"setreid.s"
+	.file	"setreid.S"
 
 #include <sys/asm_linkage.h>
 

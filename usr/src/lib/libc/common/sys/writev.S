@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"writev.s"
+	.file	"writev.S"
 
 /* C library -- writev 							*/
 /* ssize_t __writev(int fd, const struct iovec *iovp, int iovcnt)	*/

@@ -22,6 +22,9 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include "assym.h"
 
@@ -35,6 +38,10 @@
 #include <sys/clock.h>
 #include <vm/hat_sfmmu.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 	.weak	cpu_feature_init
 	.type	cpu_feature_init, #function
 
@@ -46,13 +53,13 @@
  *
  * This is the kernel entry point for other cpus except the first one.
  * When the prom jumps to this location we are still executing with the
- * prom's trap table.  It expects the cpuid as its first parameter.
+ * prom's trap table. It expects the cpuid as its first parameter.
  */
 
 	! allocate a temporary stack to run on while we figure who and
 	! what we are.
-	.seg	".data"
-	.align	8
+	.section	.data
+	.balign	8
 etmpstk:
 	.skip	2048
 tmpstk:
@@ -62,13 +69,13 @@ tmpstk:
 	!
 	! Initialize CPU state registers
 	!
-	! The boot cpu and other cpus are different.  The boot cpu has gone
+	! The boot cpu and other cpus are different. The boot cpu has gone
 	! through boot, and its state might be affected as a result.  The
 	! other cpus' states come directly from the prom.
 	!
 	wrpr	%g0, PSTATE_KERN, %pstate
-	wr	%g0, %g0, %fprs		! clear fprs
-	CLEARTICKNPT			! allow user rdtick
+	wr	%g0, %g0, %fprs		/* clear fprs */
+	CLEARTICKNPT			/* allow user rdtick */
 
 	!
 	! Set up temporary stack
@@ -79,15 +86,15 @@ tmpstk:
 	sub	%g2, %g3, %o2
 	sub	%o2, SA(MINFRAME) + STACK_BIAS, %sp
 
-	mov	%o0, %l1		! save cpuid
+	mov	%o0, %l1		/* save cpuid */
 
 	call	sfmmu_mp_startup
-	sub	%g0, 1, THREAD_REG	! catch any curthread acceses
+	sub	%g0, 1, THREAD_REG	/* catch any curthread acceses */
 
 	! On OPL platforms, context page size TLB programming must be enabled in
-	! ASI_MEMCNTL.  To avoid Olympus-C and Jupiter sTLB errata (strands with
+	! ASI_MEMCNTL. To avoid Olympus-C and Jupiter sTLB errata (strands with
 	! different TLB page size settings), this must be done here before any
-	! reference to non-nucleus memory.  An early hook is added to perform
+	! reference to non-nucleus memory. An early hook is added to perform
 	! cpu specific initialization.
 	!
 	sethi	%hi(cpu_early_feature_init), %o0
@@ -113,9 +120,9 @@ tmpstk:
 	! we don't have the cache on yet for this CPU.
 	!
 	set	cpu, %l3
-	sll	%l1, CPTRSHIFT, %l2	! offset into CPU vector.
-	ldn	[%l3 + %l2], %l3	! pointer to CPU struct
-	ldn	[%l3 + CPU_THREAD], THREAD_REG	! set thread pointer (%g7)
+	sll	%l1, CPTRSHIFT, %l2	/* offset into CPU vector. */
+	ldn	[%l3 + %l2], %l3	/* pointer to CPU struct */
+	ldn	[%l3 + CPU_THREAD], THREAD_REG	/* set thread pointer (%g7) */
 
 	!
 	! Set up any required cpu feature
@@ -131,9 +138,9 @@ tmpstk:
 	!
 	! Resume the thread allocated for the CPU.
 	!
- 	ldn	[THREAD_REG + T_PC], %i7
+	ldn	[THREAD_REG + T_PC], %i7
 	ldn	[THREAD_REG + T_SP], %fp
-	ret				! "return" into the thread
-	restore				! WILL cause underflow
+	ret				/* "return" into the thread */
+	restore				/* WILL cause underflow */
 	SET_SIZE(cpu_startup)
 

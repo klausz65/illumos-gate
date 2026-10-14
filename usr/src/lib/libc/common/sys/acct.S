@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"acct.s"
+	.file	"acct.S"
 
 /* C library -- acct						*/
 /* int acct(const char *path)					*/

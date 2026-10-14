@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"acl.s"
+	.file	"acl.S"
 
 /* C library -- acl						*/
 /* int acl(const char *path, int cmd, int cnt, struct aclent *buf)	*/

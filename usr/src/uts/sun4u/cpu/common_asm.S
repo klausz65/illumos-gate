@@ -24,6 +24,10 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * General assembly language routines.
  * It is the intent of this file to contain routines that are
@@ -40,7 +44,7 @@
 	ba,a	fast_trap_done
 
 /*
- * Override GET_NATIVE_TIME for the cpu module code.  This is not
+ * Override GET_NATIVE_TIME for the cpu module code. This is not
  * guaranteed to be exactly one instruction, be careful of using
  * the macro in delay slots.
  *
@@ -100,7 +104,7 @@
  * SETL41_OFF is used to calulate the relative PC value when a
  * branch instruction needs to go over SETL41() macro
  */
-#define SETL41_OFF  16
+#define	SETL41_OFF  16
 
 /*
  * reading stick requires 2 loads, and there could be an intervening
@@ -163,14 +167,14 @@
 	stxa	high, [addr]ASI_IO;	\
 	dec	HST_DIFF, addr;		\
 	stxa	low, [addr]ASI_IO
-#define RD_TICKCMPR(out, scr)		\
+#define	RD_TICKCMPR(out, scr)		\
 	SETL41(scr, HSTC_LOW);		\
 	ldxa	[scr]ASI_IO, out;	\
 	inc	HST_DIFF, scr;		\
 	ldxa	[scr]ASI_IO, scr;	\
 	sllx	scr, 32, scr;		\
 	or	scr, out, out
-#define WR_TICKCMPR(in, scra, scrd, label) \
+#define	WR_TICKCMPR(in, scra, scrd, label) \
 	SETL41(scra, HSTC_HIGH);	\
 	srlx	in, 32, scrd;		\
 	stxa	scrd, [scra]ASI_IO;	\
@@ -191,20 +195,20 @@
 /*
  * Writes to the TICK_COMPARE register sometimes fail on blackbird modules.
  * The failure occurs only when the following instruction decodes to wr or
- * wrpr.  The workaround is to immediately follow writes to TICK_COMPARE
+ * wrpr. The workaround is to immediately follow writes to TICK_COMPARE
  * with a read, thus stalling the pipe and keeping following instructions
- * from causing data corruption.  Aligning to a quadword will ensure these
+ * from causing data corruption. Aligning to a quadword will ensure these
  * two instructions are not split due to i$ misses.
  */
-#define WR_TICKCMPR(cmpr,scr1,scr2,label)	\
-	ba,a	.bb_errata_1.label		;\
-	.align	64				;\
-.bb_errata_1.label:				;\
-	wr	cmpr, TICK_COMPARE		;\
-	rd	TICK_COMPARE, %g0
+#define	WR_TICKCMPR(cmpr,scr1,scr2,label)	\
+	ba,a	1f				;\
+	.balign	64				;\
+1:						;\
+	wr	cmpr, %g0, %tick_cmpr		;\
+	rd	%tick_cmpr, %g0
 #else	/* BB_ERRATA_1 */
 #define	WR_TICKCMPR(in,scr1,scr2,label)		\
-	wr	in, TICK_COMPARE
+	wr	in, %g0, %tick_cmpr
 #endif	/* BB_ERRATA_1 */
 
 #endif	/* !CHEETAH && !HUMMINGBIRD */
@@ -238,19 +242,19 @@
 	ENTRY_NP(tickcmpr_set)
 	! get 64-bit clock_cycles interval
 	mov	%o0, %o2
-	mov	8, %o3			! A reasonable initial step size
+	mov	8, %o3			/* A reasonable initial step size */
 1:
-	WR_TICKCMPR(%o2,%o4,%o5,__LINE__)	! Write to TICK_CMPR
+	WR_TICKCMPR(%o2,%o4,%o5,__LINE__)	/* Write to TICK_CMPR */
 
-	GET_NATIVE_TIME(%o0, %o4, %o5)	! Read %tick to confirm the
-	sllx	%o0, 1, %o0		!   value we wrote was in the future.
+	GET_NATIVE_TIME(%o0, %o4, %o5)	/* Read %tick to confirm the */
+	sllx	%o0, 1, %o0		/*   value we wrote was in the future. */
 	srlx	%o0, 1, %o0
 
-	cmp	%o2, %o0		! If the value we wrote was in the
-	bg,pt	%xcc, 2f		!   future, then blow out of here.
-	sllx	%o3, 1, %o3		! If not, then double our step size,
-	ba,pt	%xcc, 1b		!   and take another lap.
-	add	%o0, %o3, %o2		!
+	cmp	%o2, %o0		/* If the value we wrote was in the */
+	bg,pt	%xcc, 2f		/*   future, then blow out of here. */
+	sllx	%o3, 1, %o3		/* If not, then double our step size, */
+	ba,pt	%xcc, 1b		/*   and take another lap. */
+	add	%o0, %o3, %o2
 2:
 	retl
 	nop
@@ -259,45 +263,45 @@
 	ENTRY_NP(tickcmpr_disable)
 	mov	1, %g1
 	sllx	%g1, TICKINT_DIS_SHFT, %o0
-	WR_TICKCMPR(%o0,%o4,%o5,__LINE__)	! Write to TICK_CMPR
+	WR_TICKCMPR(%o0,%o4,%o5,__LINE__)	/* Write to TICK_CMPR */
 	retl
 	nop
 	SET_SIZE(tickcmpr_disable)
 
 #ifdef DEBUG
-	.seg	".text"
+	.section	.text
 tick_write_panic:
 	.asciz	"tick_write_delta: interrupts already disabled on entry"
 #endif	/* DEBUG */
 
 /*
- * tick_write_delta() increments %tick by the specified delta.  This should
+ * tick_write_delta() increments %tick by the specified delta. This should
  * only be called after a CPR event to assure that gethrtime() continues to
- * increase monotonically.  Obviously, writing %tick needs to de done very
- * carefully to avoid introducing unnecessary %tick skew across CPUs.  For
+ * increase monotonically. Obviously, writing %tick needs to de done very
+ * carefully to avoid introducing unnecessary %tick skew across CPUs. For
  * this reason, we make sure we're i-cache hot before actually writing to
  * %tick.
  */
 	ENTRY_NP(tick_write_delta)
 	rdpr	%pstate, %g1
 #ifdef DEBUG
-	andcc	%g1, PSTATE_IE, %g0	! If DEBUG, check that interrupts
-	bnz	0f			! aren't already disabled.
+	andcc	%g1, PSTATE_IE, %g0	/* If DEBUG, check that interrupts */
+	bnz	0f			/* aren't already disabled. */
 	sethi	%hi(tick_write_panic), %o1
-        save    %sp, -SA(MINFRAME), %sp ! get a new window to preserve caller
+	save	%sp, -SA(MINFRAME), %sp /* get a new window to preserve caller */
 	call	panic
 	or	%i1, %lo(tick_write_panic), %o0
 #endif	/* DEBUG */
-0:	wrpr	%g1, PSTATE_IE, %pstate	! Disable interrupts
+0:	wrpr	%g1, PSTATE_IE, %pstate	/* Disable interrupts */
 	mov	%o0, %o2
-	ba	0f			! Branch to cache line-aligned instr.
+	ba	0f			/* Branch to cache line-aligned instr. */
 	nop
-	.align	16
-0:	nop				! The next 3 instructions are now hot.
-	DELTA_NATIVE_TIME(%o2, %o3, %o4, %o5, %g2)	! read/inc/write %tick
+	.balign	16
+0:	nop				/* The next 3 instructions are now hot. */
+	DELTA_NATIVE_TIME(%o2, %o3, %o4, %o5, %g2)	/* read/inc/write %tick */
 
-	retl				! Return
-	wrpr	%g0, %g1, %pstate	!     delay: Re-enable interrupts
+	retl				/* Return */
+	wrpr	%g0, %g1, %pstate	/*     delay: Re-enable interrupts */
 
 	ENTRY_NP(tickcmpr_disabled)
 	RD_TICKCMPR(%g1, %o0)
@@ -326,7 +330,7 @@ tick_write_panic:
 	rdpr	%tick, %o0
 	sllx	%o0, 1, %o0
 	retl
-	srlx	%o0, 1, %o0		! shake off npt bit
+	srlx	%o0, 1, %o0		/* shake off npt bit */
 	SET_SIZE(gettick_counter)
 
 /*
@@ -336,20 +340,20 @@ tick_write_panic:
 
 	ENTRY_NP(gethrtime)
 	GET_HRTIME(%g1, %o0, %o1, %o2, %o3, %o4, %o5, %g2)
-							! %g1 = hrtime
+							/* %g1 = hrtime */
 	retl
 	mov	%g1, %o0
 	SET_SIZE(gethrtime)
 
 	ENTRY_NP(gethrtime_unscaled)
-	GET_NATIVE_TIME(%g1, %o2, %o3)			! %g1 = native time
+	GET_NATIVE_TIME(%g1, %o2, %o3)			/* %g1 = native time */
 	retl
 	mov	%g1, %o0
 	SET_SIZE(gethrtime_unscaled)
 
 	ENTRY_NP(gethrtime_waitfree)
 	ALTENTRY(dtrace_gethrtime)
-	GET_NATIVE_TIME(%g1, %o2, %o3)			! %g1 = native time
+	GET_NATIVE_TIME(%g1, %o2, %o3)			/* %g1 = native time */
 	NATIVE_TIME_TO_NSEC(%g1, %o2, %o3)
 	retl
 	mov	%g1, %o0
@@ -378,15 +382,15 @@ tick_write_panic:
 
 /*
  * Fast trap to return a timestamp, uses trap window, leaves traps
- * disabled.  Returns a 64-bit nanosecond timestamp in %o0 and %o1.
+ * disabled. Returns a 64-bit nanosecond timestamp in %o0 and %o1.
  *
  * This is the handler for the ST_GETHRTIME trap.
  */
 
 	ENTRY_NP(get_timestamp)
-	GET_HRTIME(%g1, %g2, %g3, %g4, %g5, %o0, %o1, %o2)	! %g1 = hrtime
-	srlx	%g1, 32, %o0				! %o0 = hi32(%g1)
-	srl	%g1, 0, %o1				! %o1 = lo32(%g1)
+	GET_HRTIME(%g1, %g2, %g3, %g4, %g5, %o0, %o1, %o2)	/* %g1 = hrtime */
+	srlx	%g1, 32, %o0				/* %o0 = hi32(%g1) */
+	srl	%g1, 0, %o1				/* %o1 = lo32(%g1) */
 	FAST_TRAP_DONE
 	SET_SIZE(get_timestamp)
 
@@ -432,38 +436,38 @@ tick_write_panic:
 	ENTRY_NP(gethrestime_sec)
 	GET_HRESTIME(%o0, %o2, %o3, %o4, %o5, %g1, %g2, %g3, %g4)
 	CONV_HRESTIME(%o0, %o2, %o3, %o4, %o5)
-	retl					! %o0 current hrestime seconds
+	retl					/* %o0 current hrestime seconds */
 	nop
 	SET_SIZE(gethrestime_sec)
 
 /*
- * Returns the hrestime on the last tick.  This is simpler than gethrestime()
- * and gethrestime_sec():  no conversion is required.  gethrestime_lasttick()
+ * Returns the hrestime on the last tick. This is simpler than gethrestime()
+ * and gethrestime_sec(): no conversion is required.  gethrestime_lasttick()
  * follows the same locking algorithm as GET_HRESTIME and GET_HRTIME,
- * outlined in detail in clock.h.  (Unlike GET_HRESTIME/GET_HRTIME, we don't
+ * outlined in detail in clock.h. (Unlike GET_HRESTIME/GET_HRTIME, we don't
  * rely on load dependencies to effect the membar #LoadLoad, instead declaring
  * it explicitly.)
  */
 	ENTRY_NP(gethrestime_lasttick)
 	sethi	%hi(hres_lock), %o1
 0:
-	lduw	[%o1 + %lo(hres_lock)], %o2	! Load lock value
-	membar	#LoadLoad			! Load of lock must complete
-	andn	%o2, 1, %o2			! Mask off lowest bit
-	ldn	[%o1 + %lo(hrestime)], %g1	! Seconds.
+	lduw	[%o1 + %lo(hres_lock)], %o2	/* Load lock value */
+	membar	#LoadLoad			/* Load of lock must complete */
+	andn	%o2, 1, %o2			/* Mask off lowest bit */
+	ldn	[%o1 + %lo(hrestime)], %g1	/* Seconds. */
 	add	%o1, %lo(hrestime), %o4
-	ldn	[%o4 + CLONGSIZE], %g2		! Nanoseconds.
-	membar	#LoadLoad			! All loads must complete
-	lduw	[%o1 + %lo(hres_lock)], %o3	! Reload lock value
-	cmp	%o3, %o2			! If lock is locked or has
-	bne	0b				!   changed, retry.
-	stn	%g1, [%o0]			! Delay: store seconds
+	ldn	[%o4 + CLONGSIZE], %g2		/* Nanoseconds. */
+	membar	#LoadLoad			/* All loads must complete */
+	lduw	[%o1 + %lo(hres_lock)], %o3	/* Reload lock value */
+	cmp	%o3, %o2			/* If lock is locked or has */
+	bne	0b				/* changed, retry. */
+	stn	%g1, [%o0]			/* Delay: store seconds */
 	retl
-	stn	%g2, [%o0 + CLONGSIZE]		! Delay: store nanoseconds
+	stn	%g2, [%o0 + CLONGSIZE]		/* Delay: store nanoseconds */
 	SET_SIZE(gethrestime_lasttick)
 
 /*
- * Fast trap for gettimeofday().  Returns a timestruc_t in %o0 and %o1.
+ * Fast trap for gettimeofday(). Returns a timestruc_t in %o0 and %o1.
  *
  * This is the handler for the ST_GETHRESTIME trap.
  */
@@ -489,46 +493,46 @@ tick_write_panic:
  * 	%g5 = scratch
  */
 	ENTRY_NP(get_virtime)
-	GET_NATIVE_TIME(%g5, %g1, %g2)	! %g5 = native time in ticks
-	CPU_ADDR(%g2, %g3)			! CPU struct ptr to %g2
-	ldn	[%g2 + CPU_THREAD], %g2		! thread pointer to %g2
-	ldn	[%g2 + T_LWP], %g3		! lwp pointer to %g3
+	GET_NATIVE_TIME(%g5, %g1, %g2)	/* %g5 = native time in ticks */
+	CPU_ADDR(%g2, %g3)			/* CPU struct ptr to %g2 */
+	ldn	[%g2 + CPU_THREAD], %g2		/* thread pointer to %g2 */
+	ldn	[%g2 + T_LWP], %g3		/* lwp pointer to %g3 */
 
 	/*
 	 * Subtract start time of current microstate from time
 	 * of day to get increment for lwp virtual time.
 	 */
-	ldx	[%g3 + LWP_STATE_START], %g1	! ms_state_start
+	ldx	[%g3 + LWP_STATE_START], %g1	/* ms_state_start */
 	sub	%g5, %g1, %g5
 
 	/*
 	 * Add current value of ms_acct[LMS_USER]
 	 */
-	ldx	[%g3 + LWP_ACCT_USER], %g1	! ms_acct[LMS_USER]
+	ldx	[%g3 + LWP_ACCT_USER], %g1	/* ms_acct[LMS_USER] */
 	add	%g5, %g1, %g5
 	NATIVE_TIME_TO_NSEC(%g5, %g1, %o0)
 
-	srl	%g5, 0, %o1			! %o1 = lo32(%g5)
-	srlx	%g5, 32, %o0			! %o0 = hi32(%g5)
+	srl	%g5, 0, %o1			/* %o1 = lo32(%g5) */
+	srlx	%g5, 32, %o0			/* %o0 = hi32(%g5) */
 
 	FAST_TRAP_DONE
 	SET_SIZE(get_virtime)
 
 
 
-	.seg	".text"
+	.section	.text
 hrtime_base_panic:
 	.asciz	"hrtime_base stepping back"
 
 
 	ENTRY_NP(hres_tick)
-	save	%sp, -SA(MINFRAME), %sp	! get a new window
+	save	%sp, -SA(MINFRAME), %sp	/* get a new window */
 
 	sethi	%hi(hrestime), %l4
-	ldstub	[%l4 + %lo(hres_lock + HRES_LOCK_OFFSET)], %l5	! try locking
+	ldstub	[%l4 + %lo(hres_lock + HRES_LOCK_OFFSET)], %l5	/* try locking */
 7:	tst	%l5
-	bz,pt	%xcc, 8f			! if we got it, drive on
-	ld	[%l4 + %lo(nsec_scale)], %l5	! delay: %l5 = scaling factor
+	bz,pt	%xcc, 8f			/* if we got it, drive on */
+	ld	[%l4 + %lo(nsec_scale)], %l5	/* delay: %l5 = scaling factor */
 	ldub	[%l4 + %lo(hres_lock + HRES_LOCK_OFFSET)], %l5
 9:	tst	%l5
 	bz,a,pn	%xcc, 7b
@@ -539,74 +543,74 @@ hrtime_base_panic:
 	membar	#StoreLoad|#StoreStore
 
 	!
-	! update hres_last_tick.  %l5 has the scaling factor (nsec_scale).
+	! update hres_last_tick. %l5 has the scaling factor (nsec_scale).
 	!
-	ldx	[%l4 + %lo(hrtime_base)], %g1	! load current hrtime_base
-	GET_NATIVE_TIME(%l0, %l3, %l6)		! current native time
-	stx	%l0, [%l4 + %lo(hres_last_tick)]! prev = current
+	ldx	[%l4 + %lo(hrtime_base)], %g1	/* load current hrtime_base */
+	GET_NATIVE_TIME(%l0, %l3, %l6)		/* current native time */
+	stx	%l0, [%l4 + %lo(hres_last_tick)]/* prev = current */
 	! convert native time to nsecs
 	NATIVE_TIME_TO_NSEC_SCALE(%l0, %l5, %l2, NSEC_SHIFT)
 
-	sub	%l0, %g1, %i1			! get accurate nsec delta
+	sub	%l0, %g1, %i1			/* get accurate nsec delta */
 
 	ldx	[%l4 + %lo(hrtime_base)], %l1
 	cmp	%l1, %l0
 	bg,pn	%xcc, 9f
 	nop
 
-	stx	%l0, [%l4 + %lo(hrtime_base)]	! update hrtime_base
+	stx	%l0, [%l4 + %lo(hrtime_base)]	/* update hrtime_base */
 
 	!
 	! apply adjustment, if any
 	!
-	ldx	[%l4 + %lo(hrestime_adj)], %l0	! %l0 = hrestime_adj
+	ldx	[%l4 + %lo(hrestime_adj)], %l0	/* %l0 = hrestime_adj */
 	brz	%l0, 2f
-						! hrestime_adj == 0 ?
-						! yes, skip adjustments
-	clr	%l5				! delay: set adj to zero
-	tst	%l0				! is hrestime_adj >= 0 ?
-	bge,pt	%xcc, 1f			! yes, go handle positive case
-	srl	%i1, ADJ_SHIFT, %l5		! delay: %l5 = adj
+						/* hrestime_adj == 0 ? */
+						/* yes, skip adjustments */
+	clr	%l5				/* delay: set adj to zero */
+	tst	%l0				/* is hrestime_adj >= 0 ? */
+	bge,pt	%xcc, 1f			/* yes, go handle positive case */
+	srl	%i1, ADJ_SHIFT, %l5		/* delay: %l5 = adj */
 
-	addcc	%l0, %l5, %g0			! hrestime_adj < -adj ?
-	bl,pt	%xcc, 2f			! yes, use current adj
-	neg	%l5				! delay: %l5 = -adj
+	addcc	%l0, %l5, %g0			/* hrestime_adj < -adj ? */
+	bl,pt	%xcc, 2f			/* yes, use current adj */
+	neg	%l5				/* delay: %l5 = -adj */
 	ba,pt	%xcc, 2f
-	mov	%l0, %l5			! no, so set adj = hrestime_adj
+	mov	%l0, %l5			/* no, so set adj = hrestime_adj */
 1:
-	subcc	%l0, %l5, %g0			! hrestime_adj < adj ?
-	bl,a,pt	%xcc, 2f			! yes, set adj = hrestime_adj
-	mov	%l0, %l5			! delay: adj = hrestime_adj
+	subcc	%l0, %l5, %g0			/* hrestime_adj < adj ? */
+	bl,a,pt	%xcc, 2f			/* yes, set adj = hrestime_adj */
+	mov	%l0, %l5			/* delay: adj = hrestime_adj */
 2:
-	ldx	[%l4 + %lo(timedelta)], %l0	! %l0 = timedelta
-	sub	%l0, %l5, %l0			! timedelta -= adj
+	ldx	[%l4 + %lo(timedelta)], %l0	/* %l0 = timedelta */
+	sub	%l0, %l5, %l0			/* timedelta -= adj */
 
-	stx	%l0, [%l4 + %lo(timedelta)]	! store new timedelta
-	stx	%l0, [%l4 + %lo(hrestime_adj)]	! hrestime_adj = timedelta
+	stx	%l0, [%l4 + %lo(timedelta)]	/* store new timedelta */
+	stx	%l0, [%l4 + %lo(hrestime_adj)]	/* hrestime_adj = timedelta */
 
 	or	%l4, %lo(hrestime), %l2
-	ldn	[%l2], %i2			! %i2:%i3 = hrestime sec:nsec
+	ldn	[%l2], %i2			/* %i2:%i3 = hrestime sec:nsec */
 	ldn	[%l2 + CLONGSIZE], %i3
-	add	%i3, %l5, %i3			! hrestime.nsec += adj
-	add	%i3, %i1, %i3			! hrestime.nsec += nslt
+	add	%i3, %l5, %i3			/* hrestime.nsec += adj */
+	add	%i3, %i1, %i3			/* hrestime.nsec += nslt */
 
-	set	NANOSEC, %l5			! %l5 = NANOSEC
+	set	NANOSEC, %l5			/* %l5 = NANOSEC */
 	cmp	%i3, %l5
-	bl,pt	%xcc, 5f			! if hrestime.tv_nsec < NANOSEC
-	sethi	%hi(one_sec), %i1		! delay
-	add	%i2, 0x1, %i2			! hrestime.tv_sec++
-	sub	%i3, %l5, %i3			! hrestime.tv_nsec - NANOSEC
+	bl,pt	%xcc, 5f			/* if hrestime.tv_nsec < NANOSEC */
+	sethi	%hi(one_sec), %i1		/* delay */
+	add	%i2, 0x1, %i2			/* hrestime.tv_sec++ */
+	sub	%i3, %l5, %i3			/* hrestime.tv_nsec - NANOSEC */
 	mov	0x1, %l5
 	st	%l5, [%i1 + %lo(one_sec)]
 5:
 	stn	%i2, [%l2]
-	stn	%i3, [%l2 + CLONGSIZE]		! store the new hrestime
+	stn	%i3, [%l2 + CLONGSIZE]		/* store the new hrestime */
 
 	membar	#StoreStore
 
 	ld	[%l4 + %lo(hres_lock)], %i1
-	inc	%i1				! release lock
-	st	%i1, [%l4 + %lo(hres_lock)]	! clear hres_lock
+	inc	%i1				/* release lock */
+	st	%i1, [%l4 + %lo(hres_lock)]	/* clear hres_lock */
 
 	ret
 	restore
@@ -625,7 +629,7 @@ hrtime_base_panic:
 
 	SET_SIZE(hres_tick)
 
-	.seg	".text"
+	.section	.text
 kstat_q_panic_msg:
 	.asciz	"kstat_q_exit: qlen == 0"
 
@@ -680,13 +684,13 @@ QRETURN;								\
 	stx	%g1, [%o0 + QTYPE##LASTUPDATE]; /* lastupdate = now */
 #endif
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_waitq_enter)
 	GET_NATIVE_TIME(%g1, %g2, %g3)
 	KSTAT_Q_UPDATE(add, BRZPT, 1f, 1:retl, KSTAT_IO_W)
 	SET_SIZE(kstat_waitq_enter)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_waitq_exit)
 	GET_NATIVE_TIME(%g1, %g2, %g3)
 #if defined(DEBUG)
@@ -696,13 +700,13 @@ QRETURN;								\
 #endif
 	SET_SIZE(kstat_waitq_exit)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_runq_enter)
 	GET_NATIVE_TIME(%g1, %g2, %g3)
 	KSTAT_Q_UPDATE(add, BRZPT, 1f, 1:retl, KSTAT_IO_R)
 	SET_SIZE(kstat_runq_enter)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_runq_exit)
 	GET_NATIVE_TIME(%g1, %g2, %g3)
 #if defined(DEBUG)
@@ -712,7 +716,7 @@ QRETURN;								\
 #endif
 	SET_SIZE(kstat_runq_exit)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_waitq_to_runq)
 	GET_NATIVE_TIME(%g1, %g2, %g3)
 #if defined(DEBUG)
@@ -723,7 +727,7 @@ QRETURN;								\
 	KSTAT_Q_UPDATE(add, BRZPT, 1f, 1:retl, KSTAT_IO_R)
 	SET_SIZE(kstat_waitq_to_runq)
 
-	.align 16
+	.balign 16
 	ENTRY(kstat_runq_back_to_waitq)
 	GET_NATIVE_TIME(%g1, %g2, %g3)
 #if defined(DEBUG)
@@ -743,13 +747,13 @@ QRETURN;								\
 	 * assumes that they all have the same high 22 address bits (so
 	 * there's only one sethi).
 	 */
-	.seg	".data"
+	.section	.data
 	.global	timedelta, hres_last_tick, hrestime, hrestime_adj
 	.global	hres_lock, nsec_scale, hrtime_base, traptrace_use_stick
 	.global	nsec_shift, adj_shift
 
 	/* XXX - above comment claims 128-bytes is necessary */
-	.align	64
+	.balign	64
 timedelta:
 	.word	0, 0		/* int64_t */
 hres_last_tick:
@@ -798,15 +802,15 @@ adj_shift:
 0:
 	sethi	%hi(sticks_per_usec), %o1
 	lduw	[%o1 + %lo(sticks_per_usec)], %o1
-	mulx	%o1, %o0, %o1		! Scale usec to ticks
-	inc	%o1			! We don't start on a tick edge
+	mulx	%o1, %o0, %o1		/* Scale usec to ticks */
+	inc	%o1			/* We don't start on a tick edge */
 	GET_NATIVE_TIME(%o2, %o3, %o4)
 	add	%o1, %o2, %o1
 
 1:
 #ifdef	_OPL
-	.word 0x81b01060		! insert "sleep" instruction
-#endif /* _OPL */			! use byte code for now
+	.word 0x81b01060		/* insert "sleep" instruction */
+#endif /* _OPL */			/* use byte code for now */
 	cmp	%o1, %o2
 	GET_NATIVE_TIME(%o2, %o3, %o4)
 	bgeu,pt	%xcc, 1b
@@ -821,18 +825,18 @@ adj_shift:
  */
 	ENTRY_NP(pil14_interrupt)
 	CPU_ADDR(%g1, %g2)
-	rdpr	%pil, %g6			! %g6 = interrupted PIL
-	stn	%g6, [%g1 + CPU_PROFILE_PIL]	! record interrupted PIL
+	rdpr	%pil, %g6			/* %g6 = interrupted PIL */
+	stn	%g6, [%g1 + CPU_PROFILE_PIL]	/* record interrupted PIL */
 	rdpr	%tstate, %g6
 	rdpr	%tpc, %g5
-	btst	TSTATE_PRIV, %g6		! trap from supervisor mode?
+	btst	TSTATE_PRIV, %g6		/* trap from supervisor mode? */
 	bnz,a,pt %xcc, 1f
-	stn	%g5, [%g1 + CPU_PROFILE_PC]	! if so, record kernel PC
-	stn	%g5, [%g1 + CPU_PROFILE_UPC]	! if not, record user PC
-	ba	pil_interrupt_common		! must be large-disp branch
-	stn	%g0, [%g1 + CPU_PROFILE_PC]	! zero kernel PC
-1:	ba	pil_interrupt_common		! must be large-disp branch
-	stn	%g0, [%g1 + CPU_PROFILE_UPC]	! zero user PC
+	stn	%g5, [%g1 + CPU_PROFILE_PC]	/* if so, record kernel PC */
+	stn	%g5, [%g1 + CPU_PROFILE_UPC]	/* if not, record user PC */
+	ba	pil_interrupt_common		/* must be large-disp branch */
+	stn	%g0, [%g1 + CPU_PROFILE_PC]	/* zero kernel PC */
+1:	ba	pil_interrupt_common		/* must be large-disp branch */
+	stn	%g0, [%g1 + CPU_PROFILE_UPC]	/* zero user PC */
 	SET_SIZE(pil14_interrupt)
 
 	ENTRY_NP(tick_rtt)
@@ -841,7 +845,7 @@ adj_shift:
 	! disabled.  If TICK_COMPARE is enabled, we know that we need to
 	! reenqueue the interrupt request structure.  We'll then check TICKINT
 	! in SOFTINT; if it's set, then we know that we were in a TICK_COMPARE
-	! interrupt.  In this case, TICK_COMPARE may have been rewritten
+	! interrupt. In this case, TICK_COMPARE may have been rewritten
 	! recently; we'll compare %o5 to the current time to verify that it's
 	! in the future.
 	!
@@ -855,11 +859,11 @@ adj_shift:
 
 	rdpr 	%pstate, %g5
 	andn	%g5, PSTATE_IE, %g1
-	wrpr	%g0, %g1, %pstate		! Disable vec interrupts
+	wrpr	%g0, %g1, %pstate		/* Disable vec interrupts */
 
 	sethi	%hi(cbe_level14_inum), %o1
 	ldx	[%o1 + %lo(cbe_level14_inum)], %o1
-	call	intr_enqueue_req ! preserves %o5 and %g5
+	call	intr_enqueue_req		/* preserves %o5 and %g5 */
 	mov	PIL_14, %o0
 
 	! Check SOFTINT for TICKINT/STICKINT
@@ -867,39 +871,39 @@ adj_shift:
 	set	(TICK_INT_MASK | STICK_INT_MASK), %o0
 	andcc	%o4, %o0, %g0
 	bz,a,pn	%icc, 2f
-	wrpr	%g0, %g5, %pstate		! Enable vec interrupts
+	wrpr	%g0, %g5, %pstate		/* Enable vec interrupts */
 
 	! clear TICKINT/STICKINT
 	wr	%o0, CLEAR_SOFTINT
 
 	!
 	! Now that we've cleared TICKINT, we can reread %tick and confirm
-	! that the value we programmed is still in the future.  If it isn't,
+	! that the value we programmed is still in the future. If it isn't,
 	! we need to reprogram TICK_COMPARE to fire as soon as possible.
 	!
-	GET_NATIVE_TIME(%o0, %g1, %g2)		! %o0 = tick
-	sllx	%o0, 1, %o0			! Clear the DIS bit
+	GET_NATIVE_TIME(%o0, %g1, %g2)		/* %o0 = tick */
+	sllx	%o0, 1, %o0			/* Clear the DIS bit */
 	srlx	%o0, 1, %o0
-	cmp	%o5, %o0			! In the future?
-	bg,a,pt	%xcc, 2f			! Yes, drive on.
-	wrpr	%g0, %g5, %pstate		!   delay: enable vec intr
+	cmp	%o5, %o0			/* In the future? */
+	bg,a,pt	%xcc, 2f			/* Yes, drive on. */
+	wrpr	%g0, %g5, %pstate		/* delay: enable vec intr */
 
 	!
 	! If we're here, then we have programmed TICK_COMPARE with a %tick
 	! which is in the past; we'll now load an initial step size, and loop
 	! until we've managed to program TICK_COMPARE to fire in the future.
 	!
-	mov	8, %o4				! 8 = arbitrary inital step
-1:	add	%o0, %o4, %o5			! Add the step
-	WR_TICKCMPR(%o5,%g1,%g2,__LINE__)	! Write to TICK_CMPR
-	GET_NATIVE_TIME(%o0, %g1, %g2)		! %o0 = tick
-	sllx	%o0, 1, %o0			! Clear the DIS bit
+	mov	8, %o4				/* 8 = arbitrary inital step */
+1:	add	%o0, %o4, %o5			/* Add the step */
+	WR_TICKCMPR(%o5,%g1,%g2,__LINE__)	/* Write to TICK_CMPR */
+	GET_NATIVE_TIME(%o0, %g1, %g2)		/* %o0 = tick */
+	sllx	%o0, 1, %o0			/* Clear the DIS bit */
 	srlx	%o0, 1, %o0
-	cmp	%o5, %o0			! In the future?
-	bg,a,pt	%xcc, 2f			! Yes, drive on.
-	wrpr	%g0, %g5, %pstate		!    delay: enable vec intr
-	ba	1b				! No, try again.
-	sllx	%o4, 1, %o4			!    delay: double step size
+	cmp	%o5, %o0			/* In the future? */
+	bg,a,pt	%xcc, 2f			/* Yes, drive on. */
+	wrpr	%g0, %g5, %pstate		/* delay: enable vec intr */
+	ba	1b				/* No, try again. */
+	sllx	%o4, 1, %o4			/* delay: double step size */
 
 2:	ba	current_thread_complete
 	nop
@@ -908,22 +912,22 @@ adj_shift:
 /*
  * Level-15 interrupt prologue.
  */
-       ENTRY_NP(pil15_interrupt)
-       CPU_ADDR(%g1, %g2)
-       rdpr    %tstate, %g6
-       rdpr    %tpc, %g5
-       btst    TSTATE_PRIV, %g6                ! trap from supervisor mode?
-       bnz,a,pt %xcc, 1f
-       stn     %g5, [%g1 + CPU_CPCPROFILE_PC]  ! if so, record kernel PC
-       stn     %g5, [%g1 + CPU_CPCPROFILE_UPC] ! if not, record user PC
-       ba      pil15_epilogue                  ! must be large-disp branch
-       stn     %g0, [%g1 + CPU_CPCPROFILE_PC]  ! zero kernel PC
-1:     ba      pil15_epilogue                  ! must be large-disp branch
-       stn     %g0, [%g1 + CPU_CPCPROFILE_UPC] ! zero user PC
-       SET_SIZE(pil15_interrupt)
+	ENTRY_NP(pil15_interrupt)
+	CPU_ADDR(%g1, %g2)
+	rdpr	%tstate, %g6
+	rdpr	%tpc, %g5
+	btst	TSTATE_PRIV, %g6                /* trap from supervisor mode? */
+	bnz,a,pt %xcc, 1f
+	stn	%g5, [%g1 + CPU_CPCPROFILE_PC]  /* if so, record kernel PC */
+	stn	%g5, [%g1 + CPU_CPCPROFILE_UPC] /* if not, record user PC */
+	ba	pil15_epilogue                  /* must be large-disp branch */
+	stn	%g0, [%g1 + CPU_CPCPROFILE_PC]  /* zero kernel PC */
+1:	ba	pil15_epilogue                  /* must be large-disp branch */
+	stn	%g0, [%g1 + CPU_CPCPROFILE_UPC] /* zero user PC */
+	SET_SIZE(pil15_interrupt)
 
 #ifdef DEBUG
-	.seg	".text"
+	.section	.text
 find_cpufreq_panic:
 	.asciz	"find_cpufrequency: interrupts already disabled on entry"
 #endif	/* DEBUG */
@@ -932,41 +936,41 @@ find_cpufreq_panic:
 	rdpr	%pstate, %g1
 
 #ifdef DEBUG
-	andcc	%g1, PSTATE_IE, %g0	! If DEBUG, check that interrupts
-	bnz	0f			! are currently enabled
+	andcc	%g1, PSTATE_IE, %g0	/* If DEBUG, check that interrupts */
+	bnz	0f			/* are currently enabled */
 	sethi	%hi(find_cpufreq_panic), %o1
 	call	panic
 	or	%o1, %lo(find_cpufreq_panic), %o0
 #endif	/* DEBUG */
 
 0:
-	wrpr	%g1, PSTATE_IE, %pstate	! Disable interrupts
+	wrpr	%g1, PSTATE_IE, %pstate	/* Disable interrupts */
 3:
-	ldub	[%o0], %o1		! Read the number of seconds
-	mov	%o1, %o2		! remember initial value in %o2
+	ldub	[%o0], %o1		/* Read the number of seconds */
+	mov	%o1, %o2		/* remember initial value in %o2 */
 1:
 	GET_NATIVE_TIME(%o3, %g4, %g5)
-	cmp	%o1, %o2		! did the seconds register roll over?
-	be,pt	%icc, 1b		! branch back if unchanged
-	ldub	[%o0], %o2		!   delay: load the new seconds val
+	cmp	%o1, %o2		/* did the seconds register roll over? */
+	be,pt	%icc, 1b		/* branch back if unchanged */
+	ldub	[%o0], %o2		/*   delay: load the new seconds val */
 
-	brz,pn	%o2, 3b			! if the minutes just rolled over,
-					! the last second could have been
-					! inaccurate; try again.
-	mov	%o2, %o4		!   delay: store init. val. in %o2
+	brz,pn	%o2, 3b			/* if the minutes just rolled over, */
+					/* the last second could have been */
+					/* inaccurate; try again. */
+	mov	%o2, %o4		/*   delay: store init. val. in %o2 */
 2:
 	GET_NATIVE_TIME(%o5, %g4, %g5)
-	cmp	%o2, %o4		! did the seconds register roll over?
-	be,pt	%icc, 2b		! branch back if unchanged
-	ldub	[%o0], %o4		!   delay: load the new seconds val
+	cmp	%o2, %o4		/* did the seconds register roll over? */
+	be,pt	%icc, 2b		/* branch back if unchanged */
+	ldub	[%o0], %o4		/*   delay: load the new seconds val */
 
-	brz,pn	%o4, 0b			! if the minutes just rolled over,
-					! the last second could have been
-					! inaccurate; try again.
-	wrpr	%g0, %g1, %pstate	!   delay: re-enable interrupts
+	brz,pn	%o4, 0b			/* if the minutes just rolled over, */
+					/* the last second could have been */
+					/* inaccurate; try again. */
+	wrpr	%g0, %g1, %pstate	/*   delay: re-enable interrupts */
 
 	retl
-	sub	%o5, %o3, %o0		! return the difference in ticks
+	sub	%o5, %o3, %o0		/* return the difference in ticks */
 	SET_SIZE(find_cpufrequency)
 
 #if defined(CHEETAH) || defined(CHEETAH_PLUS) || defined(JALAPENO) || \
@@ -1047,8 +1051,8 @@ find_cpufreq_panic:
 	! PRM). On Cheetah, #n_write prefetches are reflected with
 	! RTS->RTO state transition regardless.
 	!
-#define STRIDE1 512
-#define STRIDE2 576
+#define	STRIDE1 512
+#define	STRIDE2 576
 
 #if	STRIDE1 != (PAGE_SIZE * 4)
 #error	"STRIDE1 != (PAGE_SIZE * 4)"
@@ -1058,21 +1062,21 @@ find_cpufreq_panic:
  * Prefetch a page_t for write or read, this assumes a linear
  * scan of sequential page_t's.
  */
-        ENTRY(prefetch_page_w)
-        prefetch        [%o0+STRIDE1], #n_writes
-        retl
-        prefetch        [%o0+STRIDE2], #n_writes
-        SET_SIZE(prefetch_page_w)
+	ENTRY(prefetch_page_w)
+	prefetch	[%o0+STRIDE1], #n_writes
+	retl
+	prefetch	[%o0+STRIDE2], #n_writes
+	SET_SIZE(prefetch_page_w)
 
 	!
 	! Note on CHEETAH to prefetch for read, we really use #one_write.
 	! This fetches to E$ (general use) rather than P$ (floating point use).
 	!
-        ENTRY(prefetch_page_r)
-        prefetch        [%o0+STRIDE1], #one_write
-        retl
-        prefetch        [%o0+STRIDE2], #one_write
-        SET_SIZE(prefetch_page_r)
+	ENTRY(prefetch_page_r)
+	prefetch	[%o0+STRIDE1], #one_write
+	retl
+	prefetch	[%o0+STRIDE2], #one_write
+	SET_SIZE(prefetch_page_r)
 
 #elif defined(SPITFIRE) || defined(HUMMINGBIRD)
 
@@ -1085,43 +1089,43 @@ find_cpufreq_panic:
 	! and
 	!       pp + sizeof(page_t) + 64
 	!
-#define STRIDE1	128
-#define STRIDE2	192
+#define	STRIDE1 128
+#define	STRIDE2 192
 
 #if	STRIDE1 != PAGE_SIZE
 #error	"STRIDE1 != PAGE_SIZE"
 #endif	/* STRIDE1 != PAGE_SIZE */
 
-        ENTRY(prefetch_page_w)
-        prefetch        [%o0+STRIDE1], #n_writes
-        retl
-        prefetch        [%o0+STRIDE2], #n_writes
-        SET_SIZE(prefetch_page_w)
+	ENTRY(prefetch_page_w)
+	prefetch	[%o0+STRIDE1], #n_writes
+	retl
+	prefetch	[%o0+STRIDE2], #n_writes
+	SET_SIZE(prefetch_page_w)
 
-        ENTRY(prefetch_page_r)
-        prefetch        [%o0+STRIDE1], #n_reads
-        retl
-        prefetch        [%o0+STRIDE2], #n_reads
-        SET_SIZE(prefetch_page_r)
+	ENTRY(prefetch_page_r)
+	prefetch	[%o0+STRIDE1], #n_reads
+	retl
+	prefetch	[%o0+STRIDE2], #n_reads
+	SET_SIZE(prefetch_page_r)
 
 #elif defined(OLYMPUS_C)
 	!
 	! Prefetch strides for Olympus-C
 	!
 
-#define STRIDE1	0x440
-#define STRIDE2	0x640
+#define	STRIDE1 0x440
+#define	STRIDE2 0x640
 
 	ENTRY(prefetch_page_w)
-        prefetch        [%o0+STRIDE1], #n_writes
+	prefetch	[%o0+STRIDE1], #n_writes
 	retl
-        prefetch        [%o0+STRIDE2], #n_writes
+	prefetch	[%o0+STRIDE2], #n_writes
 	SET_SIZE(prefetch_page_w)
 
 	ENTRY(prefetch_page_r)
-        prefetch        [%o0+STRIDE1], #n_writes
+	prefetch	[%o0+STRIDE1], #n_writes
 	retl
-        prefetch        [%o0+STRIDE2], #n_writes
+	prefetch	[%o0+STRIDE2], #n_writes
 	SET_SIZE(prefetch_page_r)
 #else	/* OLYMPUS_C */
 
@@ -1155,7 +1159,7 @@ find_cpufreq_panic:
 #ifdef	SEGKPM_SUPPORT
 
 #define	SMAP_SIZE 72
-#define SMAP_STRIDE (((PREFETCH_Q_LEN * 64) / SMAP_SIZE) * 64)
+#define	SMAP_STRIDE (((PREFETCH_Q_LEN * 64) / SMAP_SIZE) * 64)
 
 #else	/* SEGKPM_SUPPORT */
 
@@ -1165,7 +1169,7 @@ find_cpufreq_panic:
 	! Since the size of the smap struct is 48 bytes, issuing 1 prefetch
 	! per pass will suffice as long as we prefetch far enough ahead to
 	! make sure we don't stall for the cases where the smap object
-	! spans multiple hardware prefetch blocks.  Let's prefetch as far
+	! spans multiple hardware prefetch blocks. Let's prefetch as far
 	! ahead as the hardware will allow.
 	!
 	! The smap array is processed with decreasing address pointers.

@@ -36,6 +36,10 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 	/*
 	 * Spill fault handlers
 	 *   sn0 - spill normal tl 0
@@ -72,8 +76,8 @@
 	! setup user_trap args
 	!
 	set	sfmmu_tsbmiss_exception, %g1
-	mov	%g6, %g2			! arg2 = tagaccess
-	mov	T_WIN_OVERFLOW, %g3		! arg3 = traptype
+	mov	%g6, %g2			/* arg2 = tagaccess */
+	mov	T_WIN_OVERFLOW, %g3		/* arg3 = traptype */
 	cmp	%g5, T_ALIGNMENT
 	bne	%icc, 1f
 	nop
@@ -103,7 +107,7 @@
 	ENTRY_NP(fault_32bit_sn1)
 	FAULT_WINTRACE(%g5, %g6, %g7, TT_F32_SN1)
 	CPU_PADDR(%g5, %g6)
-	mov	ASI_MEM, %asi
+	wr	%g0, ASI_MEM, %asi
 	ldxa	[%g5 + CPU_MPCB_PA]%asi, %g6
 	ldxa	[%g6 + MPCB_WBUF_PA]%asi, %g5
 	stna	%sp, [%g6 + MPCB_SPBUF]%asi
@@ -135,7 +139,7 @@
 	!
 	! use previous wbcnt to spill new spbuf & wbuf
 	!
-	sll	%g2, CPTRSHIFT, %g4		! spbuf size is sizeof (caddr_t)
+	sll	%g2, CPTRSHIFT, %g4		/* spbuf size is sizeof (caddr_t) */
 	add	%g1, MPCB_SPBUF, %g3
 	stn	%sp, [%g3 + %g4]
 	sll	%g2, RWIN32SHIFT, %g4
@@ -159,7 +163,7 @@
 	!
 	! find lwp & increment wbcnt
 	!
-	mov	ASI_MEM, %asi
+	wr	%g0, ASI_MEM, %asi
 	ldxa	[%g5 + CPU_MPCB_PA]%asi, %g6
 	lda	[%g6 + MPCB_WBCNT]%asi, %g5
 	add	%g5, 1, %g7
@@ -167,7 +171,7 @@
 	!
 	! use previous wbcnt to spill new spbuf & wbuf
 	!
-	sll	%g5, CPTRSHIFT, %g7		! spbuf size is sizeof (caddr_t)
+	sll	%g5, CPTRSHIFT, %g7		/* spbuf size is sizeof (caddr_t) */
 	add	%g6, %g7, %g7
 	stna	%sp, [%g7 + MPCB_SPBUF]%asi
 	sll	%g5, RWIN32SHIFT, %g7
@@ -208,8 +212,8 @@
 	! setup user_trap args
 	!
 	set	sfmmu_tsbmiss_exception, %g1
-	mov	%g6, %g2			! arg2 = tagaccess
-	mov	%g5, %g3			! arg3 = traptype
+	mov	%g6, %g2			/* arg2 = tagaccess */
+	mov	%g5, %g3			/* arg3 = traptype */
 	cmp	%g5, T_ALIGNMENT
 	bne	%icc, 1f
 	nop
@@ -224,7 +228,7 @@
 	rdpr	%tstate, %g5
 	and	%g5, TSTATE_CWP, %g5
 	ba,pt	%xcc, user_trap
-	  wrpr	%g0, %g5, %cwp
+	wrpr	%g0, %g5, %cwp
 	SET_SIZE(fault_64bit_sn0)
 
 	!
@@ -239,7 +243,7 @@
 	ENTRY_NP(fault_64bit_sn1)
 	FAULT_WINTRACE(%g5, %g6, %g7, TT_F64_SN1)
 	CPU_PADDR(%g5, %g6)
-	mov	ASI_MEM, %asi
+	wr	%g0, ASI_MEM, %asi
 	ldxa	[%g5 + CPU_MPCB_PA]%asi, %g6
 	ldxa	[%g6 + MPCB_WBUF_PA]%asi, %g5
 	stna	%sp, [%g6 + MPCB_SPBUF]%asi
@@ -262,7 +266,7 @@
 	CPU_PADDR(%g5, %g6)
 	set	CPU_KWBUF_SP, %g6
 	add	%g5, %g6, %g6
-	mov	ASI_MEM, %asi
+	wr	%g0, ASI_MEM, %asi
 	stna	%sp, [%g6]%asi
 	set	CPU_KWBUF, %g6
 	add	%g5, %g6, %g6
@@ -273,7 +277,7 @@
 	lda	[%g5 + MCPU_KWBUF_FULL]%asi, %g7
 	tst	%g7
 	bnz,a,pn %icc, ptl1_panic
-	  mov	PTL1_BAD_WTRAP, %g1
+	mov	PTL1_BAD_WTRAP, %g1
 #endif /* DEBUG */
 	sta	%g6, [%g5 + MCPU_KWBUF_FULL]%asi
 	saved
@@ -291,7 +295,7 @@
 	CPU_PADDR(%g5, %g6)
 	set	CPU_KWBUF_SP, %g6
 	add	%g5, %g6, %g6
-	mov	ASI_MEM, %asi
+	wr	%g0, ASI_MEM, %asi
 	stna	%sp, [%g6]%asi
 	set	CPU_KWBUF, %g6
 	add	%g5, %g6, %g6
@@ -302,7 +306,7 @@
 	lda	[%g5 + MCPU_KWBUF_FULL]%asi, %g7
 	tst	%g7
 	bnz,a,pn %icc, ptl1_panic
-	  mov	PTL1_BAD_WTRAP, %g1
+	mov	PTL1_BAD_WTRAP, %g1
 #endif /* DEBUG */
 	sta	%g6, [%g5 + MCPU_KWBUF_FULL]%asi
 	saved
@@ -328,7 +332,7 @@
 	!
 	! use previous wbcnt to spill new spbuf & wbuf
 	!
-	sll	%g2, CPTRSHIFT, %g4		! spbuf size is sizeof (caddr_t)
+	sll	%g2, CPTRSHIFT, %g4		/* spbuf size is sizeof (caddr_t) */
 	add	%g1, MPCB_SPBUF, %g3
 	stn	%sp, [%g3 + %g4]
 	sll	%g2, RWIN64SHIFT, %g4
@@ -352,7 +356,7 @@
 	!
 	! find lwp & increment wbcnt
 	!
-	mov	ASI_MEM, %asi
+	wr	%g0, ASI_MEM, %asi
 	ldxa	[%g5 + CPU_MPCB_PA]%asi, %g6
 	lda	[%g6 + MPCB_WBCNT]%asi, %g5
 	add	%g5, 1, %g7
@@ -360,7 +364,7 @@
 	!
 	! use previous wbcnt to spill new spbuf & wbuf
 	!
-	sll	%g5, CPTRSHIFT, %g7		! spbuf size is sizeof (caddr_t)
+	sll	%g5, CPTRSHIFT, %g7		/* spbuf size is sizeof (caddr_t) */
 	add	%g6, %g7, %g7
 	stna	%sp, [%g7 + MPCB_SPBUF]%asi
 	sll	%g5, RWIN64SHIFT, %g7
@@ -397,7 +401,7 @@
 	! sfar (g5 == T_ALIGNMENT)
 	!
 	set	sfmmu_tsbmiss_exception, %g1
-	mov	%g6, %g2			! arg2 = tagaccess
+	mov	%g6, %g2			/* arg2 = tagaccess */
 	mov	T_WIN_UNDERFLOW, %g3
 	cmp	%g5, T_ALIGNMENT
 	bne	%icc, 1f
@@ -454,8 +458,8 @@
 	! sfar (g5 == T_ALIGNMENT)
 	!
 	set	sfmmu_tsbmiss_exception, %g1
-	mov	%g6, %g2			! arg2 = tagaccess
-	set	T_USER | T_SYS_RTT_PAGE, %g3	! arg3 = traptype
+	mov	%g6, %g2			/* arg2 = tagaccess */
+	set	T_USER | T_SYS_RTT_PAGE, %g3	/* arg3 = traptype */
 	cmp	%g5, T_ALIGNMENT
 	bne	%icc, 1f
 	nop
@@ -474,7 +478,8 @@
 	wrpr	%l1, WSTATE_K64, %wstate
 	mov	KCONTEXT, %g5
 	mov	MMU_PCONTEXT, %g6
-	stxa	%g5, [%g6]ASI_MMU_CTX
+	wr	%g0, ASI_MMU_CTX, %asi
+	stxa	%g5, [%g6] ASI_MMU_CTX
 	membar	#Sync
 
 	ba,pt	%xcc, priv_trap
@@ -484,21 +489,21 @@
 	ENTRY_NP(fault_64bit_fn0)
 	FAULT_WINTRACE(%g1, %g2, %g3, TT_F64_FN0)
 	b	.fault_fn0_common
-	  nop
+	nop
 	SET_SIZE(fault_64bit_fn0)
 
 	ENTRY_NP(fault_64bit_fn1)
 	FAULT_WINTRACE(%g1, %g2, %g3, TT_F64_FN1)
 	wrpr	%g0, 1, %gl
 	b	.fault_fn1_common
-	  nop
+	nop
 	SET_SIZE(fault_64bit_fn1)
 
 	ENTRY_NP(fault_rtt_fn1)
 	FAULT_WINTRACE(%g1, %g2, %g3, TT_RTT_FN1)
 	wrpr	%g0, 1, %gl
 	b	.fault_fn1_common
-	  nop
+	nop
 	SET_SIZE(fault_rtt_fn1)
 
 	/*

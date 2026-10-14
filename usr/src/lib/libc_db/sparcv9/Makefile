@@ -30,6 +30,15 @@ include ../Makefile.com
 include ../../Makefile.lib.64
 
 CPPFLAGS += -D_SYSCALL32
+AS_CPPFLAGS += -I$(SRC)/uts/sparc -D_ASM
+
+pics/%.o: $(CRTSRCS)/%.S
+	$(COMPILE.s) -o $@ $<
+	$(POST_PROCESS_S_O)
+
+pics/%.o: $(CRTSRCS)/%.s
+	$(COMPILE.s) -o $@ $<
+	$(POST_PROCESS_S_O)
 
 BUILD.SO= $(LD) -o $@ $(GSHARED) $(DYNFLAGS) $(PICS) $(LDLIBS)
 

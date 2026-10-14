@@ -120,8 +120,7 @@ const Rel_entry reloc_table[R_SPARC_NUM] = {
 /* R_SPARC_10 */	{0x0, FLG_RE_VERIFY | FLG_RE_SIGN, 4, 0, 10},
 /* R_SPARC_11 */	{0x0, FLG_RE_VERIFY | FLG_RE_SIGN, 4, 0, 11},
 /* R_SPARC_64 */	{0x0, FLG_RE_VERIFY, 8, 0, 0},		/* V9 */
-/* R_SPARC_OLO10 */	{0x3ff, FLG_RE_EXTOFFSET | FLG_RE_SIGN,
-				4, 0, 13},			/* V9 */
+/* R_SPARC_OLO10 */	{0x1fff, FLG_RE_SIGN, 4, 0, 13},	/* V9 */
 /* R_SPARC_HH22 */	{0x0, FLG_RE_VERIFY, 4, 42, 22},	/* V9 */
 /* R_SPARC_HM10 */	{0x3ff, FLG_RE_SIGN, 4, 32, 13},	/* V9 */
 /* R_SPARC_LM22 */	{0x0, FLG_RE_NOTREL, 4, 10, 22},	/* V9 */

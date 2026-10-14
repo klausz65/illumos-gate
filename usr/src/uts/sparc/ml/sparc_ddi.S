@@ -38,6 +38,9 @@
 
 #include "assym.h"		/* for FKIOCTL etc. */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * Layered driver routines.
@@ -64,7 +67,7 @@
 	ENTRY(ddi_copyin)
 	set	FKIOCTL, %o4
 	andcc	%o3, %o4, %g0
-	bne	.do_kcopy	! share code with ddi_copyout
+	bne	.do_kcopy	/* share code with ddi_copyout */
 	FLATCALL(copyin)
 	/*NOTREACHED*/
 
@@ -74,9 +77,9 @@
 	mov	%i1, %o1
 	call	kcopy
 	mov	%i0, %o0
-	orcc	%g0, %o0, %i0	! if kcopy returns EFAULT ..
+	orcc	%g0, %o0, %i0	/* if kcopy returns EFAULT .. */
 	bne,a	1f
-	mov	-1, %i0		! .. we return -1
+	mov	-1, %i0		/* .. we return -1 */
 1:	ret
 	restore
 	SET_SIZE(ddi_copyin)
@@ -84,7 +87,7 @@
 	ENTRY(ddi_copyout)
 	set	FKIOCTL, %o4
 	andcc	%o3, %o4, %g0
-	bne	.do_kcopy	! share code with ddi_copyin
+	bne	.do_kcopy	/* share code with ddi_copyin */
 	FLATCALL(copyout)
 	/*NOTREACHED*/
 	SET_SIZE(ddi_copyout)
@@ -95,131 +98,131 @@
  */
 
 	ENTRY(ddi_ctlops)
-	tst	%o0		! dip != 0?
-	be,pn	%ncc, 2f	! nope
-	tst	%o1		! rdip != 0?
-	be,pn	%ncc, 2f	! nope
+	tst	%o0		/* dip != 0? */
+	be,pn	%ncc, 2f
+	tst	%o1		/* rdip != 0? */
+	be,pn	%ncc, 2f
 	ldn	[%o0 + DEVI_BUS_CTL], %o0
-				! dip = (dev_info_t *)DEVI(dip)->devi_bus_ctl;
+				/* dip = (dev_info_t *)DEVI(dip)->devi_bus_ctl; */
 	brz,pn	%o0, 2f
-	nop			! Delay slot
-	ldn	[%o0 + DEVI_DEV_OPS], %g1	! dip->dev_ops
-	ldn	[%g1 + DEVI_BUS_OPS], %g1	! dip->dev_ops->devo_bus_ops
-	ldn	[%g1 + OPS_CTL], %g1	! dip->dev_ops->devo_bus_ops->bus_ctl
-	jmpl	%g1, %g0	! bop off to new routine
-	nop			! as if we had never been here
+	nop			/* Delay slot */
+	ldn	[%o0 + DEVI_DEV_OPS], %g1	/* dip->dev_ops */
+	ldn	[%g1 + DEVI_BUS_OPS], %g1	/* dip->dev_ops->devo_bus_ops */
+	ldn	[%g1 + OPS_CTL], %g1	/* dip->dev_ops->devo_bus_ops->bus_ctl */
+	jmpl	%g1, %g0	/* bop off to new routine */
+	nop			/* as if we had never been here */
 2:	retl
-	sub	%g0, 1, %o0	! return (DDI_FAILURE);
+	sub	%g0, 1, %o0	/* return (DDI_FAILURE); */
 	SET_SIZE(ddi_ctlops)
 
 	ENTRY(ddi_dma_allochdl)
 	ldn	[%o0 + DEVI_BUS_DMA_ALLOCHDL], %o0
-			! dip = (dev_info_t *)DEVI(dip)->devi_bus_dma_allochdl;
-	ldn	[%o0 + DEVI_DEV_OPS], %g1	! dip->dev_ops
-	ldn	[%g1 + DEVI_BUS_OPS], %g1	! dip->dev_ops->devo_bus_ops
+			/* dip = (dev_info_t *)DEVI(dip)->devi_bus_dma_allochdl; */
+	ldn	[%o0 + DEVI_DEV_OPS], %g1	/* dip->dev_ops */
+	ldn	[%g1 + DEVI_BUS_OPS], %g1	/* dip->dev_ops->devo_bus_ops */
 	ldn	[%g1 + OPS_ALLOCHDL], %g1
-			! dip->dev_ops->devo_bus_ops->bus_dma_allochdl
-	jmpl	%g1, %g0	! bop off to new routine
-	nop			! as if we had never been here
+			/* dip->dev_ops->devo_bus_ops->bus_dma_allochdl */
+	jmpl	%g1, %g0	/* bop off to new routine */
+	nop			/* as if we had never been here */
 	SET_SIZE(ddi_dma_allochdl)
 
 	ENTRY(ddi_dma_freehdl)
 	ldn	[%o0 + DEVI_BUS_DMA_FREEHDL], %o0
-			! dip = (dev_info_t *)DEVI(dip)->devi_bus_dma_freehdl;
-	ldn	[%o0 + DEVI_DEV_OPS], %g1	! dip->dev_ops
-	ldn	[%g1 + DEVI_BUS_OPS], %g1	! dip->dev_ops->devo_bus_ops
+			/* dip = (dev_info_t *)DEVI(dip)->devi_bus_dma_freehdl; */
+	ldn	[%o0 + DEVI_DEV_OPS], %g1	/* dip->dev_ops */
+	ldn	[%g1 + DEVI_BUS_OPS], %g1	/* dip->dev_ops->devo_bus_ops */
 	ldn	[%g1 + OPS_FREEHDL], %g1
-			! dip->dev_ops->devo_bus_ops->bus_dma_freehdl
-	jmpl	%g1, %g0	! bop off to new routine
-	nop			! as if we had never been here
+			/* dip->dev_ops->devo_bus_ops->bus_dma_freehdl */
+	jmpl	%g1, %g0	/* bop off to new routine */
+	nop			/* as if we had never been here */
 	SET_SIZE(ddi_dma_freehdl)
 
 	ENTRY(ddi_dma_bindhdl)
 	ldn	[%o0 + DEVI_BUS_DMA_BINDHDL], %o0
-			! dip = (dev_info_t *)DEVI(dip)->devi_bus_dma_bindhdl;
-	ldn	[%o0 + DEVI_DEV_OPS], %g1	! dip->dev_ops
-	ldn	[%g1 + DEVI_BUS_OPS], %g1	! dip->dev_ops->devo_bus_ops
+			/* dip = (dev_info_t *)DEVI(dip)->devi_bus_dma_bindhdl; */
+	ldn	[%o0 + DEVI_DEV_OPS], %g1	/* dip->dev_ops */
+	ldn	[%g1 + DEVI_BUS_OPS], %g1	/* dip->dev_ops->devo_bus_ops */
 	ldn	[%g1 + OPS_BINDHDL], %g1
-			! dip->dev_ops->devo_bus_ops->bus_dma_bindhdl
-	jmpl	%g1, %g0	! bop off to new routine
-	nop			! as if we had never been here
+			/* dip->dev_ops->devo_bus_ops->bus_dma_bindhdl */
+	jmpl	%g1, %g0	/* bop off to new routine */
+	nop			/* as if we had never been here */
 	SET_SIZE(ddi_dma_bindhdl)
 
 	ENTRY(ddi_dma_unbindhdl)
 	ldn	[%o0 + DEVI_BUS_DMA_UNBINDHDL], %o0
-			! dip = (dev_info_t *)DEVI(dip)->devi_bus_dma_unbindhdl;
-	ldn	[%o0 + DEVI_DEV_OPS], %g1	! dip->dev_ops
-	ldn	[%g1 + DEVI_BUS_OPS], %g1	! dip->dev_ops->devo_bus_ops
+			/* dip = (dev_info_t *)DEVI(dip)->devi_bus_dma_unbindhdl; */
+	ldn	[%o0 + DEVI_DEV_OPS], %g1	/* dip->dev_ops */
+	ldn	[%g1 + DEVI_BUS_OPS], %g1	/* dip->dev_ops->devo_bus_ops */
 	ldn	[%g1 + OPS_UNBINDHDL], %g1
-			! dip->dev_ops->devo_bus_ops->bus_dma_unbindhdl
-	jmpl	%g1, %g0	! bop off to new routine
-	nop			! as if we had never been here
+			/* dip->dev_ops->devo_bus_ops->bus_dma_unbindhdl */
+	jmpl	%g1, %g0	/* bop off to new routine */
+	nop			/* as if we had never been here */
 	SET_SIZE(ddi_dma_unbindhdl)
 
 	ENTRY(ddi_dma_flush)
 	ldn	[%o0 + DEVI_BUS_DMA_FLUSH], %o0
-			! dip = (dev_info_t *)DEVI(dip)->devi_bus_dma_flush;
-	ldn	[%o0 + DEVI_DEV_OPS], %g1	! dip->dev_ops
-	ldn	[%g1 + DEVI_BUS_OPS], %g1	! dip->dev_ops->devo_bus_ops
+			/* dip = (dev_info_t *)DEVI(dip)->devi_bus_dma_flush; */
+	ldn	[%o0 + DEVI_DEV_OPS], %g1	/* dip->dev_ops */
+	ldn	[%g1 + DEVI_BUS_OPS], %g1	/* dip->dev_ops->devo_bus_ops */
 	ldn	[%g1 + OPS_FLUSH], %g1
-			! dip->dev_ops->devo_bus_ops->bus_dma_flush
-	jmpl	%g1, %g0	! bop off to new routine
-	nop			! as if we had never been here
+			/* dip->dev_ops->devo_bus_ops->bus_dma_flush */
+	jmpl	%g1, %g0	/* bop off to new routine */
+	nop			/* as if we had never been here */
 	SET_SIZE(ddi_dma_flush)
 
 	ENTRY(ddi_dma_win)
 	ldn	[%o0 + DEVI_BUS_DMA_WIN], %o0
-			! dip = (dev_info_t *)DEVI(dip)->devi_bus_dma_win;
-	ldn	[%o0 + DEVI_DEV_OPS], %g1	! dip->dev_ops
-	ldn	[%g1 + DEVI_BUS_OPS], %g1	! dip->dev_ops->devo_bus_ops
+			/* dip = (dev_info_t *)DEVI(dip)->devi_bus_dma_win; */
+	ldn	[%o0 + DEVI_DEV_OPS], %g1	/* dip->dev_ops */
+	ldn	[%g1 + DEVI_BUS_OPS], %g1	/* dip->dev_ops->devo_bus_ops */
 	ldn	[%g1 + OPS_WIN], %g1
-			! dip->dev_ops->devo_bus_ops->bus_dma_win
-	jmpl	%g1, %g0	! bop off to new routine
-	nop			! as if we had never been here
+			/* dip->dev_ops->devo_bus_ops->bus_dma_win */
+	jmpl	%g1, %g0	/* bop off to new routine */
+	nop			/* as if we had never been here */
 	SET_SIZE(ddi_dma_win)
 
 	ENTRY(ddi_dma_sync)
-	ld	[%o0 + DMA_HANDLE_RFLAGS], %o4	! hp->dmai_rflags;
+	ld	[%o0 + DMA_HANDLE_RFLAGS], %o4	/* hp->dmai_rflags; */
 	sethi	%hi(DMP_NOSYNC), %o5
 	and	%o4, %o5, %o4
 	cmp	%o4, %o5
-	bne	1f
+	bne,pt	%icc, 1f
 	mov	%o3, %o5
 	retl
 	clr	%o0
 1:	mov	%o1, %o3
-	ldn	[%o0 + DMA_HANDLE_RDIP], %o1	! dip = hp->dmai_rdip;
+	ldn	[%o0 + DMA_HANDLE_RDIP], %o1	/* dip = hp->dmai_rdip; */
 	mov	%o0, %g2
 	ldn	[%o1 + DEVI_BUS_DMA_FLUSH], %o0
-			! dip = DEVI(dip)->devi_bus_dma_flush;
-	ldn	[%o0 + DEVI_DEV_OPS], %g1	! dip->dev_ops
+			/* dip = DEVI(dip)->devi_bus_dma_flush; */
+	ldn	[%o0 + DEVI_DEV_OPS], %g1	/* dip->dev_ops */
 	mov	%o2, %o4
-	ldn	[%g1 + DEVI_BUS_OPS], %g1	! dip->dev_ops->devo_bus_ops
+	ldn	[%g1 + DEVI_BUS_OPS], %g1	/* dip->dev_ops->devo_bus_ops */
 	mov	%g2, %o2
 	ldn	[%g1 + OPS_FLUSH], %g1
-			! dip->dev_ops->devo_bus_ops->bus_dma_flush
-	jmpl	%g1, %g0	! bop off to new routine
-	nop			! as if we had never been here
+			/* dip->dev_ops->devo_bus_ops->bus_dma_flush */
+	jmpl	%g1, %g0	/* bop off to new routine */
+	nop			/* as if we had never been here */
 	SET_SIZE(ddi_dma_sync)
 
 	ENTRY(ddi_dma_unbind_handle)
-	ldn	[%o0 + DMA_HANDLE_RDIP], %o1	! dip = hp->dmai_rdip;
+	ldn	[%o0 + DMA_HANDLE_RDIP], %o1	/* dip = hp->dmai_rdip; */
 	mov	%o0, %o2
 	ldn	[%o1 + DEVI_BUS_DMA_UNBINDFUNC ], %g1
-		    ! funcp = DEVI(dip)->devi_bus_dma_unbindfunc;
-	jmpl	%g1, %g0	! bop off to new routine
+		    /* funcp = DEVI(dip)->devi_bus_dma_unbindfunc; */
+	jmpl	%g1, %g0	/* bop off to new routine */
 	ldn	[%o1 + DEVI_BUS_DMA_UNBINDHDL], %o0
-		    ! hdip = (dev_info_t *)DEVI(dip)->devi_bus_dma_unbindhdl;
+		    /* hdip = (dev_info_t *)DEVI(dip)->devi_bus_dma_unbindhdl; */
 	SET_SIZE(ddi_dma_unbind_handle)
 
 
 	ENTRY(ddi_dma_mctl)
 	ldn	[%o0 + DEVI_BUS_DMA_CTL], %o0
-			! dip = (dev_info_t *)DEVI(dip)->devi_bus_dma_ctl;
-	ldn	[%o0 + DEVI_DEV_OPS], %g1	! dip->dev_ops
-	ldn	[%g1 + DEVI_BUS_OPS], %g1	! dip->dev_ops->devo_bus_ops
-	ldn	[%g1 + OPS_MCTL], %g1 ! dip->dev_ops->devo_bus_ops->bus_dma_ctl
-	jmpl	%g1, %g0	! bop off to new routine
-	nop			! as if we had never been here
+			/* dip = (dev_info_t *)DEVI(dip)->devi_bus_dma_ctl; */
+	ldn	[%o0 + DEVI_DEV_OPS], %g1	/* dip->dev_ops */
+	ldn	[%g1 + DEVI_BUS_OPS], %g1	/* dip->dev_ops->devo_bus_ops */
+	ldn	[%g1 + OPS_MCTL], %g1 /* dip->dev_ops->devo_bus_ops->bus_dma_ctl */
+	jmpl	%g1, %g0	/* bop off to new routine */
+	nop			/* as if we had never been here */
 	SET_SIZE(ddi_dma_mctl)
 

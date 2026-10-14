@@ -25,7 +25,7 @@
 
 include		../Makefile.com
 
-ASFLAGS +=	-xarch=v8plusa -warn
+ASFLAGS +=	-xarch=v8plusa
 
 .KEEP_STATE:
 

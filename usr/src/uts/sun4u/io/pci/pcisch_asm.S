@@ -32,8 +32,8 @@
 
 #define	VIS_BLOCKSIZE	64
 
-	.seg    ".data"
-	.align  VIS_BLOCKSIZE
+	.section	.data
+	.balign  VIS_BLOCKSIZE
 	.type   sync_buf, #object
 sync_buf:
 	.skip   VIS_BLOCKSIZE
@@ -42,11 +42,11 @@ sync_buf:
 	ENTRY(tomatillo_store_store_order)
 	set	sync_buf, %o1
 
-	rd	%fprs, %o2			! %o2 = saved fprs
+	rd	%fprs, %o2			/* %o2 = saved fprs */
 	or	%o2, FPRS_FEF, %o3
-	wr	%g0, %o3, %fprs			! make sure fp is enabled
+	wr	%g0, %o3, %fprs			/* make sure fp is enabled */
 	stda    %d0, [%o1]ASI_BLK_COMMIT_P
-	wr	%o2, 0, %fprs			! restore fprs
+	wr	%o2, 0, %fprs			/* restore fprs */
 
 	retl
 	membar  #Sync

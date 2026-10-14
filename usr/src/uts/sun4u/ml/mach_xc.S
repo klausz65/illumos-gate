@@ -22,6 +22,9 @@
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include "assym.h"
 
@@ -34,6 +37,8 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
 
 /*
  * Entered by the software trap (TT=ST_SELFXCALL, TL>0) thru send_self_xcall().

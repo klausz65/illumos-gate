@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_socketpair.s"
+	.file	"_so_socketpair.S"
 
 /* C library -- _so_socketpair					*/
 /*

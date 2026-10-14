@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"sysfs.s"
+	.file	"sysfs.S"
 
 /* C library -- sysfs						*/
 /* int sysfs (int opcode, const char *fsname);			*/

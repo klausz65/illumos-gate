@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"read.s"
+	.file	"read.S"
 
 /* C library -- read						*/
 /* ssize_t __read(int fildes, void *buf, size_t nbyte);		*/

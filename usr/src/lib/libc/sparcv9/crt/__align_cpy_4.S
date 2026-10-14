@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"__align_cpy_4.s"
+	.file	"__align_cpy_4.S"
 
 /* __align_cpy_4(s1, s2, n)
  *
@@ -58,19 +58,19 @@
 #include <sys/asm_linkage.h>
 
 	ENTRY(__align_cpy_4)
-	brz,pn %o2, .done		! Skip out if no bytes to copy.
+	brz,pn %o2, .done		/* Skip out if no bytes to copy. */
 	cmp	%o0, %o1
-	be,pn	%xcc, .done		! Addresses are identical--done.
-	and	%o0, 7, %o3		! Is target 8-byte aligned?
-	and	%o1, 7, %o4		! Is source 8-byte aligned?
+	be,pn	%xcc, .done		/* Addresses are identical--done. */
+	and	%o0, 7, %o3		/* Is target 8-byte aligned? */
+	and	%o1, 7, %o4		/* Is source 8-byte aligned? */
 	cmp	%o3, %o4
-	bne,pt	%icc, .noton8		! Exactly one of source and target is
-	mov	%o0, %g1		!     8-byte aligned.
-	brz,pt	%o3, .both8		! Both are 8-byte aligned.
+	bne,pt	%icc, .noton8		/* Exactly one of source and target is */
+	mov	%o0, %g1		/*     8-byte aligned. */
+	brz,pt	%o3, .both8		/* Both are 8-byte aligned. */
 	nop
 
-	ld	[%o1], %o3		! Neither is aligned, so do 4 bytes;
-	subcc	%o2, 4, %o2		! then both will be aligned.
+	ld	[%o1], %o3		/* Neither is aligned, so do 4 bytes; */
+	subcc	%o2, 4, %o2		/* then both will be aligned. */
 	st	%o3, [%g1]
 	bz,pn	%xcc, .done
 	add	%g1, 4, %g1
@@ -80,45 +80,45 @@
 ! Section of code dealing with case where source and target are both 8-byte
 ! aligned.  Get and store 16 bytes at a time using ldx and stx.
 
-	.align	32
-.both8:					! Both source and target are aligned.
+	.balign	32
+.both8:					/* Both source and target are aligned. */
 	cmp	%o2, 16
 	bl,a,pn %xcc, .chkwd
 	cmp	%o2, 8
 
 	sub	%o2, 12, %o2
-.loop16a:				! Load and store 16 bytes at a time.
+.loop16a:				/* Load and store 16 bytes at a time. */
 	ldx	[%o1], %o3
 	ldx	[%o1+8], %o4
 	subcc	%o2, 16, %o2
 	stx	%o3, [%g1]
 	stx	%o4, [%g1+8]
 	add	%o1, 16, %o1
-	bg,pt	%xcc, .loop16a		! Have at least 16 bytes left.
+	bg,pt	%xcc, .loop16a		/* Have at least 16 bytes left. */
 	add	%g1, 16, %g1
 
 	addcc	%o2, 12, %o2
-	bg,a,pt	%xcc, .chkwd		! Have some remaining bytes.
+	bg,a,pt	%xcc, .chkwd		/* Have some remaining bytes. */
 	cmp	%o2, 8
 	retl
 	nop
 
 .chkwd:
-	bl,a,pn	%xcc, .wrword		! Only 4 bytes left.
+	bl,a,pn	%xcc, .wrword		/* Only 4 bytes left. */
 	ld	[%o1], %o3
 
-	ldx	[%o1], %o3		! Have 8 or 12, so do 8.
+	ldx	[%o1], %o3		/* Have 8 or 12, so do 8. */
 	stx	%o3, [%g1]
 	add	%o1, 8, %o1
 	add	%g1, 8, %g1
 	subcc	%o2, 8, %o2
-	bg,a,pn %xcc, .wrword		! Still have four to do.
+	bg,a,pn %xcc, .wrword		/* Still have four to do. */
 	ld	[%o1], %o3
 
 	retl
 	nop
 
-.wrword:				! Copy final word.
+.wrword:				/* Copy final word. */
 	st	%o3, [%g1]
 
 .done:
@@ -129,11 +129,11 @@
 ! aligned.  So, use ld and st instructions rather than trying to copy stuff
 ! around in registers.
 
-	.align	32			! Ultra cache line boundary.
+	.balign	32			/* Ultra cache line boundary. */
 .noton8:
-	add	%o1, %o2, %g5	! Ending address of source.
-	andcc	%o2, 15, %o3	! Mod 16 of number of bytes to copy.
-	bz,pn	%xcc, .loop16	! Copy odd amounts first, then multiples of 16.
+	add	%o1, %o2, %g5	/* Ending address of source. */
+	andcc	%o2, 15, %o3	/* Mod 16 of number of bytes to copy. */
+	bz,pn	%xcc, .loop16	/* Copy odd amounts first, then multiples of 16. */
 	cmp	%o3, 4
 	bz,pn	%xcc, .mod4
 	cmp	%o3, 8
@@ -141,9 +141,9 @@
 	cmp	%o3, 12
 	bz,pt	%xcc, .mod12
 	nop
-	illtrap	0		! Size not valid.
+	illtrap	0		/* Size not valid. */
 
-.mod4:				! Do first 4 bytes, then do multiples of 16.
+.mod4:				/* Do first 4 bytes, then do multiples of 16. */
 	lduw	[%o1], %o2
 	add	%o1, 4, %o1
 	st	%o2, [%g1]
@@ -152,7 +152,7 @@
 	add	%g1, 4, %g1
 	retl
 	nop
-.mod8:				! Do first 8 bytes, then do multiples of 16.
+.mod8:				/* Do first 8 bytes, then do multiples of 16. */
 	lduw	[%o1], %o2
 	lduw	[%o1+4], %o3
 	add	%o1, 8, %o1
@@ -163,7 +163,7 @@
 	add	%g1, 8, %g1
 	retl
 	nop
-.mod12:				! Do first 12 bytes, then do multiples of 16.
+.mod12:				/* Do first 12 bytes, then do multiples of 16. */
 	lduw	[%o1], %o2
 	lduw	[%o1+4], %o3
 	lduw	[%o1+8], %o4
@@ -176,8 +176,8 @@
 	add	%g1, 12, %g1
 	retl
 	nop
-	.align	32			! Ultra cache line boundary.
-.loop16:				! Do multiples of 16 bytes.
+	.balign	32		/* Ultra cache line boundary. */
+.loop16:			/* Do multiples of 16 bytes. */
 	lduw	[%o1], %o2
 	lduw	[%o1+4], %o3
 	lduw	[%o1+8], %o4
@@ -190,7 +190,7 @@
 	st	%o5, [%g1+12]
 	bl,a,pt	%xcc, .loop16
 	add	%g1, 16,%g1
-	retl			! Target address is already in o0.
+	retl			/* Target address is already in o0. */
 	nop
 
 	SET_SIZE(__align_cpy_4)

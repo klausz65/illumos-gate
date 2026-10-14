@@ -22,8 +22,11 @@
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
-	.file	"memcpy.s"
+	.file	"memcpy.S"
 
 /*
  * memcpy(s1, s2, len)
@@ -138,7 +141,7 @@
  *
  * Comment on N2 memmove and memcpy common code and block-store-init:
  *   In the man page for memmove, it specifies that copying will take place
- *   correctly between objects that overlap.  For memcpy, behavior is
+ *   correctly between objects that overlap. For memcpy, behavior is
  *   undefined for objects that overlap.
  *
  *   In rare cases, some multi-threaded applications may attempt to examine
@@ -148,7 +151,7 @@
  *   the block-store-init provides memory throughput advantages for many
  *   common applications. To meet both needs, those applications which need
  *   the destination buffer to retain meaning during the copy should use
- *   memmove instead of memcpy.  The memmove version duplicates the memcpy
+ *   memmove instead of memcpy. The memmove version duplicates the memcpy
  *   algorithms except the memmove version does not use block-store-init
  *   in those cases where memcpy does use block-store-init. Otherwise, when
  *   memmove can determine the source and destination do not overlap,
@@ -205,87 +208,87 @@
 	ANSI_PRAGMA_WEAK(memcpy,function)
 
 	ENTRY(memmove)
-	cmp	%o1, %o0	! if from address is >= to use forward copy
-	bgeu,pn	%ncc, .forcpy	! else use backward if ...
-	sub	%o0, %o1, %o4	! get difference of two addresses
-	cmp	%o2, %o4	! compare size and difference of addresses
-	bleu,pn	%ncc, .forcpy	! if size is bigger, do overlapped copy
-	add	%o1, %o2, %o5	! get to end of source space
+	cmp	%o1, %o0	/* if from address is >= to use forward copy */
+	bgeu,pn	%ncc, .forcpy	/* else use backward if ... */
+	sub	%o0, %o1, %o4	/* get difference of two addresses */
+	cmp	%o2, %o4	/* compare size and difference of addresses */
+	bleu,pn	%ncc, .forcpy	/* if size is bigger, do overlapped copy */
+	add	%o1, %o2, %o5	/* get to end of source space */
 
 	!
 	! an overlapped copy that must be done "backwards"
 	!
 .chksize:
-	cmp	%o2, 8			! less than 8 byte do byte copy
-	blu,pt %ncc, 2f			! else continue
+	cmp	%o2, 8			/* less than 8 byte do byte copy */
+	blu,pt %ncc, 2f			/* else continue */
 
 	! Now size is bigger than 8
 .dbalign:
-	add	%o0, %o2, %g1		! get to end of dest space
-	andcc	%g1, 7, %o3		! %o3 has bytes till dst 8 bytes aligned
-	bz,a,pn	%ncc, .dbbck		! if dst is not 8 byte aligned: align it
-	andn	%o2, 7, %o3		! %o3 count is multiple of 8 bytes size
-	sub	%o2, %o3, %o2		! update o2 with new count
+	add	%o0, %o2, %g1		/* get to end of dest space */
+	andcc	%g1, 7, %o3		/* %o3 has bytes till dst 8 bytes aligned */
+	bz,a,pn	%ncc, .dbbck		/* if dst is not 8 byte aligned: align it */
+	andn	%o2, 7, %o3		/* %o3 count is multiple of 8 bytes size */
+	sub	%o2, %o3, %o2		/* update o2 with new count */
 
-1:	dec	%o5			! decrement source
-	ldub	[%o5], %g1		! load one byte
-	deccc	%o3			! decrement count
-	bgu,pt	%ncc, 1b		! if not done keep copying
-	stb	%g1, [%o5+%o4]		! store one byte into dest
-	andncc	%o2, 7, %o3		! %o3 count is multiple of 8 bytes size
-	bz,pn	%ncc, 2f		! if size < 8, move to byte copy
+1:	dec	%o5			/* decrement source */
+	ldub	[%o5], %g1		/* load one byte */
+	deccc	%o3			/* decrement count */
+	bgu,pt	%ncc, 1b		/* if not done keep copying */
+	stb	%g1, [%o5+%o4]		/* store one byte into dest */
+	andncc	%o2, 7, %o3		/* %o3 count is multiple of 8 bytes size */
+	bz,pn	%ncc, 2f		/* if size < 8, move to byte copy */
 
 	! Now Destination is 8 byte aligned
 .dbbck:
-	andcc	%o5, 7, %o0		! %o0 has src offset
-	bz,a,pn	%ncc, .dbcopybc		! if src is aligned to fast mem move
-	sub	%o2, %o3, %o2		! Residue bytes in %o2
+	andcc	%o5, 7, %o0		/* %o0 has src offset */
+	bz,a,pn	%ncc, .dbcopybc		/* if src is aligned to fast mem move */
+	sub	%o2, %o3, %o2		/* Residue bytes in %o2 */
 
-.cpy_dbwdbc:				! alignment of src is needed
-	sub	%o2, 8, %o2		! set size one loop ahead
-	sll	%o0, 3, %g1		! %g1 is left shift
-	mov	64, %g5			! init %g5 to be 64
-	sub	%g5, %g1, %g5		! %g5 right shift = (64 - left shift)
-	sub	%o5, %o0, %o5		! align the src at 8 bytes.
-	add	%o4, %o0, %o4		! increase difference between src & dst
-	ldx	[%o5], %o1		! load first 8 bytes
+.cpy_dbwdbc:				/* alignment of src is needed */
+	sub	%o2, 8, %o2		/* set size one loop ahead */
+	sll	%o0, 3, %g1		/* %g1 is left shift */
+	mov	64, %g5			/* init %g5 to be 64 */
+	sub	%g5, %g1, %g5		/* %g5 right shift = (64 - left shift) */
+	sub	%o5, %o0, %o5		/* align the src at 8 bytes. */
+	add	%o4, %o0, %o4		/* increase difference between src & dst */
+	ldx	[%o5], %o1		/* load first 8 bytes */
 	srlx	%o1, %g5, %o1
-1:	sub	%o5, 8, %o5		! subtract 8 from src
-	ldx	[%o5], %o0		! load 8 byte
-	sllx	%o0, %g1, %o3		! shift loaded 8 bytes left into tmp reg
-	or	%o1, %o3, %o3		! align data
-	stx	%o3, [%o5+%o4]		! store 8 byte
-	subcc	%o2, 8, %o2		! subtract 8 byte from size
-	bg,pt	%ncc, 1b		! if size > 0 continue
-	srlx	%o0, %g5, %o1		! move extra byte for the next use
+1:	sub	%o5, 8, %o5		/* subtract 8 from src */
+	ldx	[%o5], %o0		/* load 8 byte */
+	sllx	%o0, %g1, %o3		/* shift loaded 8 bytes left into tmp reg */
+	or	%o1, %o3, %o3		/* align data */
+	stx	%o3, [%o5+%o4]		/* store 8 byte */
+	subcc	%o2, 8, %o2		/* subtract 8 byte from size */
+	bg,pt	%ncc, 1b		/* if size > 0 continue */
+	srlx	%o0, %g5, %o1		/* move extra byte for the next use */
 
-	srl	%g1, 3, %o0		! retsote %o0 value for alignment
-	add	%o5, %o0, %o5		! restore src alignment
-	sub	%o4, %o0, %o4		! restore difference between src & dest
+	srl	%g1, 3, %o0		/* retsote %o0 value for alignment */
+	add	%o5, %o0, %o5		/* restore src alignment */
+	sub	%o4, %o0, %o4		/* restore difference between src & dest */
 
-	ba	2f			! branch to the trailing byte copy
-	add	%o2, 8, %o2		! restore size value
+	ba	2f			/* branch to the trailing byte copy */
+	add	%o2, 8, %o2		/* restore size value */
 
-.dbcopybc:				! alignment of src is not needed
-1:	sub	%o5, 8, %o5		! subtract from src
-	ldx	[%o5], %g1		! load 8 bytes
-	subcc	%o3, 8, %o3		! subtract from size
-	bgu,pt	%ncc, 1b		! if size is bigger 0 continue
-	stx	%g1, [%o5+%o4]		! store 8 bytes to destination
+.dbcopybc:				/* alignment of src is not needed */
+1:	sub	%o5, 8, %o5		/* subtract from src */
+	ldx	[%o5], %g1		/* load 8 bytes */
+	subcc	%o3, 8, %o3		/* subtract from size */
+	bgu,pt	%ncc, 1b		/* if size is bigger 0 continue */
+	stx	%g1, [%o5+%o4]		/* store 8 bytes to destination */
 
 	ba	2f
 	nop
 
 .bcbyte:
-1:	ldub	[%o5], %g1		! load one byte
-	stb	%g1, [%o5+%o4]		! store one byte
-2:	deccc	%o2			! decrement size
-	bgeu,a,pt %ncc, 1b		! if size is >= 0 continue
-	dec	%o5			! decrement from address
+1:	ldub	[%o5], %g1		/* load one byte */
+	stb	%g1, [%o5+%o4]		/* store one byte */
+2:	deccc	%o2			/* decrement size */
+	bgeu,a,pt %ncc, 1b		/* if size is >= 0 continue */
+	dec	%o5			/* decrement from address */
 
-.exitbc:				! exit from backward copy
+.exitbc:				/* exit from backward copy */
 	retl
-	add	%o5, %o4, %o0		! restore dest addr
+	add	%o5, %o4, %o0		/* restore dest addr */
 
 #ifdef NIAGARA2_IMPL
 	!
@@ -294,23 +297,23 @@
 	! use of block store init
 	!
 .forcpy:
-	cmp	%o2, SMALL_MAX		! check for not small case
-	blt,pn	%ncc, .mv_short		! merge with memcpy
-	mov	%o0, %g1		! save %o0
+	cmp	%o2, SMALL_MAX		/* check for not small case */
+	blt,pn	%ncc, .mv_short		/* merge with memcpy */
+	mov	%o0, %g1		/* save %o0 */
 	neg	%o0, %o5
-	andcc	%o5, 7, %o5		! bytes till DST 8 byte aligned
+	andcc	%o5, 7, %o5		/* bytes till DST 8 byte aligned */
 	brz,pt	%o5, .mv_dst_aligned_on_8
 
 	! %o5 has the bytes to be written in partial store.
 	sub	%o2, %o5, %o2
-	sub	%o1, %o0, %o1		! %o1 gets the difference
-7:					! dst aligning loop
-	ldub	[%o1+%o0], %o4		! load one byte
+	sub	%o1, %o0, %o1		/* %o1 gets the difference */
+7:					/* dst aligning loop */
+	ldub	[%o1+%o0], %o4		/* load one byte */
 	subcc	%o5, 1, %o5
 	stb	%o4, [%o0]
 	bgu,pt	%ncc, 7b
-	add	%o0, 1, %o0		! advance dst
-	add	%o1, %o0, %o1		! restore %o1
+	add	%o0, 1, %o0		/* advance dst */
+	add	%o1, %o0, %o1		/* restore %o1 */
 .mv_dst_aligned_on_8:
 	andcc	%o1, 7, %o5
 	brnz,pt	%o5, .src_dst_unaligned_on_8
@@ -318,7 +321,7 @@
 
 .mv_src_dst_aligned_on_8:
 	! check if we are copying MED_MAX or more bytes
-	cmp	%o2, MED_MAX		! limit to store buffer size
+	cmp	%o2, MED_MAX		/* limit to store buffer size */
 	bleu,pt	%ncc, .medlong
 	prefetch [%o1 + (2 * BLOCK_SIZE)], #one_read
 
@@ -327,35 +330,35 @@
  * but does not use the ASI_STBI_P (block initializing store) performance
  * optimization. See memmove rationale section in documentation
  */
-.mv_large_align8_copy:			! Src and dst share 8 byte alignment
-	rd	%fprs, %g5		! check for unused fp
+.mv_large_align8_copy:			/* Src and dst share 8 byte alignment */
+	rd	%fprs, %g5		/* check for unused fp */
 	! if fprs.fef == 0, set it.
 	! Setting it when already set costs more than checking
-	andcc	%g5, FPRS_FEF, %g5	! test FEF, fprs.du = fprs.dl = 0
+	andcc	%g5, FPRS_FEF, %g5	/* test FEF, fprs.du = fprs.dl = 0 */
 	bz,a	%ncc, 1f
-	wr	%g0, FPRS_FEF, %fprs	! fprs.fef = 1
+	wr	%g0, FPRS_FEF, %fprs	/* fprs.fef = 1 */
 1:
 	! align dst to 64 byte boundary
-	andcc	%o0, 0x3f, %o3		! %o3 == 0 means dst is 64 byte aligned
+	andcc	%o0, 0x3f, %o3		/* %o3 == 0 means dst is 64 byte aligned */
 	brz,pn	%o3, .mv_aligned_on_64
-	sub	%o3, 64, %o3		! %o3 has negative bytes to move
-	add	%o2, %o3, %o2		! adjust remaining count
+	sub	%o3, 64, %o3		/* %o3 has negative bytes to move */
+	add	%o2, %o3, %o2		/* adjust remaining count */
 .mv_align_to_64:
 	ldx	[%o1], %o4
-	add	%o1, 8, %o1		! increment src ptr
+	add	%o1, 8, %o1		/* increment src ptr */
 	addcc	%o3, 8, %o3
 	stx	%o4, [%o0]
 	brnz,pt	%o3, .mv_align_to_64
-	add	%o0, 8, %o0		! increment dst ptr
+	add	%o0, 8, %o0		/* increment dst ptr */
 
 .mv_aligned_on_64:
 	prefetch [%o1 + (3 * BLOCK_SIZE)], #one_read
-	mov	%asi,%o4		! save %asi
+	rd	%asi,%o4		/* save %asi */
 	! Determine source alignment
 	! to correct 8 byte offset
 	andcc	%o1, 0x20, %o3
 	brnz,pn	%o3, .mv_align_1
-	mov	ASI_BLK_P, %asi		! setup %asi for block load/store
+	wr	%g0, ASI_BLK_P, %asi	/* setup %asi for block load/store */
 	andcc	%o1, 0x10, %o3
 	brnz,pn	%o3, .mv_align_01
 	nop
@@ -389,12 +392,12 @@
 	ldd	[%o1], %d0
 	add	%o1, 8, %o1
 	sub	%o2, 8, %o2
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .mv_align_111_loop:
 	subcc	%o5, 128, %o5
 	/* ---- copy line 1 of 2. ---- */
-	ldda	[%o1]%asi,%d16		! block load
+	ldda	[%o1]%asi,%d16		/* block load */
 	fmovd	%d16, %d2
 	fmovd	%d18, %d4
 	fmovd	%d20, %d6
@@ -403,7 +406,7 @@
 	fmovd	%d26, %d12
 	fmovd	%d28, %d14
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	prefetch [%o1 + (5 * BLOCK_SIZE)], #one_read
 	fmovd	%d30, %d0
 
@@ -416,9 +419,9 @@
 	fmovd	%d24, %d10
 	fmovd	%d26, %d12
 	fmovd	%d28, %d14
-	add	%o1, 128, %o1		! increment src
+	add	%o1, 128, %o1		/* increment src */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d30, %d0
 	bgt,pt	%ncc, .mv_align_111_loop
 	prefetch [%o1 + (4 * BLOCK_SIZE)], #one_read
@@ -434,13 +437,13 @@
 	ldd	[%o1+8], %d2
 	add	%o1, 16, %o1
 	sub	%o2, 16, %o2
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .mv_align_110_loop:
 	subcc	%o5, 128, %o5
 	/* ---- copy line 1 of 2. ---- */
 
-	ldda	[%o1]%asi,%d16		! block load
+	ldda	[%o1]%asi,%d16		/* block load */
 	fmovd	%d16, %d4
 	fmovd	%d18, %d6
 	fmovd	%d20, %d8
@@ -448,7 +451,7 @@
 	fmovd	%d24, %d12
 	fmovd	%d26, %d14
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d28, %d0
 	prefetch [%o1 + (5 * BLOCK_SIZE)], #one_read
 	fmovd	%d30, %d2
@@ -461,9 +464,9 @@
 	fmovd	%d22, %d10
 	fmovd	%d24, %d12
 	fmovd	%d26, %d14
-	add	%o1, 128, %o1		! increment src
+	add	%o1, 128, %o1		/* increment src */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d28, %d0
 	fmovd	%d30, %d2
 	bgt,pt	%ncc, .mv_align_110_loop
@@ -482,20 +485,20 @@
 	ldd	[%o1+16], %d4
 	add	%o1, 24, %o1
 	sub	%o2, 24, %o2
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .mv_align_101_loop:
 	subcc	%o5, 128, %o5
 	/* ---- copy line 1 of 2. ---- */
 
-	ldda	[%o1]%asi,%d16		! block load
+	ldda	[%o1]%asi,%d16		/* block load */
 	fmovd	%d16, %d6
 	fmovd	%d18, %d8
 	fmovd	%d20, %d10
 	fmovd	%d22, %d12
 	fmovd	%d24, %d14
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d26, %d0
 	fmovd	%d28, %d2
 	prefetch [%o1 + (5 * BLOCK_SIZE)], #one_read
@@ -508,9 +511,9 @@
 	fmovd	%d20, %d10
 	fmovd	%d22, %d12
 	fmovd	%d24, %d14
-	add	%o1, 128, %o1		! increment src
+	add	%o1, 128, %o1		/* increment src */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d26, %d0
 	fmovd	%d28, %d2
 	fmovd	%d30, %d4
@@ -532,18 +535,18 @@
 	ldd	[%o1+24],%d6
 	add	%o1, 32, %o1
 	sub	%o2, 32, %o2
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .mv_align_100_loop:
 	subcc	%o5, 128, %o5
 	/* ---- copy line 1 of 2. ---- */
-	ldda	[%o1]%asi,%d16		! block load
+	ldda	[%o1]%asi,%d16		/* block load */
 	fmovd	%d16, %d8
 	fmovd	%d18, %d10
 	fmovd	%d20, %d12
 	fmovd	%d22, %d14
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d24, %d0
 	fmovd	%d26, %d2
 	fmovd	%d28, %d4
@@ -556,9 +559,9 @@
 	fmovd	%d18, %d10
 	fmovd	%d20, %d12
 	fmovd	%d22, %d14
-	add	%o1, 128, %o1		! increment src
+	add	%o1, 128, %o1		/* increment src */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d24, %d0
 	fmovd	%d26, %d2
 	fmovd	%d28, %d4
@@ -583,18 +586,18 @@
 	ldd	[%o1+32], %d8
 	add	%o1, 40, %o1
 	sub	%o2, 40, %o2
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .mv_align_011_loop:
 	subcc	%o5, 128, %o5
 	/* ---- copy line 1 of 2. ---- */
 
-	ldda	[%o1]%asi,%d16		! block load
+	ldda	[%o1]%asi,%d16		/* block load */
 	fmovd	%d16, %d10
 	fmovd	%d18, %d12
 	fmovd	%d20, %d14
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d22, %d0
 	fmovd	%d24, %d2
 	fmovd	%d26, %d4
@@ -607,9 +610,9 @@
 	fmovd	%d16, %d10
 	fmovd	%d18, %d12
 	fmovd	%d20, %d14
-	add	%o1, 128, %o1		! increment src
+	add	%o1, 128, %o1		/* increment src */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d22, %d0
 	fmovd	%d24, %d2
 	fmovd	%d26, %d4
@@ -637,17 +640,17 @@
 	ldd	[%o1+40], %d10
 	add	%o1, 48, %o1
 	sub	%o2, 48, %o2
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .mv_align_010_loop:
 	subcc	%o5, 128, %o5
 	/* ---- copy line 1 of 2. ---- */
 
-	ldda	[%o1]%asi,%d16		! block load
+	ldda	[%o1]%asi,%d16		/* block load */
 	fmovd	%d16, %d12
 	fmovd	%d18, %d14
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d20, %d0
 	fmovd	%d22, %d2
 	fmovd	%d24, %d4
@@ -660,9 +663,9 @@
 	ldda	[%o1+64]%asi,%d16
 	fmovd	%d16, %d12
 	fmovd	%d18, %d14
-	add	%o1, 128, %o1	! increment src
+	add	%o1, 128, %o1		/* increment src */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d20, %d0
 	fmovd	%d22, %d2
 	fmovd	%d24, %d4
@@ -693,16 +696,16 @@
 	ldd	[%o1+48], %d12
 	add	%o1, 56, %o1
 	sub	%o2, 56, %o2
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .mv_align_001_loop:
 	subcc	%o5, 128, %o5
 	/* ---- copy line 1 of 2. ---- */
 
-	ldda	[%o1]%asi,%d16		! block load
+	ldda	[%o1]%asi,%d16		/* block load */
 	fmovd	%d16, %d14
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d18, %d0
 	fmovd	%d20, %d2
 	fmovd	%d22, %d4
@@ -715,9 +718,9 @@
 	/* ---- copy line 2 of 2. ---- */
 	ldda	[%o1+64]%asi,%d16
 	fmovd	%d16, %d14
-	add	%o1, 128, %o1		! increment src
+	add	%o1, 128, %o1		/* increment src */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d18, %d0
 	fmovd	%d20, %d2
 	fmovd	%d22, %d4
@@ -740,8 +743,8 @@
 	! END OF mv_align_001
 
 .mv_align_000:
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .mv_align_000_loop:
 	/* ---- copy line 1 of 2. ---- */
 	subcc	%o5, 128, %o5
@@ -752,9 +755,9 @@
 	/* ---- copy line 2 of 2. ---- */
 	add	%o0, 64, %o0
 	ldda	[%o1+64]%asi,%d0
-	add	%o1, 128, %o1		! increment src
+	add	%o1, 128, %o1		/* increment src */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! increment dst
+	add	%o0, 64, %o0		/* increment dst */
 	bgt,pt	%ncc, .mv_align_000_loop
 	prefetch [%o1 + (4 * BLOCK_SIZE)], #one_read
 	ba	.remain_stuff
@@ -769,40 +772,40 @@
 	ENTRY(memcpy)
 	ENTRY(__align_cpy_1)
 #ifdef NIAGARA2_IMPL
-	cmp	%o2, SMALL_MAX		! check for not small case
-	bgeu,pn	%ncc, .medium		! go to larger cases
-	mov	%o0, %g1		! save %o0
+	cmp	%o2, SMALL_MAX		/* check for not small case */
+	bgeu,pn	%ncc, .medium		/* go to larger cases */
+	mov	%o0, %g1		/* save %o0 */
 .mv_short:
-	cmp	%o2, SHORTCOPY		! check for really short case
+	cmp	%o2, SHORTCOPY		/* check for really short case */
 	ble,pt	%ncc, .smallfin
-	or	%o0, %o1, %o4		! prepare alignment check
-	andcc	%o4, 0x3, %o5		! test for alignment
-	bz,pt	%ncc, .smallword	! branch to word aligned case
+	or	%o0, %o1, %o4		/* prepare alignment check */
+	andcc	%o4, 0x3, %o5		/* test for alignment */
+	bz,pt	%ncc, .smallword	/* branch to word aligned case */
 	cmp	%o2, SHORTCHECK
 	ble,pt	%ncc, .smallrest
-	andcc	%o1, 0x3, %o5		! is src word aligned
+	andcc	%o1, 0x3, %o5		/* is src word aligned */
 	bz,pn	%ncc, .aldst
-	cmp	%o5, 2			! is src half-word aligned
+	cmp	%o5, 2			/* is src half-word aligned */
 	be,pt	%ncc, .s2algn
-	cmp	%o5, 3			! src is byte aligned
-.s1algn:ldub	[%o1], %o3		! move 1 or 3 bytes to align it
+	cmp	%o5, 3			/* src is byte aligned */
+.s1algn:ldub	[%o1], %o3		/* move 1 or 3 bytes to align it */
 	inc	1, %o1
-	stb	%o3, [%o0]		! move a byte to align src
+	stb	%o3, [%o0]		/* move a byte to align src */
 	inc	1, %o0
 	bne,pt	%ncc, .s2algn
 	dec	%o2
-	b	.ald			! now go align dest
+	b	.ald			/* now go align dest */
 	andcc	%o0, 0x3, %o5
 
-.s2algn:lduh	[%o1], %o3		! know src is 2 byte aligned
+.s2algn:lduh	[%o1], %o3		/* know src is 2 byte aligned */
 	inc	2, %o1
 	srl	%o3, 8, %o4
-	stb	%o4, [%o0]		! have to do bytes,
-	stb	%o3, [%o0 + 1]		! don't know dst alignment
+	stb	%o4, [%o0]		/* have to do bytes, */
+	stb	%o3, [%o0 + 1]		/* don't know dst alignment */
 	inc	2, %o0
 	dec	2, %o2
 
-.aldst:	andcc	%o0, 0x3, %o5		! align the destination address
+.aldst:	andcc	%o0, 0x3, %o5		/* align the destination address */
 .ald:	bz,pn	%ncc, .w4cp
 	cmp	%o5, 2
 	be,pn	%ncc, .w2cp
@@ -814,19 +817,19 @@
 	bne,pt	%ncc, .w1cp
 	inc	%o0
 	dec	1, %o2
-	andn	%o2, 3, %o3		! %o3 is aligned word count
-	dec	4, %o3			! avoid reading beyond tail of src
-	sub	%o1, %o0, %o1		! %o1 gets the difference
+	andn	%o2, 3, %o3		/* %o3 is aligned word count */
+	dec	4, %o3			/* avoid reading beyond tail of src */
+	sub	%o1, %o0, %o1		/* %o1 gets the difference */
 
-1:	sll	%o4, 8, %g5		! save residual bytes
+1:	sll	%o4, 8, %g5		/* save residual bytes */
 	lduw	[%o1+%o0], %o4
 	deccc	4, %o3
-	srl	%o4, 24, %o5		! merge with residual
+	srl	%o4, 24, %o5		/* merge with residual */
 	or	%o5, %g5, %g5
 	st	%g5, [%o0]
 	bnz,pt	%ncc, 1b
 	inc	4, %o0
-	sub	%o1, 3, %o1		! used one byte of last word read
+	sub	%o1, 3, %o1		/* used one byte of last word read */
 	and	%o2, 3, %o2
 	b	7f
 	inc	4, %o2
@@ -835,19 +838,19 @@
 	sth	%o5, [%o0]
 	inc	2, %o0
 	dec	3, %o2
-	andn	%o2, 3, %o3		! %o3 is aligned word count
-	dec	4, %o3			! avoid reading beyond tail of src
-	sub	%o1, %o0, %o1		! %o1 gets the difference
+	andn	%o2, 3, %o3		/* %o3 is aligned word count */
+	dec	4, %o3			/* avoid reading beyond tail of src */
+	sub	%o1, %o0, %o1		/* %o1 gets the difference */
 
-2:	sll	%o4, 24, %g5		! save residual bytes
+2:	sll	%o4, 24, %g5		/* save residual bytes */
 	lduw	[%o1+%o0], %o4
 	deccc	4, %o3
-	srl	%o4, 8, %o5		! merge with residual
+	srl	%o4, 8, %o5		/* merge with residual */
 	or	%o5, %g5, %g5
 	st	%g5, [%o0]
 	bnz,pt	%ncc, 2b
 	inc	4, %o0
-	sub	%o1, 1, %o1		! used three bytes of last word read
+	sub	%o1, 1, %o1		/* used three bytes of last word read */
 	and	%o2, 3, %o2
 	b	7f
 	inc	4, %o2
@@ -858,36 +861,36 @@
 	sth	%o5, [%o0]
 	inc	2, %o0
 	dec	2, %o2
-	andn	%o2, 3, %o3		! %o3 is aligned word count
-	dec	4, %o3			! avoid reading beyond tail of src
-	sub	%o1, %o0, %o1		! %o1 gets the difference
+	andn	%o2, 3, %o3		/* %o3 is aligned word count */
+	dec	4, %o3			/* avoid reading beyond tail of src */
+	sub	%o1, %o0, %o1		/* %o1 gets the difference */
 
-3:	sll	%o4, 16, %g5		! save residual bytes
+3:	sll	%o4, 16, %g5		/* save residual bytes */
 	lduw	[%o1+%o0], %o4
 	deccc	4, %o3
-	srl	%o4, 16, %o5		! merge with residual
+	srl	%o4, 16, %o5		/* merge with residual */
 	or	%o5, %g5, %g5
 	st	%g5, [%o0]
 	bnz,pt	%ncc, 3b
 	inc	4, %o0
-	sub	%o1, 2, %o1		! used two bytes of last word read
+	sub	%o1, 2, %o1		/* used two bytes of last word read */
 	and	%o2, 3, %o2
 	b	7f
 	inc	4, %o2
 
-.w4cp:	andn	%o2, 3, %o3		! %o3 is aligned word count
-	sub	%o1, %o0, %o1		! %o1 gets the difference
+.w4cp:	andn	%o2, 3, %o3		/* %o3 is aligned word count */
+	sub	%o1, %o0, %o1		/* %o1 gets the difference */
 
-1:	lduw	[%o1+%o0], %o4		! read from address
-	deccc	4, %o3			! decrement count
-	st	%o4, [%o0]		! write at destination address
+1:	lduw	[%o1+%o0], %o4		/* read from address */
+	deccc	4, %o3			/* decrement count */
+	st	%o4, [%o0]		/* write at destination address */
 	bgu,pt	%ncc, 1b
-	inc	4, %o0			! increment to address
-	and	%o2, 3, %o2		! number of leftover bytes, if any
+	inc	4, %o0			/* increment to address */
+	and	%o2, 3, %o2		/* number of leftover bytes, if any */
 
 	! simple finish up byte copy, works with any alignment
 7:
-	add	%o1, %o0, %o1		! restore %o1
+	add	%o1, %o0, %o1		/* restore %o1 */
 .smallrest:
 	tst	%o2
 	bz,pt	%ncc, .smallx
@@ -896,57 +899,57 @@
 	nop
 	sub	%o2, 3, %o2
 .smallnotalign4:
-	ldub	[%o1], %o3		! read byte
-	subcc	%o2, 4, %o2		! reduce count by 4
-	stb	%o3, [%o0]		! write byte
-	ldub	[%o1+1], %o3		! repeat for total of 4 bytes
-	add	%o1, 4, %o1		! advance SRC by 4
+	ldub	[%o1], %o3		/* read byte */
+	subcc	%o2, 4, %o2		/* reduce count by 4 */
+	stb	%o3, [%o0]		/* write byte */
+	ldub	[%o1+1], %o3		/* repeat for total of 4 bytes */
+	add	%o1, 4, %o1		/* advance SRC by 4 */
 	stb	%o3, [%o0+1]
 	ldub	[%o1-2], %o3
-	add	%o0, 4, %o0		! advance DST by 4
+	add	%o0, 4, %o0		/* advance DST by 4 */
 	stb	%o3, [%o0-2]
 	ldub	[%o1-1], %o3
-	bgu,pt	%ncc, .smallnotalign4	! loop til 3 or fewer bytes remain
+	bgu,pt	%ncc, .smallnotalign4	/* loop til 3 or fewer bytes remain */
 	stb	%o3, [%o0-1]
-	addcc	%o2, 3, %o2		! restore count
+	addcc	%o2, 3, %o2		/* restore count */
 	bz,pt	%ncc, .smallx
-.smallleft3:				! 1, 2, or 3 bytes remain
+.smallleft3:				/* 1, 2, or 3 bytes remain */
 	subcc	%o2, 1, %o2
-	ldub	[%o1], %o3		! load one byte
+	ldub	[%o1], %o3		/* load one byte */
 	bz,pt	%ncc, .smallx
-	stb	%o3, [%o0]		! store one byte
-	ldub	[%o1+1], %o3		! load second byte
+	stb	%o3, [%o0]		/* store one byte */
+	ldub	[%o1+1], %o3		/* load second byte */
 	subcc	%o2, 1, %o2
 	bz,pt	%ncc, .smallx
-	stb	%o3, [%o0+1]		! store second byte
-	ldub	[%o1+2], %o3		! load third byte
-	stb	%o3, [%o0+2]		! store third byte
+	stb	%o3, [%o0+1]		/* store second byte */
+	ldub	[%o1+2], %o3		/* load third byte */
+	stb	%o3, [%o0+2]		/* store third byte */
 .smallx:
 	retl
-	mov	%g1, %o0		! restore %o0
+	mov	%g1, %o0		/* restore %o0 */
 
 .smallfin:
 	tst	%o2
 	bnz,pt	%ncc, .smallleft3
 	nop
 	retl
-	mov	%g1, %o0		! restore %o0
+	mov	%g1, %o0		/* restore %o0 */
 
-	.align 16
+	.balign 16
 .smallwords:
-	lduw	[%o1], %o3		! read word
+	lduw	[%o1], %o3		/* read word */
 .smallwordx:
-	subcc	%o2, 8, %o2		! update count
-	stw	%o3, [%o0]		! write word
-	add	%o1, 8, %o1		! update SRC
-	lduw	[%o1-4], %o3		! read word
-	add	%o0, 8, %o0		! update DST
-	bgu,pt	%ncc, .smallwords	! loop until done
-	stw	%o3, [%o0-4]		! write word
-	addcc	%o2, 7, %o2		! restore count
-	bz,pt	%ncc, .smallexit	! check for completion
-	cmp	%o2, 4			! check for 4 or more bytes left
-	blt	%ncc, .smallleft3	! if not, go to finish up
+	subcc	%o2, 8, %o2		/* update count */
+	stw	%o3, [%o0]		/* write word */
+	add	%o1, 8, %o1		/* update SRC */
+	lduw	[%o1-4], %o3		/* read word */
+	add	%o0, 8, %o0		/* update DST */
+	bgu,pt	%ncc, .smallwords	/* loop until done */
+	stw	%o3, [%o0-4]		/* write word */
+	addcc	%o2, 7, %o2		/* restore count */
+	bz,pt	%ncc, .smallexit	/* check for completion */
+	cmp	%o2, 4			/* check for 4 or more bytes left */
+	blt	%ncc, .smallleft3	/* if not, go to finish up */
 	nop
 	lduw	[%o1], %o3
 	add	%o1, 4, %o1
@@ -955,28 +958,28 @@
 	bnz,pt	%ncc, .smallleft3
 	stw	%o3, [%o0-4]
 	retl
-	mov	%g1, %o0		! restore %o0
+	mov	%g1, %o0		/* restore %o0 */
 
 ! 8 or more bytes, src and dest start on word boundary
 ! %o4 contains or %o0, %o1; %o3 contains first four bytes of src
 .smalllong:
-	andcc	%o4, 0x7, %o5		! test for long alignment
-	bnz,pt	%ncc, .smallwordx	! branch to word aligned case
+	andcc	%o4, 0x7, %o5		/* test for long alignment */
+	bnz,pt	%ncc, .smallwordx	/* branch to word aligned case */
 	cmp	%o2, SHORT_LONG-7
-	bge,a	%ncc, .medl64		! if we branch
-	sub	%o2,56,%o2		! adjust %o2 to -31 off count
-	sub	%o1, %o0, %o1		! %o1 gets the difference
+	bge,a	%ncc, .medl64		/* if we branch */
+	sub	%o2,56,%o2		/* adjust %o2 to -31 off count */
+	sub	%o1, %o0, %o1		/* %o1 gets the difference */
 .small_long_l:
 	ldx	[%o1+%o0], %o3
 	subcc	%o2, 8, %o2
 	add	%o0, 8, %o0
-	bgu,pt	%ncc, .small_long_l	! loop until done
-	stx	%o3, [%o0-8]		! write word
-	add	%o1, %o0, %o1		! restore %o1
-	addcc	%o2, 7, %o2		! restore %o2 to correct count
-	bz,pt	%ncc, .smallexit	! check for completion
-	cmp	%o2, 4			! check for 4 or more bytes left
-	blt,pt	%ncc, .smallleft3	! if not, go to finish up
+	bgu,pt	%ncc, .small_long_l	/* loop until done */
+	stx	%o3, [%o0-8]		/* write word */
+	add	%o1, %o0, %o1		/* restore %o1 */
+	addcc	%o2, 7, %o2		/* restore %o2 to correct count */
+	bz,pt	%ncc, .smallexit	/* check for completion */
+	cmp	%o2, 4			/* check for 4 or more bytes left */
+	blt,pt	%ncc, .smallleft3	/* if not, go to finish up */
 	nop
 	lduw	[%o1], %o3
 	add	%o1, 4, %o1
@@ -986,47 +989,47 @@
 	bnz,pt	%ncc, .smallleft3
 	nop
 	retl
-	mov	%g1, %o0		! restore %o0
+	mov	%g1, %o0		/* restore %o0 */
 
-	.align 16
+	.balign 16
 ! src and dest start on word boundary
 .smallword:
-	subcc	%o2, 7, %o2		! adjust count
+	subcc	%o2, 7, %o2		/* adjust count */
 	bgu,pt	%ncc, .smalllong
-	lduw	[%o1], %o3		! read word
-	addcc	%o2, 3, %o2		! restore count
+	lduw	[%o1], %o3		/* read word */
+	addcc	%o2, 3, %o2		/* restore count */
 	bz,pt	%ncc, .smallexit
-	stw	%o3, [%o0]		! write word
-	deccc	%o2			! reduce count for cc test
-	ldub	[%o1+4], %o3		! load one byte
+	stw	%o3, [%o0]		/* write word */
+	deccc	%o2			/* reduce count for cc test */
+	ldub	[%o1+4], %o3		/* load one byte */
 	bz,pt	%ncc, .smallexit
-	stb	%o3, [%o0+4]		! store one byte
-	ldub	[%o1+5], %o3		! load second byte
+	stb	%o3, [%o0+4]		/* store one byte */
+	ldub	[%o1+5], %o3		/* load second byte */
 	deccc	%o2
 	bz,pt	%ncc, .smallexit
-	stb	%o3, [%o0+5]		! store second byte
-	ldub	[%o1+6], %o3		! load third byte
-	stb	%o3, [%o0+6]		! store third byte
+	stb	%o3, [%o0+5]		/* store second byte */
+	ldub	[%o1+6], %o3		/* load third byte */
+	stb	%o3, [%o0+6]		/* store third byte */
 .smallexit:
 	retl
-	mov	%g1, %o0		! restore %o0
+	mov	%g1, %o0		/* restore %o0 */
 
-	.align 16
+	.balign 16
 .medium:
 	neg	%o0, %o5
-	andcc	%o5, 7, %o5		! bytes till DST 8 byte aligned
+	andcc	%o5, 7, %o5		/* bytes till DST 8 byte aligned */
 	brz,pt	%o5, .dst_aligned_on_8
 
 	! %o5 has the bytes to be written in partial store.
 	sub	%o2, %o5, %o2
-	sub	%o1, %o0, %o1		! %o1 gets the difference
-7:					! dst aligning loop
-	ldub	[%o1+%o0], %o4		! load one byte
+	sub	%o1, %o0, %o1		/* %o1 gets the difference */
+7:					/* dst aligning loop */
+	ldub	[%o1+%o0], %o4		/* load one byte */
 	subcc	%o5, 1, %o5
 	stb	%o4, [%o0]
 	bgu,pt	%ncc, 7b
-	add	%o0, 1, %o0		! advance dst
-	add	%o1, %o0, %o1		! restore %o1
+	add	%o0, 1, %o0		/* advance dst */
+	add	%o1, %o0, %o1		/* restore %o1 */
 .dst_aligned_on_8:
 	andcc	%o1, 7, %o5
 	brnz,pt	%o5, .src_dst_unaligned_on_8
@@ -1034,7 +1037,7 @@
 
 .src_dst_aligned_on_8:
 	! check if we are copying MED_MAX or more bytes
-	cmp	%o2, MED_MAX		! limit to store buffer size
+	cmp	%o2, MED_MAX		/* limit to store buffer size */
 	bgu,pt	%ncc, .large_align8_copy
 	prefetch [%o1 + (2 * BLOCK_SIZE)], #one_read
 /*
@@ -1042,77 +1045,77 @@
  * and total data to move is less than MED_MAX bytes
  */
 .medlong:
-	subcc	%o2, 63, %o2		! adjust length to allow cc test
-	ble,pt	%ncc, .medl63		! skip big loop if less than 64 bytes
+	subcc	%o2, 63, %o2		/* adjust length to allow cc test */
+	ble,pt	%ncc, .medl63		/* skip big loop if less than 64 bytes */
 .medl64:
-	prefetch [%o1 + (3 * BLOCK_SIZE)], #one_read ! into the l2 cache
-	ldx	[%o1], %o4		! load
-	subcc	%o2, 64, %o2		! decrement length count
-	stx	%o4, [%o0]		! and store
-	ldx	[%o1+8], %o3		! a block of 64 bytes
+	prefetch [%o1 + (3 * BLOCK_SIZE)], #one_read /* into the l2 cache */
+	ldx	[%o1], %o4		/* load */
+	subcc	%o2, 64, %o2		/* decrement length count */
+	stx	%o4, [%o0]		/* and store */
+	ldx	[%o1+8], %o3		/* a block of 64 bytes */
 	stx	%o3, [%o0+8]
 	ldx	[%o1+16], %o4
 	stx	%o4, [%o0+16]
 	ldx	[%o1+24], %o3
 	stx	%o3, [%o0+24]
-	ldx	[%o1+32], %o4		! load
-	stx	%o4, [%o0+32]		! and store
-	ldx	[%o1+40], %o3		! a block of 64 bytes
-	add	%o1, 64, %o1		! increase src ptr by 64
+	ldx	[%o1+32], %o4		/* load */
+	stx	%o4, [%o0+32]		/* and store */
+	ldx	[%o1+40], %o3		/* a block of 64 bytes */
+	add	%o1, 64, %o1		/* increase src ptr by 64 */
 	stx	%o3, [%o0+40]
 	ldx	[%o1-16], %o4
-	add	%o0, 64, %o0		! increase dst ptr by 64
+	add	%o0, 64, %o0		/* increase dst ptr by 64 */
 	stx	%o4, [%o0-16]
 	ldx	[%o1-8], %o3
-	bgu,pt	%ncc, .medl64		! repeat if at least 64 bytes left
+	bgu,pt	%ncc, .medl64		/* repeat if at least 64 bytes left */
 	stx	%o3, [%o0-8]
 .medl63:
-	addcc	%o2, 32, %o2		! adjust remaining count
-	ble,pt	%ncc, .medl31		! to skip if 31 or fewer bytes left
+	addcc	%o2, 32, %o2		/* adjust remaining count */
+	ble,pt	%ncc, .medl31		/* to skip if 31 or fewer bytes left */
 	nop
-	ldx	[%o1], %o4		! load
-	sub	%o2, 32, %o2		! decrement length count
-	stx	%o4, [%o0]		! and store
-	ldx	[%o1+8], %o3		! a block of 32 bytes
-	add	%o1, 32, %o1		! increase src ptr by 32
+	ldx	[%o1], %o4		/* load */
+	sub	%o2, 32, %o2		/* decrement length count */
+	stx	%o4, [%o0]		/* and store */
+	ldx	[%o1+8], %o3		/* a block of 32 bytes */
+	add	%o1, 32, %o1		/* increase src ptr by 32 */
 	stx	%o3, [%o0+8]
 	ldx	[%o1-16], %o4
-	add	%o0, 32, %o0		! increase dst ptr by 32
+	add	%o0, 32, %o0		/* increase dst ptr by 32 */
 	stx	%o4, [%o0-16]
 	ldx	[%o1-8], %o3
 	stx	%o3, [%o0-8]
 .medl31:
-	addcc	%o2, 16, %o2		! adjust remaining count
-	ble,pt	%ncc, .medl15		! skip if 15 or fewer bytes left
-	nop				!
-	ldx	[%o1], %o4		! load and store 16 bytes
-	add	%o1, 16, %o1		! increase src ptr by 16
-	stx	%o4, [%o0]		!
-	sub	%o2, 16, %o2		! decrease count by 16
-	ldx	[%o1-8], %o3		!
-	add	%o0, 16, %o0		! increase dst ptr by 16
+	addcc	%o2, 16, %o2		/* adjust remaining count */
+	ble,pt	%ncc, .medl15		/* skip if 15 or fewer bytes left */
+	nop
+	ldx	[%o1], %o4		/* load and store 16 bytes */
+	add	%o1, 16, %o1		/* increase src ptr by 16 */
+	stx	%o4, [%o0]
+	sub	%o2, 16, %o2		/* decrease count by 16 */
+	ldx	[%o1-8], %o3
+	add	%o0, 16, %o0		/* increase dst ptr by 16 */
 	stx	%o3, [%o0-8]
 .medl15:
-	addcc	%o2, 15, %o2		! restore count
-	bz,pt	%ncc, .smallexit	! exit if finished
+	addcc	%o2, 15, %o2		/* restore count */
+	bz,pt	%ncc, .smallexit	/* exit if finished */
 	cmp	%o2, 8
-	blt,pt	%ncc, .medw7		! skip if 7 or fewer bytes left
+	blt,pt	%ncc, .medw7		/* skip if 7 or fewer bytes left */
 	tst	%o2
-	ldx	[%o1], %o4		! load 8 bytes
-	add	%o1, 8, %o1		! increase src ptr by 8
-	add	%o0, 8, %o0		! increase dst ptr by 8
-	subcc	%o2, 8, %o2		! decrease count by 8
+	ldx	[%o1], %o4		/* load 8 bytes */
+	add	%o1, 8, %o1		/* increase src ptr by 8 */
+	add	%o0, 8, %o0		/* increase dst ptr by 8 */
+	subcc	%o2, 8, %o2		/* decrease count by 8 */
 	bnz,pt	%ncc, .medw7
-	stx	%o4, [%o0-8]		! and store 8 bytes
+	stx	%o4, [%o0-8]		/* and store 8 bytes */
 	retl
-	mov	%g1, %o0		! restore %o0
+	mov	%g1, %o0		/* restore %o0 */
 
-	.align 16
+	.balign 16
 .src_dst_unaligned_on_8:
 	! DST is 8-byte aligned, src is not
 2:
-	andcc	%o1, 0x3, %o5		! test word alignment
-	bnz,pt	%ncc, .unalignsetup	! branch to skip if not word aligned
+	andcc	%o1, 0x3, %o5		/* test word alignment */
+	bnz,pt	%ncc, .unalignsetup	/* branch to skip if not word aligned */
 	prefetch [%o1 + (2 * BLOCK_SIZE)], #one_read
 
 /*
@@ -1122,16 +1125,16 @@
  * source and destination is in cache for medium
  * to short data moves.
  */
-	cmp	%o2, MED_WMAX		! limit to store buffer size
-	bge,pt	%ncc, .unalignrejoin	! otherwise rejoin main loop
+	cmp	%o2, MED_WMAX		/* limit to store buffer size */
+	bge,pt	%ncc, .unalignrejoin	/* otherwise rejoin main loop */
 	prefetch [%o1 + (3 * BLOCK_SIZE)], #one_read
 
-	subcc	%o2, 31, %o2		! adjust length to allow cc test
-					! for end of loop
-	ble,pt	%ncc, .medw31		! skip big loop if less than 16
+	subcc	%o2, 31, %o2		/* adjust length to allow cc test */
+					/* for end of loop */
+	ble,pt	%ncc, .medw31		/* skip big loop if less than 16 */
 	prefetch [%o1 + (4 * BLOCK_SIZE)], #one_read
 .medw32:
-	ld	[%o1], %o4		! move a block of 32 bytes
+	ld	[%o1], %o4		/* move a block of 32 bytes */
 	stw	%o4, [%o0]
 	ld	[%o1+4], %o3
 	stw	%o3, [%o0+4]
@@ -1140,95 +1143,95 @@
 	ld	[%o1+12], %o3
 	stw	%o3, [%o0+12]
 	ld	[%o1+16], %o4
-	subcc	%o2, 32, %o2		! decrement length count
+	subcc	%o2, 32, %o2		/* decrement length count */
 	stw	%o4, [%o0+16]
 	ld	[%o1+20], %o3
-	add	%o1, 32, %o1		! increase src ptr by 32
+	add	%o1, 32, %o1		/* increase src ptr by 32 */
 	stw	%o3, [%o0+20]
 	ld	[%o1-8], %o4
-	add	%o0, 32, %o0		! increase dst ptr by 32
+	add	%o0, 32, %o0		/* increase dst ptr by 32 */
 	stw	%o4, [%o0-8]
 	ld	[%o1-4], %o3
-	bgu,pt	%ncc, .medw32		! repeat if at least 32 bytes left
+	bgu,pt	%ncc, .medw32		/* repeat if at least 32 bytes left */
 	stw	%o3, [%o0-4]
 .medw31:
-	addcc	%o2, 31, %o2		! restore count
+	addcc	%o2, 31, %o2		/* restore count */
 
-	bz,pt	%ncc, .smallexit	! exit if finished
+	bz,pt	%ncc, .smallexit	/* exit if finished */
 	nop
 	cmp	%o2, 16
 	blt,pt	%ncc, .medw15
 	nop
-	ld	[%o1], %o4		! move a block of 16 bytes
-	subcc	%o2, 16, %o2		! decrement length count
+	ld	[%o1], %o4		/* move a block of 16 bytes */
+	subcc	%o2, 16, %o2		/* decrement length count */
 	stw	%o4, [%o0]
 	ld	[%o1+4], %o3
-	add	%o1, 16, %o1		! increase src ptr by 16
+	add	%o1, 16, %o1		/* increase src ptr by 16 */
 	stw	%o3, [%o0+4]
 	ld	[%o1-8], %o4
-	add	%o0, 16, %o0		! increase dst ptr by 16
+	add	%o0, 16, %o0		/* increase dst ptr by 16 */
 	stw	%o4, [%o0-8]
 	ld	[%o1-4], %o3
 	stw	%o3, [%o0-4]
 .medw15:
-	bz,pt	%ncc, .smallexit	! exit if finished
+	bz,pt	%ncc, .smallexit	/* exit if finished */
 	cmp	%o2, 8
-	blt,pt	%ncc, .medw7		! skip if 7 or fewer bytes left
+	blt,pt	%ncc, .medw7		/* skip if 7 or fewer bytes left */
 	tst	%o2
-	ld	[%o1], %o4		! load 4 bytes
-	subcc	%o2, 8, %o2		! decrease count by 8
-	stw	%o4, [%o0]		! and store 4 bytes
-	add	%o1, 8, %o1		! increase src ptr by 8
-	ld	[%o1-4], %o3		! load 4 bytes
-	add	%o0, 8, %o0		! increase dst ptr by 8
-	stw	%o3, [%o0-4]		! and store 4 bytes
-	bz,pt	%ncc, .smallexit	! exit if finished
-.medw7:					! count is ge 1, less than 8
-	cmp	%o2, 4			! check for 4 bytes left
-	blt,pt	%ncc, .smallleft3	! skip if 3 or fewer bytes left
-	nop				!
-	ld	[%o1], %o4		! load 4 bytes
-	add	%o1, 4, %o1		! increase src ptr by 4
-	add	%o0, 4, %o0		! increase dst ptr by 4
-	subcc	%o2, 4, %o2		! decrease count by 4
+	ld	[%o1], %o4		/* load 4 bytes */
+	subcc	%o2, 8, %o2		/* decrease count by 8 */
+	stw	%o4, [%o0]		/* and store 4 bytes */
+	add	%o1, 8, %o1		/* increase src ptr by 8 */
+	ld	[%o1-4], %o3		/* load 4 bytes */
+	add	%o0, 8, %o0		/* increase dst ptr by 8 */
+	stw	%o3, [%o0-4]		/* and store 4 bytes */
+	bz,pt	%ncc, .smallexit	/* exit if finished */
+.medw7:					/* count is ge 1, less than 8 */
+	cmp	%o2, 4			/* check for 4 bytes left */
+	blt,pt	%ncc, .smallleft3	/* skip if 3 or fewer bytes left */
+	nop
+	ld	[%o1], %o4		/* load 4 bytes */
+	add	%o1, 4, %o1		/* increase src ptr by 4 */
+	add	%o0, 4, %o0		/* increase dst ptr by 4 */
+	subcc	%o2, 4, %o2		/* decrease count by 4 */
 	bnz	.smallleft3
-	stw	%o4, [%o0-4]		! and store 4 bytes
+	stw	%o4, [%o0-4]		/* and store 4 bytes */
 	retl
-	mov	%g1, %o0		! restore %o0
+	mov	%g1, %o0		/* restore %o0 */
 
-	.align	16
-.large_align8_copy:			! Src and dst share 8 byte alignment
-	rd	%fprs, %g5		! check for unused fp
+	.balign	16
+.large_align8_copy:			/* Src and dst share 8 byte alignment */
+	rd	%fprs, %g5		/* check for unused fp */
 	! if fprs.fef == 0, set it.
-	! Setting it when already set costs more than checking
-	andcc	%g5, FPRS_FEF, %g5	! test FEF, fprs.du = fprs.dl = 0
+	! Setting it when already set costs more than checking */
+	andcc	%g5, FPRS_FEF, %g5	/* test FEF, fprs.du = fprs.dl = 0 */
 	bz,a	%ncc, 1f
-	wr	%g0, FPRS_FEF, %fprs	! fprs.fef = 1
+	wr	%g0, FPRS_FEF, %fprs	/* fprs.fef = 1 */
 1:
 	! align dst to 64 byte boundary
-	andcc	%o0, 0x3f, %o3		! %o3 == 0 means dst is 64 byte aligned
+	andcc	%o0, 0x3f, %o3		/* %o3 == 0 means dst is 64 byte aligned */
 	brz,pn	%o3, .aligned_to_64
-	andcc	%o0, 8, %o3		! odd long words to move?
+	andcc	%o0, 8, %o3		/* odd long words to move? */
 	brz,pt	%o3, .aligned_to_16
 	nop
 	ldx	[%o1], %o4
 	sub	%o2, 8, %o2
-	add	%o1, 8, %o1		! increment src ptr
-	add	%o0, 8, %o0		! increment dst ptr
+	add	%o1, 8, %o1		/* increment src ptr */
+	add	%o0, 8, %o0		/* increment dst ptr */
 	stx	%o4, [%o0-8]
 .aligned_to_16:
-	andcc	%o0, 16, %o3		! pair of long words to move?
+	andcc	%o0, 16, %o3		/* pair of long words to move? */
 	brz,pt	%o3, .aligned_to_32
 	nop
 	ldx	[%o1], %o4
 	sub	%o2, 16, %o2
 	stx	%o4, [%o0]
-	add	%o1, 16, %o1		! increment src ptr
+	add	%o1, 16, %o1		/* increment src ptr */
 	ldx	[%o1-8], %o4
-	add	%o0, 16, %o0		! increment dst ptr
+	add	%o0, 16, %o0		/* increment dst ptr */
 	stx	%o4, [%o0-8]
 .aligned_to_32:
-	andcc	%o0, 32, %o3		! four long words to move?
+	andcc	%o0, 32, %o3		/* four long words to move? */
 	brz,pt	%o3, .aligned_to_64
 	nop
 	ldx	[%o1], %o4
@@ -1238,18 +1241,18 @@
 	stx	%o4, [%o0+8]
 	ldx	[%o1+16], %o4
 	stx	%o4, [%o0+16]
-	add	%o1, 32, %o1		! increment src ptr
+	add	%o1, 32, %o1		/* increment src ptr */
 	ldx	[%o1-8], %o4
-	add	%o0, 32, %o0		! increment dst ptr
+	add	%o0, 32, %o0		/* increment dst ptr */
 	stx	%o4, [%o0-8]
 .aligned_to_64:
 	prefetch [%o1 + (3 * BLOCK_SIZE)], #one_read
-	mov	%asi,%o4		! save %asi
+	rd	%asi,%o4		/* save %asi */
 	! Determine source alignment
 	! to correct 8 byte offset
 	andcc	%o1, 0x20, %o3
 	brnz,pn	%o3, .align_1
-	mov	ASI_BLK_P, %asi		! setup %asi for block load/store
+	wr	%g0, ASI_BLK_P, %asi	/* setup %asi for block load/store */
 	andcc	%o1, 0x10, %o3
 	brnz,pn	%o3, .align_01
 	nop
@@ -1283,12 +1286,12 @@
 	ldd	[%o1], %d0
 	add	%o1, 8, %o1
 	sub	%o2, 8, %o2
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .align_111_loop:
 	subcc	%o5, 128, %o5
 	/* ---- copy line 1 of 2. ---- */
-	ldda	[%o1]%asi,%d16		! block load
+	ldda	[%o1]%asi,%d16		/* block load */
 	fmovd	%d16, %d2
 	fmovd	%d18, %d4
 	fmovd	%d20, %d6
@@ -1296,9 +1299,9 @@
 	fmovd	%d24, %d10
 	fmovd	%d26, %d12
 	fmovd	%d28, %d14
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	prefetch [%o1 + (5 * BLOCK_SIZE)], #one_read
 	fmovd	%d30, %d0
 
@@ -1311,10 +1314,10 @@
 	fmovd	%d24, %d10
 	fmovd	%d26, %d12
 	fmovd	%d28, %d14
-	add	%o1, 128, %o1		! increment src
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	add	%o1, 128, %o1		/* increment src */
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d30, %d0
 	bgt,pt	%ncc, .align_111_loop
 	prefetch [%o1 + (4 * BLOCK_SIZE)], #one_read
@@ -1330,22 +1333,22 @@
 	ldd	[%o1+8], %d2
 	add	%o1, 16, %o1
 	sub	%o2, 16, %o2
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .align_110_loop:
 	subcc	%o5, 128, %o5
 	/* ---- copy line 1 of 2. ---- */
 
-	ldda	[%o1]%asi,%d16		! block load
+	ldda	[%o1]%asi,%d16		/* block load */
 	fmovd	%d16, %d4
 	fmovd	%d18, %d6
 	fmovd	%d20, %d8
 	fmovd	%d22, %d10
 	fmovd	%d24, %d12
 	fmovd	%d26, %d14
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d28, %d0
 	prefetch [%o1 + (5 * BLOCK_SIZE)], #one_read
 	fmovd	%d30, %d2
@@ -1358,10 +1361,10 @@
 	fmovd	%d22, %d10
 	fmovd	%d24, %d12
 	fmovd	%d26, %d14
-	add	%o1, 128, %o1		! increment src
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	add	%o1, 128, %o1		/* increment src */
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d28, %d0
 	fmovd	%d30, %d2
 	bgt,pt	%ncc, .align_110_loop
@@ -1380,21 +1383,21 @@
 	ldd	[%o1+16], %d4
 	add	%o1, 24, %o1
 	sub	%o2, 24, %o2
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .align_101_loop:
 	subcc	%o5, 128, %o5
 	/* ---- copy line 1 of 2. ---- */
 
-	ldda	[%o1]%asi,%d16		! block load
+	ldda	[%o1]%asi,%d16		/* block load */
 	fmovd	%d16, %d6
 	fmovd	%d18, %d8
 	fmovd	%d20, %d10
 	fmovd	%d22, %d12
 	fmovd	%d24, %d14
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d26, %d0
 	fmovd	%d28, %d2
 	prefetch [%o1 + (5 * BLOCK_SIZE)], #one_read
@@ -1407,10 +1410,10 @@
 	fmovd	%d20, %d10
 	fmovd	%d22, %d12
 	fmovd	%d24, %d14
-	add	%o1, 128, %o1		! increment src
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	add	%o1, 128, %o1		/* increment src */
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d26, %d0
 	fmovd	%d28, %d2
 	fmovd	%d30, %d4
@@ -1432,19 +1435,19 @@
 	ldd	[%o1+24],%d6
 	add	%o1, 32, %o1
 	sub	%o2, 32, %o2
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .align_100_loop:
 	subcc	%o5, 128, %o5
 	/* ---- copy line 1 of 2. ---- */
-	ldda	[%o1]%asi,%d16		! block load
+	ldda	[%o1]%asi,%d16		/* block load */
 	fmovd	%d16, %d8
 	fmovd	%d18, %d10
 	fmovd	%d20, %d12
 	fmovd	%d22, %d14
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d24, %d0
 	fmovd	%d26, %d2
 	fmovd	%d28, %d4
@@ -1457,10 +1460,10 @@
 	fmovd	%d18, %d10
 	fmovd	%d20, %d12
 	fmovd	%d22, %d14
-	add	%o1, 128, %o1		! increment src
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	add	%o1, 128, %o1		/* increment src */
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d24, %d0
 	fmovd	%d26, %d2
 	fmovd	%d28, %d4
@@ -1485,19 +1488,19 @@
 	ldd	[%o1+32], %d8
 	add	%o1, 40, %o1
 	sub	%o2, 40, %o2
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .align_011_loop:
 	subcc	%o5, 128, %o5
 	/* ---- copy line 1 of 2. ---- */
 
-	ldda	[%o1]%asi,%d16		! block load
+	ldda	[%o1]%asi,%d16		/* block load */
 	fmovd	%d16, %d10
 	fmovd	%d18, %d12
 	fmovd	%d20, %d14
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d22, %d0
 	fmovd	%d24, %d2
 	fmovd	%d26, %d4
@@ -1510,10 +1513,10 @@
 	fmovd	%d16, %d10
 	fmovd	%d18, %d12
 	fmovd	%d20, %d14
-	add	%o1, 128, %o1		! increment src
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	add	%o1, 128, %o1		/* increment src */
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d22, %d0
 	fmovd	%d24, %d2
 	fmovd	%d26, %d4
@@ -1541,18 +1544,18 @@
 	ldd	[%o1+40], %d10
 	add	%o1, 48, %o1
 	sub	%o2, 48, %o2
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .align_010_loop:
 	subcc	%o5, 128, %o5
 	/* ---- copy line 1 of 2. ---- */
 
-	ldda	[%o1]%asi,%d16		! block load
+	ldda	[%o1]%asi,%d16		/* block load */
 	fmovd	%d16, %d12
 	fmovd	%d18, %d14
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d20, %d0
 	fmovd	%d22, %d2
 	fmovd	%d24, %d4
@@ -1565,10 +1568,10 @@
 	ldda	[%o1+64]%asi,%d16
 	fmovd	%d16, %d12
 	fmovd	%d18, %d14
-	add	%o1, 128, %o1	! increment src
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	add	%o1, 128, %o1		/* increment src */
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d20, %d0
 	fmovd	%d22, %d2
 	fmovd	%d24, %d4
@@ -1599,17 +1602,17 @@
 	ldd	[%o1+48], %d12
 	add	%o1, 56, %o1
 	sub	%o2, 56, %o2
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .align_001_loop:
 	subcc	%o5, 128, %o5
 	/* ---- copy line 1 of 2. ---- */
 
-	ldda	[%o1]%asi,%d16		! block load
+	ldda	[%o1]%asi,%d16		/* block load */
 	fmovd	%d16, %d14
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d18, %d0
 	fmovd	%d20, %d2
 	fmovd	%d22, %d4
@@ -1622,10 +1625,10 @@
 	/* ---- copy line 2 of 2. ---- */
 	ldda	[%o1+64]%asi,%d16
 	fmovd	%d16, %d14
-	add	%o1, 128, %o1		! increment src
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	add	%o1, 128, %o1		/* increment src */
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! advance dst
+	add	%o0, 64, %o0		/* advance dst */
 	fmovd	%d18, %d0
 	fmovd	%d20, %d2
 	fmovd	%d22, %d4
@@ -1648,60 +1651,60 @@
 	! END OF align_001
 
 .align_000:
-	andn	%o2, 0x7f, %o5		! %o5 is multiple of 2*block size
-	and	%o2, 0x7f, %o2		! residue bytes in %o2
+	andn	%o2, 0x7f, %o5		/* %o5 is multiple of 2*block size */
+	and	%o2, 0x7f, %o2		/* residue bytes in %o2 */
 .align_000_loop:
 	/* ---- copy line 1 of 2. ---- */
 	subcc	%o5, 128, %o5
 	ldda	[%o1]%asi,%d0
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
 	prefetch [%o1 + (5 * BLOCK_SIZE)], #one_read
 
 	/* ---- copy line 2 of 2. ---- */
 	add	%o0, 64, %o0
 	ldda	[%o1+64]%asi,%d0
-	add	%o1, 128, %o1		! increment src
-	stxa	%g0,[%o0]ASI_STBI_P	! block initializing store
+	add	%o1, 128, %o1		/* increment src */
+	stxa	%g0,[%o0]ASI_STBI_P	/* block initializing store */
 	stda	%d0,[%o0]%asi
-	add	%o0, 64, %o0		! increment dst
+	add	%o0, 64, %o0		/* increment dst */
 	bgt,pt	%ncc, .align_000_loop
 	prefetch [%o1 + (4 * BLOCK_SIZE)], #one_read
 
 	! END OF align_000
 
 .remain_stuff:
-	mov	%o4, %asi		! restore %asi
+	wr	%o4, %g0, %asi		/* restore %asi */
 	brnz	%g5, .medlong
 	membar	#Sync
 	ba	.medlong
 	wr	%g5, %g0, %fprs
 
-	.align 16
+	.balign 16
 	! Dst is on 8 byte boundary; src is not; remaining count > SMALL_MAX
 .unalignsetup:
 	prefetch [%o1 + (3 * BLOCK_SIZE)], #one_read
 .unalignrejoin:
-	rd	%fprs, %g5		! check for unused fp
+	rd	%fprs, %g5		/* check for unused fp */
 	! if fprs.fef == 0, set it.
 	! Setting it when already set costs more than checking
-	andcc	%g5, FPRS_FEF, %g5	! test FEF, fprs.du = fprs.dl = 0
+	andcc	%g5, FPRS_FEF, %g5	/* test FEF, fprs.du = fprs.dl = 0 */
 	bz,a	%ncc, 1f
-	wr	%g0, FPRS_FEF, %fprs	! fprs.fef = 1
+	wr	%g0, FPRS_FEF, %fprs	/* fprs.fef = 1 */
 1:
-	cmp	%o2, MED_UMAX		! check for medium unaligned limit
+	cmp	%o2, MED_UMAX		/* check for medium unaligned limit */
 	bge,pt	%ncc,.unalign_large
 	nop
-	andn	%o2, 0x3f, %o5		! %o5 is multiple of block size
-	and	%o2, 0x3f, %o2		! residue bytes in %o2
-	cmp	%o2, 8			! Insure we don't load beyond
-	bgt	.unalign_adjust		! end of source buffer
-	andn	%o1, 0x7, %o4		! %o4 has long word aligned src address
-	add	%o2, 64, %o2		! adjust to leave loop
-	sub	%o5, 64, %o5		! early if necessary
+	andn	%o2, 0x3f, %o5		/* %o5 is multiple of block size */
+	and	%o2, 0x3f, %o2		/* residue bytes in %o2 */
+	cmp	%o2, 8			/* Insure we don't load beyond */
+	bgt	.unalign_adjust		/* end of source buffer */
+	andn	%o1, 0x7, %o4		/* %o4 has long word aligned src address */
+	add	%o2, 64, %o2		/* adjust to leave loop */
+	sub	%o5, 64, %o5		/* early if necessary */
 .unalign_adjust:
-	alignaddr %o1, %g0, %g0		! generate %gsr
-	add	%o1, %o5, %o1		! advance %o1 to after blocks
+	alignaddr %o1, %g0, %g0		/* generate %gsr */
+	add	%o1, %o5, %o1		/* advance %o1 to after blocks */
 	ldd	[%o4], %d0
 .unalign_loop:
 	ldd	[%o4+8], %d2
@@ -1737,35 +1740,35 @@
 	nop
 
 .unalign_large:
-	andcc	%o0, 0x3f, %o3		! is dst 64-byte block aligned?
+	andcc	%o0, 0x3f, %o3		/* is dst 64-byte block aligned? */
 	bz	%ncc, .unalignsrc
-	sub	%o3, 64, %o3		! %o3 will be multiple of 8
-	neg	%o3			! bytes until dest is 64 byte aligned
-	sub	%o2, %o3, %o2		! update cnt with bytes to be moved
+	sub	%o3, 64, %o3		/* %o3 will be multiple of 8 */
+	neg	%o3			/* bytes until dest is 64 byte aligned */
+	sub	%o2, %o3, %o2		/* update cnt with bytes to be moved */
 	! Move bytes according to source alignment
 	andcc	%o1, 0x1, %o5
-	bnz	%ncc, .unalignbyte	! check for byte alignment
+	bnz	%ncc, .unalignbyte	/* check for byte alignment */
 	nop
-	andcc	%o1, 2, %o5		! check for half word alignment
+	andcc	%o1, 2, %o5		/* check for half word alignment */
 	bnz	%ncc, .unalignhalf
 	nop
 	! Src is word aligned
 .unalignword:
-	ld	[%o1], %o4		! load 4 bytes
-	stw	%o4, [%o0]		! and store 4 bytes
-	ld	[%o1+4], %o4		! load 4 bytes
-	add	%o1, 8, %o1		! increase src ptr by 8
-	stw	%o4, [%o0+4]		! and store 4 bytes
-	subcc	%o3, 8, %o3		! decrease count by 8
+	ld	[%o1], %o4		/* load 4 bytes */
+	stw	%o4, [%o0]		/* and store 4 bytes */
+	ld	[%o1+4], %o4		/* load 4 bytes */
+	add	%o1, 8, %o1		/* increase src ptr by 8 */
+	stw	%o4, [%o0+4]		/* and store 4 bytes */
+	subcc	%o3, 8, %o3		/* decrease count by 8 */
 	bnz	%ncc, .unalignword
-	add	%o0, 8, %o0		! increase dst ptr by 8
+	add	%o0, 8, %o0		/* increase dst ptr by 8 */
 	ba	.unalignsrc
 	nop
 
 	! Src is half-word aligned
 .unalignhalf:
-	lduh	[%o1], %o4		! load 2 bytes
-	sllx	%o4, 32, %o5		! shift left
+	lduh	[%o1], %o4		/* load 2 bytes */
+	sllx	%o4, 32, %o5		/* shift left */
 	lduw	[%o1+2], %o4
 	or	%o4, %o5, %o5
 	sllx	%o5, 16, %o5
@@ -1781,7 +1784,7 @@
 
 	! Src is Byte aligned
 .unalignbyte:
-	sub	%o0, %o1, %o0		! share pointer advance
+	sub	%o0, %o1, %o0		/* share pointer advance */
 .unalignbyte_loop:
 	ldub	[%o1], %o4
 	sllx	%o4, 56, %o5
@@ -1800,19 +1803,19 @@
 	subcc	%o3, 8, %o3
 	bnz	%ncc, .unalignbyte_loop
 	add	%o1, 8, %o1
-	add	%o0,%o1, %o0 		! restore pointer
+	add	%o0,%o1, %o0 		/* restore pointer */
 
 	! Destination is now block (64 byte aligned)
 .unalignsrc:
-	andn	%o2, 0x3f, %o5		! %o5 is multiple of block size
-	and	%o2, 0x3f, %o2		! residue bytes in %o2
-	add	%o2, 64, %o2		! Insure we don't load beyond
-	sub	%o5, 64, %o5		! end of source buffer
+	andn	%o2, 0x3f, %o5		/* %o5 is multiple of block size */
+	and	%o2, 0x3f, %o2		/* residue bytes in %o2 */
+	add	%o2, 64, %o2		/* Insure we don't load beyond */
+	sub	%o5, 64, %o5		/* end of source buffer */
 
-	andn	%o1, 0x3f, %o4		! %o4 has block aligned src address
+	andn	%o1, 0x3f, %o4		/* %o4 has block aligned src address */
 	prefetch [%o4 + (3 * BLOCK_SIZE)], #one_read
-	alignaddr %o1, %g0, %g0		! generate %gsr
-	add	%o1, %o5, %o1		! advance %o1 to after blocks
+	alignaddr %o1, %g0, %g0		/* generate %gsr */
+	add	%o1, %o5, %o1		/* advance %o1 to after blocks */
 	!
 	! Determine source alignment to correct 8 byte offset
 	andcc	%o1, 0x20, %o3
@@ -2076,13 +2079,13 @@
 	cmp	%o2, 15
 	bleu	%ncc, .unalign_short
 
-	andn	%o2, 0x7, %o5		! %o5 is multiple of 8
-	and	%o2, 0x7, %o2		! residue bytes in %o2
+	andn	%o2, 0x7, %o5		/* %o5 is multiple of 8 */
+	and	%o2, 0x7, %o2		/* residue bytes in %o2 */
 	add	%o2, 8, %o2
-	sub	%o5, 8, %o5		! insure we don't load past end of src
-	andn	%o1, 0x7, %o4		! %o4 has long word aligned src address
-	add	%o1, %o5, %o1		! advance %o1 to after multiple of 8
-	ldd	[%o4], %d0		! fetch partial word
+	sub	%o5, 8, %o5		/* insure we don't load past end of src */
+	andn	%o1, 0x7, %o4		/* %o4 has long word aligned src address */
+	add	%o1, %o5, %o1		/* advance %o1 to after multiple of 8 */
+	ldd	[%o4], %d0		/* fetch partial word */
 .unalign_by8:
 	ldd	[%o4+8], %d2
 	add	%o4, 8, %o4
@@ -2100,13 +2103,13 @@
 	wr	%g5, %g0, %fprs
 #else	/* NIAGARA2_IMPL */
 .forcpy:
-	mov	%o0, %g5		! save des address for return val
-	cmp	%o2, 17			! for small counts copy bytes
+	mov	%o0, %g5		/* save des address for return val */
+	cmp	%o2, 17			/* for small counts copy bytes */
 	bleu,pt	%ncc, .dbytecp
 	nop
 
-	cmp	%o2, 0x80		! For lengths less than 128 bytes no
-	bleu,pn	%ncc, .no_blkcpy	! copy using ASI_BLK_INIT_ST_QUAD_LDD_P
+	cmp	%o2, 0x80		/* For lengths less than 128 bytes no */
+	bleu,pn	%ncc, .no_blkcpy	/* copy using ASI_BLK_INIT_ST_QUAD_LDD_P */
 
 	/*
 	 * Make sure that source and destination buffers are 64 bytes apart.
@@ -2115,32 +2118,32 @@
 	 */
 	subcc	%o1, %o0, %o3
 	blu	%ncc, .blkalgndst
-	cmp	%o3, 0x40		! if src - dst >= 0x40
-	bgeu,pt	%ncc, .blkalgndst	! then use ASI_BLK_INIT_ST_QUAD_LDD_P
+	cmp	%o3, 0x40		/* if src - dst >= 0x40 */
+	bgeu,pt	%ncc, .blkalgndst	/* then use ASI_BLK_INIT_ST_QUAD_LDD_P */
 .no_blkcpy:
-	andcc	%o1, 3, %o5		! is src word aligned
+	andcc	%o1, 3, %o5		/* is src word aligned */
 	bz,pn	%ncc, .aldst
-	cmp	%o5, 2			! is src half-word aligned
+	cmp	%o5, 2			/* is src half-word aligned */
 	be,pt	%ncc, .s2algn
-	cmp	%o5, 3			! src is byte aligned
-.s1algn:ldub	[%o1], %o3		! move 1 or 3 bytes to align it
+	cmp	%o5, 3			/* src is byte aligned */
+.s1algn:ldub	[%o1], %o3		/* move 1 or 3 bytes to align it */
 	inc	1, %o1
-	stb	%o3, [%g5]		! move a byte to align src
+	stb	%o3, [%g5]		/* move a byte to align src */
 	inc	1, %g5
 	bne,pt	%ncc, .s2algn
 	dec	%o2
-	b	.ald			! now go align dest
+	b	.ald			/* now go align dest */
 	andcc	%g5, 3, %o5
 
-.s2algn:lduh	[%o1], %o3		! know src is 2 byte alinged
+.s2algn:lduh	[%o1], %o3		/* know src is 2 byte alinged */
 	inc	2, %o1
 	srl	%o3, 8, %o4
-	stb	%o4, [%g5]		! have to do bytes,
-	stb	%o3, [%g5 + 1]		! don't know dst alingment
+	stb	%o4, [%g5]		/* have to do bytes, */
+	stb	%o3, [%g5 + 1]		/* don't know dst alingment */
 	inc	2, %g5
 	dec	2, %o2
 
-.aldst:	andcc	%g5, 3, %o5		! align the destination address
+.aldst:	andcc	%g5, 3, %o5		/* align the destination address */
 .ald:	bz,pn	%ncc, .w4cp
 	cmp	%o5, 2
 	bz,pn	%ncc, .w2cp
@@ -2152,19 +2155,19 @@
 	bne,pt	%ncc, .w1cp
 	inc	%g5
 	dec	1, %o2
-	andn	%o2, 3, %o3		! o3 is aligned word count
-	dec	4, %o3			! avoid reading beyond tail of src
-	sub	%o1, %g5, %o1		! o1 gets the difference
+	andn	%o2, 3, %o3		/* o3 is aligned word count */
+	dec	4, %o3			/* avoid reading beyond tail of src */
+	sub	%o1, %g5, %o1		/* o1 gets the difference */
 
-1:	sll	%o4, 8, %g1		! save residual bytes
+1:	sll	%o4, 8, %g1		/* save residual bytes */
 	lduw	[%o1+%g5], %o4
 	deccc	4, %o3
-	srl	%o4, 24, %o5		! merge with residual
+	srl	%o4, 24, %o5		/* merge with residual */
 	or	%o5, %g1, %g1
 	st	%g1, [%g5]
 	bnz,pt	%ncc, 1b
 	inc	4, %g5
-	sub	%o1, 3, %o1		! used one byte of last word read
+	sub	%o1, 3, %o1		/* used one byte of last word read */
 	and	%o2, 3, %o2
 	b	7f
 	inc	4, %o2
@@ -2173,19 +2176,19 @@
 	sth	%o5, [%g5]
 	inc	2, %g5
 	dec	3, %o2
-	andn	%o2, 3, %o3		! o3 is aligned word count
-	dec	4, %o3			! avoid reading beyond tail of src
-	sub	%o1, %g5, %o1		! o1 gets the difference
+	andn	%o2, 3, %o3		/* o3 is aligned word count */
+	dec	4, %o3			/* avoid reading beyond tail of src */
+	sub	%o1, %g5, %o1		/* o1 gets the difference */
 
-2:	sll	%o4, 24, %g1		! save residual bytes
+2:	sll	%o4, 24, %g1		/* save residual bytes */
 	lduw	[%o1+%g5], %o4
 	deccc	4, %o3
-	srl	%o4, 8, %o5		! merge with residual
+	srl	%o4, 8, %o5		/* merge with residual */
 	or	%o5, %g1, %g1
 	st	%g1, [%g5]
 	bnz,pt	%ncc, 2b
 	inc	4, %g5
-	sub	%o1, 1, %o1		! used three bytes of last word read
+	sub	%o1, 1, %o1		/* used three bytes of last word read */
 	and	%o2, 3, %o2
 	b	7f
 	inc	4, %o2
@@ -2196,58 +2199,58 @@
 	sth	%o5, [%g5]
 	inc	2, %g5
 	dec	2, %o2
-	andn	%o2, 3, %o3		! o3 is aligned word count
-	dec	4, %o3			! avoid reading beyond tail of src
-	sub	%o1, %g5, %o1		! o1 gets the difference
+	andn	%o2, 3, %o3		/* o3 is aligned word count */
+	dec	4, %o3			/* avoid reading beyond tail of src */
+	sub	%o1, %g5, %o1		/* o1 gets the difference */
 
-3:	sll	%o4, 16, %g1		! save residual bytes
+3:	sll	%o4, 16, %g1		/* save residual bytes */
 	lduw	[%o1+%g5], %o4
 	deccc	4, %o3
-	srl	%o4, 16, %o5		! merge with residual
+	srl	%o4, 16, %o5		/* merge with residual */
 	or	%o5, %g1, %g1
 	st	%g1, [%g5]
 	bnz,pt	%ncc, 3b
 	inc	4, %g5
-	sub	%o1, 2, %o1		! used two bytes of last word read
+	sub	%o1, 2, %o1		/* used two bytes of last word read */
 	and	%o2, 3, %o2
 	b	7f
 	inc	4, %o2
 
-.w4cp:	andn	%o2, 3, %o3		! o3 is aligned word count
-	sub	%o1, %g5, %o1		! o1 gets the difference
+.w4cp:	andn	%o2, 3, %o3		/* o3 is aligned word count */
+	sub	%o1, %g5, %o1		/* o1 gets the difference */
 
-1:	lduw	[%o1+%g5], %o4		! read from address
-	deccc	4, %o3			! decrement count
-	st	%o4, [%g5]		! write at destination address
+1:	lduw	[%o1+%g5], %o4		/* read from address */
+	deccc	4, %o3			/* decrement count */
+	st	%o4, [%g5]		/* write at destination address */
 	bgu,pt	%ncc, 1b
-	inc	4, %g5			! increment to address
+	inc	4, %g5			/* increment to address */
 	b	7f
-	and	%o2, 3, %o2		! number of leftover bytes, if any
+	and	%o2, 3, %o2		/* number of leftover bytes, if any */
 
 	!
 	! differenced byte copy, works with any alignment
 	!
 .dbytecp:
 	b	7f
-	sub	%o1, %g5, %o1		! o1 gets the difference
+	sub	%o1, %g5, %o1		/* o1 gets the difference */
 
-4:	stb	%o4, [%g5]		! write to address
-	inc	%g5			! inc to address
-7:	deccc	%o2			! decrement count
-	bgeu,a,pt %ncc,4b		! loop till done
-	ldub	[%o1+%g5], %o4		! read from address
-	retl				! %o0 was preserved
+4:	stb	%o4, [%g5]		/* write to address */
+	inc	%g5			/* inc to address */
+7:	deccc	%o2			/* decrement count */
+	bgeu,a,pt %ncc,4b		/* loop till done */
+	ldub	[%o1+%g5], %o4		/* read from address */
+	retl				/* %o0 was preserved */
 	nop
 
 .blkalgndst:
 	save	%sp, -SA(MINFRAME), %sp
 
 	! Block (64 bytes) align the destination.
-	andcc	%i0, 0x3f, %i3		! is dst block aligned
-	bz	%ncc, .chksrc		! dst already block aligned
+	andcc	%i0, 0x3f, %i3		/* is dst block aligned */
+	bz	%ncc, .chksrc		/* dst already block aligned */
 	sub	%i3, 0x40, %i3
-	neg	%i3			! bytes till dst 64 bytes aligned
-	sub	%i2, %i3, %i2		! update i2 with new count
+	neg	%i3			/* bytes till dst 64 bytes aligned */
+	sub	%i2, %i3, %i2		/* update i2 with new count */
 
 	! Based on source and destination alignment do
 	! either 8 bytes, 4 bytes, 2 bytes or byte copy.
@@ -2314,11 +2317,11 @@
 
 	! Now Destination is block (64 bytes) aligned
 .chksrc:
-	andn	%i2, 0x3f, %i3		! %i3 count is multiple of block size
-	sub	%i2, %i3, %i2		! Residue bytes in %i2
-	mov	ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
-	andcc	%i1, 0xf, %l1		! is src quadword aligned
-	bz,pn	%ncc, .blkcpy		! src offset in %l1
+	andn	%i2, 0x3f, %i3		/* %i3 count is multiple of block size */
+	sub	%i2, %i3, %i2		/* Residue bytes in %i2 */
+	wr	%g0, ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
+	andcc	%i1, 0xf, %l1		/* is src quadword aligned */
+	bz,pn	%ncc, .blkcpy		/* src offset in %l1 */
 	nop
 	cmp	%l1, 0x8
 	bgu	%ncc, .cpy_upper_double
@@ -2329,8 +2332,8 @@
 	! Falls through when source offset is equal to 8 i.e.
 	! source is double word aligned.
 	! In this case no shift/merge of data is required
-	sub	%i1, %l1, %i1		! align the src at 16 bytes.
-	andn	%i1, 0x3f, %o0		! %o0 has block aligned source
+	sub	%i1, %l1, %i1		/* align the src at 16 bytes. */
+	andn	%i1, 0x3f, %o0		/* %o0 has block aligned source */
 	prefetch [%o0+0x0], #one_read
 	ldda	[%i1+0x0]%asi, %o2
 loop0:
@@ -2358,29 +2361,29 @@ loop0:
 	bgu,pt	%ncc, loop0
 	add	%i0, 0x40, %i0
 	ba	.blkdone
-	add	%i1, %l1, %i1		! increment the source by src offset
+	add	%i1, %l1, %i1		/* increment the source by src offset */
 
 .cpy_lower_double:
-	sub	%i1, %l1, %i1		! align the src at 16 bytes.
-	sll	%l1, 3, %l2		! %l2 left shift
+	sub	%i1, %l1, %i1		/* align the src at 16 bytes. */
+	sll	%l1, 3, %l2		/* %l2 left shift */
 	mov	0x40, %l3
-	sub	%l3, %l2, %l3		! %l3 right shift = (64 - left shift)
-	andn	%i1, 0x3f, %o0		! %o0 has block aligned source
+	sub	%l3, %l2, %l3		/* %l3 right shift = (64 - left shift) */
+	andn	%i1, 0x3f, %o0		/* %o0 has block aligned source */
 	prefetch [%o0+0x0], #one_read
-	ldda	[%i1+0x0]%asi, %o2	! partial data in %o2 and %o3 has
-					! complete data
+	ldda	[%i1+0x0]%asi, %o2	/* partial data in %o2 and %o3 has */
+					/* complete data */
 loop1:
-	ldda	[%i1+0x10]%asi, %o4	! %o4 has partial data for this read.
-	ALIGN_DATA(%o2, %o3, %o4, %l2, %l3, %g1)	! merge %o2, %o3 and %o4
-							! into %o2 and %o3
+	ldda	[%i1+0x10]%asi, %o4	/* %o4 has partial data for this read. */
+	ALIGN_DATA(%o2, %o3, %o4, %l2, %l3, %g1)	/* merge %o2, %o3 and %o4 */
+							/* into %o2 and %o3 */
 	prefetch [%o0+0x40], #one_read
 	stxa	%o2, [%i0+0x0]%asi
 	stxa	%o3, [%i0+0x8]%asi
 
 	ldda	[%i1+0x20]%asi, %o2
-	ALIGN_DATA(%o4, %o5, %o2, %l2, %l3, %g1)	! merge %o2 with %o5 and
-	stxa	%o4, [%i0+0x10]%asi			! %o4 from previous read
-	stxa	%o5, [%i0+0x18]%asi			! into %o4 and %o5
+	ALIGN_DATA(%o4, %o5, %o2, %l2, %l3, %g1)	/* merge %o2 with %o5 and */
+	stxa	%o4, [%i0+0x10]%asi			/* %o4 from previous read */
+	stxa	%o5, [%i0+0x18]%asi			/* into %o4 and %o5 */
 
 	! Repeat the same for next 32 bytes.
 
@@ -2400,32 +2403,32 @@ loop1:
 	bgu,pt	%ncc, loop1
 	add	%i0, 0x40, %i0
 	ba	.blkdone
-	add	%i1, %l1, %i1		! increment the source by src offset
+	add	%i1, %l1, %i1		/* increment the source by src offset */
 
 .cpy_upper_double:
-	sub	%i1, %l1, %i1		! align the src at 16 bytes.
+	sub	%i1, %l1, %i1		/* align the src at 16 bytes. */
 	mov	0x8, %l2
 	sub	%l1, %l2, %l2
-	sll	%l2, 3, %l2		! %l2 left shift
+	sll	%l2, 3, %l2		/* %l2 left shift */
 	mov	0x40, %l3
-	sub	%l3, %l2, %l3		! %l3 right shift = (64 - left shift)
-	andn	%i1, 0x3f, %o0		! %o0 has block aligned source
+	sub	%l3, %l2, %l3		/* %l3 right shift = (64 - left shift) */
+	andn	%i1, 0x3f, %o0		/* %o0 has block aligned source */
 	prefetch [%o0+0x0], #one_read
-	ldda	[%i1+0x0]%asi, %o2	! partial data in %o3 for this read and
-					! no data in %o2
+	ldda	[%i1+0x0]%asi, %o2	/* partial data in %o3 for this read and */
+					/* no data in %o2 */
 loop2:
-	ldda	[%i1+0x10]%asi, %o4	! %o4 has complete data and %o5 has
-					! partial
-	ALIGN_DATA(%o3, %o4, %o5, %l2, %l3, %g1)	! merge %o3, %o4 and %o5
-							! into %o3 and %o4
+	ldda	[%i1+0x10]%asi, %o4	/* %o4 has complete data and %o5 has */
+					/* partial */
+	ALIGN_DATA(%o3, %o4, %o5, %l2, %l3, %g1)	/* merge %o3, %o4 and %o5 */
+							/* into %o3 and %o4 */
 	prefetch [%o0+0x40], #one_read
 	stxa	%o3, [%i0+0x0]%asi
 	stxa	%o4, [%i0+0x8]%asi
 
 	ldda	[%i1+0x20]%asi, %o2
-	ALIGN_DATA(%o5, %o2, %o3, %l2, %l3, %g1)	! merge %o2 and %o3 with
-	stxa	%o5, [%i0+0x10]%asi			! %o5 from previous read
-	stxa	%o2, [%i0+0x18]%asi			! into %o5 and %o2
+	ALIGN_DATA(%o5, %o2, %o3, %l2, %l3, %g1)	/* merge %o2 and %o3 with */
+	stxa	%o5, [%i0+0x10]%asi			/* %o5 from previous read */
+	stxa	%o2, [%i0+0x18]%asi			/* into %o5 and %o2 */
 
 	! Repeat the same for next 32 bytes.
 
@@ -2445,11 +2448,11 @@ loop2:
 	bgu,pt	%ncc, loop2
 	add	%i0, 0x40, %i0
 	ba	.blkdone
-	add	%i1, %l1, %i1		! increment the source by src offset
+	add	%i1, %l1, %i1		/* increment the source by src offset */
 
 	! Do fast copy using ASI_BLK_INIT_ST_QUAD_LDD_P
 .blkcpy:
-	andn	%i1, 0x3f, %o0		! %o0 has block aligned source
+	andn	%i1, 0x3f, %o0		/* %o0 has block aligned source */
 	prefetch [%o0+0x0], #one_read
 1:
 	prefetch [%o0+0x40], #one_read
@@ -2479,8 +2482,8 @@ loop2:
 .blkdone:
 	membar	#Sync
 
-	mov	ASI_PNF, %asi		! restore %asi to default
-					! ASI_PRIMARY_NOFAULT value
+	wr	%g0, ASI_PNF, %asi	/* restore %asi to default */
+					/* ASI_PRIMARY_NOFAULT value */
 	tst	%i2
 	bz,pt	%ncc, .blkexit
 	nop

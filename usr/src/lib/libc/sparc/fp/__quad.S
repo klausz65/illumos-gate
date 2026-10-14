@@ -24,10 +24,8 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
 /*
- * These are functions corresponding to some which used to be inline, with Sun
- * Studio.  Someone may want to make them into gcc inline asm.
+ * Copyright 2026 Klaus Ziegler.
  */
 
 #include <sys/asm_linkage.h>
@@ -161,13 +159,3 @@
 	retl
 	std	%f4,[%o1]
 	SET_SIZE(__quad_fqtod)
-
-#if defined(__sparcv9)
-	ENTRY_NP(__quad_fqtox)
-	ldd	[%o0],%f0
-	ldd	[%o0+8],%f2
-	fqtox	%f0,%f4
-	retl
-	std	%f4,[%o1]
-	SET_SIZE(__quad_fqtox)
-#endif

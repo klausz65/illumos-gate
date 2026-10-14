@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"stty.s"
+	.file	"stty.S"
 
 /* C library -- stty						*/
 /* int stty (char *path, struct ?? buf, int len);		*/

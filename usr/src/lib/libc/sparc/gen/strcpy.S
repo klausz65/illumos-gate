@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"strcpy.s"
+	.file	"strcpy.S"
 
 /*
  * strcpy(s1, s2)
@@ -50,7 +50,7 @@
 
 #include <sys/asm_linkage.h>
 
-	! This is a 32-bit implementation of strcpy.  It works by
+	! This is a 32-bit implementation of strcpy. It works by
 	! first checking the alignment of its source pointer. And,
 	! if it is not aligned, attempts to copy bytes until it is.
 	! once this has occurred, the copy takes place, while checking
@@ -60,110 +60,110 @@
 
 	ENTRY(strcpy)
 
-	.align 32
+	.balign 32
 
-	sub	%o1, %o0, %o3		! src - dst
-	andcc	%o1, 3, %o4		! src word aligned ?
-	bz	.srcaligned		! yup
-	mov	%o0, %o2		! save dst
+	sub	%o1, %o0, %o3		/* src - dst */
+	andcc	%o1, 3, %o4		/* src word aligned ? */
+	bz	.srcaligned		/* yup */
+	mov	%o0, %o2		/* save dst */
 
-	cmp	%o4, 2			! src halfword aligned
-	be	.s2aligned		! yup
-	ldub	[%o2 + %o3], %o1	! src[0]
-	tst	%o1			! byte zero?
-	stb	%o1, [%o2]		! store first byte
-	bz	.done			! yup, done
-	cmp	%o4, 3			! only one byte needed to align?
-	bz	.srcaligned		! yup
-	inc	%o2			! src++, dst++
+	cmp	%o4, 2			/* src halfword aligned */
+	be	.s2aligned		/* yup */
+	ldub	[%o2 + %o3], %o1	/* src[0] */
+	tst	%o1			/* byte zero? */
+	stb	%o1, [%o2]		/* store first byte */
+	bz	.done			/* yup, done */
+	cmp	%o4, 3			/* only one byte needed to align? */
+	bz	.srcaligned		/* yup */
+	inc	%o2			/* src++, dst++ */
 
 .s2aligned:
-	lduh	[%o2 + %o3], %o1	! src[]
-	srl	%o1, 8, %o4		! %o4<7:0> = first byte
-	tst	%o4			! first byte zero ?
-	bz	.done			! yup, done
-	stb	%o4, [%o2]		! store first byte
-	andcc	%o1, 0xff, %g0		! second byte zero ?
-	bz	.done			! yup, done
-	stb	%o1, [%o2 + 1]		! store second byte
-	add	%o2, 2, %o2		! src += 2, dst += 2
+	lduh	[%o2 + %o3], %o1	/* src[] */
+	srl	%o1, 8, %o4		/* %o4<7:0> = first byte */
+	tst	%o4			/* first byte zero ? */
+	bz	.done			/* yup, done */
+	stb	%o4, [%o2]		/* store first byte */
+	andcc	%o1, 0xff, %g0		/* second byte zero ? */
+	bz	.done			/* yup, done */
+	stb	%o1, [%o2 + 1]		/* store second byte */
+	add	%o2, 2, %o2		/* src += 2, dst += 2 */
 
 .srcaligned:
-	sethi	%hi(0x01010101), %o4	! Alan Mycroft's magic1
-	sethi	%hi(0x80808080), %o5	! Alan Mycroft's magic2
+	sethi	%hi(0x01010101), %o4	/* Alan Mycroft's magic1 */
+	sethi	%hi(0x80808080), %o5	/* Alan Mycroft's magic2 */
 	or	%o4, %lo(0x01010101), %o4
-	andcc	%o2, 3, %o1		! destination word aligned?
-	bnz	.dstnotaligned		! nope
+	andcc	%o2, 3, %o1		/* destination word aligned? */
+	bnz	.dstnotaligned		/* nope */
 	or	%o5, %lo(0x80808080), %o5
 
 .copyword:
-	lduw	[%o2 + %o3], %o1	! src word
-	add	%o2, 4, %o2		! src += 4, dst += 4
-	andn	%o5, %o1, %g1		! ~word & 0x80808080
-	sub	%o1, %o4, %o1		! word - 0x01010101
-	andcc	%o1, %g1, %g0		! ((word - 0x01010101) & ~word & 0x80808080)
-	add	%o1, %o4, %o1		! restore word
-	bz,a	.copyword		! no zero byte if magic expression == 0
-	st	%o1, [%o2 - 4]		! store word to dst (address pre-incremented)
+	lduw	[%o2 + %o3], %o1	/* src word */
+	add	%o2, 4, %o2		/* src += 4, dst += 4 */
+	andn	%o5, %o1, %g1		/* ~word & 0x80808080 */
+	sub	%o1, %o4, %o1		/* word - 0x01010101 */
+	andcc	%o1, %g1, %g0		/* ((word - 0x01010101) & ~word & 0x80808080) */
+	add	%o1, %o4, %o1		/* restore word */
+	bz,a	.copyword		/* no zero byte if magic expression == 0 */
+	st	%o1, [%o2 - 4]		/* store word to dst (address pre-incremented) */
 
 .zerobyte:
-	set	0xff000000, %o4		! mask for 1st byte
-	srl	%o1, 24, %o3		! %o3<7:0> = first byte
-	andcc	%o1, %o4, %g0		! first byte zero?
-	bz	.done			! yup, done
-	stb	%o3, [%o2 - 4]		! store first byte
-	set	0x00ff0000, %o5		! mask for 2nd byte
-	srl	%o1, 16, %o3		! %o3<7:0> = second byte
-	andcc	%o1, %o5, %g0		! second byte zero?
-	bz	.done			! yup, done
-	stb	%o3, [%o2 - 3]		! store second byte
-	srl	%o4, 16, %o4		! 0x0000ff00 = mask for 3rd byte
-	andcc	%o1, %o4, %g0		! third byte zero?
-	srl	%o1, 8, %o3		! %o3<7:0> = third byte
-	bz	.done			! yup, done
-	stb	%o3, [%o2 - 2]		! store third byte
-	stb	%o1, [%o2 - 1]		! store fourth byte
+	set	0xff000000, %o4		/* mask for 1st byte */
+	srl	%o1, 24, %o3		/* %o3<7:0> = first byte */
+	andcc	%o1, %o4, %g0		/* first byte zero? */
+	bz	.done			/* yup, done */
+	stb	%o3, [%o2 - 4]		/* store first byte */
+	set	0x00ff0000, %o5		/* mask for 2nd byte */
+	srl	%o1, 16, %o3		/* %o3<7:0> = second byte */
+	andcc	%o1, %o5, %g0		/* second byte zero? */
+	bz	.done			/* yup, done */
+	stb	%o3, [%o2 - 3]		/* store second byte */
+	srl	%o4, 16, %o4		/* 0x0000ff00 = mask for 3rd byte */
+	andcc	%o1, %o4, %g0		/* third byte zero? */
+	srl	%o1, 8, %o3		/* %o3<7:0> = third byte */
+	bz	.done			/* yup, done */
+	stb	%o3, [%o2 - 2]		/* store third byte */
+	stb	%o1, [%o2 - 1]		/* store fourth byte */
 
 .done:
-	retl				! done with leaf function
+	retl				/* done with leaf function */
 	.empty
 
 .dstnotaligned:
-	cmp	%o1, 2			! dst half word aligned?
-	be,a	.storehalfword2		! yup, store half word at a time
-	lduw	[%o2 + %o3], %o1	! src word
+	cmp	%o1, 2			/* dst half word aligned? */
+	be,a	.storehalfword2		/* yup, store half word at a time */
+	lduw	[%o2 + %o3], %o1	/* src word */
 
 .storebyte:
-	lduw	[%o2 + %o3], %o1	! src word
-	add	%o2, 4, %o2		! src += 4, dst += 4
-	sub	%o1, %o4, %g1		! x - 0x01010101
-	andn	%g1, %o1, %g1		! (x - 0x01010101) & ~x
-	andcc	%g1, %o5, %g0		! ((x - 0x01010101) & ~x & 0x80808080)
-	bnz	.zerobyte		! word has zero byte, handle end cases
-	srl	%o1, 24, %g1		! %g1<7:0> = first byte
-	stb	%g1, [%o2 - 4]		! store first byte; half-word aligned now
-	srl	%o1, 8, %g1		! %g1<15:0> = byte 2, 3
-	sth	%g1, [%o2 - 3]		! store bytes 2, 3
-	ba	.storebyte		! next word
-	stb	%o1, [%o2 - 1]		! store fourth byte
+	lduw	[%o2 + %o3], %o1	/* src word */
+	add	%o2, 4, %o2		/* src += 4, dst += 4 */
+	sub	%o1, %o4, %g1		/* x - 0x01010101 */
+	andn	%g1, %o1, %g1		/* (x - 0x01010101) & ~x */
+	andcc	%g1, %o5, %g0		/* ((x - 0x01010101) & ~x & 0x80808080) */
+	bnz	.zerobyte		/* word has zero byte, handle end cases */
+	srl	%o1, 24, %g1		/* %g1<7:0> = first byte */
+	stb	%g1, [%o2 - 4]		/* store first byte; half-word aligned now */
+	srl	%o1, 8, %g1		/* %g1<15:0> = byte 2, 3 */
+	sth	%g1, [%o2 - 3]		/* store bytes 2, 3 */
+	ba	.storebyte		/* next word */
+	stb	%o1, [%o2 - 1]		/* store fourth byte */
 
 .storehalfword:
-	lduw	[%o2 + %o3], %o1	! src word
+	lduw	[%o2 + %o3], %o1	/* src word */
 .storehalfword2:
-	add	%o2, 4, %o2		! src += 4, dst += 4
-	sub	%o1, %o4, %g1		! x - 0x01010101
-	andn	%g1, %o1, %g1		! (x - 0x01010101) & ~x
-	andcc	%g1, %o5, %g0		! ((x - 0x01010101) & ~x & 0x80808080)
-	bnz	.zerobyte		! word has zero byte, handle end cases
-	srl	%o1, 16, %g1		! get first and second byte
-	sth	%g1, [%o2 - 4]		! store first and second byte
-	ba	.storehalfword		! next word
-	sth	%o1, [%o2 - 2]		! store third and fourth byte
+	add	%o2, 4, %o2		/* src += 4, dst += 4 */
+	sub	%o1, %o4, %g1		/* x - 0x01010101 */
+	andn	%g1, %o1, %g1		/* (x - 0x01010101) & ~x */
+	andcc	%g1, %o5, %g0		/* ((x - 0x01010101) & ~x & 0x80808080) */
+	bnz	.zerobyte		/* word has zero byte, handle end cases */
+	srl	%o1, 16, %g1		/* get first and second byte */
+	sth	%g1, [%o2 - 4]		/* store first and second byte */
+	ba	.storehalfword		/* next word */
+	sth	%o1, [%o2 - 2]		/* store third and fourth byte */
 
 	! DO NOT remove these NOPs. It will slow down the halfword loop by 15%
 
-	nop				! padding
-	nop				! padding
+	nop				/* padding */
+	nop				/* padding */
 
 	SET_SIZE(strcpy)
 

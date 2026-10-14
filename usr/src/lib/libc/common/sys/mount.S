@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"mount.s"
+	.file	"mount.S"
 
 /* C library -- mount						*/
 /* int mount(const char *spec, const char *dir, int mflag,

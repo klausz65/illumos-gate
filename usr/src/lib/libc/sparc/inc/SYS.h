@@ -28,10 +28,10 @@
 #define	_LIBC_SPARC_INC_SYS_H
 
 /*
- * This file defines common code sequences for system calls.  Note that
+ * This file defines common code sequences for system calls. Note that
  * it is assumed that __cerror is within the short branch distance from
  * all the traps (so that a simple bcs can follow the trap, rather than
- * a position independent code sequence.)  Ditto for __cerror64.
+ * a position independent code sequence.) Ditto for __cerror64.
  */
 
 #include <sys/asm_linkage.h>
@@ -64,7 +64,7 @@
 	.global	__cerror64
 
 /*
- * __SYSTRAP provides the basic trap sequence.  It assumes that an entry
+ * __SYSTRAP provides the basic trap sequence. It assumes that an entry
  * of the form SYS_name exists (probably from sys/syscall.h).
  */
 #define	__SYSTRAP(name)			\
@@ -78,7 +78,7 @@
 #define	SYSTRAP_64RVAL(name)		__SYSTRAP(name)
 
 /*
- * SYSFASTTRAP provides the fast system call trap sequence.  It assumes
+ * SYSFASTTRAP provides the fast system call trap sequence. It assumes
  * that an entry of the form ST_name exists (probably from sys/trap.h).
  */
 #define	SYSFASTTRAP(name)		\

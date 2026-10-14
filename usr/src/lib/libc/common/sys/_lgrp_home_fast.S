@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_lgrp_home_fast.s"
+	.file	"_lgrp_home_fast.S"
 
 /*
  * C library -- gethomelgroup

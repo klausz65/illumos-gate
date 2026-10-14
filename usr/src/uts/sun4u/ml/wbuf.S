@@ -22,6 +22,9 @@
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler.
+ */
 
 #include <sys/asm_linkage.h>
 #include <sys/machthread.h>
@@ -42,6 +45,10 @@
 	 *   so0 - spill other tl 0
 	 *   so1 - spill other tl >0
 	 */
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 	ENTRY_NP(fault_32bit_sn0)
 	!
@@ -71,8 +78,8 @@
 	! setup user_trap args
 	!
 	set	sfmmu_tsbmiss_exception, %g1
-	mov	%g6, %g2			! arg2 = tagaccess
-	mov	T_WIN_OVERFLOW, %g3		! arg3 = traptype
+	mov	%g6, %g2			/* arg2 = tagaccess */
+	mov	T_WIN_OVERFLOW, %g3		/* arg3 = traptype */
 	cmp	%g5, T_ALIGNMENT
 	bne	%icc, 1f
 	nop
@@ -80,7 +87,7 @@
 	mov	T_ALIGNMENT, %g3
 1:
 	sub	%g0, 1, %g4
-	!
+
 	! spill traps increment %cwp by 2,
 	! but user_trap wants the trap %cwp
 	!
@@ -133,7 +140,7 @@
 	!
 	! use previous wbcnt to spill new spbuf & wbuf
 	!
-	sll	%g2, CPTRSHIFT, %g4		! spbuf size is sizeof (caddr_t)
+	sll	%g2, CPTRSHIFT, %g4		/* spbuf size is sizeof (caddr_t) */
 	add	%g1, MPCB_SPBUF, %g3
 	stn	%sp, [%g3 + %g4]
 	sll	%g2, RWIN32SHIFT, %g4
@@ -164,7 +171,7 @@
 	!
 	! use previous wbcnt to spill new spbuf & wbuf
 	!
-	sll	%g5, CPTRSHIFT, %g7		! spbuf size is sizeof (caddr_t)
+	sll	%g5, CPTRSHIFT, %g7		/* spbuf size is sizeof (caddr_t) */
 	add	%g6, %g7, %g7
 	stn	%sp, [%g7 + MPCB_SPBUF]
 	sll	%g5, RWIN32SHIFT, %g7
@@ -205,8 +212,8 @@
 	! setup user_trap args
 	!
 	set	sfmmu_tsbmiss_exception, %g1
-	mov	%g6, %g2			! arg2 = tagaccess
-	mov	%g5, %g3			! arg3 = traptype
+	mov	%g6, %g2			/* arg2 = tagaccess */
+	mov	%g5, %g3			/* arg3 = traptype */
 	cmp	%g5, T_ALIGNMENT
 	bne	%icc, 1f
 	nop
@@ -267,7 +274,7 @@
 	!
 	! use previous wbcnt to spill new spbuf & wbuf
 	!
-	sll	%g2, CPTRSHIFT, %g4		! spbuf size is sizeof (caddr_t)
+	sll	%g2, CPTRSHIFT, %g4		/* spbuf size is sizeof (caddr_t) */
 	add	%g1, MPCB_SPBUF, %g3
 	stn	%sp, [%g3 + %g4]
 	sll	%g2, RWIN64SHIFT, %g4
@@ -298,7 +305,7 @@
 	!
 	! use previous wbcnt to spill new spbuf & wbuf
 	!
-	sll	%g5, CPTRSHIFT, %g7		! spbuf size is sizeof (caddr_t)
+	sll	%g5, CPTRSHIFT, %g7		/* spbuf size is sizeof (caddr_t) */
 	add	%g6, %g7, %g7
 	stn	%sp, [%g7 + MPCB_SPBUF]
 	sll	%g5, RWIN64SHIFT, %g7
@@ -335,7 +342,7 @@
 	! sfar (g5 == T_ALIGNMENT)
 	!
 	set	sfmmu_tsbmiss_exception, %g1
-	mov	%g6, %g2			! arg2 = tagaccess
+	mov	%g6, %g2			/* arg2 = tagaccess */
 	mov	T_WIN_UNDERFLOW, %g3
 	cmp	%g5, T_ALIGNMENT
 	bne	%icc, 1f
@@ -389,8 +396,8 @@
 	! sfar (g5 == T_ALIGNMENT)
 	!
 	set	sfmmu_tsbmiss_exception, %g1
-	mov	%g6, %g2			! arg2 = tagaccess
-	set	T_USER | T_SYS_RTT_PAGE, %g3	! arg3 = traptype
+	mov	%g6, %g2			/* arg2 = tagaccess */
+	set	T_USER | T_SYS_RTT_PAGE, %g3	/* arg3 = traptype */
 	cmp	%g5, T_ALIGNMENT
 	bne	%icc, 1f
 	nop
@@ -404,19 +411,19 @@
 	!
 	rdpr	%pstate, %l1
 	wrpr	%l1, PSTATE_AG, %pstate
-	mov	%l6, THREAD_REG			! %l6 is user_rtt's thread
+	mov	%l6, THREAD_REG			/* %l6 is user_rtt's thread */
 	wrpr	%g0, %l1, %pstate
 	rdpr	%wstate, %l1
 	sllx	%l1, WSTATE_SHIFT, %l1
 	wrpr	%l1, WSTATE_K64, %wstate
-	sethi   %hi(kcontextreg), %g5           ! mov   KCONTEXT, %g5
+	sethi   %hi(kcontextreg), %g5           /* mov   KCONTEXT, %g5 */
         ldx     [%g5 + %lo(kcontextreg)], %g5
 	mov	MMU_PCONTEXT, %g6
 	ldxa	[%g6]ASI_MMU_CTX, %g7
 	xor	%g5, %g7, %g7
 	srlx	%g7, CTXREG_NEXT_SHIFT, %g7
-	brz	%g7, 1f				! if N_pgsz0/1 changed, need demap
-	  nop
+	brz	%g7, 1f				/* if N_pgsz0/1 changed, need demap */
+	nop
 	mov	DEMAP_ALL_TYPE, %g7
 	stxa	%g0, [%g7]ASI_DTLB_DEMAP
 	stxa	%g0, [%g7]ASI_ITLB_DEMAP
@@ -432,13 +439,13 @@
 	ENTRY_NP(fault_64bit_fn0)
 	FAULT_WINTRACE(%g1, %g2, %g3, TT_F64_FN0)
 	b	.fault_fn0_common
-	  nop
+	nop
 	SET_SIZE(fault_64bit_fn0)
 
 	ENTRY_NP(fault_64bit_fn1)
 	FAULT_WINTRACE(%g1, %g2, %g3, TT_F64_FN1)
 	b	.fault_fn1_common
-	  nop
+	nop
 	SET_SIZE(fault_64bit_fn1)
 
 	/*

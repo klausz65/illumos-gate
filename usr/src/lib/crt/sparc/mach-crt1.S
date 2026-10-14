@@ -15,20 +15,17 @@
  */
 
 /* Copyright 2016, Richard Lowe. */
+/* Copyright 2026, Klaus Ziegler. */
 
 #include <sys/asm_linkage.h>
 #include <sys/stack.h>
 
-	.file	"mach-crt1.s"
+	.file	"mach-crt1.S"
 	.ident	""
 
 	.global	_start_crt
 
-#if defined(__sparcv9)
-#define	EB_MAX_SIZE	128
-#else
 #define	EB_MAX_SIZE	64
-#endif
 
 ENTRY_NP(_start)
 	/*
@@ -62,15 +59,15 @@ ENTRY_NP(_start)
 	 *
 	 * and an exit handler from the linker is in %g1
 	 */
-	clr	%fp		! don't trace the stack past this point
+	clr	%fp		/* don't trace the stack past this point */
 
-	add	%sp, WINDOWSIZE + STACK_BIAS, %l0	! address of argc
+	add	%sp, WINDOWSIZE + STACK_BIAS, %l0	/* address of argc */
 
 	! allocate a minimally sized frame, and align ourselves
 	add	%sp, -SA(MINFRAME - EB_MAX_SIZE), %sp
 
-	ldn	[%l0], %o0			! argc
-	add	%l0, CPTRSIZE, %o1	! argv
+	ldn	[%l0], %o0		/* argc */
+	add	%l0, CPTRSIZE, %o1	/* argv */
 	call	_start_crt
-	    mov %g1, %o2			! exit_handler in delay slot
+	    mov %g1, %o2		/* exit_handler in delay slot */
 SET_SIZE(_start)

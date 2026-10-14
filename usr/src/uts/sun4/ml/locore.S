@@ -63,12 +63,12 @@
 /*
  * The IEEE 1275-1994 callback handler for a 64-bit SPARC V9 PROM calling
  * a 32 bit client program. The PROM calls us with a 64 bit stack and a
- * pointer to a client interface argument array in %o0.  The called code
+ * pointer to a client interface argument array in %o0. The called code
  * returns 0 if the call succeeded (i.e. the service name exists) or -1
  * if the call failed. NOTE: All addresses are in the range 0..2^^32-1
  *
  * This code is called as trusted subroutine of the firmware, and is
- * called with %tba pointing to the boot firmware's trap table.  All of
+ * called with %tba pointing to the boot firmware's trap table. All of
  * the prom's window handlers are mixed mode handlers.
  */
 
@@ -76,32 +76,32 @@
 	!
 	! We assume we are called with a 64 bit stack with PSTATE_AM clear
 	!
-	save	%sp, -SA64(MINFRAME64), %sp	! 64 bit save
-	rdpr	%wstate, %l5			! save %wstate
+	save	%sp, -SA64(MINFRAME64), %sp	/* 64 bit save */
+	rdpr	%wstate, %l5			/* save %wstate */
 	andn	%l5, WSTATE_MASK, %l6
 	wrpr	%l6, WSTATE_KMIX, %wstate
-	rdpr	%pstate, %l0			! save %pstate
+	rdpr	%pstate, %l0			/* save %pstate */
 
 	!
 	! If anybody tries to trace the call stack of this callback
-	! then the traceback should stop here.  This matters
+	! then the traceback should stop here. This matters
 	! particularly for sync callbacks on Serengeti, but it's a
 	! good idea generally.
 	!
 	flushw
 	mov	%fp, %l1
-	clr	%fp				! terminate stack traces
+	clr	%fp				/* terminate stack traces */
 
-	call	vx_handler			! vx_handler(void **arg_array)
-	  mov	%i0, %o0			! delay; argument array
-	sra	%o0, 0, %i0			! sign extend result
+	call	vx_handler			/* vx_handler(void **arg_array) */
+	mov	%i0, %o0			/* delay; argument array */
+	sra	%o0, 0, %i0			/* sign extend result */
 
-	mov	%l1, %fp			! restore %fp for return
+	mov	%l1, %fp			/* restore %fp for return */
 
-1:	wrpr	%g0, %l0, %pstate		! restore %pstate
-	wrpr	%g0, %l5, %wstate		! restore %wstate
+1:	wrpr	%g0, %l0, %pstate		/* restore %pstate */
+	wrpr	%g0, %l5, %wstate		/* restore %wstate */
 
-	ret					! return result in %o0
-	restore					! back to a 64 bit stack
+	ret					/* return result in %o0 */
+	restore					/* back to a 64 bit stack */
 	SET_SIZE(callback_handler)
 

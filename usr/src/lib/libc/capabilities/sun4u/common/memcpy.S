@@ -23,7 +23,7 @@
  * Copyright (c) 1994, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
-	.file	"memcpy.s"
+	.file	"memcpy.S"
 
 /*
  * memcpy(s1, s2, len)
@@ -56,35 +56,34 @@
 	ANSI_PRAGMA_WEAK(memcpy,function)
 
 	ENTRY(memmove)
-	cmp	%o1, %o0	! if from address is >= to use forward copy
-	bgeu	%ncc, forcpy	! else use backward if ...
-	sub	%o0, %o1, %o4	! get difference of two addresses
-	cmp	%o2, %o4	! compare size and difference of addresses
-	bleu	%ncc, forcpy	! if size is bigger, do overlapped copy
+	cmp	%o1, %o0	/* if from address is >= to use forward copy */
+	bgeu	%ncc, forcpy	/* else use backward if ... */
+	sub	%o0, %o1, %o4	/* get difference of two addresses */
+	cmp	%o2, %o4	/* compare size and difference of addresses */
+	bleu	%ncc, forcpy	/* if size is bigger, do overlapped copy */
 	nop
 
-        !
-        ! an overlapped copy that must be done "backwards"
-        !
+	!
+	! an overlapped copy that must be done "backwards"
+	!
 .ovbc:
-	mov	%o0, %o5		! save des address for return val
-	add     %o1, %o2, %o1           ! get to end of source space
-        add     %o0, %o2, %o0           ! get to end of destination space
+	mov	%o0, %o5		/* save des address for return val */
+	add	%o1, %o2, %o1		/* get to end of source space */
+	add	%o0, %o2, %o0		/* get to end of destination space */
 
 .chksize:
 	cmp	%o2, 8
 	bgeu,pn	%ncc, .dbalign
 	nop
 
-
 .byte:
-1:	deccc	%o2			! decrement count
-	blu,pn	%ncc, exit		! loop until done
-	dec	%o0			! decrement to address
-	dec	%o1			! decrement from address
-        ldub	[%o1], %o3		! read a byte
-        ba	1b			! loop until done
-	stb	%o3, [%o0]		! write byte
+1:	deccc	%o2			/* decrement count */
+	blu,pn	%ncc, exit		/* loop until done */
+	dec	%o0			/* decrement to address */
+	dec	%o1			/* decrement from address */
+	ldub	[%o1], %o3		/* read a byte */
+	ba	1b			/* loop until done */
+	stb	%o3, [%o0]		/* write byte */
 
 .dbalign:
 	andcc	%o0, 7, %o3
@@ -99,47 +98,45 @@
 
 .dbbck:
 
-        rd      %fprs, %o3              ! o3 = fprs
+	rd	%fprs, %o3		/* o3 = fprs */
 
+	! if fprs.fef == 0, set it. Checking it, reqires 2 instructions.
+	! So set it anyway, without checking.
+	wr	%g0, 0x4, %fprs		/* fprs.fef = 1 */
 
-        ! if fprs.fef == 0, set it. Checking it, reqires 2 instructions.
-        ! So set it anyway, without checking.
-        wr      %g0, 0x4, %fprs         ! fprs.fef = 1
-
-        alignaddr	%o1, %g0, %g1		! align src
-        ldd	[%g1], %d0		! get first 8 byte block
+	alignaddr	%o1, %g0, %g1	/* align src */
+	ldd	[%g1], %d0		/* get first 8 byte block */
 	sub	%g1, 8, %g1
 	andn	%o2, 7, %o4
 	sub	%o1, %o4, %o1
 
 2:
-	sub	%o0, 8, %o0		! since we are at the end
-					! when we first enter the loop
-        ldd	[%g1], %d2
-        faligndata %d2, %d0, %d8	! extract 8 bytes out
-        std	%d8, [%o0]		! store it
+	sub	%o0, 8, %o0		/* since we are at the end */
+					/* when we first enter the loop */
+	ldd	[%g1], %d2
+	faligndata %d2, %d0, %d8	/* extract 8 bytes out */
+	std	%d8, [%o0]		/* store it */
 
 	sub	%g1, 8, %g1
-        sub	%o2, 8, %o2		! 8 less bytes to copy
-	cmp	%o2, 8			! or do we have < 8 bytes
-        bgeu,pt	%ncc, 2b
+	sub	%o2, 8, %o2		/* 8 less bytes to copy */
+	cmp	%o2, 8			/* or do we have < 8 bytes */
+	bgeu,pt	%ncc, 2b
 	fmovd	%d2, %d0
 
-        and     %o3, 0x4, %o3           ! fprs.du = fprs.dl = 0
-        ba      .byte
-        wr      %o3, %g0, %fprs         ! fprs = o3 - restore fprs
+	and	%o3, 0x4, %o3		/* fprs.du = fprs.dl = 0 */
+	ba	.byte
+	wr	%o3, %g0, %fprs		/* fprs = o3 - restore fprs */
 
 	SET_SIZE(memmove)
-
 
 	ENTRY(memcpy)
 	ENTRY(__align_cpy_1)
 forcpy:
-	mov	%o0, %o5		! save des address for return val
+	mov	%o0, %o5		/* save des address for return val */
 
-	cmp	%o2, 32			! for small counts copy bytes
+	cmp	%o2, 32			/* for small counts copy bytes */
 	bgu,a	%ncc, .alignsrc
-	andcc   %o1, 7, %o3             ! is src aligned on a 8 byte bound
+	andcc	%o1, 7, %o3		/* is src aligned on a 8 byte bound */
 
 .bytecp:
 	! Do byte copy
@@ -148,7 +145,7 @@ forcpy:
 	nop
 
 1:	ldub	[%o1], %o4
-	inc 	%o1
+	inc	%o1
 	inc	%o0
 	deccc	%o2
 	bgu	%ncc, 1b
@@ -159,100 +156,101 @@ exit:
 	mov	%o5, %o0
 
 .alignsrc:
-        bz      %ncc, .bigcpy		! src already double aligned
-	sub     %o3, 8, %o3
-        neg     %o3                     ! bytes till src double aligned
-
-        sub     %o2, %o3, %o2           ! update o2 with new count
+	bz	%ncc, .bigcpy		/* src already double aligned */
+	sub	%o3, 8, %o3
+	neg	%o3			/* bytes till src double aligned */
+	sub	%o2, %o3, %o2		/* update o2 with new count */
 
 	! Copy %o3 bytes till double aligned
 
-2:      ldub    [%o1], %o4
-        inc     %o1
-        inc     %o0
-        deccc   %o3
-        bgu	%ncc, 2b
-        stb     %o4, [%o0 - 1]
+2:
+	ldub	[%o1], %o4
+	inc	%o1
+	inc	%o0
+	deccc	%o3
+	bgu	%ncc, 2b
+	stb	%o4, [%o0 - 1]
 
 	! Now Source (%o1) is double word aligned
 
-.bigcpy: 				! >= 17 bytes to copy
-	andcc	%o0, 7, %o3		! is dst aligned on a 8 byte bound
-        bz      %ncc, .blkchk		! already double aligned
-	sub     %o3, 8, %o3
-        neg     %o3                     ! bytes till double aligned
+.bigcpy:				/* >= 17 bytes to copy */
+	andcc	%o0, 7, %o3		/* is dst aligned on a 8 byte bound */
+	bz	%ncc, .blkchk		/* already double aligned */
+	sub	%o3, 8, %o3
+	neg	%o3			/* bytes till double aligned */
 
-        sub     %o2, %o3, %o2           ! update o2 with new count
+	sub	%o2, %o3, %o2		/* update o2 with new count */
 
 	! Copy %o3 bytes till double aligned
 
-3:      ldub    [%o1], %o4
-        inc     %o1
-        inc     %o0
-        deccc   %o3
-        bgu	%ncc, 3b
-        stb     %o4, [%o0 - 1]
+3:
+	ldub	[%o1], %o4
+	inc	%o1
+	inc	%o0
+	deccc	%o3
+	bgu	%ncc, 3b
+	stb	%o4, [%o0 - 1]
 
 	! Now Destination (%o0) is double word aligned
 .blkchk:
-	cmp     %o2, 384		! if cnt < 256 + 128 -  no Block ld/st
-	bgeu,a	%ncc, blkcpy		!    do double word copy
-	subcc	%o0, %o1, %o4		! %o4 = dest - src
+	cmp	%o2, 384		/* if cnt < 256 + 128 -  no Block ld/st */
+	bgeu,a	%ncc, blkcpy		/*    do double word copy */
+	subcc	%o0, %o1, %o4		/* %o4 = dest - src */
 
 	! double word copy - using ldd and faligndata. Copies upto
 	! 8 byte multiple count and does byte copy for the residual.
 .dwcpy:
-	rd	%fprs, %o3		! o3 = fprs
+	rd	%fprs, %o3		/* o3 = fprs */
 
 	! if fprs.fef == 0, set it. Checking it, reqires 2 instructions.
 	! So set it anyway, without checking.
-	wr	%g0, 0x4, %fprs 	! fprs.fef = 1
-	andn    %o2, 7, %o4     	! o4 has 8 byte aligned cnt
+	wr	%g0, 0x4, %fprs		/* fprs.fef = 1 */
+	andn	%o2, 7, %o4		/* o4 has 8 byte aligned cnt */
 	sub	%o4, 8, %o4
-        alignaddr %o1, %g0, %g1
-        ldd     [%g1], %d0
-        add     %g1, 8, %g1
+	alignaddr %o1, %g0, %g1
+	ldd	[%g1], %d0
+	add	%g1, 8, %g1
 4:
-        ldd     [%g1], %d2
-        add     %g1, 8, %g1
-        sub     %o2, 8, %o2
-        subcc   %o4, 8, %o4
-        faligndata %d0, %d2, %d8
-        std     %d8, [%o0]
-        add     %o1, 8, %o1
-        bz,pn   %ncc, .residcp
-        add     %o0, 8, %o0
-        ldd     [%g1], %d0
-        add     %g1, 8, %g1
-        sub     %o2, 8, %o2
-        subcc   %o4, 8, %o4
-        faligndata %d2, %d0, %d8
-        std     %d8, [%o0]
-        add     %o1, 8, %o1
-        bgu,pn	%ncc, 4b
-        add     %o0, 8, %o0
+	ldd	[%g1], %d2
+	add	%g1, 8, %g1
+	sub	%o2, 8, %o2
+	subcc	%o4, 8, %o4
+	faligndata %d0, %d2, %d8
+	std	%d8, [%o0]
+	add	%o1, 8, %o1
+	bz,pn	%ncc, .residcp
+	add	%o0, 8, %o0
+	ldd	[%g1], %d0
+	add	%g1, 8, %g1
+	sub	%o2, 8, %o2
+	subcc	%o4, 8, %o4
+	faligndata %d2, %d0, %d8
+	std	%d8, [%o0]
+	add	%o1, 8, %o1
+	bgu,pn	%ncc, 4b
+	add	%o0, 8, %o0
 
-.residcp:				! Do byte copy
+.residcp:				/* Do byte copy */
 	tst	%o2
 	bz,a,pn %ncc, dwexit
 	nop
 
 5:	ldub	[%o1], %o4
-	inc 	%o1
+	inc	%o1
 	inc	%o0
 	deccc	%o2
 	bgu	%ncc, 5b
 	stb	%o4, [%o0 - 1]
 
 dwexit:
-        and     %o3, 0x4, %o3           ! fprs.du = fprs.dl = 0
-        wr      %o3, %g0, %fprs         ! fprs = o3 - restore fprs
+	and	%o3, 0x4, %o3		/* fprs.du = fprs.dl = 0 */
+	wr	%o3, %g0, %fprs		/* fprs = o3 - restore fprs */
 	retl
 	mov	%o5, %o0
 
 blkcpy:
-	! subcc	%o0, %o1, %o4		! in delay slot of branch
-	bneg,a,pn %ncc, 1f		! %o4 = abs(%o4)
+	! subcc	%o0, %o1, %o4		/* in delay slot of branch */
+	bneg,a,pn %ncc, 1f		/* %o4 = abs(%o4) */
 	neg	%o4
 1:
 	/*
@@ -260,48 +258,48 @@ blkcpy:
 	 * and (dest & ~63) - (src & ~63) can be 3 blocks even if
 	 * src = dest + (64 * 3) + 63.
 	 */
-	cmp	%o4, 256		! if smaller than 3 blocks skip
-	blu,pn	%ncc, .dwcpy		! and do it the slower way
+	cmp	%o4, 256		/* if smaller than 3 blocks skip */
+	blu,pn	%ncc, .dwcpy		/* and do it the slower way */
 	andcc	%o0, 63, %o3
 
-	save    %sp, -SA(MINFRAME), %sp
-        rd      %fprs, %l3              ! l3 = fprs
+	save	%sp, -SA(MINFRAME), %sp
+	rd	%fprs, %l3		/* l3 = fprs */
 
-        ! if fprs.fef == 0, set it. Checking it, reqires 2 instructions.
-        ! So set it anyway, without checking.
-        wr      %g0, 0x4, %fprs         ! fprs.fef = 1
+	! if fprs.fef == 0, set it. Checking it, reqires 2 instructions.
+	! So set it anyway, without checking.
+	wr	%g0, 0x4, %fprs		/* fprs.fef = 1 */
 
-        bz,pn   %ncc, blalign           ! now block aligned
-        sub     %i3, 64, %i3
-        neg     %i3                     ! bytes till block aligned
-	sub	%i2, %i3, %i2		! update %i2 with new count
+	bz,pn	%ncc, blalign		/* now block aligned */
+	sub	%i3, 64, %i3
+	neg	%i3			/* bytes till block aligned */
+	sub	%i2, %i3, %i2		/* update %i2 with new count */
 
 	! Copy %i3 bytes till dst is block (64 byte) aligned. use
 	! double word copies.
 
-        alignaddr %i1, %g0, %g1
-        ldd     [%g1], %d0
-        add     %g1, 8, %g1
+	alignaddr %i1, %g0, %g1
+	ldd	[%g1], %d0
+	add	%g1, 8, %g1
 6:
-        ldd     [%g1], %d2
-        add     %g1, 8, %g1
-        subcc   %i3, 8, %i3
-        faligndata %d0, %d2, %d8
-        std     %d8, [%i0]
-        add     %i1, 8, %i1
-        bz,pn   %ncc, blalign
-        add     %i0, 8, %i0
-        ldd     [%g1], %d0
-        add     %g1, 8, %g1
-        subcc   %i3, 8, %i3
-        faligndata %d2, %d0, %d8
-        std     %d8, [%i0]
-        add     %i1, 8, %i1
-        bgu,pn	%ncc, 6b
-        add     %i0, 8, %i0
+	ldd	[%g1], %d2
+	add	%g1, 8, %g1
+	subcc	%i3, 8, %i3
+	faligndata %d0, %d2, %d8
+	std	%d8, [%i0]
+	add	%i1, 8, %i1
+	bz,pn	%ncc, blalign
+	add	%i0, 8, %i0
+	ldd	[%g1], %d0
+	add	%g1, 8, %g1
+	subcc	%i3, 8, %i3
+	faligndata %d2, %d0, %d8
+	std	%d8, [%i0]
+	add	%i1, 8, %i1
+	bgu,pn	%ncc, 6b
+	add	%i0, 8, %i0
 
 blalign:
-	membar  #StoreLoad
+	membar	#StoreLoad
 	! %i2 = total length
 	! %i3 = blocks  (length - 64) / 64
 	! %i4 = doubles remaining  (length - blocks)
@@ -313,21 +311,21 @@ blalign:
 	sub	%i2, %i4, %i2
 	sub	%i2, %i3, %i2
 
-	andn	%i1, 0x3F, %l7		! blk aligned address
-	alignaddr %i1, %g0, %g0		! gen %gsr
+	andn	%i1, 0x3F, %l7		/* blk aligned address */
+	alignaddr %i1, %g0, %g0		/* gen %gsr */
 
-	srl	%i1, 3, %l5		! bits 3,4,5 are now least sig in  %l5
-	andcc  	%l5, 7, %l6		! mask everything except bits 1,2 3
+	srl	%i1, 3, %l5		/* bits 3,4,5 are now least sig in  %l5 */
+	andcc	%l5, 7, %l6		/* mask everything except bits 1,2 3 */
 	add	%i1, %i4, %i1
 	add	%i1, %i3, %i1
 
-	be,a	%ncc, 1f	! branch taken if src is 64-byte aligned
+	be,a	%ncc, 1f	/* branch taken if src is 64-byte aligned */
 	ldda	[%l7]ASI_BLK_P, %d0
 
-	call	.+8		! get the address of this instruction in %o7
+	call	.+8		/* get the address of this instruction in %o7 */
 	sll	%l6, 2, %l4
 	add	%o7, %l4, %o7
-	jmp	%o7 + 16	! jump to the starting ldd instruction
+	jmp	%o7 + 16	/* jump to the starting ldd instruction */
 	nop
 	ldd	[%l7+8], %d2
 	ldd	[%l7+16], %d4
@@ -344,39 +342,38 @@ blalign:
 	add	%l7, 64, %l7
 	sub	%i3, 128, %i3
 
+! switch statement to get us to the right 8 byte blk within a
+! 64 byte block
 
-        ! switch statement to get us to the right 8 byte blk within a
-        ! 64 byte block
-
-	cmp	 %l6, 4
+	cmp	%l6, 4
 	bgeu,a	 hlf
-	cmp	 %l6, 6
-	cmp	 %l6, 2
-	bgeu,a	 sqtr
+	cmp	%l6, 6
+	cmp	%l6, 2
+	bgeu,a	sqtr
 	nop
-	cmp	 %l6, 1
-	be,a	 seg1
+	cmp	%l6, 1
+	be,a	seg1
 	nop
-	ba	 seg0
+	ba	seg0
 	nop
 sqtr:
-	be,a	 seg2
+	be,a	seg2
 	nop
-	ba,a	 seg3
+	ba,a	seg3
 	nop
 
 hlf:
-	bgeu,a	 fqtr
+	bgeu,a	fqtr
 	nop
-	cmp	 %l6, 5
-	be,a	 seg5
+	cmp	%l6, 5
+	be,a	seg5
 	nop
-	ba	 seg4
+	ba	seg4
 	nop
 fqtr:
-	be,a	 seg6
+	be,a	seg6
 	nop
-	ba	 seg7
+	ba	seg7
 	nop
 
 #define	FALIGN_D0			\
@@ -640,7 +637,6 @@ seg2:
 	ba,pt	%ncc, blkd36
 	add	%i0, 64, %i0
 
-
 #define	FALIGN_D6			\
 	faligndata %d6, %d8, %d48	;\
 	faligndata %d8, %d10, %d50	;\
@@ -727,7 +723,6 @@ seg3:
 	stda	%d48, [%i0]ASI_BLK_P
 	ba,pt	%ncc, blkd38
 	add	%i0, 64, %i0
-
 
 #define	FALIGN_D8			\
 	faligndata %d8, %d10, %d48	;\
@@ -816,7 +811,6 @@ seg4:
 	ba,pt	%ncc, blkd40
 	add	%i0, 64, %i0
 
-
 #define	FALIGN_D10			\
 	faligndata %d10, %d12, %d48	;\
 	faligndata %d12, %d14, %d50	;\
@@ -903,7 +897,6 @@ seg5:
 	stda	%d48, [%i0]ASI_BLK_P
 	ba,pt	%ncc, blkd42
 	add	%i0, 64, %i0
-
 
 #define	FALIGN_D12			\
 	faligndata %d12, %d14, %d48	;\
@@ -1080,7 +1073,6 @@ seg7:
 	ba,pt	%ncc, blkd46
 	add	%i0, 64, %i0
 
-
 	!
 	! dribble out the last partial block
 	!
@@ -1244,20 +1236,21 @@ blkleft:
 
 blkdone:
 	tst	%i2
-	bz,pt 	%ncc, blkexit
-	and	%l3, 0x4, %l3		! fprs.du = fprs.dl = 0
+	bz,pt	%ncc, blkexit
+	and	%l3, 0x4, %l3		/* fprs.du = fprs.dl = 0 */
 
-7:      ldub    [%i1], %i4
-        inc     %i1
-        inc     %i0
-        deccc   %i2
-        bgu  	%ncc, 7b
-        stb     %i4, [%i0 - 1]
+7:
+	ldub	[%i1], %i4
+	inc	%i1
+	inc	%i0
+	deccc	%i2
+	bgu	%ncc, 7b
+	stb	%i4, [%i0 - 1]
 
 blkexit:
-        and     %l3, 0x4, %l3           ! fprs.du = fprs.dl = 0
-	wr      %l3, %g0, %fprs         ! fprs = l3 - restore fprs.fef
-	membar  #StoreLoad|#StoreStore
+	and	%l3, 0x4, %l3		/* fprs.du = fprs.dl = 0 */
+	wr	%l3, %g0, %fprs		/* fprs = l3 - restore fprs.fef */
+	membar	#StoreLoad|#StoreStore
 	ret
 	restore %i5, %g0, %o0
 

@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"__align_cpy_8.s"
+	.file	"__align_cpy_8.S"
 
 /* __align_cpy_8(s1, s2, n)
  *
@@ -48,16 +48,16 @@
  *	Bytes to be copied are non-overlapping or _exactly_ overlapping.
  *	The number of bytes to be copied is a multiple of 8.
  *	Call will _usually_ be made with a byte count of more than 4*8 and
- *	less than a few hundred bytes.  Legal values are 0 to MAX_SIZE_T.
+ *	less than a few hundred bytes. Legal values are 0 to MAX_SIZE_T.
  *
  * Optimization attempt:
- *	Reasonable speed for a generic v9.  Going for 32 bytes at a time
+ *	Reasonable speed for a generic v9. Going for 32 bytes at a time
  *	rather than 16 bytes at a time did not result in a time saving for
  *	the number of bytes expected to be copied.  No timing runs using other
  *	levels of optimization have been tried yet.
  *
  * Even when multiples of 16 bytes were used, the savings by going for 32 bytes
- * at a time were about 2%.  Thus, __align_cpy_16 is a second entry point to
+ * at a time were about 2%. Thus, __align_cpy_16 is a second entry point to
  * the same code as __align_cpy_8.
  *
  * Register usage:
@@ -72,36 +72,36 @@
 
 	ENTRY(__align_cpy_8)
 	ENTRY(__align_cpy_16)
-	cmp	%o0, %o1		! Identical--do nothing.
+	cmp	%o0, %o1		/* Identical--do nothing. */
 	be,pn	%xcc, .done
 	subcc	%o2, 8, %o2
-	bz,pn	%xcc, .wrdbl2		! Only 8 bytes need to be copied.
-	mov	%o0, %o5		! Original target address is returned.
-	bpos,a,pt %xcc, .wrdbl1		! Have at least 16 bytes to copy.
+	bz,pn	%xcc, .wrdbl2		/* Only 8 bytes need to be copied. */
+	mov	%o0, %o5		/* Original target address is returned. */
+	bpos,a,pt %xcc, .wrdbl1		/* Have at least 16 bytes to copy. */
 	ldx	[%o1], %o3
 .done:
-	retl				! No bytes to copy.
+	retl				/* No bytes to copy. */
 	nop
 
-	.align	32
-.wrdbl1:				! Copy 16 bytes at a time.
+	.balign	32
+.wrdbl1:				/* Copy 16 bytes at a time. */
 	subcc	%o2, 16, %o2
 	ldx	[%o1+8], %o4
 	add	%o1, 16, %o1
 	stx	%o3, [%o5]
 	stx	%o4, [%o5+8]
 	add	%o5, 16, %o5
-	bg,a,pt	%xcc, .wrdbl1		! Have at least 16 more bytes.
+	bg,a,pt	%xcc, .wrdbl1		/* Have at least 16 more bytes. */
 	ldx	[%o1], %o3
 
-	bz,a,pt	%xcc, .wrdbl3		! Have 8 bytes remaining to copy.
+	bz,a,pt	%xcc, .wrdbl3		/* Have 8 bytes remaining to copy. */
 	ldx	[%o1], %o3
 
 	retl
 	nop
 
 .wrdbl2:
-	ldx	[%o1], %o3		! Copy last 8 bytes.
+	ldx	[%o1], %o3		/* Copy last 8 bytes. */
 .wrdbl3:
 	stx	%o3, [%o5]
 	retl

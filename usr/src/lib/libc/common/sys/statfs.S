@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"statfs.s"
+	.file	"statfs.S"
 
 /* C library -- statfs						*/
 /* int statfs (const char *path, struct statfs *buf, int len,	*/

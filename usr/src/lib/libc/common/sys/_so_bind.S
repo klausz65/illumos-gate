@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_bind.s"
+	.file	"_so_bind.S"
 
 /* C library -- _so_bind						*/
 /* int _so_bind (int fildes, struct sockaddr *name, int namelen, int vers); */

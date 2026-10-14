@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"umask.s"
+	.file	"umask.S"
 
 /* C library -- umask						*/
 /* mode_t umask (mode_t cmask);					*/

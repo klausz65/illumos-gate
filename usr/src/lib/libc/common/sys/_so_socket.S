@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_socket.s"
+	.file	"_so_socket.S"
 
 /* C library -- _so_socket					*/
 /*

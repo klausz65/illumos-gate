@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"fchdir.s"
+	.file	"fchdir.S"
 
 /* C library -- fchdir						*/
 /* int fchdir(int fildes)					*/

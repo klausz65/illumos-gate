@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"hwmuldiv.s"
+	.file	"hwmuldiv.S"
 
 #include <sys/asm_linkage.h>
 
@@ -37,14 +37,14 @@
 	rd	%y, %o1
 	sra	%o0, 31, %o2
 	retl
-	cmp	%o1, %o2	! return with Z set if %y == (%o0 >> 31)
+	cmp	%o1, %o2	/* return with Z set if %y == (%o0 >> 31) */
 	SET_SIZE(.mul)
 
 	ENTRY(.umul)
 	umul	%o0, %o1, %o0
 	rd	%y, %o1
 	retl
-	tst	%o1		! return with Z set if high order bits are zero
+	tst	%o1		/* return with Z set if high order bits are zero */
 	SET_SIZE(.umul)
 
 	ENTRY(.div)
@@ -55,7 +55,7 @@
 	nop
 	sdivcc	%o0, %o1, %o0
 	bvs,a	1f
-	xnor	%o0, %g0, %o0	! Corbett Correction Factor
+	xnor	%o0, %g0, %o0	/* Corbett Correction Factor */
 1:	retl
 	nop
 	SET_SIZE(.div)
@@ -76,7 +76,7 @@
 	nop
 	sdivcc	%o0, %o1, %o2
 	bvs,a	1f
-	xnor	%o2, %g0, %o2	! Corbett Correction Factor
+	xnor	%o2, %g0, %o2	/* Corbett Correction Factor */
 1:	smul	%o2, %o1, %o2
 	retl
 	sub	%o0, %o2, %o0
@@ -134,11 +134,11 @@
 	ENTRY(__mul64)
 	ALTENTRY(__umul64)
 	ARGS_TO_64
-	sub	%o1, %o2, %o0	! %o0 = a - b
-	movrlz	%o0, %g0, %o0	! %o0 = (a < b) ? 0 : a - b
-	sub	%o1, %o0, %o1	! %o1 = (a < b) ? a : b = min(a, b)
-	add	%o2, %o0, %o2	! %o2 = (a < b) ? b : a = max(a, b)
-	mulx	%o1, %o2, %o1	! min(a, b) in "rs1" for early exit
+	sub	%o1, %o2, %o0	/* %o0 = a - b */
+	movrlz	%o0, %g0, %o0	/* %o0 = (a < b) ? 0 : a - b */
+	sub	%o1, %o0, %o1	/* %o1 = (a < b) ? a : b = min(a, b) */
+	add	%o2, %o0, %o2	/* %o2 = (a < b) ? b : a = max(a, b) */
+	mulx	%o1, %o2, %o1	/* min(a, b) in "rs1" for early exit */
 	retl
 	srax	%o1, 32, %o0
 	SET_SIZE(__mul64)

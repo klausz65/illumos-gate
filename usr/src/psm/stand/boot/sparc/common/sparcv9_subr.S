@@ -30,8 +30,8 @@
 
 #if !defined(lint)
 
-	.seg	".text"
-	.align	4
+	.section	.text
+	.balign	4
 
 #define	PSR_PIL_BIT	0x8
 
@@ -65,14 +65,14 @@
 	 * Note, for the machine specific priorities there are
 	 * examples listed for devices that use a particular priority.
 	 * It should not be construed that all devices of that
-	 * type should be at that priority.  It is currently were
+	 * type should be at that priority. It is currently were
 	 * the current devices fit into the priority scheme based
 	 * upon time criticalness.
 	 *
 	 * The underlying assumption of these assignments is that
 	 * SPARC9 IPL 10 is the highest level from which a device
-	 * routine can call wakeup.  Devices that interrupt from higher
-	 * levels are restricted in what they can do.  If they need
+	 * routine can call wakeup. Devices that interrupt from higher
+	 * levels are restricted in what they can do. If they need
 	 * kernels services they should schedule a routine at a lower
 	 * level (via software interrupt) to do the required
 	 * processing.
@@ -98,18 +98,6 @@
 	 *	spl0()		Used to lower priority to 0.
 	 *	splsoftclock()	Used by hardclock to lower priority.
 	 */
-
-#if defined(lint)
-
-int splimp(void)	{ return (0); }
-int splnet(void)	{ return (0); }
-
-#ifdef	notdef
-int spl6(void)		{ return (0); }
-int spl5(void)		{ return (0); }
-#endif	notdef
-
-#else	/* lint */
 
 	/* locks out all interrupts, including memory errors */
 	ENTRY(spl8)
@@ -203,32 +191,18 @@ int spl5(void)		{ return (0); }
 	SETPRI(0)
 	SET_SIZE(spl0)
 
-#endif	/* lint */
-
 /*
  * splx - set PIL back to that indicated by the old %PSR passed as an argument,
  * or to the CPU's base priority, whichever is higher.
  * sys_rtt (in locore.s) relies on this not to use %g1 or %g2.
  */
 
-#if defined(lint)
-
-/* ARGSUSED */
-void
-splx(int level)
-{
-}
-
-#else	/* lint */
-
 	ENTRY(splx)
-	rdpr	%pil, %o1	! get current pil
+	rdpr	%pil, %o1	/* get current pil */
 	wrpr	%o0, %pil
 	retl
 	mov	%o1, %o0
 	SET_SIZE(splx)
-
-#endif	/* level */
 
 /*
  * splr()
@@ -241,51 +215,27 @@ splx(int level)
  *
  */
 
-#if defined(lint)
-#ifdef	notdef
-
-/* ARGSUSED */
-int
-splr(int level)
-{ return (0); }
-
-#endif	notdef
-#else	/* lint */
-
 /*
  * splr(psr_pri_field)
  * splr is like splx but will only raise the priority and never drop it
  */
 
 	ENTRY(splr)
-	rdpr	%pil, %o1	! get current pil
+	rdpr	%pil, %o1	/* get current pil */
 	cmp	%o0, %o1
 	ble	1f
 	nop
 	wrpr	%o0, %pil
 1:	retl
-	mov	%o1, %o0	! return the old pil
+	mov	%o1, %o0	/* return the old pil */
 	SET_SIZE(splr)
-
-#endif	/* lint */
 
 /*
  * get_ticks()
  */
-#if defined(lint)
-
-/* ARGSUSED */
-uint64_t
-get_ticks(void)
-{ return (0); }
-
-#else	/* lint */
-
 	ENTRY(get_ticks)
 	rdpr	%tick, %o0
 	sllx	%o0, 1, %o0
 	retl
-	srlx	%o0, 1, %o0		! shake off npt bit
+	srlx	%o0, 1, %o0		/* shake off npt bit */
 	SET_SIZE(get_ticks)
-
-#endif	/* lint */

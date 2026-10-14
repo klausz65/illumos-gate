@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"sysconfig.s"
+	.file	"sysconfig.S"
 
 /* C library -- _sysconfig					*/
 /* int _sysconfig(name)						*/

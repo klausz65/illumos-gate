@@ -35,6 +35,9 @@
 #include <sys/vis.h>
 #include <sys/machsig.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+
 	ENTRY(set_trap_table)
 	set	trap_table, %o1
 	rdpr	%tba, %o0
@@ -56,7 +59,7 @@
 	wrpr	%o5, 0, %pstate
 	stxa	%o1, [%o0]ASI_MEM
 	retl
-	wrpr	%g0, %o4, %pstate	! restore earlier pstate register value
+	wrpr	%g0, %o4, %pstate	/* restore earlier pstate register value */
 	SET_SIZE(stdphys)
 
 
@@ -70,10 +73,10 @@
 	 */
 	rdpr	%pstate, %o4
 	andn	%o4, PSTATE_IE | PSTATE_AM, %o5
-	wrpr	%o5, 0, %pstate		! clear IE, AM bits
+	wrpr	%o5, 0, %pstate		/* clear IE, AM bits */
 	stxa	%o1, [%o0]ASI_IO
 	retl
-	wrpr	%g0, %o4, %pstate	! restore earlier pstate register value
+	wrpr	%g0, %o4, %pstate	/* restore earlier pstate register value */
 	SET_SIZE(stdphysio)
 
 
@@ -88,7 +91,7 @@
 	wrpr	%o5, 0, %pstate
 	ldxa	[%o0]ASI_MEM, %o0
 	retl
-	wrpr	%g0, %o4, %pstate	! restore earlier pstate register value
+	wrpr	%g0, %o4, %pstate	/* restore earlier pstate register value */
 	SET_SIZE(lddphys)
 
 	!
@@ -99,10 +102,10 @@
 	ENTRY(lddphysio)
 	rdpr	%pstate, %o4
 	andn	%o4, PSTATE_IE | PSTATE_AM, %o5
-	wrpr	%o5, 0, %pstate	! clear IE, AM bits
+	wrpr	%o5, 0, %pstate	/* clear IE, AM bits */
 	ldxa	[%o0]ASI_IO, %o0
 	retl
-	wrpr	%g0, %o4, %pstate	! restore earlier pstate register value
+	wrpr	%g0, %o4, %pstate	/* restore earlier pstate register value */
 	SET_SIZE(lddphysio)
 
 	!
@@ -116,7 +119,7 @@
 	wrpr	%o5, 0, %pstate
 	sta	%o1, [%o0]ASI_MEM
 	retl
-	wrpr	%g0, %o4, %pstate	! restore earlier pstate register value
+	wrpr	%g0, %o4, %pstate	/* restore earlier pstate register value */
 	SET_SIZE(stphys)
 
 
@@ -130,9 +133,9 @@
 	andn	%o4, PSTATE_IE | PSTATE_AM, %o5
 	wrpr	%o5, 0, %pstate
 	lda	[%o0]ASI_MEM, %o0
-	srl	%o0, 0, %o0	! clear upper 32 bits
+	srl	%o0, 0, %o0	/* clear upper 32 bits */
 	retl
-	wrpr	%g0, %o4, %pstate	! restore earlier pstate register value
+	wrpr	%g0, %o4, %pstate	/* restore earlier pstate register value */
 	SET_SIZE(ldphys)
 
 	!
@@ -225,7 +228,7 @@
  */
 
 	ENTRY_NP(save_gsr)
-	rd	%gsr, %g2			! save gsr
+	rd	%gsr, %g2			/* save gsr */
 	retl
 	stx	%g2, [%o0 + FPU_GSR]
 	SET_SIZE(save_gsr)
@@ -267,7 +270,7 @@
 
 	ENTRY_NP(_fp_write_pgsr)
 	retl
-	mov	%o0, %gsr
+	wr	%g0, %o0, %gsr
 	SET_SIZE(_fp_write_pgsr)
 
 /*
@@ -325,9 +328,9 @@
 
 	ENTRY_NP(fp_save)
 	ALTENTRY(fp_fksave)
-	BSTORE_FPREGS(%o0, %o1)			! store V9 regs
+	BSTORE_FPREGS(%o0, %o1)			/* store V9 regs */
 	retl
-	stx	%fsr, [%o0 + FPU_FSR]		! store fsr
+	stx	%fsr, [%o0 + FPU_FSR]		/* store fsr */
 	SET_SIZE(fp_fksave)
 	SET_SIZE(fp_save)
 
@@ -338,9 +341,9 @@
  */
 
 	ENTRY_NP(fp_v8_fksave)
-	BSTORE_V8_FPREGS(%o0, %o1)		! store V8 regs
+	BSTORE_V8_FPREGS(%o0, %o1)		/* store V8 regs */
 	retl
-	stx	%fsr, [%o0 + FPU_FSR]		! store fsr
+	stx	%fsr, [%o0 + FPU_FSR]		/* store fsr */
 	SET_SIZE(fp_v8_fksave)
 
 /*
@@ -350,9 +353,9 @@
  */
 
 	ENTRY_NP(fp_v8p_fksave)
-	BSTORE_V8P_FPREGS(%o0, %o1)		! store V9 extra regs
+	BSTORE_V8P_FPREGS(%o0, %o1)		/* store V9 extra regs */
 	retl
-	stx	%fsr, [%o0 + FPU_FSR]		! store fsr
+	stx	%fsr, [%o0 + FPU_FSR]		/* store fsr */
 	SET_SIZE(fp_v8p_fksave)
 
 /*
@@ -360,9 +363,9 @@
  */
 
 	ENTRY_NP(fp_restore)
-	BLOAD_FPREGS(%o0, %o1)			! load V9 regs
+	BLOAD_FPREGS(%o0, %o1)			/* load V9 regs */
 	retl
-	ldx	[%o0 + FPU_FSR], %fsr		! restore fsr
+	ldx	[%o0 + FPU_FSR], %fsr		/* restore fsr */
 	SET_SIZE(fp_restore)
 
 /*
@@ -370,9 +373,9 @@
  */
 
 	ENTRY_NP(fp_v8_load)
-	BLOAD_V8_FPREGS(%o0, %o1)		! load V8 regs
+	BLOAD_V8_FPREGS(%o0, %o1)		/* load V8 regs */
 	retl
-	ldx	[%o0 + FPU_FSR], %fsr		! restore fsr
+	ldx	[%o0 + FPU_FSR], %fsr		/* restore fsr */
 	SET_SIZE(fp_v8_load)
 
 /*
@@ -380,8 +383,8 @@
  */
 
 	ENTRY_NP(fp_v8p_load)
-	BLOAD_V8P_FPREGS(%o0, %o1)		! load V9 extra regs
+	BLOAD_V8P_FPREGS(%o0, %o1)		/* load V9 extra regs */
 	retl
-	ldx	[%o0 + FPU_FSR], %fsr		! restore fsr
+	ldx	[%o0 + FPU_FSR], %fsr		/* restore fsr */
 	SET_SIZE(fp_v8p_load)
 

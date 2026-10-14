@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"vforkx.s"
+	.file	"vforkx.S"
 
 #include "SYS.h"
 #include <assym.h>
@@ -53,7 +53,7 @@
  * and child can execute in a common address space without conflict.
  *
  * We block all blockable signals while performing the vfork() system call
- * trap.  This enables us to set curthread->ul_vfork safely, so that we
+ * trap. This enables us to set curthread->ul_vfork safely, so that we
  * don't end up in a signal handler with curthread->ul_vfork set wrong.
  */
 
@@ -92,7 +92,7 @@
 	/*
 	 * To determine if we are (still) a child of vfork(), the child
 	 * increments curthread->ul_vfork by one and the parent decrements
-	 * it by one.  If the result is zero, then we are not a child of
+	 * it by one. If the result is zero, then we are not a child of
 	 * vfork(), else we are.  We do this to deal with the case of
 	 * a vfork() child calling vfork().
 	 */

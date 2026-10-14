@@ -61,8 +61,8 @@ CSTD		= $(CSTD_GNU99)
 CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += $(CNOWARN_UNINIT)
 
-objs/%.o: $(MACH)/%.s
-	  $(COMPILE.s) -o $@ $<
+objs/%.o: $(MACH)/%.S
+	  $(COMPILE.s) -D_ASM -o $@ $<
 	  $(POST_PROCESS_O)
 
 objs/%.o: $(MACH)/%.c

@@ -1082,8 +1082,8 @@ sparcv9_C_PICFLAGS= $(sparcv9_C_BIGPICFLAGS)
 CFLAGS64 +=	$(EXTN_CFLAGS)
 CPPFLAGS=	-D_REENTRANT -Dsparc $(EXTN_CPPFLAGS) $(THREAD_DEBUG) \
 		-I$(LIBCBASE)/inc -I$(LIBCDIR)/inc $(CPPFLAGS.master)
-ASFLAGS=	$(EXTN_ASFLAGS) $(AS_BIGPICFLAGS) -D__STDC__ \
-		-D_ASM -D__sparcv9 $(CPPFLAGS) $(sparcv9_XARCH)
+ASFLAGS64=	$(AS_BIGPICFLAGS) -D_ASM \
+		$(CPPFLAGS) $(sparcv9_XARCH) -D__XOPEN_OR_POSIX=1
 
 # As a favor to the dtrace syscall provider, libc still calls the
 # old syscall traps that have been obsoleted by the *at() interfaces.
@@ -1132,6 +1132,10 @@ $(DYNLIB) := CRTN = crtn.o
 
 pics/_Qp%.o := CFLAGS64 += -I$(LIBCDIR)/$(MACH)/fp
 pics/_Q%.o := sparcv9_COPTFLAG = -xO4 -xchip=ultra
+
+pics/__quad_%.o: $(MACH64)/fp/%.S
+	$(BUILD.s)
+	$(POST_PROCESS_S_O)
 
 # large-file-aware components that should be built large
 

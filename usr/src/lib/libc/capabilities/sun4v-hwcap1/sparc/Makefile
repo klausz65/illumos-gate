@@ -25,7 +25,7 @@
 
 include		../Makefile.com
 
-ASFLAGS +=	-xarch=v8plus -I$(LIBCBASE)/$(MACH)
+ASFLAGS +=	-xarch=v8plusc -I$(LIBCBASE)/$(MACH)
 
 .KEEP_STATE:
 

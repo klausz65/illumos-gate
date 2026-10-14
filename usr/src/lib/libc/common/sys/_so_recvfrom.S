@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_recvfrom.s"
+	.file	"_so_recvfrom.S"
 
 /* C library -- __so_recvfrom					*/
 /*
