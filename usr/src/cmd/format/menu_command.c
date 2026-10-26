@@ -330,7 +330,7 @@ found:
 	 */
 	if (cur_disk->fdisk_part.numsect == 0) {
 		err_print("No Solaris fdisk partition found.\n");
-		goto exit;
+		return (0);
 	}
 #endif /* defined(_SUNOS_VTOC_16) */
 
@@ -347,7 +347,6 @@ found:
 			}
 		}
 	}
-exit:
 	return (0);
 }
 
