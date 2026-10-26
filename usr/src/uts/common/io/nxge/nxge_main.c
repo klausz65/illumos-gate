@@ -2417,6 +2417,17 @@ nxge_alloc_rx_mem_pool(p_nxge_t nxgep)
 	    "<== nxge_alloc_rx_mem_pool:status 0x%08x", status));
 
 	return (status);
+#if defined(sun4v) && defined(NIU_LP_WORKAROUND)
+nxge_alloc_rx_mem_pool_exit:
+	KMEM_FREE(num_chunks, sizeof (uint32_t) * rdc_max);
+	KMEM_FREE(dma_cntl_p,
+	    sizeof (p_nxge_dma_common_t) * rdc_max);
+	KMEM_FREE(dma_cntl_poolp, sizeof (nxge_dma_pool_t));
+	KMEM_FREE(dma_buf_p,
+	    sizeof (p_nxge_dma_common_t) * rdc_max);
+	KMEM_FREE(dma_poolp, sizeof (nxge_dma_pool_t));
+	return (status);
+#endif
 }
 
 /*
