@@ -73,7 +73,12 @@ $(CSH_PROG): $(COMMONOBJS) $(LOCALOBJS) $(MAPFILES)
 
 $(HDDEP): ../sh.tconst.h
 
-install: all $(ROOTBINPROG)  $(ROOTPROG)
+$(ROOTPROG) := INSLINKTARGET=../has/bin/$(PROG)
+
+$(ROOTPROG):
+	$(INS.symlink)
+
+install: all $(ROOTHASBINPROG)  $(ROOTPROG)
 
 clean:
 	$(RM) $(LOCALOBJS) $(COMMONOBJS)
