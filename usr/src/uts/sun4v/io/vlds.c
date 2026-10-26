@@ -942,7 +942,7 @@ vlds_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 			DS_DBG_VLDS(CE_NOTE, "%s: DOM_NAM2HDL vlds_get_string "
 			    "domain_name failed (%d)", __func__, rv);
 			return (EFAULT);
-		} else if (servicep == NULL) {
+		} else if (domain_name == NULL) {
 			DS_DBG_VLDS(CE_NOTE, "%s: DOM_NAM2HDL vlds_get_string "
 			    " domain_name is NULL", __func__);
 			return (EINVAL);
