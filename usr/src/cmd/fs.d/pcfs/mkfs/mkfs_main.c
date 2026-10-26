@@ -2357,6 +2357,7 @@ verify_bootblkfile(char *fn, boot_sector_t *bs)
 			(void) fprintf(stderr,
 			    gettext("Boot block (%s) bogus.\n"), fn);
 		}
+#ifndef	__sparc__
 		bs->bs.bs_front.bs_oem_name[0] = 'M';
 		bs->bs.bs_front.bs_oem_name[1] = 'S';
 		bs->bs.bs_front.bs_oem_name[2] = 'W';
@@ -2365,17 +2366,20 @@ verify_bootblkfile(char *fn, boot_sector_t *bs)
 		bs->bs.bs_front.bs_oem_name[5] = '4';
 		bs->bs.bs_front.bs_oem_name[6] = '.';
 		bs->bs.bs_front.bs_oem_name[7] = '1';
+#endif
 		/*
 		 * As we are storing Partition Boot Record, unset
 		 * pmbr built in stage2 lba and size.
 		 * We do this to stop mdb disk_label module to
 		 * try to interpret it.
 		 */
+#ifndef	__sparc__
 		if (*((uint64_t *)(bs->buf + STAGE1_STAGE2_LBA)) == 256 &&
 		    *((uint16_t *)(bs->buf + STAGE1_STAGE2_SIZE)) == 1) {
 			*((uint64_t *)(bs->buf + STAGE1_STAGE2_LBA)) = 0;
 			*((uint16_t *)(bs->buf + STAGE1_STAGE2_SIZE)) = 0;
 		}
+#endif
 	}
 	return (bsfd);
 }
