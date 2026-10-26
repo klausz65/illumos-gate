@@ -69,6 +69,7 @@
 ./usr/src/cmd/sort/convert.c
 ./usr/src/cmd/sort/invoke.c
 ./usr/src/lib/crypt_modules/sha256/test.c
+./usr/src/lib/efcode/fcode_test
 ./usr/src/lib/libkvm/common/test.c
 ./usr/src/lib/libsaveargs/tests/
 

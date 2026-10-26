@@ -88,6 +88,11 @@ UNSHIPPED_SUBDIRS =		\
 	vtfontcvt		\
 	zic
 
+sparc_SUBDIRS=			\
+	chk4ubin		\
+	stabs			\
+	tokenize
+
 i386_SUBDIRS=			\
 	cpcgen			\
 	elfextract		\
