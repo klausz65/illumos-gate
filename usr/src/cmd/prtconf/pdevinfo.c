@@ -1088,9 +1088,6 @@ prom_extract_u16(nvlist_t *nvl, const char *name, uint16_t *valp)
 	 * and SPARC as opposed to always translating into what 1275 wants of
 	 * big endian. It is unclear what'll happen for subsequent platforms.
 	 */
-#if !defined(__x86)
-#error "determine endianness of the platform's openprom interface"
-#endif
 	(void) memcpy(&u32, value, sizeof (u32));
 	if (u32 > UINT16_MAX) {
 		return (B_FALSE);
