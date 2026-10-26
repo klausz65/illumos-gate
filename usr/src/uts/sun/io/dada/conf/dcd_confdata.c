@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef _KERNEL
 
 #include <sys/dada/conf/autoconf.h>

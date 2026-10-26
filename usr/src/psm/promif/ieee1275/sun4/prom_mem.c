@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * This file contains platform-dependent memory support routines,
  * suitable for memory methods with 2-cell physical addresses.

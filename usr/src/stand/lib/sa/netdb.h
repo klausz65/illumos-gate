@@ -35,9 +35,6 @@
 #ifndef _SA_NETDB_H
 #define	_SA_NETDB_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
-
 /*
  * Exported interfaces for standalone's subset of libnsl's <netdb.h>.
  * All standalone code *must* use this header rather than libnsl's.

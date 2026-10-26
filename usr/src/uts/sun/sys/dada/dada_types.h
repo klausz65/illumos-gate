@@ -27,8 +27,6 @@
 #ifndef	_SYS_DADA_DADA_TYPES_H
 #define	_SYS_DADA_DADA_TYPES_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * The following are the types for the directly coupled disk subsystem.
  */

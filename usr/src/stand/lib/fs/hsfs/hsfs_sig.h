@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 static char *hsfs_sig_tab[] = {
 	SUSP_SP,
 	SUSP_CE,

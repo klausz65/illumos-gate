@@ -27,8 +27,6 @@
 #ifndef _SYS_SOFT_STATE_H
 #define	_SYS_SOFT_STATE_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * sun4v Hypervisor Guest State API
  */

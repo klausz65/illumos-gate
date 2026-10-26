@@ -26,8 +26,6 @@
 #ifndef _CPRBOOT_H
 #define	_CPRBOOT_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

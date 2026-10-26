@@ -26,8 +26,6 @@
 #ifndef _SYS_KDI_MACHIMPL_H
 #define	_SYS_KDI_MACHIMPL_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/modctl.h>
 #include <sys/types.h>
 

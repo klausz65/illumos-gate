@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-#ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * srt0.s - bootlst startup code
  */

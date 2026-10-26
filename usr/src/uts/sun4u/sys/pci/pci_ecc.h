@@ -27,8 +27,6 @@
 #ifndef	_SYS_PCI_ECC_H
 #define	_SYS_PCI_ECC_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/errorq.h>
 
 #ifdef	__cplusplus

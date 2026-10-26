@@ -27,8 +27,6 @@
 #ifndef _DR_CPU_H
 #define	_DR_CPU_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * CPU DR Control Protocol
  */

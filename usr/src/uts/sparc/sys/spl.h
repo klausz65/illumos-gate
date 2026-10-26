@@ -27,8 +27,6 @@
 #ifndef _SYS_SPL_H
 #define	_SYS_SPL_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI" /* from SunOS psl.h 1.2 */
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

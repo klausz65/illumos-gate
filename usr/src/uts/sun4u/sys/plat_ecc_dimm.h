@@ -27,8 +27,6 @@
 #ifndef	_SYS_PLAT_ECC_DIMM_H
 #define	_SYS_PLAT_ECC_DIMM_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

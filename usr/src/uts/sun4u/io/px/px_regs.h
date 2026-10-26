@@ -32,10 +32,6 @@
 extern "C" {
 #endif
 
-/* Register tools history */
-#pragma ident	"@(#)hdgen	1.3	03/11/10"
-#pragma	ident	"@(#)firedefiner.pl	1.7	03/11/19"
-
 /* jcs.csr  JCS module defines */
 
 #define	JCS_CSR_BASE	0x000000

@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#ident	"%Z%%M%	%I%	%E% SMI"
-
 #if defined(lint)
 
 typedef long *jmp_buf_ptr;

@@ -26,8 +26,6 @@
  * "buffered" i/o functions for the standalone environment. (ugh).
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/promif.h>
 #include <sys/varargs.h>

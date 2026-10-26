@@ -23,8 +23,6 @@
  * Copyright (c) 1987 Sun Microsystems, Inc.
  */
 
-#ident	"%Z%%M%	%I%	%E% SMI"
-
 	.file	"alloca.s"
 
 #include <sys/asm_linkage.h>

@@ -25,8 +25,6 @@
  * Standalone dhcp client.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/salib.h>
 #include <sys/bootconf.h>

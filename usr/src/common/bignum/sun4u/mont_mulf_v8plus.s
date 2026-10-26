@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 
 	.section	".text",#alloc,#execinstr
 	.file	"mont_mulf_asm_v8plus.s"

@@ -27,8 +27,6 @@
 #ifndef	_SYS_DADA_IMPL_TRANSPORT_H
 #define	_SYS_DADA_IMPL_TRANSPORT_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Include loadable module wrapper.
  */

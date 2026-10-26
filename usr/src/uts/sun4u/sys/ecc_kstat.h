@@ -28,8 +28,6 @@
 #ifndef	_SYS_ECC_KSTAT_H
 #define	_SYS_ECC_KSTAT_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

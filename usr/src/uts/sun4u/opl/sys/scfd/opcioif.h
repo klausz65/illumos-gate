@@ -25,8 +25,6 @@
 #ifndef	_SYS_OPCIOIF_H
 #define	_SYS_OPCIOIF_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif

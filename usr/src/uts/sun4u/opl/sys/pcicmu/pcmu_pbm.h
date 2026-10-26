@@ -26,8 +26,6 @@
 #ifndef	_SYS_PCMU_PBM_H
 #define	_SYS_PCMU_PBM_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <sys/dditypes.h>
 #include <sys/ontrap.h>

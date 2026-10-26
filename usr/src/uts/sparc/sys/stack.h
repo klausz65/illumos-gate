@@ -27,8 +27,6 @@
 #ifndef _SYS_STACK_H
 #define	_SYS_STACK_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #if !defined(_ASM)
 
 #include <sys/types.h>

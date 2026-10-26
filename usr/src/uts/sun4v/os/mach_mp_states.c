@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/cpuvar.h>
 #include <sys/cpu_module.h>
 #include <sys/machsystm.h>

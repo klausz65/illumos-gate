@@ -24,8 +24,6 @@
  * Use is subject to license terms.
  */
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/conf.h>
 #include <sys/sysmacros.h>
 #include <sys/async.h>

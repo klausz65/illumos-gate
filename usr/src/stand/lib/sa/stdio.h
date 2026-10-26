@@ -27,8 +27,6 @@
 #ifndef _SA_STDIO_H
 #define	_SA_STDIO_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/types.h>
 #include <stdarg.h>
 

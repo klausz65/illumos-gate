@@ -24,9 +24,6 @@
  * Use is subject to license terms.
  */
 
-/* from SunOS 4.1 */
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * modified for use by the boot program.
  *

@@ -27,8 +27,6 @@
 #ifndef _CNEX_H
 #define	_CNEX_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

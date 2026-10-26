@@ -26,8 +26,6 @@
 #ifndef	_SYS_SCSI_ADAPTERS_IFPIO_H
 #define	_SYS_SCSI_ADAPTERS_IFPIO_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * Include any headers you depend on.
  */

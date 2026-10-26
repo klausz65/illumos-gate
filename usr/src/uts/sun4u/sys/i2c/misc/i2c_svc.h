@@ -7,8 +7,6 @@
 #ifndef _I2C_SVC_H
 #define	_I2C_SVC_H
 
-#pragma ident	"%Z%%M%	%I%	%E% SMI"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
