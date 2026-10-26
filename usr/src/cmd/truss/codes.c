@@ -111,6 +111,10 @@
 #include "ramdata.h"
 #include "proto.h"
 
+#if defined(__sparcv9)
+#define	DKIOCSETEXTPART	(DKIOC|46)
+#endif
+
 #define	FCNTLMIN	F_DUPFD
 #define	FCNTLMAX	F_DUP3FD
 const char *const FCNTLname[] = {
