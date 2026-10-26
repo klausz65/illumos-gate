@@ -465,6 +465,7 @@ extern "C" {
 #define	_MAX_ALIGNMENT_TYPE		long double
 
 #define	_LONG_LONG_ALIGNMENT_32		_LONG_LONG_ALIGNMENT
+#define	_CACHE_LINE_SIZE		64
 
 /*
  * Define the appropriate "implementation choices"
