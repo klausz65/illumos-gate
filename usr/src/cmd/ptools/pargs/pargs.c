@@ -762,6 +762,9 @@ at_hwcap3(long val, char *instr, size_t n, char *str)
 #if defined(__i386) || defined(__amd64)
 	(void) elfcap_hw3_to_str(ELFCAP_STYLE_UC, val, str, n,
 	    ELFCAP_FMT_PIPSPACE, EM_386);
+#elif defined(__sparc) || defined(__sparcv9)
+	(void) elfcap_hw3_to_str(ELFCAP_STYLE_UC, val, str, n,
+	    ELFCAP_FMT_PIPSPACE, EM_SPARC);
 #else
 #error	"port me"
 #endif
