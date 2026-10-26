@@ -24,6 +24,7 @@
 #
 
 include		../Makefile.lib
+include		../Makefile.lib.64
 include		$(SRC)/lib/policykit/Makefile.policykit
 
 SUBDIRS =	libpolkit

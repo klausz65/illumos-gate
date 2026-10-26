@@ -30,6 +30,7 @@ PROG =	polkit-is-privileged
 SRCS =	$(PROG:%=%.c)
 
 include ../Makefile.cmd
+include ../Makefile.cmd.64
 include $(SRC)/lib/policykit/Makefile.policykit
 
 LDLIBS +=	-lpolkit $(POLICYKIT_GLIB_LDLIBS)
