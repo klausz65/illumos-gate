@@ -369,7 +369,7 @@ static int
 nxti(void)
 {
 	/* finds the next i */
-	int i, max, maxi;
+	int i, max, maxi = NOMORE;
 	max = 0;
 
 	for (i = 1; i <= nnonter; ++i)
