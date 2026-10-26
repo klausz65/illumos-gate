@@ -669,7 +669,9 @@ static hsvc_info_unix_t  hsvcinfo_unix[] = {
 	{{HSVC_REV_1, NULL,	HSVC_GROUP_REBOOT_DATA,	1,	0, NULL}, 0},
 };
 
-#define	HSVCINFO_UNIX_CNT	(sizeof (hsvcinfo_unix) / sizeof (hsvc_info_t))
+#define	HSVCINFO_UNIX_CNT \
+	(sizeof (hsvcinfo_unix) / (sizeof (hsvcinfo_unix[0])))
+
 static char	*hsvcinfo_unix_modname = "unix";
 
 /*
