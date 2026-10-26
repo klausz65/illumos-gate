@@ -182,7 +182,7 @@ static inline void dbgi_wr_addr3(adapter_t *adapter, u32 v1, u32 v2, u32 v3)
 	t1_write_reg_4(adapter, A_MC5_DBGI_REQ_ADDR2, v3);
 }
 
-static inline void dbgi_wr_data3(adapter_t *adapter, u32 v1, u32 v2, u32 v3)
+static void dbgi_wr_data3(adapter_t *adapter, u32 v1, u32 v2, u32 v3)
 {
 	t1_write_reg_4(adapter, A_MC5_DBGI_REQ_DATA0, v1);
 	t1_write_reg_4(adapter, A_MC5_DBGI_REQ_DATA1, v2);
