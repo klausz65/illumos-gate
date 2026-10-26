@@ -29,7 +29,11 @@ include ../../Makefile.cmd
 
 TARGETS		= library
 
-CPPFLAGS += -I../include
+INCLUDES += -I../include
+
+CPPFLAGS_i386	= $(INCLUDES)
+CPPFLAGS_sparc	= $(INCLUDES) -D__BIG_ENDIAN
+CPPFLAGS	+= $(CPPFLAGS_$(MACH))
 
 CERRWARN += $(CNOWARN_UNINIT)
 CCERRWARN += -_gcc=-Wno-switch
