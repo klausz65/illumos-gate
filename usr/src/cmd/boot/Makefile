@@ -23,6 +23,7 @@
 #
 
 include $(SRC)/cmd/Makefile.cmd
+include $(SRC)/cmd/Makefile.cmd.64
 
 .PARALLEL:
 
