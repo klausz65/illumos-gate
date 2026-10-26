@@ -25,14 +25,14 @@
 #
 
 include		../Makefile.lib
+include		../Makefile.lib.64
 
 HDRS=		libbe.h \
 		libbe_priv.h
 
 HDRDIR=		common
 
-SUBDIRS=	$(MACH)
-$(BUILD64)SUBDIRS += $(MACH64)
+SUBDIRS=	$(MACH64)
 
 all :=		TARGET= all
 clean :=	TARGET= clean
