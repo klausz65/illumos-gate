@@ -127,6 +127,9 @@ COMOBJS=			\
 	bcopy.o			\
 	bsearch.o		\
 	bzero.o			\
+	clzdi2.o		\
+	ctzdi2.o		\
+	popcountdi2.o		\
 	explicit_bzero.o	\
 	memccpy.o		\
 	memmem.o		\
@@ -602,7 +605,7 @@ PORTGEN=			\
 	tfind.o			\
 	time_data.o		\
 	time_gdata.o		\
-	timespec_get.o		\
+	timespec_cstd.o		\
 	tls_data.o		\
 	truncate.o		\
 	tsdalloc.o		\
@@ -630,21 +633,16 @@ PORTINET=			\
 	inet_pton.o
 
 PORTPRINT_W=			\
-	doprnt_w.o
+	doprnt_w.o		\
+	vwprintf.o
 
 PORTPRINT=			\
 	asprintf.o		\
 	doprnt.o		\
-	fprintf.o		\
-	printf.o		\
-	snprintf.o		\
-	sprintf.o		\
+	vdprintf.o		\
 	vfprintf.o		\
-	vprintf.o		\
 	vsnprintf.o		\
-	vsprintf.o		\
-	vwprintf.o		\
-	wprintf.o
+	vsprintf.o
 
 # Preserved solely to ease maintenance of 32-bit and 64-bit library builds
 # This macro should ALWAYS be empty; native APIs are already 'large file'.
@@ -719,6 +717,8 @@ PORTI18N=			\
 	putwchar.o		\
 	putws.o			\
 	strtows.o		\
+	wcslcat.o		\
+	wcslcpy.o		\
 	wcsnlen.o		\
 	wcstoimax.o		\
 	wcstol.o		\
@@ -981,6 +981,9 @@ PORTREGEX=			\
 
 VALUES=	values-Xa.o
 
+BITOBJS=			\
+	stdbit.o
+
 MOSTOBJS=			\
 	$(STRETS)		\
 	$(CRTOBJS)		\
@@ -1023,7 +1026,8 @@ MOSTOBJS=			\
 	$(SYSOBJS)		\
 	$(COMSYSOBJS64)		\
 	$(SYSOBJS64)		\
-	$(VALUES)
+	$(VALUES)		\
+	$(BITOBJS)
 
 TRACEOBJS=			\
 	plockstat.o
