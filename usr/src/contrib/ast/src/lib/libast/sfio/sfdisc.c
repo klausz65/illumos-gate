@@ -186,9 +186,7 @@ Sfdisc_t*	disc;
 
 	/* save old readf, writef, and seekf to see if stream need reinit */
 #define GETDISCF(func,iof,type) \
-	{ for(d = f->disc; d && !d->iof; d = d->disc) ; \
-	  func = d ? d->iof : NIL(type); \
-	}
+    {for(d = f->disc; d && !d->iof; d = d->disc); func = d ? d->iof : NIL(type);}
 	GETDISCF(oreadf,readf,Sfread_f);
 	GETDISCF(owritef,writef,Sfwrite_f);
 	GETDISCF(oseekf,seekf,Sfseek_f);
@@ -239,16 +237,11 @@ Sfdisc_t*	disc;
 	{	/* this stream may have to be reinitialized */
 		reg int	reinit = 0;
 #define DISCF(dst,iof,type)	(dst ? dst->iof : NIL(type)) 
-#define REINIT(oiof,iof,type) \
-		if(!reinit) \
-		{	for(d = f->disc; d && !d->iof; d = d->disc) ; \
-			if(DISCF(d,iof,type) != oiof) \
-				reinit = 1; \
-		}
-
-		REINIT(oreadf,readf,Sfread_f);
-		REINIT(owritef,writef,Sfwrite_f);
-		REINIT(oseekf,seekf,Sfseek_f);
+#define REINIT(oiof,iof,type) if(!reinit) \
+    {for(d = f->disc; d && !d->iof; d = d->disc); if(DISCF(d,iof,type) != oiof) reinit = 1;}
+	    REINIT(oreadf,readf,Sfread_f);
+	    REINIT(owritef,writef,Sfwrite_f);
+	    REINIT(oseekf,seekf,Sfseek_f);
 
 		if(reinit)
 		{	SETLOCAL(f);
