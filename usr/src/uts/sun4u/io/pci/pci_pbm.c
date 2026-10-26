@@ -138,6 +138,12 @@ pbm_create(pci_t *pci_p)
 	}
 
 	pbm_configure(pbm_p);
+
+	/*
+	 * Determine if we need to apply the Sun Fire 15k AXQ/PIO
+	 * workaround.
+	 */
+	pci_axq_pio_limit(pbm_p);
 }
 
 int

@@ -111,6 +111,7 @@ extern int plat_blacklist(int cmd, const char *scheme, nvlist_t *fmri,
     const char *class);
 
 extern caddr_t plat_startup_memlist(caddr_t alloc_base);
+extern int starcat_dr_name(char *name);
 
 #pragma	weak	plat_setprop_enter
 #pragma	weak	plat_setprop_exit
