@@ -26,7 +26,7 @@
 
 include ../Makefile.lib
 
-SUBDIRS = \
+common_SUBDIRS = \
 	libfmd_agent \
 	libdiagcode \
 	libdiskstatus \
@@ -40,8 +40,18 @@ SUBDIRS = \
 	libfmnotify \
 	topo
 
+sparc_SUBDIRS = \
+	libmdesc \
+	libldom
+
+i386_SUBDIRS =
+
+SUBDIRS = $(common_SUBDIRS) $($(MACH)_SUBDIRS)
+
+libldom: libmdesc libfmd_agent
+
 libfmd_snmp: libfmd_adm topo
 
-topo: libfmd_agent libdiskstatus
+topo: $($(MACH)_SUBDIRS) libfmd_agent libdiskstatus
 
 include ./Makefile.subdirs

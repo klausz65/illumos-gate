@@ -26,7 +26,6 @@
 #
 
 SUBDIRS =		\
-	dimm		\
 	disk		\
 	fac_prov_ahci	\
 	fac_prov_ipmi	\
@@ -37,11 +36,14 @@ SUBDIRS =		\
 	ses		\
 	smbios		\
 	usb		\
-	ufm		\
 	xfp
 
 ses:	disk
 
-.PARALLEL: $(SUBDIRS)
+SUBDIRS_i386 =		\
+	dimm		\
+	ufm
+
+.PARALLEL: $(SUBDIRS) $(SUBDIRS_$(MACH))
 
 include ../../../Makefile.subdirs
