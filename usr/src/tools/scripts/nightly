@@ -1708,6 +1708,22 @@ if [ -f $TMPDIR/nocompiler ]; then
 	exit 1
 fi
 
+# Find out which assembler was used to build the active compiler.
+# Show this detailed assembler information in the logfile.
+MYCC=`echo $PRIMARY_CC | nawk '{sub("^.*,/","/"); sub(",.*",""); print $0}'`
+ASUSED=`$MYCC -v 2>&1 | nawk '/^Configured/ {gsub("^.*--with-as=",""); gsub(" .*",""); print $0}'`
+if [ -n "$ASUSED" ]; then
+	echo "${ASUSED}:" | tee -a $build_environ_file >> $LOGFILE
+	case $ASUSED in
+		*gas*) $ASUSED --version 2>&1 | tee -a $build_environ_file >> $LOGFILE ;;
+		*) $ASUSED -V 2>&1 | head -1 | tee -a $build_environ_file >> $LOGFILE ;;
+	esac
+else
+	whence as | tee -a $build_environ_file >> $LOGFILE
+	as -V 2>&1 | head -1 | tee -a $build_environ_file >> $LOGFILE
+fi
+echo | tee -a $build_environ_file >> $LOGFILE
+
 # Check that we're running a capable link-editor
 whence ld | tee -a $build_environ_file >> $LOGFILE
 LDVER=`ld -V 2>&1`
