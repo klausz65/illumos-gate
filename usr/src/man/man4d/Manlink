@@ -13,6 +13,8 @@
 # Copyright 2025 Oxide Computer Company
 #
 
+dr.4d
+	drmach.4d
 fd.4d
 	fdc.4d
 ieee1394.4d

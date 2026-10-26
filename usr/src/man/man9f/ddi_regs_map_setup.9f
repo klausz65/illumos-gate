@@ -131,6 +131,7 @@ non-zero value is in the third tuple (\fIrnumber\fR \fB2\fR).
 For a full treatment of the meaning of the \fIreg\fR property for PCI
 devices, see \fBpci\fR(5). For PCI express devices, see \fBpcie\fR(5).
 For ISA devices, see \fBisa\fR(5). For cardbus, see \fBcardbus\fR(5).
+For SBus devices, see \fBsbus\fR(5).
 .SH RETURN VALUES
 \fBddi_regs_map_setup()\fR returns:
 .sp
@@ -190,7 +191,7 @@ c | c
 l | l .
 ATTRIBUTE TYPE	ATTRIBUTE VALUE
 _
-Architecture	PCI Local Bus, ISA
+Architecture	PCI Local Bus, SBus, ISA
 .TE
 
 .SH SEE ALSO
@@ -198,6 +199,7 @@ Architecture	PCI Local Bus, ISA
 .BR isa (5),
 .BR pci (5),
 .BR pcie (5),
+.BR sbus (5),
 .BR attributes (7),
 .BR ddi_regs_map_free (9F),
 .BR ddi_device_acc_attr (9S)

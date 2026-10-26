@@ -548,6 +548,24 @@ i386_MANFILES=			\
 		nvmeadm.8	\
 		pptadm.8	\
 		rdmsr.8
+sparc_MANFILES=			\
+		cvcd.8		\
+		dcs.8		\
+		device_remap.8	\
+		drd.8		\
+		efdaemon.8	\
+		fruadm.8	\
+		ldmad.8		\
+		monitor.8	\
+		nvmeadm.8	\
+		obpsym.8	\
+		oplhpd.8	\
+		prtdscp.8	\
+		prtfru.8	\
+		scadm.8		\
+		sckmd.8		\
+		sf880drd.8	\
+		vntsd.8
 
 MANFILES=	$(_MANFILES) $($(MACH)_MANFILES)
 
