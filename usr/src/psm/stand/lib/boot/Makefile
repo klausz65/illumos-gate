@@ -25,9 +25,8 @@
 #
 include ../../../../Makefile.master
 
-sparcv7_ARCHITECTURES = sparc
 sparcv9_ARCHITECTURES = sparcv9
-sparc_ARCHITECTURES = $(sparcv9_ARCHITECTURES) $(sparcv7_ARCHITECTURES)
+sparc_ARCHITECTURES = $(sparcv9_ARCHITECTURES)
 
 SUBDIRS = $($(MACH)_ARCHITECTURES)
 
