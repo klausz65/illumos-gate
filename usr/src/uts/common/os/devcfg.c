@@ -1586,6 +1586,7 @@ i_ndi_config_node(dev_info_t *dip, ddi_node_state_t state, uint_t flag)
 			 * locking needed.
 			 */
 			link_node(dip);
+			translate_devid((dev_info_t *)dip);
 			i_ddi_set_node_state(dip, DS_LINKED);
 			break;
 		case DS_LINKED:
