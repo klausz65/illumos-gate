@@ -10,12 +10,17 @@
  */
 /*
  * Copyright 2021 Tintri by DDN, Inc. All rights reserved.
+ * Copyright 2023 Klaus Ziegler
  */
 
 #include <sys/mdb_modapi.h>
 #include <mdb/mdb_ctf.h>
 #include <sys/types.h>
+#ifdef	__sparcv9
+#include <v9/sys/mutex_impl.h>
+#else
 #include <sys/mutex_impl.h>
+#endif
 #include <sys/rwlock_impl.h>
 #include <sys/zone.h>
 #include <sys/socket.h>
