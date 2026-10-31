@@ -342,7 +342,7 @@ xcppm_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 		ddi_report_dev(dip);
 		unitp->dip = dip;
 
-		if (retval = ppm_create_db(dip))
+		if ((retval = ppm_create_db(dip)))
 			return (retval);
 
 		/*
@@ -603,7 +603,7 @@ xcppm_gpio_port2(int action, uint8_t pos)
 #endif
 	xcppm_unit_t *unitp;
 	uint8_t data8, buf8;
-	uint8_t	ret;
+	uint8_t	ret = 0;
 
 	unitp = ddi_get_soft_state(ppm_statep, ppm_inst);
 	mutex_enter(&unitp->gpio_lock);
@@ -1359,6 +1359,9 @@ xcppm_lock_one(ppm_dev_t *ppmd, power_req_t *reqp, int *iresp)
 	case PMR_PPM_TRY_LOCK_POWER:
 		*iresp = pm_try_locking_power_single(ppmd->dip);
 		break;
+	default:
+		/* Only power-lock requests are handled here. */
+		break;
 	}
 }
 
@@ -1506,7 +1509,10 @@ xcppm_ctlops(dev_info_t *dip, dev_info_t *rdip,
 		ppmd = PPM_GET_PRIVATE(rdip);
 		if (ppmd)
 			domp = ppmd->domp;
-		else if (reqp->request_type != PMR_PPM_UNLOCK_POWER) {
+		else {
+			if (reqp->request_type == PMR_PPM_UNLOCK_POWER)
+				return (DDI_FAILURE);
+
 			domp = ppm_lookup_dev(rdip);
 			ASSERT(domp);
 			ppmd = ppm_get_dev(rdip, domp);
@@ -1669,6 +1675,13 @@ xcppm_iocset(uint8_t value)
 		action = XCPPM_SETBIT;
 	else if (value == PPM_IDEV_POWER_OFF)
 		action = XCPPM_CLRBIT;
+	else {
+		cmn_err(CE_WARN,
+		    "xcalppm: invalid power control value %u",
+		    (unsigned int)value);
+		return;
+	}
+
 	(void) xcppm_gpio_port2(action, DRVON);
 }
 
