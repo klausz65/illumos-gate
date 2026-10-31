@@ -1428,10 +1428,11 @@ dr_disconnect(dr_handle_t *hp)
 			continue;
 
 		cp = dr_get_cpu_unit(bp, i);
-		if (dr_disconnect_cpu(cp) == 0)
+		if (dr_disconnect_cpu(cp) == 0) {
 			dr_device_transition(&cp->sbc_cm, DR_STATE_EMPTY);
-		else if (cp->sbc_cm.sbdev_error != NULL)
+		} else if (cp->sbc_cm.sbdev_error != NULL) {
 			DRERR_SET_C(&hp->h_err, &cp->sbc_cm.sbdev_error);
+		}
 
 		ASSERT(cp->sbc_cm.sbdev_error == NULL);
 	}
@@ -1443,10 +1444,11 @@ dr_disconnect(dr_handle_t *hp)
 			continue;
 
 		mp = dr_get_mem_unit(bp, i);
-		if (dr_disconnect_mem(mp) == 0)
+		if (dr_disconnect_mem(mp) == 0) {
 			dr_device_transition(&mp->sbm_cm, DR_STATE_EMPTY);
-		else if (mp->sbm_cm.sbdev_error != NULL)
+		} else if (mp->sbm_cm.sbdev_error != NULL) {
 			DRERR_SET_C(&hp->h_err, &mp->sbm_cm.sbdev_error);
+		}
 
 		ASSERT(mp->sbm_cm.sbdev_error == NULL);
 	}
@@ -1458,10 +1460,11 @@ dr_disconnect(dr_handle_t *hp)
 			continue;
 
 		ip = dr_get_io_unit(bp, i);
-		if (dr_disconnect_io(ip) == 0)
+		if (dr_disconnect_io(ip) == 0) {
 			dr_device_transition(&ip->sbi_cm, DR_STATE_EMPTY);
-		else if (ip->sbi_cm.sbdev_error != NULL)
+		} else if (ip->sbi_cm.sbdev_error != NULL) {
 			DRERR_SET_C(&hp->h_err, &ip->sbi_cm.sbdev_error);
+		}
 
 		ASSERT(ip->sbi_cm.sbdev_error == NULL);
 	}
@@ -1603,6 +1606,8 @@ dr_dev_make_list(dr_handle_t *hp, sbd_comp_type_t type, int present_only,
 	default:
 		/* catch this in debug kernels */
 		ASSERT(0);
+		hp->h_err = DR_INTERNAL_ERROR();
+		nunits = 0;
 		break;
 	}
 
@@ -1614,7 +1619,7 @@ dr_dev_make_list(dr_handle_t *hp, sbd_comp_type_t type, int present_only,
 	*list++ = (dr_common_unit_t *)(uintptr_t)len;
 
 	/* get bit array signifying which units are to be involved */
-	uset = DEVSET_GET_UNITSET(hp->h_devset, type);
+	uset = (nunits != 0) ? DEVSET_GET_UNITSET(hp->h_devset, type) : 0;
 
 	/*
 	 * Adjust the loop count for CPU devices since all cores
@@ -2847,16 +2852,29 @@ dr_dev_found(void *data, const char *name, int unum, drmachid_t id)
 	    f, bp->b_num, name, unum, id);
 
 	nt = dr_dev_type_to_nt((char *)name);
-	if (nt == SBD_COMP_UNKNOWN) {
-		/*
-		 * this should not happen.  When it does, it indicates
-		 * a missmatch in devices supported by the drmach layer
-		 * vs devices supported by this layer.
-		 */
+	/*
+	 * Only CPU, memory and I/O components have entries in b_dev[].
+	 * Validate both the type and the unit number before indexing.
+	 */
+	switch (nt) {
+	case SBD_COMP_CPU:
+		if (unum < 0 || unum >= MAX_CPU_UNITS_PER_BOARD)
+			return (DR_INTERNAL_ERROR());
+		dp = DR_GET_BOARD_DEVUNIT(bp, SBD_COMP_CPU, unum);
+		break;
+	case SBD_COMP_MEM:
+		if (unum < 0 || unum >= MAX_MEM_UNITS_PER_BOARD)
+			return (DR_INTERNAL_ERROR());
+		dp = DR_GET_BOARD_DEVUNIT(bp, SBD_COMP_MEM, unum);
+		break;
+	case SBD_COMP_IO:
+		if (unum < 0 || unum >= MAX_IO_UNITS_PER_BOARD)
+			return (DR_INTERNAL_ERROR());
+		dp = DR_GET_BOARD_DEVUNIT(bp, SBD_COMP_IO, unum);
+		break;
+	default:
 		return (DR_INTERNAL_ERROR());
 	}
-
-	dp = DR_GET_BOARD_DEVUNIT(bp, nt, unum);
 
 	/* sanity check */
 	ASSERT(dp->du_common.sbdev_bp == bp);

@@ -99,8 +99,9 @@ dr_attach_io(dr_handle_t *hp, dr_common_unit_t *cp)
 	if (!err)
 		err = drmach_io_post_attach(cp->sbdev_id);
 
-	if (err)
+	if (err) {
 		DRERR_SET_C(&cp->sbdev_error, &err);
+	}
 }
 
 /*
