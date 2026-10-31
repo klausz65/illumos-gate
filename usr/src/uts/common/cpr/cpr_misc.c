@@ -437,7 +437,7 @@ cpr_check_spec_statefile(void)
 	ASSERT(cprconfig.cf_type == CFT_SPEC ||
 	    cprconfig.cf_type == CFT_ZVOL);
 
-	if (cprconfig.cf_devfs == NULL)
+	if (cprconfig.cf_devfs[0] == '\0')
 		return (ENXIO);
 
 	return (cpr_verify_statefile_path());
