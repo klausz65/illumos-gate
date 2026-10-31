@@ -1219,7 +1219,11 @@ int page_trycapture(page_t *pp, uint_t szc, uint_t flags, void *datap);
 void page_unlock_capture(page_t *pp);
 int page_capture_unretire_pp(page_t *);
 
+#ifdef	__sparc
+extern void page_coloring_init(void);
+#else
 extern size_t page_coloring_init(uint_t, int, int);
+#endif
 extern void page_coloring_setup(caddr_t);
 extern void page_set_colorequiv_arr(void);
 
