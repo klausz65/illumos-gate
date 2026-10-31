@@ -94,7 +94,11 @@ lockstat_enable(void *arg, dtrace_id_t id, void *parg)
 	lockstat_probemap[probe->lsp_probe] = id;
 	membar_producer();
 
+#ifdef __sparcv9
+	lockstat_hot_patch();
+#else
 	lockstat_hotpatch_probe(probe->lsp_probe);
+#endif
 	membar_producer();
 
 	/*
@@ -116,7 +120,11 @@ lockstat_disable(void *arg, dtrace_id_t id, void *parg)
 	ASSERT(lockstat_probemap[probe->lsp_probe]);
 
 	lockstat_probemap[probe->lsp_probe] = 0;
+#ifdef __sparcv9
+	lockstat_hot_patch();
+#else
 	lockstat_hotpatch_probe(probe->lsp_probe);
+#endif
 	membar_producer();
 
 	/*
