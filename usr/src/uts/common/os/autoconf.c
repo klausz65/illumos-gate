@@ -327,11 +327,16 @@ get_neighbors(dev_info_t *di, int flag)
 static void
 di_dfs(dev_info_t *devi, int (*f)(dev_info_t *, int), caddr_t arg)
 {
+    for (;;) {
 	(void) (*f)(devi, 0);
-	if (devi) {
-		di_dfs((dev_info_t *)DEVI(devi)->devi_child, f, arg);
-		di_dfs((dev_info_t *)DEVI(devi)->devi_sibling, f, arg);
-	}
+
+	if (devi == NULL)
+	    return;
+
+	di_dfs((dev_info_t *)DEVI(devi)->devi_child, f, arg);
+
+	devi = (dev_info_t *)DEVI(devi)->devi_sibling;
+    }
 }
 
 dev_info_t *
