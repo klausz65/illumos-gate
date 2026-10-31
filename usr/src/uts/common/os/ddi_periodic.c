@@ -177,7 +177,11 @@ periodic_execute(void *arg)
 	mutex_exit(&dpr->dpr_lock);
 }
 
+#if defined(__sparcv9)
+uint_t
+#else
 void
+#endif
 ddi_periodic_softintr(int level)
 {
 	ddi_periodic_impl_t *dpr;
@@ -198,6 +202,9 @@ ddi_periodic_softintr(int level)
 		mutex_enter(&periodics_lock);
 	}
 	mutex_exit(&periodics_lock);
+#if defined(__sparcv9)
+    return (1);
+#endif
 }
 
 void
