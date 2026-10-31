@@ -31,6 +31,8 @@ OBJECTS = $(LOCOBJS) $(CMNOBJS)
 
 include ../Makefile.com
 
+CSTD	= $(CSTD_GNU99)
+
 CMNDIR	= $(TOPDIR)/uts/common/rpc
 SRCS	= $(LOCOBJS:%.o=$(SRCDIR)/%.c) $(CMNOBJS:%.o=$(CMNDIR)/%.c)
 
