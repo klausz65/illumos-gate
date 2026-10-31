@@ -28,18 +28,19 @@ PROG=		prtdscp
 ROOTFS_PROG=	$(PROG)
 PLATFORM=	SUNW,SPARC-Enterprise
 
-CLASS=		32
+CLASS=		64
 SRCS=		$(PROG:%=%.c)
 OBJS=		$(PROG:%=%.o)
 
 include	../../../Makefile.cmd
+include	../../../Makefile.cmd.64
 include	../../../../Makefile.psm
 
 LDLIBS +=	-ldscp -lnsl
 
 CFLAGS +=	$(CCVERBOSE)
 
-LDFLAGS	+=	-L$(USR_PSM_LIB_DIR)
+LDFLAGS	+=	-L$(USR_PSM_LIB_DIR)/$(MACH64)
 LDFLAGS	+=	-R\$$ORIGIN/../lib
 
 LINT_FLAGS=	-c -Nlevel=4 -Ncheck $($(CONCURR_MODE)_FLAGS)

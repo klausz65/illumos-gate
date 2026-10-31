@@ -28,11 +28,12 @@
 MANIFEST=	dcs.xml
 
 include ../../../Makefile.cmd
+include ../../../Makefile.cmd.64
 include ../../../../Makefile.psm
 
 PROG=		dcs
 
-CLASS=		32
+CLASS=		64
 
 PLATFORM=	sun4u
 

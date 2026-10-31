@@ -40,9 +40,6 @@ CFLAGS +=	$(CCVERBOSE)
 .KEEP_STATE:
 
 # Defintions for installation of the library
-USR_PLAT_DIR		= $(ROOT)/usr/platform
-USR_PSM_DIR		= $(USR_PLAT_DIR)/SUNW,SPARC-Enterprise
-USR_PSM_LIB_DIR		= $(USR_PSM_DIR)/lib
 ROOTLIBDIR=		$(USR_PSM_LIB_DIR)
 
 $(ROOTLIBDIR):
