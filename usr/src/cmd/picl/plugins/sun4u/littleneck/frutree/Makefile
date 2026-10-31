@@ -33,6 +33,7 @@ include $(SRC)/Makefile.psm
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 include $(SRC)/cmd/picl/plugins/Makefile.com
 
@@ -54,7 +55,7 @@ CLOBBERFILES += $(LIBLINKS)
 CPPFLAGS +=	-I$(SRC)/lib/libdevfsevent -I$(SRC)/uts/common
 CPPFLAGS +=	-D_REENTRANT
 
-CFLAGS +=	$(CCVERBOSE)
+CFLAGS64 +=	$(CCVERBOSE)
 DEVTREE_SRC_DIR = $(SRC)/cmd/picl/plugins/common/devtree
 LDLIBS +=       -L$(DEVTREE_SRC_DIR)
 LDLIBS +=       -L$(ROOT)/usr/lib/picl/plugins

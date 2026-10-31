@@ -31,6 +31,7 @@ OBJECTS=	piclfrutree.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 include $(SRC)/cmd/picl/plugins/Makefile.com
 
@@ -44,7 +45,7 @@ CLOBBERFILES += $(LIBLINKS)
 
 CPPFLAGS +=	-I../devtree
 CPPFLAGS +=	-I$(SRC)/cmd/picl/plugins/lib/picld_pluginutil
-CFLAGS +=	$(CCVERBOSE) $(C_PICFLAGS)
+CFLAGS64 +=	$(CCVERBOSE) $(C_PICFLAGS)
 LDLIBS +=	-L$(SRC)/lib/libpicltree/$(MACH)
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/lib/picld_pluginutil/$(MACH)
 LDLIBS +=	-L../devtree

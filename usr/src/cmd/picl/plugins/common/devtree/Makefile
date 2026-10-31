@@ -34,6 +34,7 @@ OBJECTS=	picldevtree.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 include $(SRC)/cmd/picl/plugins/Makefile.com
 

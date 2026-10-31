@@ -22,6 +22,7 @@
 #
 # Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+# Copyright 2026 Klaus Ziegler
 #
 
 #
@@ -33,9 +34,13 @@ MANIFEST=	drd.xml
 SVCMETHOD=	svc-drd
 
 include ../Makefile.cmd
+include ../Makefile.cmd.64
 include ../../Makefile.psm
 
-CLASS=		32
+sparcv9_XARCH += -xarch=sparcvis2
+LDFLAGS +=	-m64
+
+CLASS =	64
 
 PLATFORM=	sun4v
 
@@ -46,9 +51,6 @@ SRCS=		drd.c		\
 HDRS=		drd.h
 
 OBJS=		$(SRCS:%.c=%.o)
-
-LINT_SRCS=	$(SRCS)
-LINT_FILES=	$(LINT_SRCS:%.c=%.ln)
 
 ROOTCMDDIR=		$(ROOTLIB)/ldoms
 ROOTMANIFESTDIR=	$(ROOTSVCPLATFORMSUN4V)
@@ -85,9 +87,6 @@ $(PROG): $(OBJS) $(HDRS)
 install: all .WAIT $(ROOTCMD) $(ROOTMANIFEST) $(ROOTSVCMETHOD)
 
 check:	$(CHKMANIFEST)
-
-lint:
-	$(LINT) $(LINT_FLAGS) $(CPPFLAGS) $(LINT_SRCS)
 
 clean:
 	$(RM) $(PROG) $(OBJS) $(LINT_FILES)

@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <pthread.h>
@@ -855,5 +856,5 @@ fcal_leds_thread(void *args)
 		}
 	}
 
-	return ((void *)err);
+	return ((void *)(uintptr_t)errno);
 }

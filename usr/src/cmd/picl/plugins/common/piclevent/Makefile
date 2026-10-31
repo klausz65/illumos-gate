@@ -30,13 +30,14 @@ OBJECTS=	piclevent.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 include $(SRC)/cmd/picl/plugins/Makefile.com
 
 MODULES = picl_slm.so
 MOD_SRCS = picl_slm.c
 MOD_OBJS = picl_slm.o
-MOD_LDLIBS = -L$(ROOT)/usr/lib -lsysevent -lnvpair -lc $(LDSTACKPROTECT)
+MOD_LDLIBS = -L$(ROOT)/usr/lib/$(MACH64) -lsysevent -lnvpair -lc $(LDSTACKPROTECT)
 
 # sysevent SLM dirs
 SYSEVENT = sysevent
@@ -60,10 +61,10 @@ CLOBBERFILES += $(MODULES)
 
 CPPFLAGS +=	-I$(SRC)/lib/libsysevent -I$(SRC)/uts/sun
 
-CFLAGS +=	$(CCVERBOSE) $(C_PICFLAGS)
+CFLAGS64 +=	$(CCVERBOSE) $(C_PICFLAGS)
 CPPFLAGS +=	-D_REENTRANT
 LDFLAGS +=	$(BDIRECT)
-LDLIBS +=	-L$(SRC)/lib/libsysevent -L$(SRC)/lib/libpicltree/$(MACH)
+LDLIBS +=	-L$(SRC)/lib/libsysevent -L$(SRC)/lib/libpicltree/$(MACH64)
 LDLIBS +=	-lc -lpicltree -lnvpair
 
 .KEEP_STATE:

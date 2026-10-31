@@ -3482,6 +3482,92 @@ add_root_props(picl_nodehdl_t rooth)
 	return (err);
 }
 
+/*
+ * PICL plugin initialization constraints.  Only installed plugins take
+ * part in ordering; an absent predecessor does not block initialization.
+ */
+typedef struct picltree_plugin_dep {
+        const char *before;
+        const char *after;
+} picltree_plugin_dep_t;
+
+static const picltree_plugin_dep_t picltree_plugin_deps[] = {
+        { "SUNW_picldevtree", "SUNW_piclmemcfg" },
+        { "SUNW_picldevtree", "SUNW_piclenvd" },
+        { "SUNW_picldevtree", "SUNW_piclenvmon" },
+        { "SUNW_picldevtree", "SUNW_piclfrutree" },
+        { "SUNW_piclmemcfg",  "SUNW_piclfrutree" },
+        { "SUNW_piclenvd",    "SUNW_piclfrutree" },
+        { "SUNW_piclenvmon",  "SUNW_piclfrutree" },
+        { "SUNW_piclfrutree", "SUNW_MPXU_frudr" }
+};
+
+#define PICLTREE_NPLUGIN_DEPS (sizeof (picltree_plugin_deps) / \
+    sizeof (picltree_plugin_deps[0]))
+
+/*
+ * A plugin can be initialized once none of its predecessors remain
+ * in the pending list.
+ */
+static int
+picltree_plugin_ready(picld_plugin_reg_list_t *node,
+    picld_plugin_reg_list_t *pending)
+{
+        picld_plugin_reg_list_t *p;
+        size_t i;
+
+        for (i = 0; i < PICLTREE_NPLUGIN_DEPS; i++) {
+                if (strcmp(node->reg.name,
+                    picltree_plugin_deps[i].after) != 0)
+                        continue;
+
+                for (p = pending; p != NULL; p = p->next) {
+                        if (strcmp(p->reg.name,
+                            picltree_plugin_deps[i].before) == 0)
+                                return (0);
+                }
+        }
+
+        return (1);
+}
+
+/*
+ * Stable, allocation-free topological ordering of plugin registrations.
+ * The same list is finalized in reverse order by plugin_fini().
+ */
+static void
+picltree_sort_plugins(void)
+{
+        picld_plugin_reg_list_t *pending = plugin_reg_list;
+        picld_plugin_reg_list_t *ordered = NULL;
+        picld_plugin_reg_list_t *node;
+        picld_plugin_reg_list_t **pp;
+        picld_plugin_reg_list_t **tail = &ordered;
+
+        while (pending != NULL) {
+                for (pp = &pending; *pp != NULL; pp = &(*pp)->next) {
+                        if (picltree_plugin_ready(*pp, pending))
+                                break;
+                }
+
+                if (*pp == NULL) {
+                        /* Preserve every registration if rules form a cycle. */
+                        syslog(LOG_WARNING,
+                            "PICL: cyclic plugin dependencies");
+                        *tail = pending;
+                        break;
+                }
+
+                node = *pp;
+                *pp = node->next;
+                node->next = NULL;
+                *tail = node;
+                tail = &node->next;
+        }
+
+        plugin_reg_list = ordered;
+}
+
 static int
 construct_picltree(void)
 {
@@ -3506,8 +3592,9 @@ construct_picltree(void)
 		return (err);
 
 	/*
-	 * Initialize the registered plug-in modules
+	 * Initialize the registered plug-in modules in dependency order.
 	 */
+	picltree_sort_plugins();
 	iter = plugin_reg_list;
 	while (iter != NULL) {
 		if (iter->reg.plugin_init)

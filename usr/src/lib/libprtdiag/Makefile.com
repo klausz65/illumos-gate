@@ -22,6 +22,7 @@
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 # Copyright 2020 Peter Tribble.
+# Copyright 2026 Klaus Ziegler.
 #
 
 #
@@ -35,6 +36,7 @@ LIBRARY		= libprtdiag.a
 VERS		= .1
 
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 include $(SRC)/Makefile.psm
 
 CSTD		= $(CSTD_GNU99)

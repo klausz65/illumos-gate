@@ -33,6 +33,7 @@ OBJECTS=	piclmemcfg.o
 
 # include library definitions
 include	$(SRC)/lib/Makefile.lib
+include	$(SRC)/lib/Makefile.lib.64
 
 ROOT_PLATFORM = $(USR_PLAT_DIR)/SUNW,Sun-Blade-100
 
@@ -45,7 +46,7 @@ LIBS =		$(DYNLIB)
 ROOTLIBDIR	= $(ROOT_PLAT_PLUGINDIR)
 
 CPPFLAGS +=	-I$(SRC)/cmd/picl/plugins/common/memcfg
-CFLAGS +=	$(CCVERBOSE)
+CFLAGS64 +=	$(CCVERBOSE)
 LDLIBS +=	-L$(SRC)/lib/libpicltree/$(MACH)
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/common/devtree
 LDLIBS +=	-L$(ROOT)/usr/lib/picl/plugins

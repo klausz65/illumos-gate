@@ -22,9 +22,11 @@
 #
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+# Copyright 2026 Klaus Ziegler.
 #
 
 include $(SRCDIR)/../Makefile.cmd
+include $(SRCDIR)/../Makefile.cmd.64
 include $(SRCDIR)/../../Makefile.psm
 
 PROG		= prtdiag

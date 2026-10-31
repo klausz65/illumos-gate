@@ -22,8 +22,6 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# ident	"%Z%%M%	%I%	%E% SMI"
-#
 
 #
 # Common prologue for Makefiles for all sysevent loadable .so modules
@@ -33,6 +31,7 @@ SRCS =		$(LIBRARY:%=%.c)
 OBJECTS =	$(LIBRARY:%=%.o)
 
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 include $(SRC)/cmd/syseventd/Makefile.com
 
 SRCDIR =	.

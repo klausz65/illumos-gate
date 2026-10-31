@@ -23,8 +23,6 @@
 # Use is subject to license terms.
 #
 #
-# ident	"%Z%%M%	%I%	%E% SMI"
-#
 # cmd/picl/plugins/sun4u/schumacher/Makefile
 #
 

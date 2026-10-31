@@ -33,6 +33,7 @@ OBJECTS=	libfruaccess.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 ROOT_PLATFORM = $(USR_PLAT_DIR)/SUNW,Netra-T12
 
@@ -47,7 +48,7 @@ LIBS =		$(DYNLIB)
 
 ROOTLIBDIR	= $(ROOT_PLAT_LIBDIR)
 
-CFLAGS +=	$(CCVERBOSE)
+CFLAGS64 +=	$(CCVERBOSE)
 CPPFLAGS +=	-I$(SRC)/uts/sun4u/lw8
 CPPFLAGS +=	-I$(SRC)/cmd/picl/plugins/sun4u/lib/fruaccess
 DYNFLAGS +=	-R/usr/platform/\$$PLATFORM/lib/picl/plugins:/usr/platform/sun4u/lib/picl/plugins:/usr/lib/picl/plugins

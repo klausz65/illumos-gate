@@ -25,9 +25,10 @@
 
 include ../Makefile.com
 
+
 .KEEP_STATE:
 
-all: $(ROOTLIBDIR) $(LIBS) $(LIBLINKS)
+all: $(ROOTLIBDIR64) $(LIBS) $(LIBLINKS64)
 
 $(LIBLINKS):
 	$(RM) $@; $(SYMLINK) $(DYNLIB) $@
@@ -35,4 +36,4 @@ $(LIBLINKS):
 $(ROOTLIBDIR):
 	$(INS.dir)
 
-install: all $(ROOTLIBS) $(ROOTLINKS)
+install: all $(ROOTLIBS64) $(ROOTLINKS64)

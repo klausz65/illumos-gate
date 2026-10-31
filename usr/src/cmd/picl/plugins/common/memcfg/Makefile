@@ -32,6 +32,7 @@ OBJECTS=	piclmemcfg_comm.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 include $(SRC)/cmd/picl/plugins/Makefile.com
 
@@ -40,7 +41,7 @@ LIBS =		$(DYNLIB)
 ROOTLIBDIR =	$(USR_LIB_PLUGINDIR)
 
 CPPFLAGS +=	-I$(SRC)/uts/sun4u/sys -I$(SRC)/cmd/picl/plugins/common/memcfg
-CFLAGS +=	$(CCVERBOSE) $(C_PICFLAGS)
+CFLAGS64 +=	$(CCVERBOSE) $(C_PICFLAGS)
 
 LDLIBS +=	-lc -lpicltree -lnvpair
 

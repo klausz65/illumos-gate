@@ -25,8 +25,6 @@
  */
 
 /*
- * ident	"%Z%%M%	%I%	%E% SMI"
- *
  * This file creates device tables for all of the fru's in the system
  * (except for hard disk drives and power supplies.)  Each table contains
  * one or more rows of devices, each with a reference to a particular
@@ -35,15 +33,6 @@
  * This file will be #included by piclfrutree.info.  It should be included
  * after the frutree and system hierarchies are defined.
  */
-
-/*
- * define a macro to force a #ident line into the output stream
- * otherwise cpp removes it. Use #ifndef because of #included definitions.
- */
-#ifndef id
-#define	id(s)	#ident s
-#endif
-id("%Z%%M% %I%     %E% SMI")
 
 /*
  * add a Devices table to DVD

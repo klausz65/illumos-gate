@@ -51,7 +51,7 @@
 		grouping='require_all'
 		restart_on='none'
 		type='path'>
-		<service_fmri value='file://localhost/usr/platform/SUNW,SPARC-Enterprise/lib/sparcv9/oplhpd' />
+		<service_fmri value='file://localhost/usr/platform/SUNW,SPARC-Enterprise/lib/oplhpd' />
 	</dependency>
 
 	<!--

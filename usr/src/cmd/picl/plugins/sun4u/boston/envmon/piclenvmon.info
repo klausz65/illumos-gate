@@ -23,8 +23,6 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
- * ident	"%Z%%M%	%I%	%E% SMI"
- *
  * This configuration file is parsed by PICL plugin envmon after
  * it has established rmclomv nodes in /platform
  *
@@ -58,15 +56,6 @@
  * the default is "name:"
  *
  */
-
-/*
- * define a macro to force a #ident line into the output stream
- * otherwise cpp removes it. Use #ifndef because of #included definitions.
- */
-#ifndef id
-#define	id(s)	#ident s
-#endif
-id("%Z%%M%	%I%	%E% SMI")
 
 VERSION 1.1
 VERBOSE 1

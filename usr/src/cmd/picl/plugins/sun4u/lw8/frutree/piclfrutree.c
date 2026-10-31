@@ -4058,5 +4058,5 @@ disk_leds_thread(void *args)
 		}
 		(void) pthread_mutex_unlock(&g_mutex);
 	}
-	return ((void *)err);
+	return ((void *)(intptr_t)err);
 }

@@ -1782,7 +1782,7 @@ ovtemp_thr(void *args)
 {
 	int	fd;
 	uint8_t stat[2];
-	int	hwm_id = (int)args;
+	int	hwm_id = (int)(intptr_t)args;
 	int    err;
 	env_fan_t *fanp;
 	timespec_t	to;
@@ -2258,7 +2258,7 @@ envd_setup(void)
 
 	if (ovtemp_monitor && ovtemp_thr1_created == B_FALSE) {
 		if (pthread_create(&ovtemp_thr1_id, &thr_attr, ovtemp_thr,
-		    (void *)CPU_HWM_ID) != 0)
+		    (void *)(intptr_t)CPU_HWM_ID) != 0)
 			envd_log(LOG_ERR, ENVTHR_THREAD_CREATE_FAILED);
 		else
 			ovtemp_thr1_created = B_TRUE;
@@ -2266,7 +2266,7 @@ envd_setup(void)
 
 	if (ovtemp_monitor && ovtemp_thr2_created == B_FALSE) {
 		if (pthread_create(&ovtemp_thr2_id, &thr_attr, ovtemp_thr,
-		    (void *)SYS_HWM_ID) != 0)
+		    (void *)(intptr_t)SYS_HWM_ID) != 0)
 			envd_log(LOG_ERR, ENVTHR_THREAD_CREATE_FAILED);
 		else
 			ovtemp_thr2_created = B_TRUE;

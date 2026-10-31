@@ -21,6 +21,7 @@
 #
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+# Copyright 2026 Klaus Ziegler
 #
 
 #
@@ -45,9 +46,7 @@ ROOTMANIFESTDIR = $(ROOTSVCPLATFORMSUN4U)
 CPPFLAGS += -I$(SRC)/uts/sun4u/opl
 LDLIBS64 += -lsysevent -lnvpair -lcfgadm -ldevinfo
 
-CERRWARN += -_gcc=-Wno-unused-variable
-
-PSMPROG = $(USR_PSM_LIB64_DIR)/$(PROG)
+PSMPROG = $(USR_PSM_LIB_DIR)/$(PROG)
 
 $(PSMPROG) :=	FILEMODE = 0755
 
@@ -77,10 +76,7 @@ $(USR_PSM_DIR):	$(USR_PLAT_DIR)
 $(USR_PSM_LIB_DIR):	$(USR_PSM_DIR)
 	-$(INS.dir)
 
-$(USR_PSM_LIB64_DIR):	$(USR_PSM_LIB_DIR)
-	-$(INS.dir)
-
-$(USR_PSM_LIB64_DIR)/%: % $(USR_PSM_LIB64_DIR)
+$(USR_PSM_LIB_DIR)/%: % $(USR_PSM_LIB_DIR)
 	$(INS.file)
 
 include ../Makefile.targ

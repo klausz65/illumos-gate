@@ -32,6 +32,7 @@ OBJECTS =	piclfrudr.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 ROOT_PLATFORM = $(USR_PLAT_DIR)/SUNW,Sun-Fire-V240
 
@@ -75,7 +76,7 @@ CPPFLAGS +=	-I$(SRC)/uts/sun4u/mpxu
 CPPFLAGS +=	-I$(SRC)/uts/sun4u/ -I$(SRC)/uts/common/
 CPPFLAGS +=	-I$(SRC)/uts/sun4u/sys/i2c/clients
 
-CFLAGS +=	$(CCVERBOSE)
+CFLAGS64 +=	$(CCVERBOSE)
 
 DYNFLAGS +=	-R/usr/platform/\$$PLATFORM/lib/picl/plugins
 DYNFLAGS +=	-R/usr/platform/sun4u/lib/picl/plugins:/usr/lib/picl/plugins
