@@ -49,8 +49,8 @@ extern "C" {
 
 extern void debug_enter(char *);
 
-static int debug_info = 1;
-static int debug_print_level = 0;
+static int debug_info __attribute__((unused)) = 1;
+static int debug_print_level __attribute__((unused)) = 0;
 
 #define	PRINT_LINE_NUMBER	0x1
 #define	ENTER_MON		0x2
