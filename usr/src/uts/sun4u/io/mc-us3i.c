@@ -955,6 +955,11 @@ get_row_shift(int row_index, struct dgrp_info *dgrp)
 		/* 512 and 1Gb devices have same bank select mask */
 		shift = ADDR_GEN_512Mb_X8_ROW_0;
 		break;
+	default:
+		cmn_err(CE_WARN,
+		    "mc-us3i: unsupported base_device %d",
+		    dgrp->base_device);
+		return (-1);
 	}
 
 	if (dgrp->part_type == PART_TYPE_X4)
@@ -1024,6 +1029,14 @@ mc_add_xor_banks(struct mctrl_info *mctrl,
 
 	get_device_select(interleave, dgrp, &ds_shift, &bs_shift);
 
+	if (ds_shift < 0 || ds_shift >= 64 ||
+	    (dgrp->nlogbanks == 2 &&
+	    (bs_shift < 0 || bs_shift >= 64))) {
+		cmn_err(CE_WARN,
+		    "mc-us3i: invalid DIMM bank select configuration");
+		return;
+	}
+
 	mask |= (ds_shift == -1 ? 0 : (1ULL << ds_shift));
 	mask |= (bs_shift == -1 ? 0 : (1ULL << bs_shift));
 
@@ -1088,6 +1101,14 @@ mc_add_dgrp_banks(uint64_t bankid, uint64_t dgrpid,
 	}
 
 	get_device_select(interleave, dgrp, &ds_shift, &bs_shift);
+
+	if (ds_shift < 0 || ds_shift >= 64 ||
+	    (dgrp->nlogbanks == 2 &&
+	    (bs_shift < 0 || bs_shift >= 64))) {
+		cmn_err(CE_WARN,
+		    "mc-us3i: invalid DIMM bank select configuration");
+		return (0);
+	}
 
 	mask |= (ds_shift == -1 ? 0 : (1ULL << ds_shift));
 	mask |= (bs_shift == -1 ? 0 : (1ULL << bs_shift));
@@ -1392,7 +1413,7 @@ mc_delete(int mc_id)
 
 		for (j = 0; j < NDIMMS_PER_DGRP; j++) {
 			devid = dgrpid * NDIMMS_PER_DGRP + j;
-			if (devp = mc_node_get(devid, device_head)) {
+			if ((devp = mc_node_get(devid, device_head))) {
 				mc_node_del((mc_dlist_t *)devp,
 				    &device_head, &device_tail);
 				kmem_free(devp, sizeof (*devp));
