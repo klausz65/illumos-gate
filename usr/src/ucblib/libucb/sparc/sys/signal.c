@@ -334,8 +334,8 @@ ucbsigvechandler(int sig, siginfo_t *sip, ucontext_t *ucp)
 void
 __sigcleanup(struct sigcontext *scp)
 {
-	ucontext_t uc, *ucp;
-	int sig;
+	ucontext_t uc, *volatile ucp;
+	volatile int sig;
 
 	/*
 	 * If there's a pointer to a ucontext_t hiding in the sigcontext,
