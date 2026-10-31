@@ -987,7 +987,7 @@ cpr_write(vnode_t *vp, caddr_t buffer, size_t size)
 
 		wbytes = dbtob(cpr_file_bn + cpr_buf_blocks);
 		if (vp->v_type == VBLK) {
-			if (wbytes > cpr_dev_space)
+			if (wbytes > cpr_dev_space + CPR_SPEC_OFFSET)
 				return (ENOSPC);
 		} else {
 			if (wbytes > VTOI(vp)->i_size)
@@ -1035,6 +1035,15 @@ cpr_flush_write(vnode_t *vp)
 	 * disk block
 	 */
 	nblk = btod(cpr_wptr - cpr_buf);
+
+	/*
+	 * Check the final write against the block device size.
+	 * cpr_dev_space excludes CPR_SPEC_OFFSET.
+	 */
+	if (vp->v_type == VBLK &&
+	    dbtob(cpr_file_bn + nblk) >
+	    cpr_dev_space + CPR_SPEC_OFFSET)
+		return (ENOSPC);
 
 	do_polled_io = 1;
 	error = VOP_DUMP(vp, (caddr_t)cpr_buf, cpr_file_bn, nblk, NULL);
