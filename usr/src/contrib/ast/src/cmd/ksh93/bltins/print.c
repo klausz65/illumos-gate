@@ -176,9 +176,10 @@ int    b_print(int argc, char *argv[], Shbltin_t *context)
 	const char *options, *msg = e_file+4;
 	char *format = 0;
 	int sflag = 0, nflag=0, rflag=0, vflag=0;
-	Optdisc_t disc;
-	disc.version = OPT_VERSION;
-	disc.infof = infof;
+	static Optdisc_t disc = {
+		.version = OPT_VERSION,
+		.infof = infof
+	};
 	opt_info.disc = &disc;
 	if(argc>0)
 	{
