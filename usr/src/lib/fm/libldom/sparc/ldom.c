@@ -210,7 +210,7 @@ get_local_md_prop_value(ldom_hdl_t *lhp, char *node, char *prop, uint64_t *val)
 	if ((bufsiz = get_local_core_md(lhp, &bufp)) > 0) {
 		md_t *mdp;
 
-		if (mdp = md_init_intern(bufp, lhp->allocp, lhp->freep)) {
+		if ((mdp = md_init_intern(bufp, lhp->allocp, lhp->freep))) {
 			int num_nodes;
 			mde_cookie_t *listp;
 

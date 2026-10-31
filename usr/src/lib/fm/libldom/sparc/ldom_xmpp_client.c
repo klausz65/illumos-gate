@@ -353,7 +353,7 @@ xmpp_client_thr(void *data)
 
 		/* keep making a connection until successfully */
 		do {
-			if (rc = xmpp_connect(&conn))
+			if ((rc = xmpp_connect(&conn)))
 				(void) sleep(XMPP_SLEEP);
 		} while (rc != 0 && xmpp_enable);
 
@@ -397,7 +397,7 @@ xmpp_client_thr(void *data)
 			cnt = ioread(&conn, buf, XMPP_BUF_SIZE);
 			if (cnt <= 0)
 				break;
-			if (rc = xmlParseChunk(conn.parser, buf, cnt, 0)) {
+			if ((rc = xmlParseChunk(conn.parser, buf, cnt, 0))) {
 				conn.state = CONN_STATE_FAILURE;
 			}
 

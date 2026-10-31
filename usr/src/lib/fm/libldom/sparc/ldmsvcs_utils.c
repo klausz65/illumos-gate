@@ -862,7 +862,7 @@ ds_handle_reg_req(struct ldmsvcs_info *lsp, void *buf, size_t len)
 	/*
 	 * Service must be NULL terminated
 	 */
-	if (req->svc_id == NULL || strlen(req->svc_id) == 0 ||
+	if (req->svc_id[0] == '\0' ||
 	    msg[strlen(req->svc_id)] != '\0') {
 		channel_close(lsp);
 		return;
