@@ -134,7 +134,8 @@ pt_regs(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 
 #if defined(__sparc) && defined(_ILP32)
 	static const uint32_t zero[8] = { 0 };
-	prxregset_t xrs;
+	prxregset_t *xrs = NULL;
+	size_t xregsize = 0;
 #endif
 
 #define	GETREG2(x) ((uintptr_t)grs[(x)]), ((uintptr_t)grs[(x)])
@@ -177,17 +178,25 @@ pt_regs(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 	 * If we are debugging a 32-bit SPARC process on an UltraSPARC CPU,
 	 * the globals and outs can have 32 upper bits hiding in the xregs.
 	 */
-	if (PTL_GETXREGS(t, tid, &xrs) == 0 && xrs.pr_type == XR_TYPE_V8P) {
+	if (PTL_GETXREGS(t, tid, &xrs, &xregsize) == 0) {
+	    if (xrs != NULL && xregsize >= sizeof (*xrs) &&
+		xrs->pr_type == XR_TYPE_V8P) {
 		for (i = 0; i < 8; i++) {
-			xgregs[i] |= (uint64_t)
-			    xrs.pr_un.pr_v8p.pr_xg[XR_G0 + i] << 32;
-			xoregs[i] |= (uint64_t)
-			    xrs.pr_un.pr_v8p.pr_xo[XR_O0 + i] << 32;
+		    xgregs[i] |= (uint64_t)
+			xrs->pr_un.pr_v8p.pr_xg[XR_G0 + i] << 32;
+		    xoregs[i] |= (uint64_t)
+			xrs->pr_un.pr_v8p.pr_xo[XR_O0 + i] << 32;
 		}
 
-		if (bcmp(xrs.pr_un.pr_v8p.pr_xg, zero, sizeof (zero)) ||
-		    bcmp(xrs.pr_un.pr_v8p.pr_xo, zero, sizeof (zero)))
-			rwidth = 16; /* one or more have upper bits set */
+		if (bcmp(xrs->pr_un.pr_v8p.pr_xg, zero,
+		    sizeof (zero)) ||
+		    bcmp(xrs->pr_un.pr_v8p.pr_xo, zero,
+		    sizeof (zero)))
+		    rwidth = 16;
+	}
+
+	if (xrs != NULL)
+	    PTL_FREEXREGS(t, xrs, xregsize);
 	}
 #endif	/* __sparc && _ILP32 */
 
@@ -260,7 +269,8 @@ pt_fpregs(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 	prgregset_t grs;
 #endif
 	prfpregset_t fprs;
-	prxregset_t xrs;
+	prxregset_t *xrs = NULL;
+	size_t xregsize = 0;
 	uint32_t *regs;
 	int ns, nd, nq;
 
@@ -312,8 +322,13 @@ pt_fpregs(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 		tid = PTL_TID(t);
 
 	is_v9 = Pstatus(t->t_pshandle)->pr_dmodel == PR_MODEL_LP64;
-	is_v8plus = is_v9 == 0 && PTL_GETXREGS(t, tid, &xrs) == 0 &&
-	    xrs.pr_type == XR_TYPE_V8P;
+	is_v8plus = 0;
+
+	if (!is_v9 && PTL_GETXREGS(t, tid, &xrs, &xregsize) == 0) {
+	    if (xrs != NULL && xregsize >= sizeof (*xrs) &&
+		xrs->pr_type == XR_TYPE_V8P)
+		is_v8plus = 1;
+	}
 
 #ifdef	__sparcv9
 	if (is_v9 && opts == FPR_MIXED) {
@@ -324,17 +339,19 @@ pt_fpregs(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 	}
 #endif
 	if (is_v8plus && opts == FPR_MIXED)
-		mdb_printf("fprs %x\n", xrs.pr_un.pr_v8p.pr_fprs);
+		mdb_printf("fprs %x\n", xrs->pr_un.pr_v8p.pr_fprs);
 
 	if (PTL_GETFPREGS(t, tid, &fprs) != 0) {
-		mdb_warn("failed to get floating point registers");
-		return (DCMD_ERR);
+	    mdb_warn("failed to get floating point registers");
+	    if (xrs != NULL)
+		PTL_FREEXREGS(t, xrs, xregsize);
+	    return (DCMD_ERR);
 	}
 
 	if (opts == FPR_MIXED) {
 		uint64_t fsr = fprs.pr_fsr;
 		if (is_v8plus)
-			fsr |= (uint64_t)xrs.pr_un.pr_v8p.pr_xfsr << 32;
+			fsr |= (uint64_t)xrs->pr_un.pr_v8p.pr_xfsr << 32;
 		mdb_printf("fsr  %llx\n", fsr);
 	}
 
@@ -351,7 +368,7 @@ pt_fpregs(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 	} else if (is_v8plus) {
 		regs = mdb_alloc(sizeof (uint32_t) * 64, UM_SLEEP | UM_GC);
 		bcopy(fprs.pr_fr.pr_regs, regs, sizeof (uint32_t) * 32);
-		bcopy(xrs.pr_un.pr_v8p.pr_xfr.pr_regs, regs + 32,
+		bcopy(xrs->pr_un.pr_v8p.pr_xfr.pr_regs, regs + 32,
 		    sizeof (uint32_t) * 32);
 		ns = 64;
 		nd = 32;
@@ -362,6 +379,9 @@ pt_fpregs(uintptr_t addr, uint_t flags, int argc, const mdb_arg_t *argv)
 		nd = 16;
 		nq = 0;
 	}
+
+	if (xrs != NULL)
+		PTL_FREEXREGS(t, xrs, xregsize);
 
 	if (opts == FPR_MIXED) {
 		for (i = 0; i < ns; i++) {
@@ -415,15 +435,24 @@ int
 pt_getfpreg(mdb_tgt_t *t, mdb_tgt_tid_t tid, ushort_t rd_num,
     ushort_t rd_flags, mdb_tgt_reg_t *rp)
 {
-	mdb_tgt_reg_t rval;
+	mdb_tgt_reg_t rval = 0;
 	prfpregset_t fprs;
-	prxregset_t xrs;
+	prxregset_t *xrs = NULL;
+	size_t xregsize = 0;
 
 	if (PTL_GETFPREGS(t, tid, &fprs) != 0)
-		return (-1); /* errno is set for us */
+		return (-1);
 
-	if ((rd_flags & MDB_TGT_R_XREG) && PTL_GETXREGS(t, tid, &xrs) != 0)
-		return (-1); /* errno is set for us */
+	if (rd_flags & MDB_TGT_R_XREG) {
+		if (PTL_GETXREGS(t, tid, &xrs, &xregsize) != 0)
+			return (-1);
+
+		if (xrs == NULL || xregsize < sizeof (*xrs) ||
+		    xrs->pr_type != XR_TYPE_V8P) {
+		    PTL_FREEXREGS(t, xrs, xregsize);
+		    return (set_errno(ENODATA));
+		}
+	}
 
 	if (rd_flags & MDB_TGT_R_FPU) {
 		switch (rd_num) {
@@ -431,27 +460,30 @@ pt_getfpreg(mdb_tgt_t *t, mdb_tgt_tid_t tid, ushort_t rd_num,
 			rval = fprs.pr_fsr;
 			if (rd_flags & MDB_TGT_R_XREG)
 				rval |= (uint64_t)
-				    xrs.pr_un.pr_v8p.pr_xfsr << 32;
+				    xrs->pr_un.pr_v8p.pr_xfsr << 32;
 			break;
 		case FPU_FPRS:
 			if (rd_flags & MDB_TGT_R_XREG)
-				rval = xrs.pr_un.pr_v8p.pr_fprs;
+				rval = xrs->pr_un.pr_v8p.pr_fprs;
 			break;
 		}
 
 	} else if (rd_flags & MDB_TGT_R_FPS) {
 		if (rd_flags & MDB_TGT_R_XREG)
-			rval = xrs.pr_un.pr_v8p.pr_xfr.pr_regs[rd_num - 32];
+			rval = xrs->pr_un.pr_v8p.pr_xfr.pr_regs[rd_num - 32];
 		else
 			rval = fprs.pr_fr.pr_regs[rd_num];
 
 	} else if (rd_flags & MDB_TGT_R_FPD) {
 		if (rd_flags & MDB_TGT_R_XREG)
 			rval = ((uint64_t *)
-			    xrs.pr_un.pr_v8p.pr_xfr.pr_dregs)[rd_num - 16];
+			    xrs->pr_un.pr_v8p.pr_xfr.pr_dregs)[rd_num - 16];
 		else
 			rval = ((uint64_t *)fprs.pr_fr.pr_dregs)[rd_num];
 	}
+
+	if (xrs != NULL)
+		PTL_FREEXREGS(t, xrs, xregsize);
 
 	*rp = rval;
 	return (0);
@@ -466,48 +498,60 @@ pt_putfpreg(mdb_tgt_t *t, mdb_tgt_tid_t tid, ushort_t rd_num,
     ushort_t rd_flags, mdb_tgt_reg_t rval)
 {
 	prfpregset_t fprs;
-	prxregset_t xrs;
+	prxregset_t *xrs = NULL;
+	size_t xregsize = 0;
+	int ret;
 
 	if (PTL_GETFPREGS(t, tid, &fprs) != 0)
-		return (-1); /* errno is set for us */
+		return (-1);
 
-	if ((rd_flags & MDB_TGT_R_XREG) && PTL_GETXREGS(t, tid, &xrs) != 0)
-		return (-1); /* errno is set for us */
+	if (rd_flags & MDB_TGT_R_XREG) {
+		if (PTL_GETXREGS(t, tid, &xrs, &xregsize) != 0)
+			return (-1);
+
+		if (xrs == NULL || xregsize < sizeof (*xrs) ||
+		    xrs->pr_type != XR_TYPE_V8P) {
+		    PTL_FREEXREGS(t, xrs, xregsize);
+		    return (set_errno(ENODATA));
+		}
+	}
 
 	if (rd_flags & MDB_TGT_R_FPU) {
 		switch (rd_num) {
 		case FPU_FSR:
 			fprs.pr_fsr = (uint32_t)rval;
 			if (rd_flags & MDB_TGT_R_XREG)
-				xrs.pr_un.pr_v8p.pr_xfsr = rval >> 32;
+				xrs->pr_un.pr_v8p.pr_xfsr = rval >> 32;
 			break;
 		case FPU_FPRS:
 			if (rd_flags & MDB_TGT_R_XREG)
-				xrs.pr_un.pr_v8p.pr_fprs = rval;
+				xrs->pr_un.pr_v8p.pr_fprs = rval;
 			break;
 		}
 
 	} else if (rd_flags & MDB_TGT_R_FPS) {
 		if (rd_flags & MDB_TGT_R_XREG)
-			xrs.pr_un.pr_v8p.pr_xfr.pr_regs[rd_num - 32] = rval;
+			xrs->pr_un.pr_v8p.pr_xfr.pr_regs[rd_num - 32] = rval;
 		else
 			fprs.pr_fr.pr_regs[rd_num] = rval;
 
 	} else if (rd_flags & MDB_TGT_R_FPD) {
 		if (rd_flags & MDB_TGT_R_XREG)
-			((uint64_t *)xrs.pr_un.pr_v8p.pr_xfr.pr_dregs)
+			((uint64_t *)xrs->pr_un.pr_v8p.pr_xfr.pr_dregs)
 			    [rd_num - 16] = rval;
 		else
 			((uint64_t *)fprs.pr_fr.pr_dregs)[rd_num] = rval;
 	}
 
-	if (PTL_SETFPREGS(t, tid, &fprs) != 0)
-		return (-1); /* errno is set for us */
+	ret = PTL_SETFPREGS(t, tid, &fprs);
 
-	if ((rd_flags & MDB_TGT_R_XREG) && PTL_SETXREGS(t, tid, &xrs) != 0)
-		return (-1); /* errno is set for us */
+	if (ret == 0 && (rd_flags & MDB_TGT_R_XREG))
+		ret = PTL_SETXREGS(t, tid, xrs, xregsize);
 
-	return (0);
+	if (xrs != NULL)
+		PTL_FREEXREGS(t, xrs, xregsize);
+
+	return (ret);
 }
 
 /*
@@ -534,12 +578,26 @@ pt_addfpregs(mdb_tgt_t *t)
 {
 	pt_data_t *pt = t->t_data;
 	struct ps_prochandle *P = t->t_pshandle;
-	prxregset_t xrs;
+	prxregset_t *xrs = NULL;
+	size_t xregsize = 0;
+	int is_v8plus;
 	uint_t i;
 
 	uint_t fpuflag = MDB_TGT_R_FPU | MDB_TGT_R_EXPORT;
 	uint_t e_mach = pt->p_file ? pt->p_file->gf_ehdr.e_machine : EM_NONE;
 	uint_t model = P ? Pstatus(P)->pr_dmodel : PR_MODEL_UNKNOWN;
+
+	is_v8plus = (e_mach == EM_SPARC32PLUS);
+
+	if (!is_v8plus && P != NULL &&
+	    PTL_GETXREGS(t, PTL_TID(t), &xrs, &xregsize) == 0) {
+	    if (xrs != NULL && xregsize >= sizeof (*xrs) &&
+		xrs->pr_type == XR_TYPE_V8P)
+		is_v8plus = 1;
+
+	    if (xrs != NULL)
+		PTL_FREEXREGS(t, xrs, xregsize);
+	}
 
 	/*
 	 * If the ELF file is SPARCv9 or the process or core is 64-bit, then
@@ -561,9 +619,7 @@ pt_addfpregs(mdb_tgt_t *t)
 	 * If the ELF file is SPARCv8+ or the process or core has v8+ xregs,
 	 * then include the additional v8plus register descriptions.
 	 */
-	if (e_mach == EM_SPARC32PLUS || (P != NULL && PTL_GETXREGS(t,
-	    PTL_TID(t), &xrs) == 0 && xrs.pr_type == XR_TYPE_V8P)) {
-
+	if (is_v8plus) {
 		for (i = 32; i < 64; i++) {
 			pt_addfpreg(&pt->p_regs, i, i, 'f',
 			    MDB_TGT_R_FPS | MDB_TGT_R_XREG);
