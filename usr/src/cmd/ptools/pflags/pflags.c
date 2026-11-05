@@ -536,6 +536,20 @@ static const char * const regname[NPRGREG] = {
 };
 #endif /* __i386 */
 
+#if defined(__sparc)
+static const char * const regname[NPRGREG] = {
+	" %g0", " %g1", " %g2", " %g3", " %g4", " %g5", " %g6", " %g7",
+	" %o0", " %o1", " %o2", " %o3", " %o4", " %o5", " %sp", " %o7",
+	" %l0", " %l1", " %l2", " %l3", " %l4", " %l5", " %l6", " %l7",
+	" %i0", " %i1", " %i2", " %i3", " %i4", " %i5", " %fp", " %i7",
+#ifdef __sparcv9
+	"%ccr", " %pc", "%npc", "  %y", "%asi", "%fprs"
+#else
+	"%psr", " %pc", "%npc", "  %y", "%wim", "%tbr"
+#endif
+};
+#endif /* __sparc */
+
 #if defined(__amd64)
 static void
 dumpregs32(const prgregset_t reg)
