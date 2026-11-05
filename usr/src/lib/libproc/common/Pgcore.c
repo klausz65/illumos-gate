@@ -488,11 +488,14 @@ new_per_lwp(void *data, const lwpstatus_t *lsp, const lwpsinfo_t *lip)
 	}
 
 	if (Plwp_getxregs(P, lsp->pr_lwpid, &xregs, &size) == 0) {
-		if (write_note(pgc->pgc_fd, NT_PRXREG, xregs, size,
-		    pgc->pgc_doff) != 0)
-			return (1);
+		int ret;
 
+		ret = write_note(pgc->pgc_fd, NT_PRXREG, xregs, size,
+		    pgc->pgc_doff);
 		Plwp_freexregs(P, xregs, size);
+
+		if (ret != 0)
+		    return (1);
 	}
 
 	if (Plwp_getname(P, lsp->pr_lwpid, name.pr_lwpname,

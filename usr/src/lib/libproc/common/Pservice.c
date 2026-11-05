@@ -256,6 +256,8 @@ ps_lsetxregs(struct ps_prochandle *P, lwpid_t lwpid, caddr_t xregs)
 #if defined(__i386) || defined(__amd64)
 	prxregset_hdr_t *hdr = (prxregset_hdr_t *)xregs;
 	xregsize = hdr->pr_size;
+#elif defined(__sparc)
+	xregsize = sizeof (prxregset_t);
 #endif
 
 	if (Plwp_setxregs(P, lwpid, (prxregset_t *)xregs, xregsize) == 0)
@@ -265,22 +267,6 @@ ps_lsetxregs(struct ps_prochandle *P, lwpid_t lwpid, caddr_t xregs)
 		return (PS_BADLID);
 	return (PS_ERR);
 }
-
-#if defined(sparc) || defined(__sparc)
-ps_err_e
-ps_lsetxregs(struct ps_prochandle *P, lwpid_t lwpid, caddr_t xregs)
-{
-	if (P->state != PS_STOP)
-		return (PS_ERR);
-
-	/* LINTED - alignment */
-	if (Plwp_setxregs(P, lwpid, (prxregset_t *)xregs) == 0)
-		return (PS_OK);
-
-	return (PS_BADLID);
-}
-
-#endif	/* sparc */
 
 #if defined(__i386) || defined(__amd64)
 
