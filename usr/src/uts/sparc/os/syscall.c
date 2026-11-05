@@ -894,6 +894,99 @@ sig_check:
 }
 
 /*
+ * illumos #2757:
+ * Experimental uap-style ILP32 handler for ulimit.
+ *
+ * The argument array contains kernel long slots holding
+ * the original zero-extended 32-bit syscall arguments.
+ */
+#if defined(_SYSCALL32_IMPL)
+
+extern long ulimit(int, long);
+
+int
+sparc_ulimit32_ap(long *ap, rval_t *rvp)
+{
+	klwp_t *lwp = ttolwp(curthread);
+	long arg;
+	long result;
+	int cmd;
+
+	cmd = (int32_t)(uint32_t)ap[0];
+
+	/*
+	 * Sign-extend the original ILP32 argument explicitly.
+	 * Avoid relying on GCC's argument conversion here.
+	 */
+	__asm__ __volatile__(
+	    "sra %1, 0, %0"
+	    : "=r" (arg)
+	    : "r" (ap[1]));
+
+	lwp->lwp_errno = 0;
+
+	result = ulimit(cmd, arg);
+
+	if (lwp->lwp_errno != 0)
+		return (lwp->lwp_errno);
+
+	/*
+	 * syscall_ap() returns r_vals as int64_t.
+	 * SE_32RVAL1 expects the result in the low 32 bits.
+	 */
+	rvp->r_vals = (int64_t)(int32_t)result;
+
+	return (0);
+}
+
+/*
+ * illumos #2757:
+ * ILP32 uap wrapper for lseek32.
+ */
+extern off32_t lseek32(int32_t, off32_t, int32_t);
+
+int
+sparc_lseek32_ap(long *ap, rval_t *rvp)
+{
+	klwp_t *lwp = ttolwp(curthread);
+	long fd, off, whence;
+	off32_t result;
+
+	/*
+	 * Restore the signed ILP32 arguments from the
+	 * zero-extended long slots.
+	 */
+	__asm__ __volatile__(
+	    "sra %1, 0, %0"
+	    : "=r" (fd) : "r" (ap[0]));
+
+	__asm__ __volatile__(
+	    "sra %1, 0, %0"
+	    : "=r" (off) : "r" (ap[1]));
+
+	__asm__ __volatile__(
+	    "sra %1, 0, %0"
+	    : "=r" (whence) : "r" (ap[2]));
+
+	lwp->lwp_errno = 0;
+
+	result = lseek32((int32_t)fd, (off32_t)off,
+	    (int32_t)whence);
+
+	if (lwp->lwp_errno != 0)
+		return (lwp->lwp_errno);
+
+	/*
+	 * syscall_ap() returns r_vals as int64_t.
+	 * SE_32RVAL1 consumes the low 32 bits.
+	 */
+	rvp->r_vals = (int64_t)(int32_t)result;
+
+	return (0);
+}
+
+#endif /* _SYSCALL32_IMPL */
+/*
  * Call a system call which takes a pointer to the user args struct and
  * a pointer to the return values.  This is a bit slower than the standard
  * C arg-passing method in some cases.

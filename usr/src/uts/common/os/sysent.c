@@ -429,6 +429,8 @@ typedef int64_t	(*llfcn_t)();	/* for casting one-word returns */
 
 struct sysent nosys_ent = SYSENT_NOSYS();
 
+#define	SYSENT_AP32(name, call, narg) \
+	{ (narg), SE_32RVAL1, (call), NULL, syscall_ap }
 /*
  * Native sysent table.
  */
@@ -762,6 +764,11 @@ struct sysent sysent[NSYSCALL] =
 
 #ifdef _SYSCALL32_IMPL
 
+#if defined(__sparc)
+extern int sparc_ulimit32_ap(long *, rval_t *);
+extern int sparc_lseek32_ap(long *, rval_t *);
+#endif
+
 extern int ulimit32(int, int);
 extern ssize_t read32(int32_t, caddr32_t, size32_t);
 extern ssize_t write32(int32_t, caddr32_t, size32_t);
@@ -836,7 +843,12 @@ struct sysent sysent32[NSYSCALL] =
 	/* 16 */ SYSENT_CI("chown",		chown,		3),
 	/* 17 */ SYSENT_CI("brk",		brk,		1),
 	/* 18 */ SYSENT_CI("stat",		stat32,		2),
-	/* 19 */ SYSENT_CI("lseek",		lseek32,	3),
+	/* 19 */
+#if defined(__sparc)
+    SYSENT_AP32("lseek",		sparc_lseek32_ap,	3),
+#else
+    SYSENT_CI("lseek",			lseek32,		3),
+#endif
 	/* 20 */ SYSENT_2CI("getpid",		getpid,		0),
 	/* 21 */ SYSENT_AP("mount",		mount,		8),
 	/* 22 */ SYSENT_CI("readlinkat",	readlinkat32,	4),
@@ -882,7 +894,12 @@ struct sysent sysent32[NSYSCALL] =
 	/* 60 */ SYSENT_CI("umask",		umask,		1),
 	/* 61 */ SYSENT_CI("chroot",		chroot,		1),
 	/* 62 */ SYSENT_CI("fcntl",		fcntl,		4),
-	/* 63 */ SYSENT_CI("ulimit",		ulimit32,	2),
+	/* 63 */
+#if defined(__sparc)
+	SYSENT_AP32("ulimit",		sparc_ulimit32_ap,	2),
+#else
+	SYSENT_CI("ulimit",		ulimit32,		2),
+#endif
 	/* 64 */ SYSENT_CI("renameat",		renameat,	4),
 	/* 65 */ SYSENT_CI("unlinkat",		unlinkat,	3),
 	/* 66 */ SYSENT_CI("fstatat",		fstatat32,	4),
