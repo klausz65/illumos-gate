@@ -153,6 +153,7 @@ GENOBJS=			\
 	ecvt.o			\
 	endian.o		\
 	getctxt.o		\
+	getctxt_extd.o		\
 	lock.o			\
 	makectxt.o		\
 	memchr.o		\
@@ -170,7 +171,9 @@ GENOBJS=			\
 	strncpy.o		\
 	strnlen.o		\
 	swapctxt.o		\
-	sync_instruction_memory.o
+	swapctxt_extd.o		\
+	sync_instruction_memory.o \
+	ucontext_alloc.o
 
 # Preserved solely to ease maintenance of 32-bit and 64-bit library builds
 # This macro should ALWAYS be empty; native APIs are already 'large file'.
@@ -1132,6 +1135,21 @@ $(DYNLIB) := CRTN = crtn.o
 
 pics/_Qp%.o := CFLAGS64 += -I$(LIBCDIR)/$(MACH)/fp
 pics/_Q%.o := sparcv9_COPTFLAG = -xO4 -xchip=ultra
+
+#
+# Common SPARC context implementations.
+#
+pics/getctxt_extd.o: $(LIBCDIR)/sparc/gen/getctxt_extd.c
+	$(COMPILE.c) -o $@ $(LIBCDIR)/sparc/gen/getctxt_extd.c
+	$(POST_PROCESS_O)
+
+pics/swapctxt_extd.o: $(LIBCDIR)/sparc/gen/swapctxt_extd.c
+	$(COMPILE.c) -o $@ $(LIBCDIR)/sparc/gen/swapctxt_extd.c
+	$(POST_PROCESS_O)
+
+pics/ucontext_alloc.o: $(LIBCDIR)/sparc/gen/ucontext_alloc.c
+	$(COMPILE.c) -o $@ $(LIBCDIR)/sparc/gen/ucontext_alloc.c
+	$(POST_PROCESS_O)
 
 # large-file-aware components that should be built large
 

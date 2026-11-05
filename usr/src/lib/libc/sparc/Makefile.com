@@ -158,6 +158,7 @@ GENOBJS=			\
 	endian.o		\
 	errlst.o		\
 	getctxt.o		\
+	getctxt_extd.o		\
 	ladd.o			\
 	lmul.o			\
 	lock.o			\
@@ -180,7 +181,9 @@ GENOBJS=			\
 	strncpy.o		\
 	strnlen.o		\
 	swapctxt.o		\
-	sync_instruction_memory.o
+	swapctxt_extd.o		\
+	sync_instruction_memory.o \
+	ucontext_alloc.o
 
 # sysobjs that contain large-file interfaces
 COMSYSOBJS64=			\
