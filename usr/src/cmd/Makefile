@@ -297,6 +297,7 @@ COMMON_SUBDIRS=		\
 	nohup		\
 	nsadmin		\
 	nscd		\
+	nvmeadm		\
 	oamuser		\
 	oawk		\
 	od		\
@@ -496,7 +497,6 @@ i386_SUBDIRS=		\
 	cxgbetool	\
 	diskscan	\
 	ficl		\
-	nvmeadm		\
 	pptadm		\
 	rdmsr		\
 	rsrvrctl	\

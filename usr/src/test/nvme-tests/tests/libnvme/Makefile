@@ -47,6 +47,9 @@ include $(SRC)/test/nvme-tests/Makefile.com
 LDLIBS += -lnvme
 LDLIBS64 += -lnvme
 
+# SPARC needs -fPIC for that
+CFLAGS += -Wc,-xcode=pic32
+
 bad-req.32 := LDLIBS += -lumem
 bad-req.64 := LDLIBS64 += -lumem
 bad-req-nsmgmt.32 := LDLIBS += -lumem
