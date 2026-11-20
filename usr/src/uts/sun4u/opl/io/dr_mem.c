@@ -527,7 +527,7 @@ dr_move_memory(dr_handle_t *hp, dr_mem_unit_t *s_mp, dr_mem_unit_t *t_mp)
 
 	copytime = ddi_get_lbolt() - copytime;
 
-	if (err = drmach_copy_rename_fini(cr_id))
+	if ((err = drmach_copy_rename_fini(cr_id)))
 		goto done;
 
 	/*
@@ -548,8 +548,9 @@ dr_move_memory(dr_handle_t *hp, dr_mem_unit_t *s_mp, dr_mem_unit_t *t_mp)
 done:
 	if (srhp)
 		dr_release_sr_handle(srhp);
-	if (err)
+	if (err) {
 		DRERR_SET_C(&s_mp->sbm_cm.sbdev_error, &err);
+	}
 	affinity_clear();
 
 	return (rv);
@@ -986,8 +987,9 @@ dr_post_attach_mem(dr_handle_t *hp, dr_common_unit_t **devlist, int devnum)
 			    mp->sbm_cm.sbdev_id,
 			    ml->ml_address,
 			    ml->ml_size);
-			if (err)
+			if (err) {
 				DRERR_SET_C(&mp->sbm_cm.sbdev_error, &err);
+			}
 		}
 
 		memlist_delete(mlist);
@@ -1088,8 +1090,9 @@ dr_add_memory_spans(dr_mem_unit_t *mp, struct memlist *ml)
 		    ml->ml_address,
 		    ml->ml_size);
 
-		if (err)
+		if (err) {
 			DRERR_SET_C(&mp->sbm_cm.sbdev_error, &err);
+		}
 
 		if (rv != KPHYSM_OK) {
 			cmn_err(CE_WARN, "%s:"
@@ -1146,9 +1149,10 @@ dr_process_excess_mlist(dr_mem_unit_t *s_mp,
 		err = drmach_mem_del_span(
 		    s_mp->sbm_cm.sbdev_id,
 		    ml->ml_address, ml->ml_size);
-		if (err)
+		if (err) {
 			DRERR_SET_C(&s_mp->
 			    sbm_cm.sbdev_error, &err);
+		}
 		ASSERT(err == NULL);
 	}
 
@@ -1453,8 +1457,9 @@ dr_post_detach_mem_unit(dr_mem_unit_t *s_mp)
 		/* delete target's entire address space */
 		err = drmach_mem_del_span(
 		    t_mp->sbm_cm.sbdev_id, t_old_basepa & ~ sm, sz);
-		if (err)
+		if (err) {
 			DRERR_SET_C(&t_mp->sbm_cm.sbdev_error, &err);
+		}
 		ASSERT(err == NULL);
 
 		/*
@@ -1471,8 +1476,9 @@ dr_post_detach_mem_unit(dr_mem_unit_t *s_mp)
 
 			err = drmach_mem_del_span(s_mp->sbm_cm.sbdev_id,
 			    ml->ml_address, ml->ml_size);
-			if (err)
+			if (err) {
 				DRERR_SET_C(&s_mp->sbm_cm.sbdev_error, &err);
+			}
 			ASSERT(err == NULL);
 		}
 
@@ -1480,8 +1486,9 @@ dr_post_detach_mem_unit(dr_mem_unit_t *s_mp)
 		/* delete board's entire address space */
 		err = drmach_mem_del_span(s_mp->sbm_cm.sbdev_id,
 		    s_old_basepa & ~ sm, sz);
-		if (err)
+		if (err) {
 			DRERR_SET_C(&s_mp->sbm_cm.sbdev_error, &err);
+		}
 		ASSERT(err == NULL);
 	}
 
@@ -2056,7 +2063,7 @@ dr_init_mem_unit_data(dr_mem_unit_t *mp)
 	ASSERT(mp->sbm_peer == NULL);
 	ASSERT(mp->sbm_flags == 0);
 
-	if (err = drmach_mem_get_info(id, &minfo)) {
+	if ((err = drmach_mem_get_info(id, &minfo))) {
 		DRERR_SET_C(&mp->sbm_cm.sbdev_error, &err);
 		return;
 	}
