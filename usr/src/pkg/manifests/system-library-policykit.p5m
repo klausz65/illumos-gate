@@ -33,6 +33,11 @@ set name=info.classification \
 set name=variant.arch value=$(ARCH)
 dir  path=usr group=sys
 dir  path=usr/lib
+dir  path=usr/lib/$(ARCH64)
+link path=usr/lib/$(ARCH64)/libpolkit.so target=./libpolkit.so.0.0.0
+file path=usr/lib/$(ARCH64)/libpolkit.so.0.0.0
+dir  path=usr/lib/$(ARCH64)/pkgconfig group=other
+file path=usr/lib/$(ARCH64)/pkgconfig/polkit.pc mode=0444
 link path=usr/lib/libpolkit.so target=./libpolkit.so.0.0.0
 link path=usr/lib/libpolkit.so.0 target=./libpolkit.so.0.0.0
 file path=usr/lib/libpolkit.so.0.0.0

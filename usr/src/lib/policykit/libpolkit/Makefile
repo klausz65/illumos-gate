@@ -31,7 +31,7 @@ HDRS =		libpolkit.h
 HDRDIR =	common
 ROOTHDRDIR =	$(ROOT)/usr/include/libpolkit
 
-SUBDIRS =	$(MACH)
+SUBDIRS =	$(MACH) $(MACH64)
 
 all :=		TARGET= all
 clean :=	TARGET= clean
