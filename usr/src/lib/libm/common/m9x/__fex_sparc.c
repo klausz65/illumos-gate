@@ -188,7 +188,7 @@ __fex_get_op(siginfo_t *sip, ucontext_t *uap, fex_info_t *info)
 {
 	unsigned long	fsr;
 	unsigned		instr, opf, rs1, rs2;
-	volatile int	c;
+	volatile int	c __unused;
 
 	/* parse the instruction which caused the exception */
 	instr = uap->uc_mcontext.fpregs.fpu_q->FQu.fpq.fpq_instr;
