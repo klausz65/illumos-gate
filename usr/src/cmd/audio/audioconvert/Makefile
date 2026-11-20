@@ -33,7 +33,9 @@ include	../../Makefile.cmd
 
 INCLUDES += -I../include -I.
 
-CPPFLAGS += $(INCLUDES)
+CPPFLAGS_i386	= $(INCLUDES)
+CPPFLAGS_sparc	= $(INCLUDES) -D__BIG_ENDIAN
+CPPFLAGS	+= $(CPPFLAGS_$(MACH))
 
 PROGSRCS= convert.cc file.cc main.cc parse.cc
 
