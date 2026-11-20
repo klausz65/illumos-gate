@@ -715,7 +715,7 @@ display_ascii_hex(char *msg, unsigned char **opt)
 
 	for (printable = 1, tmp = (char *)(*opt), ap = buffer;
 	    tmp < (char *)&((*opt)[len]); tmp++) {
-		if (isprint(*tmp))
+		if (isprint((unsigned char)*tmp))
 			*ap++ = *tmp;
 		else {
 			*ap++ = '.';
@@ -731,7 +731,10 @@ display_ascii_hex(char *msg, unsigned char **opt)
 			ap += sprintf(ap, "0x%02X ", *(uchar_t *)(tmp));
 		}
 		/* Truncate the trailing space */
-		*(--ap) = '\0';
+		if (ap > buffer) {
+			--ap;
+			*ap = '\0';
+		}
 		/* More bytes to print in hex but no space in buffer */
 		if (tmp < (char *)&((*opt)[len])) {
 			i = ap - buffer;
