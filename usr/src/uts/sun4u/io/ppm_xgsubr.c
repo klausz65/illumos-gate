@@ -66,7 +66,7 @@ ppm_init(struct modlinkage *mlp, size_t size, char *prefix)
 	if (error != DDI_SUCCESS)
 		return (error);
 
-	if (error = mod_install(mlp))
+	if ((error = mod_install(mlp)))
 		ddi_soft_state_fini(&ppm_statep);
 	DPRINTF(D_INIT, ("%s: mod_install %d\n", str, error));
 
@@ -86,7 +86,7 @@ ppm_getinfo(dev_info_t *dip, ddi_info_cmd_t cmd, void *arg, void **resultp)
 
 	switch (cmd) {
 	case DDI_INFO_DEVT2DEVINFO:
-		if (overlay = ddi_get_soft_state(ppm_statep, ppm_inst)) {
+		if ((overlay = ddi_get_soft_state(ppm_statep, ppm_inst))) {
 			*resultp = overlay->dip;
 			rval = DDI_SUCCESS;
 		} else
@@ -220,7 +220,7 @@ ppm_create_db(dev_info_t *dip)
 	cdata[0] = &devdata;
 	cdata[1] = &domdata;
 	cdata[2] = NULL;
-	if (err = ppm_get_confdata(cdata, dip))
+	if ((err = ppm_get_confdata(cdata, dip)))
 		return (ppm_attach_err(cdata, err));
 	else if (devdata.cnt != domdata.cnt) {
 		DPRINTF(D_ERROR,
@@ -256,7 +256,7 @@ ppm_create_db(dev_info_t *dip)
 		 * when the device name contains a wildcard,
 		 * save the length of the preceding string
 		 */
-		if (wild = strchr(new->name, '*'))
+		if ((wild = strchr(new->name, '*')))
 			new->plen = (wild - new->name);
 		DPRINTF(D_CREATEDB, ("%s: \"%s\", added \"%s\"\n",
 		    str, domp->name, new->name));
