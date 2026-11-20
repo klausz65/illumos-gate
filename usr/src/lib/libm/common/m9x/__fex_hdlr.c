@@ -364,7 +364,11 @@ not_ieee:
 		break;
 #endif
 	default:
-		act.sa_handler(sig, sip, uap);
+		if (act.sa_flags & SA_SIGINFO)
+			act.sa_sigaction(sig, sip, uap);
+		else
+			act.sa_handler(sig);
+		break;
 	}
 }
 
