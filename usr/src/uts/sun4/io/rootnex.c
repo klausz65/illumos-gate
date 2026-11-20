@@ -475,7 +475,7 @@ rootnex_map_handle(ddi_map_req_t *mp)
 	hp->ah_hat_flags = hat_flags;
 	hp->ah_pfn = mmu_btop((ulong_t)rp->regspec_addr & (~MMU_PAGEOFFSET));
 	hp->ah_pnum = mmu_btopr(rp->regspec_size +
-	    (ulong_t)rp->regspec_addr & MMU_PAGEOFFSET);
+	    ((ulong_t)rp->regspec_addr & MMU_PAGEOFFSET));
 	return (DDI_SUCCESS);
 }
 
@@ -634,6 +634,10 @@ rootnex_map(dev_info_t *dip, dev_info_t *rdip, ddi_map_req_t *mp,
 
 	case DDI_MO_MAP_HANDLE:
 		return (rootnex_map_handle(mp));
+
+	case DDI_MO_MAP_UNLOCKED:
+	case DDI_MO_UNLOCK:
+		return (DDI_ME_UNIMPLEMENTED);
 
 	}
 
@@ -810,6 +814,8 @@ rootnex_ctlops_peekpoke(ddi_ctl_enum_t cmd, peekpoke_ctlops_t *in_args,
 	int err = DDI_SUCCESS;
 	on_trap_data_t otd;
 
+	(void)result;
+
 	/* No safe access except for peek/poke is supported. */
 	if (in_args->handle != NULL)
 		return (DDI_FAILURE);
@@ -826,7 +832,6 @@ rootnex_ctlops_peekpoke(ddi_ctl_enum_t cmd, peekpoke_ctlops_t *in_args,
 			otd.ot_trampoline = (uintptr_t)&peek_fault;
 			err = do_peek(in_args->size, (void *)in_args->dev_addr,
 			    (void *)in_args->host_addr);
-			result = (void *)in_args->host_addr;
 		}
 		otd.ot_trampoline = tramp;
 	} else

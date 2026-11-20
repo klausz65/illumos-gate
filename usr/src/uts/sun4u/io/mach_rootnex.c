@@ -185,7 +185,6 @@ rootnex_remove_intr_impl(dev_info_t *dip, dev_info_t *rdip,
 		    DDI_PROP_DONTPASS, "upa-portid", -1)) != -1 &&
 		    ddi_get_parent(rdip) == dip) {
 			volatile uint64_t *intr_mapping_reg;
-			volatile uint64_t flush_data;
 			extern uint64_t *get_intr_mapping_reg(int, int);
 
 			if ((intr_mapping_reg = get_intr_mapping_reg(
@@ -196,10 +195,7 @@ rootnex_remove_intr_impl(dev_info_t *dip, dev_info_t *rdip,
 			*intr_mapping_reg = 0x0ull;
 
 			/* Flush write buffers */
-			flush_data = *intr_mapping_reg;
-#ifdef lint
-			flush_data = flush_data;
-#endif /* lint */
+			(void)*intr_mapping_reg;
 		}
 	}
 
