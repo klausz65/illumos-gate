@@ -25,7 +25,7 @@
 
 include ../Makefile.lib
 
-SUBDIRS=	sparc svc
+SUBDIRS=	sparc sparcv9 svc
 
 all	:= TARGET= all
 install	:= TARGET= install

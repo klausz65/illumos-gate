@@ -46,6 +46,7 @@
  */
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -165,7 +166,7 @@ ses_start(int fd)
 	/*
 	 * Child:
 	 */
-	ses_handler((void *)fd);
+	ses_handler((void *)(intptr_t)fd);
 
 	/*
 	 * Prevent return to parent's loop
@@ -529,6 +530,16 @@ curr_ses_id(void)
 
 
 /*
+ * Wrapper abort_handler()
+ */
+static void
+abort_signal_handler(int sig)
+{
+	(void) sig;
+	abort_handler();
+}
+
+/*
  * ses_handler:
  *
  * Handle initialization and processing of a session. Initializes a session
@@ -558,7 +569,7 @@ ses_handler(void *arg)
 
 
 	if (ses_alloc() == -1) {
-		(void) rdr_close((int)arg);
+		(void) rdr_close((int)(intptr_t)arg);
 		return ((void *)-1);
 	}
 
@@ -571,7 +582,7 @@ ses_handler(void *arg)
 	memset(sp, 0, sizeof (session_t));
 	sp->state = DCS_CONNECTED;
 	sp->random_resp = lrand48();
-	sp->fd = (int)arg;
+	sp->fd = (int)(intptr_t)arg;
 	sp->id = curr_ses_id();
 
 	/* initially, block all signals and cancels */
@@ -580,7 +591,7 @@ ses_handler(void *arg)
 
 	/* set the abort handler for this session */
 	(void) memset(&act, 0, sizeof (act));
-	act.sa_handler = abort_handler;
+	act.sa_handler = abort_signal_handler;
 	(void) sigaction(SIGINT, &act, NULL);
 
 	DCS_DBG(DBG_SES, "session handler starting...");
