@@ -121,7 +121,11 @@ extern void (*lockstat_probe)(dtrace_id_t, uintptr_t, uintptr_t,
 
 extern int lockstat_active_threads(void);
 extern int lockstat_depth(void);
+#ifdef __sparcv9
+extern void lockstat_hot_patch(void);
+#else
 extern void lockstat_hotpatch_probe(int);
+#endif
 
 /*
  * Macros to record lockstat probes.
