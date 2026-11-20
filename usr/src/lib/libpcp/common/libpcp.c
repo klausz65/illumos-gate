@@ -176,6 +176,13 @@ glvc_timeout_handler(void)
 	siglongjmp(jmpbuf, 1);
 }
 
+static void
+glvc_timeout_signal_handler(int sig)
+{
+	(void) sig;
+	glvc_timeout_handler();
+}
+
 /*
  * Initialize the virtual channel. It basically opens the virtual channel
  * provided by the host application.
@@ -258,7 +265,7 @@ pcp_init(char *channel_name)
 	/*
 	 * signal handler initialization to handle glvc call timeouts.
 	 */
-	glvc_act.sa_handler = glvc_timeout_handler;
+	glvc_act.sa_handler = glvc_timeout_signal_handler;
 	(void) sigemptyset(&glvc_act.sa_mask);
 	glvc_act.sa_flags = SA_NODEFER;
 
@@ -348,8 +355,8 @@ int
 pcp_send_recv(int channel_fd, pcp_msg_t *req_msg, pcp_msg_t *resp_msg,
     uint32_t timeout)
 {
-	void *datap;
-	void *resp_msg_data = NULL;
+	void *volatile datap;
+	void *volatile resp_msg_data = NULL;
 	uint32_t status;
 	uint16_t cksum = 0;
 	int ret;
@@ -1315,7 +1322,7 @@ pcp_cleanup(int channel_fd)
 	glvc_xport_msg_peek_t	peek_ctrl;
 	int			n, done;
 	uint8_t			*buf = NULL;
-	int			retry = 0;
+	volatile int		retry = 0;
 
 
 	buf = (uint8_t *)umem_zalloc((mtu_size), UMEM_DEFAULT);
