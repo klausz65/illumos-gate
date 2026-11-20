@@ -33,8 +33,11 @@ LIBUUTIL =	$(SRC)/lib/libuutil/
 
 CPPFLAGS +=	-DNATIVE_BUILD $(DTEXTDOM) \
 		-I$(SRC)/lib/libscf/inc -I$(COMDIR) -I$(LIBUUTIL)/common
-LDLIBS =	-R '$$ORIGIN/../../lib/$(MACH)' -L$(ROOTONBLDLIBMACH) \
+LDLIBS_i386 =	-R '$$ORIGIN/../../lib/$(MACH)' -L$(ROOTONBLDLIBMACH) \
 		-luutil -lc -lgen -lnvpair -lsmbios
+LDLIBS_sparc =	-R '$$ORIGIN/../../lib/$(MACH)' -L$(ROOTONBLDLIBMACH) \
+		-luutil -lc -lgen -lnvpair
+LDLIBS =	$(LDLIBS_$(MACH))
 NATIVE_LIBS +=	libsmbios.so libnvpair.so libgen.so libc.so
 
 include $(SRC)/Makefile.native
