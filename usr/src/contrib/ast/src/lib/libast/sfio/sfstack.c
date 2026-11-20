@@ -28,14 +28,9 @@
 */
 
 #define STKMTXLOCK(f1,f2) \
-	{ if(f1) SFMTXLOCK(f1); \
-	  if(f2) SFMTXLOCK(f2); \
-	}
+	{ if(f1) SFMTXLOCK(f1); if(f2) SFMTXLOCK(f2); }
 #define STKMTXRETURN(f1,f2,rv) \
-	{ if(f1) SFMTXUNLOCK(f1); \
-	  if(f2) SFMTXUNLOCK(f2); \
-	  return(rv); \
-	}
+	{ if(f1) SFMTXUNLOCK(f1); if(f2) SFMTXUNLOCK(f2); return(rv); }
 
 #if __STD_C
 Sfio_t* sfstack(Sfio_t* f1, Sfio_t* f2)
