@@ -19,8 +19,10 @@
 
 .PARALLEL: $(SUBDIRS)
 
+SUBDIRS_i386 = bhyve-tests
+
 SUBDIRS = \
-	bhyve-tests \
+	$((SUBDIRS)_$(MACH)) \
 	crypto-tests \
 	elf-tests \
 	i2c-tests \
