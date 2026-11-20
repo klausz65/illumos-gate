@@ -3878,6 +3878,9 @@ got_mac_addr:
 		    BMAC_MAX_ALT_ADDR_ENTRY;
 	}
 
+#if defined(_BIG_ENDIAN)
+got_mmac_info:
+#endif
 	for (i = 0; i <= nxgep->nxge_mmac_info.num_mmac; i++) {
 		(void) npi_mac_altaddr_disable(nxgep->npi_handle,
 		    NXGE_GET_PORT_NUM(func_num), i);
