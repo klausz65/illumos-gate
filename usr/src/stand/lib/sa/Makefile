@@ -56,6 +56,8 @@ SRCS		= $(LOCOBJS:%.o=$(SRCDIR)/%.c) $(CMNOBJS:%.o=$(CMNDIR)/%.c) \
 LDLIBS += -lsock
 CPPFLAGS += $(SOCKCPPFLAGS)
 
+CSTD		= $(CSTD_GNU99)
+
 CERRWARN += -_gcc=-Wno-parentheses
 CERRWARN += $(CNOWARN_UNINIT)
 

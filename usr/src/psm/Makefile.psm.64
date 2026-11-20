@@ -37,3 +37,6 @@ $(SPARC_BLD)AS_DEFS	+= -D__sparc -D__sparcv9
 $(SPARC_BLD)CPPFLAGS	+= -D__sparc -D__sparcv9 -D_SYSCALL32 
 $(SPARC_BLD)ASFLAGS	+= -D__sparc -D__sparcv9
 $(SPARC_BLD)LINTFLAGS64	+= -errchk=longptr64 -m64
+
+CSTD			= $(CSTD_GNU99)
+
