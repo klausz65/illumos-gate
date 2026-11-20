@@ -917,9 +917,14 @@ load_linker(val_t *bootaux)
 	 * selected header fields.
 	 */
 	if (is_extended_ehdr(ehdr)) {
+#ifdef	__sparc
+		bop_panic(
+		    "linker has an extended ELF header; unable to load.");
+#else
 		bop_panic(
 		    "linker %s has an extended ELF header; unable to load.",
 		    dlname);
+#endif
 	}
 
 	cp = add_primary(dlname, KOBJ_LM_PRIMARY);
