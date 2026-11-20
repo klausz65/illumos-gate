@@ -32,6 +32,7 @@ MANIFEST =      rmvolmgr.xml
 SVCMETHOD =     svc-rmvolmgr
 
 include ../Makefile.cmd
+include ../Makefile.cmd.64
 include ../hal/Makefile.hal
 
 POFILE=rmvolmgr_all.po
