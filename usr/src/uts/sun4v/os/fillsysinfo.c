@@ -1081,7 +1081,10 @@ split_alias(plat_alias_t *pali, char *str)
 			*p++ = '\0';
 		}
 
-		VERIFY(i < PLAT_MAX_IOALIASES);
+		if (i >= PLAT_MAX_IOALIASES) {
+			VERIFY(i < PLAT_MAX_IOALIASES);
+			break;
+		}
 		aliasv[i++] = strdup(str);
 		if (p == NULL)
 			break;
