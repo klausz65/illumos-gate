@@ -1246,7 +1246,6 @@ h_get_physical_name(char *path)
 		result = h_get_physical_name_from_link(path);
 	}
 
-exit:
 	return (result);
 }
 
