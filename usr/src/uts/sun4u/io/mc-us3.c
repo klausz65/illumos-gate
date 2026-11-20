@@ -1635,7 +1635,7 @@ mlayout_add(int mc_id, int bank_no, uint64_t reg, void *dimminfop)
 	 * respectively.
 	 */
 	ifactor = (mcreg._s.lk ^ 0xF) + 1;
-	size = (((mcreg._s.uk & 0x3FF) + 1) * 0x4000000) / ifactor;
+	size = (((uint64_t)(mcreg._s.uk & 0x3FF) + 1) * 0x4000000) / ifactor;
 	base = mcreg._s.um & ~mcreg._s.uk;
 	base <<= MADR_UPA_SHIFT;
 
@@ -1711,7 +1711,7 @@ mlayout_add(int mc_id, int bank_no, uint64_t reg, void *dimminfop)
 	 * to the segment. If not matched, allocate a new segment and
 	 * add it at segment list.
 	 */
-	if (seg_curr = seg_match_base(base)) {
+	if ((seg_curr = seg_match_base(base))) {
 		seg_curr->nbanks++;
 		seg_curr->size += size;
 		if (ifactor > seg_curr->ifactor)
@@ -1814,7 +1814,7 @@ mlayout_del(int mc_id, int delete)
 
 		for (j = 0; j < NDIMMS; j++) {
 			devid = dgrpid * NDIMMS + j;
-			if (dev_ptr = mc_node_get(devid, device_head)) {
+			if ((dev_ptr = mc_node_get(devid, device_head))) {
 				mc_node_del(dev_ptr, &device_head,
 				    &device_tail);
 				kmem_free(dev_ptr, sizeof (struct device_info));
