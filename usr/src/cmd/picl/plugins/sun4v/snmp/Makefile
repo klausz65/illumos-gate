@@ -32,6 +32,7 @@ OBJECTS=	snmpplugin.o
 
 # Include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 include $(SRC)/Makefile.psm
 include $(SRC)/cmd/picl/plugins/Makefile.com
 
@@ -51,7 +52,7 @@ CPPFLAGS +=	-D_REENTRANT
 #
 #CPPFLAGS +=	-DSNMPPLUGIN_DEBUG
 
-CFLAGS +=	$(CCVERBOSE)
+CFLAGS64 +=	$(CCVERBOSE) -xarch=sparcvis2
 LDLIBS +=	-L$(SRC)/lib/libpicltree/$(MACH)
 LDLIBS +=	-L$(SRC)/cmd/picl/plugins/sun4v/lib/snmp
 LDLIBS +=	-L$(ROOT)/usr/lib/sparcv9

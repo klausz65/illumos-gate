@@ -32,6 +32,7 @@ OBJECTS=	fcal_leds.o fc_led_parse.o fcal_leds_thread.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 ROOT_PLATFORM = $(USR_PLAT_DIR)/SUNW,Netra-T4
 

@@ -28,6 +28,7 @@ PROG=	prtpicl
 OBJS = prtpicl.o
 
 include $(SRC)/cmd/Makefile.cmd
+include $(SRC)/cmd/Makefile.cmd.64
 
 CFLAGS	+= $(CCVERBOSE)
 CPPFLAGS +=	-I$(SRC)/lib/libpicl

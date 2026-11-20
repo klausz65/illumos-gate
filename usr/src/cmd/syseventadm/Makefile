@@ -30,6 +30,7 @@ SRCS =	$(PROG).c
 OBJS =	$(PROG).o
 
 include ../Makefile.cmd
+include ../Makefile.cmd.64
 
 FILEMODE= 0555
 CERRWARN += $(CNOWARN_UNINIT)

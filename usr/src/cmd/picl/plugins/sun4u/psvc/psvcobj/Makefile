@@ -31,6 +31,7 @@ OBJECTS=	psvcobj.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 include $(SRC)/Makefile.psm
 
 include $(SRC)/cmd/picl/plugins/Makefile.com
@@ -45,7 +46,7 @@ USR_PLAT_PSVCOBJ = $(LIBS:%=$(USR_PSM_LIB_DIR)/%)
 
 CPPFLAGS +=	-I$(SRC)/uts/sun4u -I.
 
-CFLAGS +=	$(CCVERBOSE)
+CFLAGS64 +=	$(CCVERBOSE)
 LDLIBS +=	-L$(SRC)/lib/libdevfsevent
 LDLIBS +=	-lc
 

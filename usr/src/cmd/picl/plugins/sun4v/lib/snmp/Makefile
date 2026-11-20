@@ -33,6 +33,7 @@ OBJECTS=	snmplib.o pdu.o asn1.o
 # include library definitions
 include $(SRC)/Makefile.psm
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 ROOT_PLATFORM = $(USR_PLAT_DIR)/sun4v
 
@@ -56,7 +57,7 @@ CPPFLAGS +=	-D_REENTRANT
 #CPPFLAGS +=	-DUSE_SOCKETS
 #LDLIBS +=	-lsocket -lnsl
 
-CFLAGS +=	$(CCVERBOSE) -DBIG_ENDIAN
+CFLAGS64 +=	$(CCVERBOSE) -DBIG_ENDIAN -xarch=sparcvis2
 LDLIBS +=	-lc -lnvpair
 
 .KEEP_STATE:

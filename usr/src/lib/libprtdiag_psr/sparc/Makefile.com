@@ -22,6 +22,7 @@
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 # Copyright 2020 Peter Tribble.
+# Copyright 2026 Klaus Ziegler.
 #
 
 LIBRARY= libprtdiag_psr.a
@@ -40,6 +41,7 @@ OBJECTS= $(PLATFORM_OBJECTS)
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 include $(SRC)/Makefile.psm
 
 SRCS=		$(OBJECTS:%.o=./common/%.c)

@@ -32,6 +32,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <limits.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -504,7 +505,7 @@ fcal_poll_thread(void *args)
 	 */
 	pollthr_created = B_FALSE;
 
-	return ((void *)errno);
+	return ((void *)(uintptr_t)errno);
 }
 
 /*

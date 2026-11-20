@@ -22,12 +22,12 @@
 # Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-#ident	"%Z%%M%	%I%	%E% SMI"
+# Copyright 2026 Klaus Ziegler
 
 . /lib/svc/share/smf_include.sh
 
 sparc_enterprise="SUNW,SPARC-Enterprise"
-OPLHPD=/usr/platform/${sparc_enterprise}/lib/sparcv9/oplhpd
+OPLHPD=/usr/platform/${sparc_enterprise}/lib/oplhpd
 platform=`/sbin/uname -i`
 
 if [ $platform = "$sparc_enterprise" ]; then

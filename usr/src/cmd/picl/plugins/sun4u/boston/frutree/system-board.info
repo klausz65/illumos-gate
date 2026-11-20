@@ -25,19 +25,8 @@
  */
 
 /*
- * ident	"%Z%%M%	%I%	%E% SMI"
- *
  * This file creates the system board structure
  */
-
-/*
- * define a macro to force a #ident line into the output stream
- * otherwise cpp removes it. Use #ifndef because of #included definitions.
- */
-#ifndef id
-#define	id(s)	#ident s
-#endif
-id("%Z%%M%	%I%	%E% SMI")
 
 /*
  * motherboard seeprom source

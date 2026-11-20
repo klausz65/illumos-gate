@@ -202,7 +202,7 @@ i2cparams_load(void)
 
 int32_t
 find_segment(psvc_opaque_t hdlp, char *fru, seg_desc_t *segment,
-    char seg_to_find[2])
+    char *seg_to_find)
 {
 	int32_t seg_found = 0, status;
 	int32_t seg_desc_start = SEG_DESC_START, j;

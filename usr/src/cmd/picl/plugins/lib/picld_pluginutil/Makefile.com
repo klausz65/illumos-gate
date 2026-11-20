@@ -31,6 +31,7 @@ OBJECTS=	picld_pluginutil.o
 
 # include library definitions
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 SRCS=		$(OBJECTS:%.o=../%.c)
 
@@ -44,7 +45,7 @@ XGETFLAGS += -a
 POFILE=	picld_pluginutil.po
 
 CPPFLAGS +=	-I.. -I$(SRC)/lib/libpicl -I$(SRC)/lib/libpicltree
-CFLAGS +=	$(CCVERBOSE)
+CFLAGS64 +=	$(CCVERBOSE)
 CERRWARN +=	$(CNOWARN_UNINIT)
 
 SMOFF += all_func_returns

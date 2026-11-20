@@ -31,6 +31,7 @@ OBJECTS=	fru_access.o cvrt_spd_data.o crcutils.o crcmodel.o
 # include library definitions
 include $(SRC)/Makefile.psm
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 ROOT_PLATFORM = $(USR_PLAT_DIR)/sun4u
 
@@ -52,7 +53,7 @@ HDRCHK    = hdrchk
 
 CPPFLAGS +=	-I$(SRC)/lib/libfru/include
 CPPFLAGS +=	-I$(SRC)/lib/libfruutils/
-CFLAGS +=	$(CCVERBOSE) -DBIG_ENDIAN
+CFLAGS64 +=	$(CCVERBOSE) -DBIG_ENDIAN
 LDLIBS +=	-L$(SRC)/lib/libfruutils/$(MACH)
 LDLIBS +=	-lc -lpicltree -lfruutils
 LDLIBS +=	-ldevinfo

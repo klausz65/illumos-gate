@@ -29,6 +29,7 @@ VERS=		.1
 OBJECTS=	frupicltree.o
 
 include $(SRC)/lib/Makefile.lib
+include $(SRC)/lib/Makefile.lib.64
 
 CLOBBERFILES += $(LIBLINKS)
 

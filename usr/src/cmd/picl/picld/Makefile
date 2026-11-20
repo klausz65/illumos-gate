@@ -28,6 +28,7 @@ PROG=		picld
 MANIFEST=	picl.xml
 
 include ../../Makefile.cmd
+include ../../Makefile.cmd.64
 
 ROOTMANIFESTDIR=	$(ROOTSVCSYSTEM)
 
