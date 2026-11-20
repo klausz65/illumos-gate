@@ -1344,7 +1344,20 @@ dls_devnet_hold_by_dev(dev_t dev, dls_dl_handle_t *ddhp)
 	}
 	mutex_enter(&ddp->dd_mutex);
 	VERIFY(ddp->dd_ref > 0);
-	if (DD_NOT_VISIBLE(ddp->dd_flags)) {
+        /*
+         * Allow device-based DLPI access to a physical link while
+         * its datalink ID is not yet available. This can happen
+         * during diskless boot, before dlmgmtd is running.
+         *
+         * The caller, dld_str_attach(), enters the MAC perimeter
+         * before using the link. This serializes the attach with
+         * dls_devnet_create(), which holds the same perimeter while
+         * completing the initial link setup.
+         *
+         * DD_INITIALIZING must remain set until the link obtains
+         * a valid datalink ID through dls_devnet_recreate().
+         */
+	if (ddp->dd_flags & DD_CONDEMNED) {
 		mutex_exit(&ddp->dd_mutex);
 		i_dls_devnet_hashmap_exit();
 		return (ENOENT);
