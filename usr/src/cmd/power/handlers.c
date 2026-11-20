@@ -1168,7 +1168,12 @@ sfpath(void)
 		new_cc.cf_type = CFT_UFS;
 		dev = stbuf.st_dev;
 	} else if (S_ISBLK(stbuf.st_mode)) {
-		if (is_good_slice(sfile, &err_fmt)) {
+		/*
+		 * ZVOLs do not have a disk partition table.
+		 * Check the partition label for physical slices only.
+		 */
+		if (strncmp(sfile, "/dev/zvol/dsk/", 14) == 0 ||
+		    is_good_slice(sfile, &err_fmt)) {
 			switch (ztop(sfile, diskname)) {
 				case 1:
 					new_cc.cf_type = CFT_ZVOL;
