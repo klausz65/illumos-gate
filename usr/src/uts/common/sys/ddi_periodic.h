@@ -65,7 +65,11 @@ typedef struct ddi_periodic_impl {
  */
 void ddi_periodic_init(void);
 void ddi_periodic_fini(void);
+#if defined(__sparcv9)
+uint_t ddi_periodic_softintr(int level);
+#else
 void ddi_periodic_softintr(int level);
+#endif
 timeout_t i_timeout(void (*)(void *), void *, hrtime_t, int);
 void i_untimeout(timeout_t);
 
