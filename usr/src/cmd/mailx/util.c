@@ -427,17 +427,19 @@ phrase(char *name, int token, int comma)
 {
 	register char c;
 	register char *cp, *cp2;
-	char *bufend, *nbufp;
+	char *bufend, *nbufp, *allocbuf = NOSTR;
 	int gotlt, lastsp, didq;
 	char nbuf[LINESIZE];
 	int nesting;
 
 	if (name == NOSTR)
 		return(NOSTR);
-	if (strlen(name) >= (unsigned)LINESIZE)
-		nbufp = (char *)salloc(strlen(name));
-	else
+	if (strlen(name) >= (unsigned)LINESIZE) {
+		allocbuf = (char *)salloc(strlen(name) + 1);
+		nbufp = allocbuf;
+	} else {
 		nbufp = nbuf;
+	}
 	gotlt = 0;
 	lastsp = 0;
 	bufend = nbufp;
@@ -548,8 +550,13 @@ phrase(char *name, int token, int comma)
 		}
 	}
 	*cp2 = 0;
-	return (token ? --cp : equal(name, nbufp) ? name :
-	    nbufp == nbuf ? savestr(nbuf) : nbufp);
+	if (token)
+		return (--cp);
+	if (equal(name, nbufp))
+		return (name);
+	if (allocbuf != NOSTR)
+		return (allocbuf);
+	return (savestr(nbuf));
 }
 
 char *
