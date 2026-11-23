@@ -258,7 +258,8 @@ wep_encrypt(struct ieee80211_key *key, mblk_t *mp, int hdrlen)
 	    MBLKL(mp) - (hdrlen + wep.ic_header));
 
 	/* tack on ICV */
-	*(uint32_t *)crcbuf = LE_32(~crc);
+	crc = LE_32(~crc);
+	bcopy(&crc, crcbuf, sizeof (crc));
 	icv = mp->b_wptr;
 	mp->b_wptr += IEEE80211_WEP_CRCLEN;
 	(void) rc4_crypt(ctx, crcbuf, icv, IEEE80211_WEP_CRCLEN);
@@ -272,6 +273,7 @@ static int
 wep_decrypt(struct ieee80211_key *key, mblk_t *mp, int hdrlen)
 {
 	uint8_t rc4key[IEEE80211_WEP_IVLEN + IEEE80211_KEYBUF_SIZE];
+	uint32_t rxcrc;
 	uint8_t crcbuf[IEEE80211_WEP_CRCLEN];
 	uint8_t *icv;
 	uint32_t crc;
@@ -312,7 +314,8 @@ wep_decrypt(struct ieee80211_key *key, mblk_t *mp, int hdrlen)
 
 	(void) rc4_final(ctx, crcbuf, IEEE80211_WEP_CRCLEN);
 
-	return (crc == ~LE_32(*(uint32_t *)crcbuf));
+	bcopy(crcbuf, &rxcrc, sizeof (rxcrc));
+	return (crc == ~LE_32(rxcrc));
 }
 
 /*

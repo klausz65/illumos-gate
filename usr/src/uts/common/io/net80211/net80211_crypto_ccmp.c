@@ -413,12 +413,11 @@ ccmp_init(struct ieee80211_frame *wh, uint64_t pn, size_t dlen,
 		b0[1] = aad[24];
 		aad[1] = 22 + 2;
 	} else {
-		*(uint16_t *)&aad[24] = 0;
+		aad[24] = aad[25] = 0;
 		b0[1] = 0;
 		aad[1] = 22;
 	}
-	*(uint16_t *)&aad[26] = 0;
-	*(uint32_t *)&aad[28] = 0;
+	bzero(&aad[26], 6);
 }
 
 static int
