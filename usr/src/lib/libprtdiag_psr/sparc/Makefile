@@ -25,7 +25,7 @@
 #
 
 PRTDIAG_PLATFORMS=	desktop tazmo javelin serengeti \
-			littleneck daktari cherrystone \
+			littleneck starcat daktari cherrystone \
 			lw8 ontario schumacher opl montoya monza
 
 all :=		TARGET= all

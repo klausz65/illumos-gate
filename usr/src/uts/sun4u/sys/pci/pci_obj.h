@@ -60,6 +60,7 @@ extern "C" {
 #ifdef PCI_DMA_TEST
 #include <sys/pci/pci_test.h>
 #endif
+#include <sys/pci/pci_axq.h>
 
 #ifdef	__cplusplus
 }

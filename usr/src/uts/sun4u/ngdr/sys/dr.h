@@ -274,6 +274,7 @@ typedef struct dr_handle {
 	sbd_cmd_t	h_sbdcmd;	/* copied-in ioctl cmd struct */
 	sbd_ioctl_arg_t	*h_iap;		/* ptr to caller-space cmd struct */
 	dr_devset_t	h_devset;	/* based on h_dev */
+	uint_t		h_ndi;
 	drmach_opts_t	h_opts;		/* command-line platform options */
 } dr_handle_t;
 
