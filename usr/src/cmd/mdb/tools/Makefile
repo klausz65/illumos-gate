@@ -28,7 +28,8 @@
 
 include $(SRC)/Makefile.master
 
-SUBDIRS = scripts setdynflag
+SUBDIRS_sparc = findfp
+SUBDIRS = scripts setdynflag $(SUBDIRS_$(MACH))
 
 .PARALLEL: $(SUBDIRS)
 

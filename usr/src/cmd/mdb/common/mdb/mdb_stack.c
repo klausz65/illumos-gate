@@ -25,7 +25,9 @@
 #include <mdb/mdb_modapi.h>
 #include <mdb/mdb_debug.h>
 #include <mdb/mdb_ctf.h>
+#if defined(__i386) || defined(__amd64)
 #include <mdb/mdb_isautil.h>
+#endif
 #include <mdb/mdb_stack.h>
 #include <mdb/mdb.h>
 
@@ -130,6 +132,7 @@ mdb_stack_frame(mdb_stack_frame_hdl_t *datap, uintptr_t pc, uintptr_t bp,
 	ret = mdb_tgt_lookup_by_addr(data->msfd_tgt, pc, MDB_TGT_SYM_FUZZY,
 	    NULL, 0, &sym, &msi);
 
+#if defined(__i386) || defined(__amd64)
 	if (ret != 0 || sym.st_value == pc) {
 		/*
 		 * One of two things is going on here. Either:
@@ -161,6 +164,7 @@ mdb_stack_frame(mdb_stack_frame_hdl_t *datap, uintptr_t pc, uintptr_t bp,
 				npc = pc - 1;
 		}
 	}
+#endif
 
 	if (ret == 0 && (data->msfd_flags & MSF_TYPES)) {
 		if (mdb_ctf_func_info(&sym, &msi, &mcfi) == 0)
