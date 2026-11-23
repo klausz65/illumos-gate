@@ -192,6 +192,8 @@ wpa_driver_wifi_set_key(dladm_handle_t handle, datalink_id_t linkid,
     wpa_alg alg, unsigned char *addr, int key_idx, boolean_t set_tx,
     uint8_t *seq, uint32_t seq_len, uint8_t *key, uint32_t key_len)
 {
+	uint64_t rsc = 0;
+	size_t i;
 	char *alg_name;
 	dladm_wlan_cipher_t cipher;
 	dladm_wlan_bssid_t bss;
@@ -220,10 +222,14 @@ wpa_driver_wifi_set_key(dladm_handle_t handle, datalink_id_t linkid,
 		return (-1);
 	}
 
+	/* The sequence counter is little endian and may be unaligned. */
+	for (i = 0; i < seq_len && i < sizeof (rsc); i++)
+		rsc |= (uint64_t)seq[i] << (8 * i);
+
 	wpa_printf(MSG_DEBUG, "wpa_driver_wifi_set_key: alg=%s key_idx=%d"
-	    " set_tx=%d seq_len=%d seq=%d key_len=%d",
+	    " set_tx=%d seq_len=%d seq=%llu key_len=%d",
 	    alg_name, key_idx, set_tx,
-	    seq_len, *(uint64_t *)(uintptr_t)seq, key_len);
+	    seq_len, (u_longlong_t)rsc, key_len);
 
 	if (seq_len > sizeof (uint64_t)) {
 		wpa_printf(MSG_DEBUG, "wpa_driver_wifi_set_key:"
@@ -233,7 +239,7 @@ wpa_driver_wifi_set_key(dladm_handle_t handle, datalink_id_t linkid,
 	(void) memcpy(bss.wb_bytes, addr, DLADM_WLAN_BSSID_LEN);
 
 	status = dladm_wlan_wpa_set_key(handle, linkid, cipher, &bss, set_tx,
-	    *(uint64_t *)(uintptr_t)seq, key_idx, key, key_len);
+	    rsc, key_idx, key, key_len);
 
 	return (WPA_STATUS(status));
 }
