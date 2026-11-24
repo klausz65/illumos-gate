@@ -221,8 +221,8 @@ SHA1Update(SHA1_CTX *ctx, const void *inptr, size_t input_len)
 	if (input_len >= buf_len) {
 #ifdef _KERNEL
 		kfpu_t *fpu;
+		uint8_t fpua[sizeof (kfpu_t) + GSR_SIZE + VIS_ALIGN];
 		if (fpu_exists) {
-			uint8_t fpua[sizeof (kfpu_t) + GSR_SIZE + VIS_ALIGN];
 			size_t len = (input_len + buf_index) & ~0x3f;
 			int svfp_ok;
 
