@@ -525,9 +525,39 @@ prhasx(proc_t *p)
 }
 
 /*
+ * SPARC V8+ extended registers have a fixed size.
+ */
+boolean_t
+prwriteminxreg(size_t *sizep)
+{
+	extern int xregs_exists;
+
+	if (!xregs_exists)
+		return (B_FALSE);
+
+	*sizep = 0;
+	return (B_TRUE);
+}
+
+/*
+ * Return the remaining size of the extended register set.
+ */
+boolean_t
+prwritesizexreg(const void *argp, size_t *sizep)
+{
+	extern int xregs_exists;
+
+	if (!xregs_exists)
+		return (B_FALSE);
+
+	*sizep = sizeof (prxregset_t);
+	return (B_TRUE);
+}
+
+/*
  * Get the size of the extra registers.
  */
-int
+size_t
 prgetprxregsize(proc_t *p)
 {
 	return (xregs_getsize(p));
@@ -537,22 +567,29 @@ prgetprxregsize(proc_t *p)
  * Get extra registers.
  */
 void
-prgetprxregs(klwp_t *lwp, caddr_t prx)
+prgetprxregs(klwp_t *lwp, prxregset_t *prx)
 {
 	extern void xregs_get(struct _klwp *, caddr_t);
 
-	(void) xregs_get(lwp, prx);
+	xregs_get(lwp, (caddr_t)prx);
 }
 
 /*
  * Set extra registers.
  */
-void
-prsetprxregs(klwp_t *lwp, caddr_t prx)
+int
+prsetprxregs(klwp_t *lwp, prxregset_t *prx)
 {
 	extern void xregs_set(struct _klwp *, caddr_t);
 
-	(void) xregs_set(lwp, prx);
+	if (!prhasx(lwptoproc(lwp)))
+		return (EINVAL);
+
+	if (prx->pr_type != XR_TYPE_V8P)
+		return (EINVAL);
+
+	xregs_set(lwp, (caddr_t)prx);
+	return (0);
 }
 
 /*
