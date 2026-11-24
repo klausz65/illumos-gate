@@ -95,7 +95,9 @@
 #include <mdb/mdb_conf.h>
 #include <mdb/mdb_err.h>
 #include <mdb/mdb_types.h>
+#if defined(__i386) || defined(__amd64)
 #include <mdb/mdb_isautil.h>
+#endif
 
 #include <mdb/mdb.h>
 
@@ -4628,25 +4630,32 @@ pt_getareg(mdb_tgt_t *t, mdb_tgt_tid_t tid,
 
 #if defined(__sparc) && defined(_ILP32)
 			/*
-			 * If we are debugging on 32-bit SPARC, the globals and
-			 * outs can have 32 upper bits hiding in the xregs.
+			 * On 32-bit SPARC, recover the upper 32 bits of V8+
+			 * global and output registers from the extended register set.
 			 */
-			/* gcc doesn't like >= R_G0 because R_G0 == 0 */
 			int is_g = (rd_num == R_G0 ||
-			    rd_num >= R_G1 && rd_num <= R_G7);
+			    (rd_num >= R_G1 && rd_num <= R_G7));
 			int is_o = (rd_num >= R_O0 && rd_num <= R_O7);
-			prxregset_t xrs;
+			prxregset_t *xrs = NULL;
+			size_t xregsize = 0;
 
-			if (is_g && PTL_GETXREGS(t, tid, &xrs) == 0 &&
-			    xrs.pr_type == XR_TYPE_V8P) {
-				r |= (uint64_t)xrs.pr_un.pr_v8p.pr_xg[
-				    rd_num - R_G0 + XR_G0] << 32;
-			}
+			if ((is_g || is_o) &&
+			    PTL_GETXREGS(t, tid, &xrs, &xregsize) == 0) {
 
-			if (is_o && PTL_GETXREGS(t, tid, &xrs) == 0 &&
-			    xrs.pr_type == XR_TYPE_V8P) {
-				r |= (uint64_t)xrs.pr_un.pr_v8p.pr_xo[
-				    rd_num - R_O0 + XR_O0] << 32;
+				if (xregsize >= sizeof (*xrs) &&
+				    xrs->pr_type == XR_TYPE_V8P) {
+					if (is_g) {
+						r |= (uint64_t)
+						    xrs->pr_un.pr_v8p.pr_xg[
+						    rd_num - R_G0 + XR_G0] << 32;
+					} else {
+						r |= (uint64_t)
+						    xrs->pr_un.pr_v8p.pr_xo[
+						    rd_num - R_O0 + XR_O0] << 32;
+					}
+				}
+
+				PTL_FREEXREGS(t, xrs, xregsize);
 			}
 #endif	/* __sparc && _ILP32 */
 
