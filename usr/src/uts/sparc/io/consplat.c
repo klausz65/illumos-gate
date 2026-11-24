@@ -219,6 +219,22 @@ plat_stdout_is_framebuffer(void)
 	return (prom_stdout_is_framebuffer());
 }
 
+/*
+ * Switch the prom_* layer to using kernel routines for I/O after the system
+ * is sufficiently booted
+ */
+void
+prom_io_use_kernel()
+{
+	/* this function used to be called kadb_uses_kernel() before #17342
+         * in i86pc/os/machdep.c the following code is beeing used:
+	 *	sysp = &kern_sysp;
+	 *#if defined(__xpv)
+	 *	using_kern_polledio = 1;
+	 *#endif
+	 */
+}
+
 void
 plat_tem_get_inverses(int *inverse, int *inverse_screen)
 {
