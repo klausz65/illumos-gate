@@ -251,6 +251,29 @@ static const xarch_table_t xtbl[] = {
 	{ "pentium_pro", SS11,	{ "-march=pentiumpro" } },
 	{ "sse",	SS11, { "-msse", "-mfpmath=sse" } },
 	{ "sse2",	SS11, { "-msse2", "-mfpmath=sse" } },
+#elif defined(__sparc)
+	{ "v8",		(SS11|M32), { "-m32", "-mcpu=ultrasparc", "-mno-v8plus" } },
+	{ "v8plus",	(SS11|M32), { "-m32", "-mcpu=ultrasparc", "-mv8plus" } },
+	{ "v8plusa",	(SS11|M32), { "-m32", "-mcpu=ultrasparc", "-mvis" } },
+	{ "v8plusb",	(SS11|M32), { "-m32", "-mcpu=ultrasparc3", "-mvis2" } },
+	{ "v8plusc",	(SS11|M32), { "-m32", "-mcpu=niagara", "-mvis2" } },
+	{ "v8plusd",	(SS11|M32), { "-m32", "-mcpu=niagara3", "-mvis3" } },
+	{ "v9",		(SS11|M64), { "-m64", "-mcpu=ultrasparc", "-mvis" } },
+	{ "v9a",	(SS11|M64), { "-m64", "-mcpu=ultrasparc", "-mvis" } },
+	{ "v9b",	(SS11|M64), { "-m64", "-mcpu=ultrasparc3", "-mvis2" } },
+	{ "v9c",	(SS11|M64), { "-m64", "-mcpu=niagara", "-mvis2" } },
+	{ "v9d",	(SS11|M64), { "-m64", "-mcpu=niagara3", "-mvis3" } },
+	{ "v9v",	(SS11|M64), { "-m64", "-mcpu=niagara", "-mvis" } },
+	{ "sparc",	SS12, { "-mcpu=ultrasparc", "-mvis" } },
+	{ "sparcvis",	SS12, { "-mcpu=ultrasparc", "-mvis" } },
+	{ "sparcvis2",	SS12, { "-mcpu=ultrasparc3", "-mvis2" } },
+	{ "sparcvis3",	SS12, { "-m64", "-mcpu=niagara3", "-mvis3" } },
+	{ "niagara",	SS12, { "-m64", "-mcpu=niagara", "-mvis2" } },
+	{ "niagara2",	SS12, { "-m64", "-mcpu=niagara2", "-mvis2" } },
+	{ "niagara3",	SS12, { "-m64", "-mcpu=niagara3", "-mvis3" } },
+	{ "niagara4",	SS12, { "-m64", "-mcpu=niagara4", "-mvis3" } },
+	{ "niagara7",	SS12, { "-m64", "-mcpu=niagara7", "-mvis4" } },
+	{ "m8",	SS12, { "-m64", "-mcpu=m8", "-mvis4b" } }
 #endif
 };
 
@@ -262,9 +285,40 @@ static const char *xchip_tbl[] = {
 	"486",		"-mtune=i486", NULL,
 	"pentium",	"-mtune=pentium", NULL,
 	"pentium_pro",  "-mtune=pentiumpro", NULL,
+#elif defined(__sparc)
+	"ultra",	"-mtune=ultrasparc", NULL,
+	"ultra3",	"-mtune=ultrasparc3", NULL,
+	"niagara",	"-mtune=niagara", NULL,
+	"niagara2",	"-mtune=niagara2", NULL,
+	"niagara3",	"-mtune=niagara3", NULL,
+	"niagara4",	"-mtune=niagara4", NULL,
+	"niagara7",	"-mtune=niagara7", NULL,
+	"m8",		"-mtune=m8", NULL,
 #endif
 	NULL,		NULL
 };
+
+static const char *xcode_tbl[] = {
+#if defined(__sparc)
+	"abs32",	"-fno-pic", "-mcmodel=medlow", NULL,
+	"abs44",	"-fno-pic", "-mcmodel=medmid", NULL,
+	"abs64",	"-fno-pic", "-mcmodel=medany", NULL,
+	"pic13",	"-fpic", NULL,
+	"pic32",	"-fPIC", NULL,
+#endif
+	NULL,		NULL
+};
+
+static const char *xregs_tbl[] = {
+#if defined(__sparc)
+	"appl",		"-mapp-regs", NULL,
+	"no%appl",	"-mno-app-regs", NULL,
+	"float",	"-mfpu", NULL,
+	"no%float",	"-mno-fpu", NULL,
+#endif	/* __sparc */
+	NULL,		NULL
+};
+
 
 static const char *xtarget_tbl[] = {
 #if defined(__x86)
@@ -757,6 +811,11 @@ do_gcc(cw_ictx_t *ctx)
 				newae(ctx->i_ae, "-msave-args");
 				break;
 			}
+#else
+			if (strncmp(arg, "-Wc,-xcode=", 11) == 0) {
+				xlate(ctx->i_ae, arg + 11, xcode_tbl);
+				break;
+			}
 #endif	/* __x86 */
 			error(arg);
 			break;
@@ -845,6 +904,13 @@ do_gcc(cw_ictx_t *ctx)
 						nomem();
 					newae(ctx->i_ae, s);
 					free(s);
+					break;
+				}
+				error(arg);
+				break;
+			case 'r':
+				if (strncmp(arg, "-xregs=", 7) == 0) {
+					xlate(ctx->i_ae, arg + 7, xregs_tbl);
 					break;
 				}
 				error(arg);
