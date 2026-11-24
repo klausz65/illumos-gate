@@ -31,6 +31,7 @@
 #include <sys/stack.h>
 #include <sys/frame.h>
 #include <memory.h>
+#include <stdlib.h>
 #include <ucontext.h>
 #include <setjmp.h>
 #include "sigjmp_struct.h"
@@ -95,4 +96,5 @@ siglongjmp(sigjmp_buf env, int val)
 	}
 
 	(void) setcontext(&uc);
+	abort();
 }
