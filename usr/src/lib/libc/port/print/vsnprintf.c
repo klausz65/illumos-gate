@@ -44,6 +44,7 @@
 #ifdef _C89_INTMAX32
 #pragma redefine_extname vsnprintf _vsnprintf_c89
 #pragma redefine_extname snprintf _snprintf_c89
+#pragma redefine_extname vfprintf _vfprintf_c89
 #endif
 
 /*

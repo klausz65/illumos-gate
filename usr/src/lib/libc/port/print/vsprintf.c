@@ -53,6 +53,7 @@
  */
 #pragma redefine_extname vsprintf _vsprintf_c89
 #pragma redefine_extname sprintf _sprintf_c89
+#pragma redefine_extname vfprintf _vfprintf_c89
 #endif
 
 int
