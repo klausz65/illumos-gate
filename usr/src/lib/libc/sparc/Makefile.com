@@ -153,6 +153,7 @@ GENOBJS=			\
 	endian.o		\
 	errlst.o		\
 	getctxt.o		\
+	getctxt_extd.o		\
 	ladd.o			\
 	lmul.o			\
 	lock.o			\
@@ -175,7 +176,9 @@ GENOBJS=			\
 	strncpy.o		\
 	strnlen.o		\
 	swapctxt.o		\
-	sync_instruction_memory.o
+	swapctxt_extd.o		\
+	sync_instruction_memory.o	\
+	ucontext_alloc.o
 
 # sysobjs that contain large-file interfaces
 COMSYSOBJS64=			\
@@ -644,7 +647,7 @@ PORTGEN=			\
 	tfind.o			\
 	time_data.o		\
 	time_gdata.o		\
-	timespec_get.o		\
+	timespec_cstd.o		\
 	tls_data.o		\
 	truncate.o		\
 	tsdalloc.o		\
@@ -672,29 +675,25 @@ PORTINET=			\
 	inet_pton.o
 
 PORTPRINT_W=			\
-	doprnt_w.o
+	doprnt_w.o		\
+	vwprintf.o
 
 PORTPRINT=			\
 	asprintf.o		\
 	doprnt.o		\
-	fprintf.o		\
-	printf.o		\
-	snprintf.o		\
-	sprintf.o		\
+	vdprintf.o		\
 	vfprintf.o		\
-	vprintf.o		\
 	vsnprintf.o		\
-	vsprintf.o		\
-	vwprintf.o		\
-	wprintf.o
+	vsprintf.o
+
+PORTPRINT_C89_W=		\
+	vwprintf_c89.o
 
 # c89 variants to support 32-bit size of c89 u/intmax_t (32-bit libc only)
 PORTPRINT_C89=			\
 	vfprintf_c89.o		\
-	vprintf_c89.o		\
 	vsnprintf_c89.o		\
-	vsprintf_c89.o		\
-	vwprintf_c89.o
+	vsprintf_c89.o
 
 PORTSTDIO_C89=			\
 	vscanf_c89.o		\
@@ -775,6 +774,8 @@ PORTI18N=			\
 	putwchar.o		\
 	putws.o			\
 	strtows.o		\
+	wcslcat.o		\
+	wcslcpy.o		\
 	wcsnlen.o		\
 	wcstoimax.o		\
 	wcstol.o		\
@@ -1038,6 +1039,10 @@ PORTREGEX64=			\
 
 VALUES=	values-Xa.o
 
+BITOBJS=			\
+	stdbit.o		\
+	sparc_bitops.o
+
 MOSTOBJS=			\
 	$(STRETS)		\
 	$(CRTOBJS)		\
@@ -1060,6 +1065,7 @@ MOSTOBJS=			\
 	$(PORTLOCALE)		\
 	$(PORTPRINT)		\
 	$(PORTPRINT_C89)	\
+	$(PORTPRINT_C89_W)	\
 	$(PORTPRINT_W)		\
 	$(PORTREGEX)		\
 	$(PORTREGEX64)		\
@@ -1083,7 +1089,8 @@ MOSTOBJS=			\
 	$(SYSOBJS)		\
 	$(COMSYSOBJS64)		\
 	$(SYSOBJS64)		\
-	$(VALUES)
+	$(VALUES)		\
+	$(BITOBJS)
 
 TRACEOBJS=			\
 	plockstat.o
@@ -1232,6 +1239,9 @@ $(PORTPRINT_W:%=pics/%) := \
 # printf/scanf functions to support c89-sized intmax_t variables
 $(PORTPRINT_C89:%=pics/%) := \
 	CPPFLAGS += -D_C89_INTMAX32
+
+$(PORTPRINT_C89_W:%=pics/%) := \
+	CPPFLAGS += -D_C89_INTMAX32 -D_WIDE
 
 $(PORTSTDIO_C89:%=pics/%) := \
 	CPPFLAGS += -D_C89_INTMAX32

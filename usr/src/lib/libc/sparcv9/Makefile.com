@@ -150,6 +150,7 @@ GENOBJS=			\
 	ecvt.o			\
 	endian.o		\
 	getctxt.o		\
+	getctxt_extd.o		\
 	lock.o			\
 	makectxt.o		\
 	memchr.o		\
@@ -167,7 +168,9 @@ GENOBJS=			\
 	strncpy.o		\
 	strnlen.o		\
 	swapctxt.o		\
-	sync_instruction_memory.o
+	swapctxt_extd.o		\
+	sync_instruction_memory.o	\
+	ucontext_alloc.o
 
 # Preserved solely to ease maintenance of 32-bit and 64-bit library builds
 # This macro should ALWAYS be empty; native APIs are already 'large file'.
@@ -602,7 +605,7 @@ PORTGEN=			\
 	tfind.o			\
 	time_data.o		\
 	time_gdata.o		\
-	timespec_get.o		\
+	timespec_cstd.o		\
 	tls_data.o		\
 	truncate.o		\
 	tsdalloc.o		\
@@ -630,21 +633,16 @@ PORTINET=			\
 	inet_pton.o
 
 PORTPRINT_W=			\
-	doprnt_w.o
+	doprnt_w.o		\
+	vwprintf.o
 
 PORTPRINT=			\
 	asprintf.o		\
 	doprnt.o		\
-	fprintf.o		\
-	printf.o		\
-	snprintf.o		\
-	sprintf.o		\
+	vdprintf.o		\
 	vfprintf.o		\
-	vprintf.o		\
 	vsnprintf.o		\
-	vsprintf.o		\
-	vwprintf.o		\
-	wprintf.o
+	vsprintf.o
 
 # Preserved solely to ease maintenance of 32-bit and 64-bit library builds
 # This macro should ALWAYS be empty; native APIs are already 'large file'.
@@ -719,6 +717,8 @@ PORTI18N=			\
 	putwchar.o		\
 	putws.o			\
 	strtows.o		\
+	wcslcat.o		\
+	wcslcpy.o		\
 	wcsnlen.o		\
 	wcstoimax.o		\
 	wcstol.o		\
@@ -981,6 +981,10 @@ PORTREGEX=			\
 
 VALUES=	values-Xa.o
 
+BITOBJS=			\
+	stdbit.o		\
+	sparc_bitops.o
+
 MOSTOBJS=			\
 	$(STRETS)		\
 	$(CRTOBJS)		\
@@ -1023,7 +1027,8 @@ MOSTOBJS=			\
 	$(SYSOBJS)		\
 	$(COMSYSOBJS64)		\
 	$(SYSOBJS64)		\
-	$(VALUES)
+	$(VALUES)		\
+	$(BITOBJS)
 
 TRACEOBJS=			\
 	plockstat.o
@@ -1128,6 +1133,21 @@ $(DYNLIB) := CRTN = crtn.o
 
 pics/_Qp%.o := CFLAGS64 += -I$(LIBCDIR)/$(MACH)/fp
 pics/_Q%.o := sparcv9_COPTFLAG = -xO4 -xchip=ultra
+
+#
+# Common SPARC context implementations.
+#
+pics/getctxt_extd.o: $(LIBCDIR)/sparc/gen/getctxt_extd.c
+	$(COMPILE.c) -o $@ $(LIBCDIR)/sparc/gen/getctxt_extd.c
+	$(POST_PROCESS_O)
+
+pics/swapctxt_extd.o: $(LIBCDIR)/sparc/gen/swapctxt_extd.c
+	$(COMPILE.c) -o $@ $(LIBCDIR)/sparc/gen/swapctxt_extd.c
+	$(POST_PROCESS_O)
+
+pics/ucontext_alloc.o: $(LIBCDIR)/sparc/gen/ucontext_alloc.c
+	$(COMPILE.c) -o $@ $(LIBCDIR)/sparc/gen/ucontext_alloc.c
+	$(POST_PROCESS_O)
 
 # large-file-aware components that should be built large
 
