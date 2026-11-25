@@ -38,11 +38,13 @@
 ./kernel/drv/amd64/pcn
 ./kernel/drv/pcser
 ./kernel/drv/amd64/pcser
+./kernel/drv/sparcv9/pcser
 ./kernel/drv/sdpib
 ./kernel/drv/usbser_edge
 ./kernel/kmdb/mpt
 ./kernel/kmdb/nfs
 ./kernel/kmdb/amd64/nfs
+./kernel/kmdb/sparcv9/nfs
 ./kernel/misc/klmmod
 ./kernel/misc/amd64/klmmod
 ./kernel/misc/klmops
@@ -55,8 +57,12 @@
 ./lib/crypto/kcfd
 ./lib/libc_i18n.a
 ./lib/amd64/libc_i18n.a
+./lib/sparcv9/libc_i18n.a
 ./platform/i86pc/kernel/cpu/cpu_ms.GenuineIntel.6.46
 ./platform/i86pc/kernel/cpu/cpu_ms.GenuineIntel.6.47
+./platform/sun4u/kernel/drv/sparcv9/ctsmc
+./platform/sun4v/kernel/drv/ncp.conf
+./platform/sun4v/kernel/drv/n2cp.conf
 ./usr/has
 ./usr/has/bin
 ./usr/has/bin/patch
@@ -73,11 +79,15 @@
 ./usr/kernel/strmod/amd64
 ./usr/kernel/drv
 ./usr/kernel/drv/amd64
+./usr/kernel/drv/sparcv9
 ./usr/kernel/drv/amd64/llc2
+./usr/kernel/drv/sparcv9/llc2
 ./usr/kernel/drv/llc2.conf
 ./usr/kernel/drv/llc2
 ./usr/lib/amd64/libike.so
 ./usr/lib/amd64/llib-like.ln
+./usr/lib/sparcv9/libike.so
+./usr/lib/sparcv9/llib-like.ln
 ./usr/lib/locale
 ./usr/lib/locale/C
 ./usr/lib/locale/C/LC_COLLATE
@@ -107,6 +117,8 @@
 ./usr/lib/iconv/iconv_data
 ./usr/lib/inet/i86
 ./usr/lib/inet/i86/in.iked
+./usr/lib/inet/sparcv7
+./usr/lib/inet/sparcv7/in.iked
 ./usr/lib/libike.so
 ./usr/lib/llc2
 ./usr/lib/llc2/llc2_config
@@ -122,6 +134,7 @@
 ./usr/lib/locale/iso_8859_1
 ./usr/lib/locale/iso_8859_1/LC_CTYPE
 ./usr/lib/locale/iso_8859_1/amd64
+./usr/lib/locale/iso_8859_1/sparcv9
 ./usr/lib/locale/C/locale_description
 ./usr/lib/localedef
 ./usr/lib/localedef/extensions
@@ -135,6 +148,7 @@
 ./usr/lib/mdb/kvm/mpt.so
 ./usr/lib/mdb/kvm/nfs.so
 ./usr/lib/mdb/kvm/amd64/nfs.so
+./usr/lib/mdb/kvm/sparcv9/nfs.so
 ./usr/lib/nfs/lockd
 ./usr/lib/snmp
 ./usr/lib/snmp/mibiisa

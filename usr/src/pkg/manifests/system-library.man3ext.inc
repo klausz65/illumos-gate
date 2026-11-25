@@ -117,5 +117,7 @@ link path=usr/share/man/man3ext/setkey.3ext target=crypt.3ext
 file path=usr/share/man/man3ext/sha1.3ext
 file path=usr/share/man/man3ext/sha2.3ext
 file path=usr/share/man/man3ext/stdarg.3ext
+file path=usr/share/man/man3ext/tsalarm_get.3ext
+link path=usr/share/man/man3ext/tsalarm_set.3ext target=tsalarm_get.3ext
 file path=usr/share/man/man3ext/varargs.3ext
 link path=usr/share/man/man3ext/write_vtoc.3ext target=read_vtoc.3ext
