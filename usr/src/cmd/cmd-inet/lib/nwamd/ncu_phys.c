@@ -1538,6 +1538,36 @@ do_connect(uint32_t link_id, dladm_wlan_attr_t *attrp, dladm_wlan_key_t *key,
 	return (status);
 }
 
+/*
+ * A connect attempt failed.  If the link NCU is still waiting for that
+ * connection, leave (offline*, connecting): the periodic scan selects the
+ * known WLAN again and asks for (offline*, connecting), which
+ * nwamd_ncu_handle_state_event() drops as "already in state", so the
+ * connect would never be retried.  Move to need-selection instead; the next
+ * scan then selects the WLAN again and the change back to connecting
+ * starts a new connect attempt.
+ */
+static void
+wlan_connect_failed(const char *linkname)
+{
+	nwamd_object_t ncu_obj;
+
+	if ((ncu_obj = nwamd_ncu_object_find(NWAM_NCU_TYPE_LINK, linkname))
+	    == NULL)
+		return;
+
+	if (ncu_obj->nwamd_object_state == NWAM_STATE_OFFLINE_TO_ONLINE &&
+	    ncu_obj->nwamd_object_aux_state ==
+	    NWAM_AUX_STATE_LINK_WIFI_CONNECTING) {
+		nlog(LOG_INFO, "wlan_connect_thread: %s will retry after the "
+		    "next scan", linkname);
+		nwamd_object_set_state(NWAM_OBJECT_TYPE_NCU,
+		    ncu_obj->nwamd_object_name, NWAM_STATE_OFFLINE_TO_ONLINE,
+		    NWAM_AUX_STATE_LINK_WIFI_NEED_SELECTION);
+	}
+	nwamd_object_release(ncu_obj);
+}
+
 static void *
 wlan_connect_thread(void *arg)
 {
@@ -1648,6 +1678,7 @@ wlan_connect_thread(void *arg)
 		    NULL, 0, 0)) != DLADM_STATUS_OK) {
 			nlog(LOG_ERR, "wlan_connect_thread: connect failed for "
 			    "%s", linkname);
+			wlan_connect_failed(linkname);
 			goto done_unlocked;
 		}
 		if (status == DLADM_STATUS_OK)
