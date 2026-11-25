@@ -254,9 +254,20 @@ rusagesys(int code, void *arg1, void *arg2, void *arg3, void *arg4)
 		return (getrusage_chld(arg1));
 	case _RUSAGESYS_GETRUSAGE_LWP:
 		return (getrusage_lwp(arg1));
-	case _RUSAGESYS_GETVMUSAGE:
-		return (vm_getusage((uint_t)(uintptr_t)arg1, (time_t)arg2,
+	case _RUSAGESYS_GETVMUSAGE: {
+		time_t age = (time_t)arg2;
+
+#if defined(__sparc) && defined(_SYSCALL32_IMPL)
+		/*
+		 * SPARC ILP32 syscall arguments are zero-extended.
+		 * Restore the sign of the 32-bit time_t argument.
+		 */
+		if (get_udatamodel() == DATAMODEL_ILP32)
+			age = (time_t)(int32_t)(uintptr_t)arg2;
+#endif
+		return (vm_getusage((uint_t)(uintptr_t)arg1, age,
 		    (vmusage_t *)arg3, (size_t *)arg4, 0));
+	}
 	default:
 		return (set_errno(EINVAL));
 	}

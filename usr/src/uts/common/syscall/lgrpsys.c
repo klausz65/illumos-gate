@@ -2105,6 +2105,14 @@ lgrpsys(int subcode, long ia, void *ap)
 		return (lgrp_version(ia));
 
 	case LGRP_SYS_SNAPSHOT:
+#if defined(__sparc) && defined(_SYSCALL32_IMPL)
+	/*
+	 * SPARC ILP32 syscall arguments are zero-extended.
+	 * Restore the sign of the 32-bit buffer size.
+	 */
+	if (get_udatamodel() == DATAMODEL_ILP32)
+		ia = (long)(int32_t)ia;
+#endif
 		mutex_enter(&lgrp_snap_lock);
 		bufsize = lgrp_snapshot();
 		if (ap && ia > 0) {
