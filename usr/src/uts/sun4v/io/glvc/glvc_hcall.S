@@ -75,7 +75,7 @@
 	 * hv_service_getstatus(uint64_t s_id, uint64_t *vreg);
 	 */
 	ENTRY(hv_service_getstatus)
-	mov	%o1, %o4			! save datap
+	mov	%o1, %o4			/* save datap */
 	mov	SVC_GETSTATUS, %o5
 	ta	FAST_TRAP
 	brz,a	%o0, 1f

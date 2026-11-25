@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"adjtime.s"
+	.file	"adjtime.S"
 
 /* C Library -- adjtime						*/
 /* int adjtime(const struct timeval *delta, struct timeval *olddelta) */

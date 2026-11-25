@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"profil.s"
+	.file	"profil.S"
 
 /* C library -- profil						*/
 /* void profil (short *buff, int buffsz, int offset, int scale);*/

@@ -33,6 +33,10 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * Prefetch considerations
  *

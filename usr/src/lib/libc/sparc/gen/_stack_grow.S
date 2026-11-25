@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_stack_grow.s"
+	.file	"_stack_grow.S"
 
 #include "SYS.h"
 #include <../assym.h>
@@ -51,12 +51,6 @@
  * }
  */
 
-#if defined(__sparcv9)
-#define	PN	,pn %xcc,
-#else
-#define	PN
-#endif
-
 	/*
 	 * o0: address to which the stack will be grown (biased)
 	 */
@@ -67,7 +61,11 @@
 
 	sub	%o0, %o3, %o4
 	cmp	%o2, %o4
-	bleu PN	1f
+#if defined(__sparcv9)
+	bleu,pn	%xcc, 1f
+#else
+	bleu	1f
+#endif
 	tst	%o2
 
 	retl
@@ -76,7 +74,11 @@
 	/*
 	 * If the stack size is 0, stack checking is disabled.
 	 */
-	bnz PN	2f
+#if defined(__sparcv9)
+	bnz,pn	%xcc, 2f
+#else
+	bnz	2f
+#endif
 	nop
 	retl
 	nop
@@ -86,7 +88,11 @@
 	 */
 	sub	%sp, %o3, %o4
 	cmp	%o2, %o4
-	bleu PN	3f
+#if defined(__sparcv9)
+	bleu,pn	%xcc, 3f
+#else
+	bleu	3f
+#endif
 	nop
 	sub	%o3, STACK_ALIGN, %sp
 3:

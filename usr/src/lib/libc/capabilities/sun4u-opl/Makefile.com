@@ -36,5 +36,5 @@ include		$(SRC)/lib/Makefile.lib
 IFLAGS =	-I$(SRC)/uts/$(GEN_PLATFORM) \
 		-I$(ROOT)/usr/platform/$(GEN_PLATFORM)/include
 
-AS_CPPFLAGS +=	-D__STDC__ -D_ASM -DPIC -D_REENTRANT -D$(MACH) $(IFLAGS)
+AS_CPPFLAGS +=	-D_ASM -DPIC -D_REENTRANT -D$(MACH) $(IFLAGS)
 ASFLAGS =	$(AS_PICFLAGS)

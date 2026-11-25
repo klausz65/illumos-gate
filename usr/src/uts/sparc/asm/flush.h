@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-#if !defined(__lint) && defined(__GNUC__)
+#if defined(__GNUC__)
 
 extern __GNU_INLINE void
 doflush(void *addr)
@@ -44,13 +44,14 @@ doflush(void *addr)
 	    "andn	%0, 3, %0\n\t"
 	    "flush	%0\n\t"
 	    : "=r" (addr)
-	    : "0" (addr));
+	    : "0" (addr)
+	    : "memory");
 #else
 #error	"port me"
 #endif
 }
 
-#endif	/* !__lint && __GNUC__ */
+#endif	/* __GNUC__ */
 
 #ifdef	__cplusplus
 }

@@ -34,14 +34,14 @@
 	.align	64
 
 .CONST_TBL:
-	.word	0x3fefffff, 0xfffccbbc	! K0 =  9.99999999976686608841e-01
-	.word	0xbfd55554, 0x51c6b90f	! K1 = -3.33333091601972730504e-01
-	.word	0x3fc98d6d, 0x926596cc	! K2 =  1.99628540499523379702e-01
-	.word	0x00020000, 0x00000000	! DC1
-	.word	0xfffc0000, 0x00000000	! DC2
-	.word	0x7ff00000, 0x00000000	! DC3
-	.word	0x3ff00000, 0x00000000	! DONE = 1.0
-	.word	0x40000000, 0x00000000	! DTWO = 2.0
+	.word	0x3fefffff, 0xfffccbbc	/* K0 =  9.99999999976686608841e-01 */
+	.word	0xbfd55554, 0x51c6b90f	/* K1 = -3.33333091601972730504e-01 */
+	.word	0x3fc98d6d, 0x926596cc	/* K2 =  1.99628540499523379702e-01 */
+	.word	0x00020000, 0x00000000	/* DC1 */
+	.word	0xfffc0000, 0x00000000	/* DC2 */
+	.word	0x7ff00000, 0x00000000	/* DC3 */
+	.word	0x3ff00000, 0x00000000	/* DONE = 1.0 */
+	.word	0x40000000, 0x00000000	/* DTWO = 2.0 */
 
 ! parr0 = *(int*)&(1.0 / *(double*)&(((long long)i << 45) | 0x3ff0100000000000ULL)) + 0x3ff00000, i = [0, 127]
 
@@ -78,8 +78,8 @@
 	.word	0x7fd07b9f, 0x7fd06ab5, 0x7fd059ee, 0x7fd04949
 	.word	0x7fd038c6, 0x7fd02864, 0x7fd01824, 0x7fd00804
 
-	.word	0x3ff00000, 0x00000000	!  1.0
-	.word	0xbff00000, 0x00000000	! -1.0
+	.word	0x3ff00000, 0x00000000	/*  1.0 */
+	.word	0xbff00000, 0x00000000	/* -1.0 */
 
 ! parr1[i] = atan((double)*(float*)&((i + 460) << 21)), i = [0, 155]
 
@@ -162,29 +162,29 @@
 	.word	0x3ff921fb, 0x50442d18, 0x3ff921fb, 0x5110f9e5
 	.word	0x3ff921fb, 0x5199826e, 0x3ff921fb, 0x51fb0886
 
-#define DC2		%f2
-#define DTWO		%f6
-#define DONE		%f52
-#define K0		%f54
-#define K1		%f56
-#define K2		%f58
-#define DC1		%f60
-#define DC3		%f62
+#define	DC2		%f2
+#define	DTWO		%f6
+#define	DONE		%f52
+#define	K0		%f54
+#define	K1		%f56
+#define	K2		%f58
+#define	DC1		%f60
+#define	DC3		%f62
 
-#define stridex		%o2
-#define stridey		%o3
-#define MASK_0x7fffffff	%i1
-#define MASK_0x100000	%i5
+#define	stridex		%o2
+#define	stridey		%o3
+#define	MASK_0x7fffffff	%i1
+#define	MASK_0x100000	%i5
 
-#define tmp_px		STACK_BIAS-32
-#define tmp_counter	STACK_BIAS-24
-#define tmp0		STACK_BIAS-16
-#define tmp1		STACK_BIAS-8
+#define	tmp_px		STACK_BIAS-32
+#define	tmp_counter	STACK_BIAS-24
+#define	tmp0		STACK_BIAS-16
+#define	tmp1		STACK_BIAS-8
 
-#define counter		%l1
+#define	counter		%l1
 
 ! sizeof temp storage - must be a multiple of 16 for V9
-#define tmps		0x20
+#define	tmps		0x20
 
 !--------------------------------------------------------------------
 !		!!!!!	vatanf algorithm	!!!!!
@@ -299,1098 +299,1098 @@
 	ble,pn	%icc,.exit
 	nop
 
-	lda	[%i3]0x82,%l6		! (0_0) ux = ((int*)px)[0];
+	lda	[%i3]0x82,%l6		/* (0_0) ux = ((int*)px)[0]; */
 
-	and	%l6,MASK_0x7fffffff,%l5	! (0_0) ax = ux & 0x7fffffff;
-	lda	[%i3]0x82,%f0		! (0_0) ftmp0 = *px;
+	and	%l6,MASK_0x7fffffff,%l5	/* (0_0) ax = ux & 0x7fffffff; */
+	lda	[%i3]0x82,%f0		/* (0_0) ftmp0 = *px; */
 
-	cmp	%l5,%o4			! (0_0) ax ? 0x39b89c55
-	bl,pn	%icc,.spec0		! (0_0) if ( ax < 0x39b89c55 )
+	cmp	%l5,%o4			/* (0_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.spec0		/* (0_0) if ( ax < 0x39b89c55 ) */
 	nop
 
-	cmp	%l5,%o5			! (0_0) ax ? 0x4c700518
-	bg,pn	%icc,.spec1		! (0_0) if ( ax > 0x4c700518 )
+	cmp	%l5,%o5			/* (0_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.spec1		/* (0_0) if ( ax > 0x4c700518 ) */
 	nop
 
-	add	%i3,stridex,%l5		! px += stridex;
-	fstod	%f0,%f22		! (0_0) ftmp0 = *px;
+	add	%i3,stridex,%l5		/* px += stridex; */
+	fstod	%f0,%f22		/* (0_0) ftmp0 = *px; */
 	mov	%l6,%i3
 
-	lda	[%l5]0x82,%l6		! (1_0) ux = ((int*)px)[0];
+	lda	[%l5]0x82,%l6		/* (1_0) ux = ((int*)px)[0]; */
 
-	and	%l6,MASK_0x7fffffff,%o7	! (1_0) ax = ux & 0x7fffffff;
-	lda	[%l5]0x82,%f0		! (1_0) ftmp0 = *px;
-	add	%l5,stridex,%l4		! px += stridex;
-	fpadd32	%f22,DC1,%f24		! (0_0) y = vis_fpadd32(x,dconst1);
+	and	%l6,MASK_0x7fffffff,%o7	/* (1_0) ax = ux & 0x7fffffff; */
+	lda	[%l5]0x82,%f0		/* (1_0) ftmp0 = *px; */
+	add	%l5,stridex,%l4		/* px += stridex; */
+	fpadd32	%f22,DC1,%f24		/* (0_0) y = vis_fpadd32(x,dconst1); */
 
-	cmp	%o7,%o4			! (1_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update0		! (1_0) if ( ax < 0x39b89c55 )
+	cmp	%o7,%o4			/* (1_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update0		/* (1_0) if ( ax < 0x39b89c55 ) */
 	nop
 .cont0:
-	cmp	%o7,%o5			! (1_0) ax ? 0x4c700518
-	bg,pn	%icc,.update1		! (1_0) if ( ax > 0x4c700518 )
+	cmp	%o7,%o5			/* (1_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update1		/* (1_0) if ( ax > 0x4c700518 ) */
 	nop
 .cont1:
-	fstod	%f0,%f20		! (1_0) x = (double)ftmp0;
+	fstod	%f0,%f20		/* (1_0) x = (double)ftmp0; */
 	mov	%l6,%l5
 
-	fand	%f24,DC2,%f26		! (0_0) y = vis_fand(y,dconst2);
+	fand	%f24,DC2,%f26		/* (0_0) y = vis_fand(y,dconst2); */
 
-	fmuld	%f22,%f26,%f32		! (0_0) div = x * y;
+	fmuld	%f22,%f26,%f32		/* (0_0) div = x * y; */
 
-	lda	[%l4]0x82,%l6		! (2_0) ux = ((int*)px)[0];
-	fsubd	%f22,%f26,%f22		! (0_0) xx = x - y;
+	lda	[%l4]0x82,%l6		/* (2_0) ux = ((int*)px)[0]; */
+	fsubd	%f22,%f26,%f22		/* (0_0) xx = x - y; */
 
-	and	%l6,MASK_0x7fffffff,%o7	! (2_0) ax = ux & 0x7fffffff;
-	lda	[%l4]0x82,%f0		! (2_0) ftmp0 = *px;
-	add	%l4,stridex,%l3		! px += stridex;
-	fpadd32	%f20,DC1,%f24		! (1_0) y = vis_fpadd32(x,dconst1);
+	and	%l6,MASK_0x7fffffff,%o7	/* (2_0) ax = ux & 0x7fffffff; */
+	lda	[%l4]0x82,%f0		/* (2_0) ftmp0 = *px; */
+	add	%l4,stridex,%l3		/* px += stridex; */
+	fpadd32	%f20,DC1,%f24		/* (1_0) y = vis_fpadd32(x,dconst1); */
 
-	cmp	%o7,%o4			! (2_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update2		! (2_0) if ( ax < 0x39b89c55 )
-	faddd	DONE,%f32,%f32		! (0_0) div += done;
+	cmp	%o7,%o4			/* (2_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update2		/* (2_0) if ( ax < 0x39b89c55 ) */
+	faddd	DONE,%f32,%f32		/* (0_0) div += done; */
 .cont2:
-	cmp	%o7,%o5			! (2_0) ax ? 0x4c700518
-	bg,pn	%icc,.update3		! (2_0) if ( ax > 0x4c700518 )
+	cmp	%o7,%o5			/* (2_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update3		/* (2_0) if ( ax > 0x4c700518 ) */
 	nop
 .cont3:
-	std	%f32,[%fp+tmp0]		! (0_0) i = ((unsigned long long*)&div)[0];
+	std	%f32,[%fp+tmp0]		/* (0_0) i = ((unsigned long long*)&div)[0]; */
 	mov	%l6,%l4
-	fstod	%f0,%f18		! (2_0) x = (double)ftmp0;
+	fstod	%f0,%f18		/* (2_0) x = (double)ftmp0; */
 
-	fand	%f24,DC2,%f26		! (1_0) y = vis_fand(y,dconst2);
+	fand	%f24,DC2,%f26		/* (1_0) y = vis_fand(y,dconst2); */
 
-	fmuld	%f20,%f26,%f30		! (1_0) div = x * y;
+	fmuld	%f20,%f26,%f30		/* (1_0) div = x * y; */
 
-	lda	[%l3]0x82,%l6		! (3_0) ux = ((int*)px)[0];
-	fsubd	%f20,%f26,%f20		! (1_0) xx = x - y;
+	lda	[%l3]0x82,%l6		/* (3_0) ux = ((int*)px)[0]; */
+	fsubd	%f20,%f26,%f20		/* (1_0) xx = x - y; */
 
-	and	%l6,MASK_0x7fffffff,%o7	! (3_0) ax = ux & 0x7fffffff;
-	lda	[%l3]0x82,%f0		! (3_0) ftmp0 = *px;
-	add	%l3,stridex,%i0		! px += stridex;
-	fpadd32	%f18,DC1,%f24		! (2_0) y = vis_fpadd32(x,dconst1);
+	and	%l6,MASK_0x7fffffff,%o7	/* (3_0) ax = ux & 0x7fffffff; */
+	lda	[%l3]0x82,%f0		/* (3_0) ftmp0 = *px; */
+	add	%l3,stridex,%i0		/* px += stridex; */
+	fpadd32	%f18,DC1,%f24		/* (2_0) y = vis_fpadd32(x,dconst1); */
 
-	cmp	%o7,%o4			! (3_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update4		! (3_0) if ( ax < 0x39b89c55 )
-	faddd	DONE,%f30,%f30		! (1_0) div += done;
+	cmp	%o7,%o4			/* (3_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update4		/* (3_0) if ( ax < 0x39b89c55 ) */
+	faddd	DONE,%f30,%f30		/* (1_0) div += done; */
 .cont4:
-	cmp	%o7,%o5			! (3_0) ax ? 0x4c700518
-	bg,pn	%icc,.update5		! (3_0) if ( ax > 0x4c700518 )
+	cmp	%o7,%o5			/* (3_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update5		/* (3_0) if ( ax > 0x4c700518 ) */
 	nop
 .cont5:
-	std	%f30,[%fp+tmp1]		! (1_0) i = ((unsigned long long*)&div)[0];
+	std	%f30,[%fp+tmp1]		/* (1_0) i = ((unsigned long long*)&div)[0]; */
 	mov	%l6,%l3
-	fstod	%f0,%f16		! (3_0) x = (double)ftmp0;
+	fstod	%f0,%f16		/* (3_0) x = (double)ftmp0; */
 
-	ldx	[%fp+tmp0],%o0		! (0_0) i = ((unsigned long long*)&div)[0];
-	fand	%f24,DC2,%f26		! (2_0) y = vis_fand(y,dconst2);
+	ldx	[%fp+tmp0],%o0		/* (0_0) i = ((unsigned long long*)&div)[0]; */
+	fand	%f24,DC2,%f26		/* (2_0) y = vis_fand(y,dconst2); */
 
-	fand	%f32,DC3,%f24		! (0_0) y0 = vis_fand(div,dconst3);
+	fand	%f32,DC3,%f24		/* (0_0) y0 = vis_fand(div,dconst3); */
 
-	srlx	%o0,43,%o0		! (0_0) i >>= 43;
+	srlx	%o0,43,%o0		/* (0_0) i >>= 43; */
 
-	and	%o0,508,%l6		! (0_0) i &= 508;
+	and	%o0,508,%l6		/* (0_0) i &= 508; */
 
-	ld	[%i4+%l6],%f0		! (0_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
+	ld	[%i4+%l6],%f0		/* (0_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
 
-	fmuld	%f18,%f26,%f28		! (2_0) div = x * y;
+	fmuld	%f18,%f26,%f28		/* (2_0) div = x * y; */
 
-	lda	[%i0]0x82,%l6		! (4_0) ux = ((int*)px)[0];
-	fsubd	%f18,%f26,%f18		! (2_0) xx = x - y;
+	lda	[%i0]0x82,%l6		/* (4_0) ux = ((int*)px)[0]; */
+	fsubd	%f18,%f26,%f18		/* (2_0) xx = x - y; */
 
-	fpsub32	%f0,%f24,%f40		! (0_0) y0 = vis_fpsub32(dtmp0, y0);
+	fpsub32	%f0,%f24,%f40		/* (0_0) y0 = vis_fpsub32(dtmp0, y0); */
 
-	and	%l6,MASK_0x7fffffff,%o7	! (4_0) ax = ux & 0x7fffffff;
-	lda	[%i0]0x82,%f0		! (4_0) ftmp0 = *px;
-	add	%i0,stridex,%i2		! px += stridex;
-	fpadd32	%f16,DC1,%f24		! (3_0) y = vis_fpadd32(x,dconst1);
+	and	%l6,MASK_0x7fffffff,%o7	/* (4_0) ax = ux & 0x7fffffff; */
+	lda	[%i0]0x82,%f0		/* (4_0) ftmp0 = *px; */
+	add	%i0,stridex,%i2		/* px += stridex; */
+	fpadd32	%f16,DC1,%f24		/* (3_0) y = vis_fpadd32(x,dconst1); */
 
-	cmp	%o7,%o4			! (4_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update6		! (4_0) if ( ax < 0x39b89c55 )
-	faddd	DONE,%f28,%f28		! (2_0) div += done;
+	cmp	%o7,%o4			/* (4_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update6		/* (4_0) if ( ax < 0x39b89c55 ) */
+	faddd	DONE,%f28,%f28		/* (2_0) div += done; */
 .cont6:
-	fmuld	%f32,%f40,%f42		! (0_0) dtmp0 = div0 * y0;
-	cmp	%o7,%o5			! (4_0) ax ? 0x4c700518
-	bg,pn	%icc,.update7		! (4_0) if ( ax > 0x4c700518 )
+	fmuld	%f32,%f40,%f42		/* (0_0) dtmp0 = div0 * y0; */
+	cmp	%o7,%o5			/* (4_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update7		/* (4_0) if ( ax > 0x4c700518 ) */
 	nop
 .cont7:
-	std	%f28,[%fp+tmp0]		! (2_0) i = ((unsigned long long*)&div)[0];
+	std	%f28,[%fp+tmp0]		/* (2_0) i = ((unsigned long long*)&div)[0]; */
 	mov	%l6,%i0
-	fstod	%f0,%f14		! (4_0) x = (double)ftmp0;
+	fstod	%f0,%f14		/* (4_0) x = (double)ftmp0; */
 
-	ldx	[%fp+tmp1],%g1		! (1_0) i = ((unsigned long long*)&div)[0];
-	fand	%f24,DC2,%f26		! (3_0) y = vis_fand(y,dconst2);
+	ldx	[%fp+tmp1],%g1		/* (1_0) i = ((unsigned long long*)&div)[0]; */
+	fand	%f24,DC2,%f26		/* (3_0) y = vis_fand(y,dconst2); */
 
-	fand	%f30,DC3,%f24		! (1_0) y0 = vis_fand(div,dconst3);
+	fand	%f30,DC3,%f24		/* (1_0) y0 = vis_fand(div,dconst3); */
 
-	fsubd	DTWO,%f42,%f44		! (0_0) dtmp0 = dtwo - dtmp0;
-	srlx	%g1,43,%g1		! (1_0) i >>= 43;
+	fsubd	DTWO,%f42,%f44		/* (0_0) dtmp0 = dtwo - dtmp0; */
+	srlx	%g1,43,%g1		/* (1_0) i >>= 43; */
 
-	and	%g1,508,%l6		! (1_0) i &= 508;
+	and	%g1,508,%l6		/* (1_0) i &= 508; */
 
-	ld	[%i4+%l6],%f0		! (1_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
+	ld	[%i4+%l6],%f0		/* (1_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
 
-	fmuld	%f16,%f26,%f34		! (3_0) div = x * y;
+	fmuld	%f16,%f26,%f34		/* (3_0) div = x * y; */
 
-	lda	[%i2]0x82,%l6		! (5_0) ux = ((int*)px)[0];
-	fsubd	%f16,%f26,%f16		! (3_0) xx = x - y;
+	lda	[%i2]0x82,%l6		/* (5_0) ux = ((int*)px)[0]; */
+	fsubd	%f16,%f26,%f16		/* (3_0) xx = x - y; */
 
-	fpsub32	%f0,%f24,%f38		! (1_0) y0 = vis_fpsub32(dtmp0, y0);
-	add	%i2,stridex,%l2		! px += stridex;
+	fpsub32	%f0,%f24,%f38		/* (1_0) y0 = vis_fpsub32(dtmp0, y0); */
+	add	%i2,stridex,%l2		/* px += stridex; */
 
-	fmuld	%f40,%f44,%f40		! (0_0) y0 *= dtmp0;
-	and	%l6,MASK_0x7fffffff,%o7	! (5_0) ax = ux & 0x7fffffff;
-	lda	[%i2]0x82,%f0		! (5_0) ftmp0 = *px;
-	fpadd32	%f14,DC1,%f24		! (4_0) y = vis_fpadd32(x,dconst1);
+	fmuld	%f40,%f44,%f40		/* (0_0) y0 *= dtmp0; */
+	and	%l6,MASK_0x7fffffff,%o7	/* (5_0) ax = ux & 0x7fffffff; */
+	lda	[%i2]0x82,%f0		/* (5_0) ftmp0 = *px; */
+	fpadd32	%f14,DC1,%f24		/* (4_0) y = vis_fpadd32(x,dconst1); */
 
-	cmp	%o7,%o4			! (5_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update8		! (5_0) if ( ax < 0x39b89c55 )
-	faddd	DONE,%f34,%f34		! (3_0) div += done;
+	cmp	%o7,%o4			/* (5_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update8		/* (5_0) if ( ax < 0x39b89c55 ) */
+	faddd	DONE,%f34,%f34		/* (3_0) div += done; */
 .cont8:
-	fmuld	%f30,%f38,%f42		! (1_0) dtmp0 = div0 * y0;
-	cmp	%o7,%o5			! (5_0) ax ? 0x4c700518
-	bg,pn	%icc,.update9		! (5_0) if ( ax > 0x4c700518 )
+	fmuld	%f30,%f38,%f42		/* (1_0) dtmp0 = div0 * y0; */
+	cmp	%o7,%o5			/* (5_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update9		/* (5_0) if ( ax > 0x4c700518 ) */
 	nop
 .cont9:
-	std	%f34,[%fp+tmp1]		! (3_0) i = ((unsigned long long*)&div)[0];
+	std	%f34,[%fp+tmp1]		/* (3_0) i = ((unsigned long long*)&div)[0]; */
 	mov	%l6,%i2
-	fstod	%f0,%f36		! (5_0) x = (double)ftmp0;
+	fstod	%f0,%f36		/* (5_0) x = (double)ftmp0; */
 
-	fmuld	%f32,%f40,%f32		! (0_0) dtmp1 = div0 * y0;
-	ldx	[%fp+tmp0],%o0		! (2_0) i = ((unsigned long long*)&div)[0];
-	fand	%f24,DC2,%f26		! (4_0) y = vis_fand(y,dconst2);
+	fmuld	%f32,%f40,%f32		/* (0_0) dtmp1 = div0 * y0; */
+	ldx	[%fp+tmp0],%o0		/* (2_0) i = ((unsigned long long*)&div)[0]; */
+	fand	%f24,DC2,%f26		/* (4_0) y = vis_fand(y,dconst2); */
 
-	fand	%f28,DC3,%f24		! (2_0) y0 = vis_fand(div,dconst3);
+	fand	%f28,DC3,%f24		/* (2_0) y0 = vis_fand(div,dconst3); */
 
-	fsubd	DTWO,%f42,%f44		! (1_0) dtmp0 = dtwo - dtmp0;
-	srlx	%o0,43,%o0		! (2_0) i >>= 43;
+	fsubd	DTWO,%f42,%f44		/* (1_0) dtmp0 = dtwo - dtmp0; */
+	srlx	%o0,43,%o0		/* (2_0) i >>= 43; */
 
-	and	%o0,508,%l6		! (2_0) i &= 508;
-	fsubd	DTWO,%f32,%f46		! (0_0) dtmp1 = dtwo - dtmp1;
+	and	%o0,508,%l6		/* (2_0) i &= 508; */
+	fsubd	DTWO,%f32,%f46		/* (0_0) dtmp1 = dtwo - dtmp1; */
 
-	ld	[%i4+%l6],%f0		! (2_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
+	ld	[%i4+%l6],%f0		/* (2_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
 
-	fmuld	%f14,%f26,%f32		! (4_0) div = x * y;
+	fmuld	%f14,%f26,%f32		/* (4_0) div = x * y; */
 
-	lda	[%l2]0x82,%l6		! (6_0) ux = ((int*)px)[0];
-	fsubd	%f14,%f26,%f14		! (4_0) xx = x - y;
+	lda	[%l2]0x82,%l6		/* (6_0) ux = ((int*)px)[0]; */
+	fsubd	%f14,%f26,%f14		/* (4_0) xx = x - y; */
 
-	fmuld	%f40,%f46,%f26		! (0_0) y0 *= dtmp1;
-	add	%l2,stridex,%g5		! px += stridex;
-	fpsub32	%f0,%f24,%f40		! (2_0) y0 = vis_fpsub32(dtmp0, y0);
+	fmuld	%f40,%f46,%f26		/* (0_0) y0 *= dtmp1; */
+	add	%l2,stridex,%g5		/* px += stridex; */
+	fpsub32	%f0,%f24,%f40		/* (2_0) y0 = vis_fpsub32(dtmp0, y0); */
 
-	fmuld	%f38,%f44,%f38		! (1_0) y0 *= dtmp0;
-	and	%l6,MASK_0x7fffffff,%o7	! (6_0) ax = ux & 0x7fffffff;
-	lda	[%l2]0x82,%f0		! (6_0) ftmp0 = *px;
-	fpadd32	%f36,DC1,%f24		! (5_0) y = vis_fpadd32(x,dconst1);
+	fmuld	%f38,%f44,%f38		/* (1_0) y0 *= dtmp0; */
+	and	%l6,MASK_0x7fffffff,%o7	/* (6_0) ax = ux & 0x7fffffff; */
+	lda	[%l2]0x82,%f0		/* (6_0) ftmp0 = *px; */
+	fpadd32	%f36,DC1,%f24		/* (5_0) y = vis_fpadd32(x,dconst1); */
 
-	cmp	%o7,%o4			! (6_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update10		! (6_0) if ( ax < 0x39b89c55 )
-	faddd	DONE,%f32,%f32		! (4_0) div += done;
+	cmp	%o7,%o4			/* (6_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update10		/* (6_0) if ( ax < 0x39b89c55 ) */
+	faddd	DONE,%f32,%f32		/* (4_0) div += done; */
 .cont10:
-	fmuld	%f28,%f40,%f42		! (2_0) dtmp0 = div0 * y0;
-	cmp	%o7,%o5			! (6_0) ax ? 0x4c700518
-	bg,pn	%icc,.update11		! (6_0) if ( ax > 0x4c700518 )
+	fmuld	%f28,%f40,%f42		/* (2_0) dtmp0 = div0 * y0; */
+	cmp	%o7,%o5			/* (6_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update11		/* (6_0) if ( ax > 0x4c700518 ) */
 	nop
 .cont11:
-	fmuld	%f22,%f26,%f22		! (0_0) xx *= y0;
+	fmuld	%f22,%f26,%f22		/* (0_0) xx *= y0; */
 	mov	%l6,%l2
-	std	%f32,[%fp+tmp0]		! (4_0) i = ((unsigned long long*)&div)[0];
-	fstod	%f0,%f10		! (6_0) x = (double)ftmp0;
+	std	%f32,[%fp+tmp0]		/* (4_0) i = ((unsigned long long*)&div)[0]; */
+	fstod	%f0,%f10		/* (6_0) x = (double)ftmp0; */
 
-	fmuld	%f30,%f38,%f30		! (1_0) dtmp1 = div0 * y0;
-	ldx	[%fp+tmp1],%g1		! (3_0) i = ((unsigned long long*)&div)[0];
-	fand	%f24,DC2,%f26		! (5_0) y = vis_fand(y,dconst2);
+	fmuld	%f30,%f38,%f30		/* (1_0) dtmp1 = div0 * y0; */
+	ldx	[%fp+tmp1],%g1		/* (3_0) i = ((unsigned long long*)&div)[0]; */
+	fand	%f24,DC2,%f26		/* (5_0) y = vis_fand(y,dconst2); */
 
-	fand	%f34,DC3,%f24		! (3_0) y0 = vis_fand(div,dconst3);
+	fand	%f34,DC3,%f24		/* (3_0) y0 = vis_fand(div,dconst3); */
 
-	fmuld	%f22,%f22,%f50		! (0_0) x2 = xx * xx;
-	srlx	%g1,43,%g1		! (3_0) i >>= 43;
-	fsubd	DTWO,%f42,%f44		! (2_0) dtmp0 = dtwo - dtmp0;
+	fmuld	%f22,%f22,%f50		/* (0_0) x2 = xx * xx; */
+	srlx	%g1,43,%g1		/* (3_0) i >>= 43; */
+	fsubd	DTWO,%f42,%f44		/* (2_0) dtmp0 = dtwo - dtmp0; */
 
-	and	%g1,508,%l6		! (3_0) i &= 508;
+	and	%g1,508,%l6		/* (3_0) i &= 508; */
 	mov	%i3,%o7
-	fsubd	DTWO,%f30,%f46		! (1_0) dtmp1 = dtwo - dtmp1;
+	fsubd	DTWO,%f30,%f46		/* (1_0) dtmp1 = dtwo - dtmp1; */
 
-	ld	[%i4+%l6],%f0		! (3_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
+	ld	[%i4+%l6],%f0		/* (3_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
 
-	fmuld	%f36,%f26,%f30		! (5_0) div = x * y;
-	srl	%o7,28,%g1		! (0_0) ux >>= 28;
-	add	%g5,stridex,%i3		! px += stridex;
+	fmuld	%f36,%f26,%f30		/* (5_0) div = x * y; */
+	srl	%o7,28,%g1		/* (0_0) ux >>= 28; */
+	add	%g5,stridex,%i3		/* px += stridex; */
 
-	fmuld	K2,%f50,%f4		! (0_0) dtmp0 = K2 * x2;
-	and	%o7,MASK_0x7fffffff,%o0	! (0_0) ax = ux & 0x7fffffff;
-	lda	[%g5]0x82,%l6		! (7_0) ux = ((int*)px)[0];
-	fsubd	%f36,%f26,%f36		! (5_0) xx = x - y;
+	fmuld	K2,%f50,%f4		/* (0_0) dtmp0 = K2 * x2; */
+	and	%o7,MASK_0x7fffffff,%o0	/* (0_0) ax = ux & 0x7fffffff; */
+	lda	[%g5]0x82,%l6		/* (7_0) ux = ((int*)px)[0]; */
+	fsubd	%f36,%f26,%f36		/* (5_0) xx = x - y; */
 
-	fmuld	%f38,%f46,%f26		! (1_0) y0 *= dtmp1;
-	add	%o0,MASK_0x100000,%o0	! (0_0) ax += 0x00100000;
-	and	%g1,-8,%g1		! (0_0) ux &= -8;
-	fpsub32	%f0,%f24,%f38		! (3_0) y0 = vis_fpsub32(dtmp0, y0);
+	fmuld	%f38,%f46,%f26		/* (1_0) y0 *= dtmp1; */
+	add	%o0,MASK_0x100000,%o0	/* (0_0) ax += 0x00100000; */
+	and	%g1,-8,%g1		/* (0_0) ux &= -8; */
+	fpsub32	%f0,%f24,%f38		/* (3_0) y0 = vis_fpsub32(dtmp0, y0); */
 
-	fmuld	%f40,%f44,%f40		! (2_0) y0 *= dtmp0;
-	and	%l6,MASK_0x7fffffff,%o7	! (7_0) ax = ux & 0x7fffffff;
-	lda	[%g5]0x82,%f0		! (7_0) ftmp0 = *px;
-	fpadd32	%f10,DC1,%f24		! (6_0) y = vis_fpadd32(x,dconst1);
+	fmuld	%f40,%f44,%f40		/* (2_0) y0 *= dtmp0; */
+	and	%l6,MASK_0x7fffffff,%o7	/* (7_0) ax = ux & 0x7fffffff; */
+	lda	[%g5]0x82,%f0		/* (7_0) ftmp0 = *px; */
+	fpadd32	%f10,DC1,%f24		/* (6_0) y = vis_fpadd32(x,dconst1); */
 
-	cmp	%o7,%o4			! (7_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update12		! (7_0) if ( ax < 0x39b89c55 )
-	faddd	DONE,%f30,%f30		! (5_0) div += done;
+	cmp	%o7,%o4			/* (7_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update12		/* (7_0) if ( ax < 0x39b89c55 ) */
+	faddd	DONE,%f30,%f30		/* (5_0) div += done; */
 .cont12:
-	fmuld	%f34,%f38,%f42		! (3_0) dtmp0 = div0 * y0;
-	cmp	%o7,%o5			! (7_0) ax ? 0x4c700518
-	bg,pn	%icc,.update13		! (7_0) if ( ax > 0x4c700518 )
-	faddd	%f4,K1,%f4		! (0_0) dtmp0 += K1;
+	fmuld	%f34,%f38,%f42		/* (3_0) dtmp0 = div0 * y0; */
+	cmp	%o7,%o5			/* (7_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update13		/* (7_0) if ( ax > 0x4c700518 ) */
+	faddd	%f4,K1,%f4		/* (0_0) dtmp0 += K1; */
 .cont13:
-	fmuld	%f20,%f26,%f20		! (1_0) xx *= y0;
-	srl	%o0,18,%o7		! (0_0) ax >>= 18;
-	std	%f30,[%fp+tmp1]		! (5_0) i = ((unsigned long long*)&div)[0];
-	fstod	%f0,%f8			! (7_0) x = (double)ftmp0;
+	fmuld	%f20,%f26,%f20		/* (1_0) xx *= y0; */
+	srl	%o0,18,%o7		/* (0_0) ax >>= 18; */
+	std	%f30,[%fp+tmp1]		/* (5_0) i = ((unsigned long long*)&div)[0]; */
+	fstod	%f0,%f8			/* (7_0) x = (double)ftmp0; */
 
-	fmuld	%f28,%f40,%f28		! (2_0) dtmp1 = div0 * y0;
-	and	%o7,-8,%o7		! (0_0) ux &= -8;
-	ldx	[%fp+tmp0],%o0		! (4_0) i = ((unsigned long long*)&div)[0];
-	fand	%f24,DC2,%f26		! (6_0) y = vis_fand(y,dconst2);
+	fmuld	%f28,%f40,%f28		/* (2_0) dtmp1 = div0 * y0; */
+	and	%o7,-8,%o7		/* (0_0) ux &= -8; */
+	ldx	[%fp+tmp0],%o0		/* (4_0) i = ((unsigned long long*)&div)[0]; */
+	fand	%f24,DC2,%f26		/* (6_0) y = vis_fand(y,dconst2); */
 
-	add	%o7,%l7,%o7		! (0_0) (char*)parr1 + ax;
+	add	%o7,%l7,%o7		/* (0_0) (char*)parr1 + ax; */
 	mov	%l6,%g5
-	ldd	[%l0+%g1],%f48		! (0_0) dtmp0 = *(double*)((char*)sign_arr + ux);
+	ldd	[%l0+%g1],%f48		/* (0_0) dtmp0 = *(double*)((char*)sign_arr + ux); */
 
-	fmuld	%f4,%f50,%f4		! (0_0) dtmp0 *= x2;
-	srlx	%o0,43,%o0		! (4_0) i >>= 43;
-	ldd	[%o7],%f0		! (0_0) res = *(double*)((char*)parr1 + ax);
-	fand	%f32,DC3,%f24		! (4_0) y0 = vis_fand(div,dconst3);
+	fmuld	%f4,%f50,%f4		/* (0_0) dtmp0 *= x2; */
+	srlx	%o0,43,%o0		/* (4_0) i >>= 43; */
+	ldd	[%o7],%f0		/* (0_0) res = *(double*)((char*)parr1 + ax); */
+	fand	%f32,DC3,%f24		/* (4_0) y0 = vis_fand(div,dconst3); */
 
-	fmuld	%f20,%f20,%f50		! (1_0) x2 = xx * xx;
-	and	%o0,508,%l6		! (4_0) i &= 508;
+	fmuld	%f20,%f20,%f50		/* (1_0) x2 = xx * xx; */
+	and	%o0,508,%l6		/* (4_0) i &= 508; */
 	mov	%l5,%o7
-	fsubd	DTWO,%f42,%f44		! (3_0) dtmp0 = dtwo - dtmp0;
+	fsubd	DTWO,%f42,%f44		/* (3_0) dtmp0 = dtwo - dtmp0; */
 
-	fsubd	DTWO,%f28,%f46		! (2_0) dtmp1 = dtwo - dtmp1;
+	fsubd	DTWO,%f28,%f46		/* (2_0) dtmp1 = dtwo - dtmp1; */
 
-	fmuld	%f0,%f48,%f48		! (0_0) res *= dtmp0;
-	srl	%o7,28,%l5		! (1_0) ux >>= 28;
-	ld	[%i4+%l6],%f0		! (4_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
+	fmuld	%f0,%f48,%f48		/* (0_0) res *= dtmp0; */
+	srl	%o7,28,%l5		/* (1_0) ux >>= 28; */
+	ld	[%i4+%l6],%f0		/* (4_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
 
-	fmuld	%f10,%f26,%f28		! (6_0) div = x * y;
-	faddd	%f4,K0,%f42		! (0_0) dtmp0 += K0;
+	fmuld	%f10,%f26,%f28		/* (6_0) div = x * y; */
+	faddd	%f4,K0,%f42		/* (0_0) dtmp0 += K0; */
 
 	subcc	counter,8,counter
 	bneg,pn	%icc,.tail
 	or	%g0,%o1,%o0
 
 	add	%fp,tmp0,%g1
-	lda	[%i3]0x82,%l6		! (0_0) ux = ((int*)px)[0];
+	lda	[%i3]0x82,%l6		/* (0_0) ux = ((int*)px)[0]; */
 
 	ba	.main_loop
-	add	%i3,stridex,%l5		! px += stridex;
+	add	%i3,stridex,%l5		/* px += stridex; */
 
 	.align	16
 .main_loop:
-	fsubd	%f10,%f26,%f10		! (6_1) xx = x - y;
-	and	%o7,MASK_0x7fffffff,%o1	! (1_1) ax = ux & 0x7fffffff;
-	st	%f12,[%g1]		! (7_1) py[0] = ftmp0;
-	fmuld	K2,%f50,%f4		! (1_1) dtmp0 = K2 * x2;
+	fsubd	%f10,%f26,%f10		/* (6_1) xx = x - y; */
+	and	%o7,MASK_0x7fffffff,%o1	/* (1_1) ax = ux & 0x7fffffff; */
+	st	%f12,[%g1]		/* (7_1) py[0] = ftmp0; */
+	fmuld	K2,%f50,%f4		/* (1_1) dtmp0 = K2 * x2; */
 
-	fmuld	%f40,%f46,%f26		! (2_1) y0 *= dtmp1;
-	srl	%o7,28,%o7		! (1_0) ux >>= 28;
-	add	%o1,MASK_0x100000,%g1	! (1_1) ax += 0x00100000;
-	fpsub32	%f0,%f24,%f40		! (4_1) y0 = vis_fpsub32(dtmp0, y0);
+	fmuld	%f40,%f46,%f26		/* (2_1) y0 *= dtmp1; */
+	srl	%o7,28,%o7		/* (1_0) ux >>= 28; */
+	add	%o1,MASK_0x100000,%g1	/* (1_1) ax += 0x00100000; */
+	fpsub32	%f0,%f24,%f40		/* (4_1) y0 = vis_fpsub32(dtmp0, y0); */
 
-	fmuld	%f38,%f44,%f38		! (3_1) y0 *= dtmp0;
-	and	%l6,MASK_0x7fffffff,%o1	! (0_0) ax = ux & 0x7fffffff;
-	lda	[%i3]0x82,%f0		! (0_0) ftmp0 = *px;
-	fpadd32	%f8,DC1,%f24		! (7_1) y = vis_fpadd32(x,dconst1);
+	fmuld	%f38,%f44,%f38		/* (3_1) y0 *= dtmp0; */
+	and	%l6,MASK_0x7fffffff,%o1	/* (0_0) ax = ux & 0x7fffffff; */
+	lda	[%i3]0x82,%f0		/* (0_0) ftmp0 = *px; */
+	fpadd32	%f8,DC1,%f24		/* (7_1) y = vis_fpadd32(x,dconst1); */
 
-	fmuld	%f42,%f22,%f44		! (0_1) dtmp0 *= xx;
-	cmp	%o1,%o4			! (0_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update14		! (0_0) if ( ax < 0x39b89c55 )
-	faddd	DONE,%f28,%f28		! (6_1) div += done;
+	fmuld	%f42,%f22,%f44		/* (0_1) dtmp0 *= xx; */
+	cmp	%o1,%o4			/* (0_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update14		/* (0_0) if ( ax < 0x39b89c55 ) */
+	faddd	DONE,%f28,%f28		/* (6_1) div += done; */
 .cont14:
-	fmuld	%f32,%f40,%f42		! (4_1) dtmp0 = div0 * y0;
-	cmp	%o1,%o5			! (0_0) ax ? 0x4c700518
-	bg,pn	%icc,.update15		! (0_0) if ( ax > 0x4c700518 )
-	faddd	%f4,K1,%f4		! (1_1) dtmp0 += K1;
+	fmuld	%f32,%f40,%f42		/* (4_1) dtmp0 = div0 * y0; */
+	cmp	%o1,%o5			/* (0_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update15		/* (0_0) if ( ax > 0x4c700518 ) */
+	faddd	%f4,K1,%f4		/* (1_1) dtmp0 += K1; */
 .cont15:
-	fmuld	%f18,%f26,%f18		! (2_1) xx *= y0;
-	srl	%g1,18,%o1		! (1_1) ax >>= 18;
-	std	%f28,[%fp+tmp0]		! (6_1) i = ((unsigned long long*)&div)[0];
-	fstod	%f0,%f22		! (0_0) ftmp0 = *px;
+	fmuld	%f18,%f26,%f18		/* (2_1) xx *= y0; */
+	srl	%g1,18,%o1		/* (1_1) ax >>= 18; */
+	std	%f28,[%fp+tmp0]		/* (6_1) i = ((unsigned long long*)&div)[0]; */
+	fstod	%f0,%f22		/* (0_0) ftmp0 = *px; */
 
-	fmuld	%f34,%f38,%f34		! (3_1) dtmp1 = div0 * y0;
-	and	%o1,-8,%o1		! (1_1) ax &= -8;
-	ldx	[%fp+tmp1],%g1		! (5_1) i = ((unsigned long long*)&div)[0];
-	fand	%f24,DC2,%f26		! (7_1) y = vis_fand(y,dconst2);
+	fmuld	%f34,%f38,%f34		/* (3_1) dtmp1 = div0 * y0; */
+	and	%o1,-8,%o1		/* (1_1) ax &= -8; */
+	ldx	[%fp+tmp1],%g1		/* (5_1) i = ((unsigned long long*)&div)[0]; */
+	fand	%f24,DC2,%f26		/* (7_1) y = vis_fand(y,dconst2); */
 
-	ldd	[%o1+%l7],%f0		! (1_1) res = *(double*)((char*)parr1 + ax);
-	and	%o7,-8,%o7		! (1_1) ux &= -8;
+	ldd	[%o1+%l7],%f0		/* (1_1) res = *(double*)((char*)parr1 + ax); */
+	and	%o7,-8,%o7		/* (1_1) ux &= -8; */
 	mov	%l6,%i3
-	faddd	%f48,%f44,%f12		! (0_1) res += dtmp0;
+	faddd	%f48,%f44,%f12		/* (0_1) res += dtmp0; */
 
-	fmuld	%f4,%f50,%f4		! (1_1) dtmp0 *= x2;
+	fmuld	%f4,%f50,%f4		/* (1_1) dtmp0 *= x2; */
 	nop
-	ldd	[%l0+%o7],%f48		! (1_1) dtmp0 = *(double*)((char*)sign_arr + ux);
-	fand	%f30,DC3,%f24		! (5_1) y0 = vis_fand(div,dconst3);
+	ldd	[%l0+%o7],%f48		/* (1_1) dtmp0 = *(double*)((char*)sign_arr + ux); */
+	fand	%f30,DC3,%f24		/* (5_1) y0 = vis_fand(div,dconst3); */
 
-	fmuld	%f18,%f18,%f50		! (2_1) x2 = xx * xx;
-	srlx	%g1,43,%g1		! (5_1) i >>= 43;
+	fmuld	%f18,%f18,%f50		/* (2_1) x2 = xx * xx; */
+	srlx	%g1,43,%g1		/* (5_1) i >>= 43; */
 	mov	%l4,%o7
-	fsubd	DTWO,%f42,%f44		! (4_1) dtmp0 = dtwo - dtmp0;
+	fsubd	DTWO,%f42,%f44		/* (4_1) dtmp0 = dtwo - dtmp0; */
 
-	and	%g1,508,%l6		! (5_1) i &= 508;
+	and	%g1,508,%l6		/* (5_1) i &= 508; */
 	nop
 	bn,pn	%icc,.exit
-	fsubd	DTWO,%f34,%f46		! (3_1) dtmp1 = dtwo - dtmp1;
+	fsubd	DTWO,%f34,%f46		/* (3_1) dtmp1 = dtwo - dtmp1; */
 
-	fmuld	%f0,%f48,%f48		! (1_1) res *= dtmp0;
-	add	%o0,stridey,%g1		! py += stridey;
-	ld	[%i4+%l6],%f0		! (5_1) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
-	fdtos	%f12,%f12		! (0_1) ftmp0 = (float)res;
+	fmuld	%f0,%f48,%f48		/* (1_1) res *= dtmp0; */
+	add	%o0,stridey,%g1		/* py += stridey; */
+	ld	[%i4+%l6],%f0		/* (5_1) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
+	fdtos	%f12,%f12		/* (0_1) ftmp0 = (float)res; */
 
-	fmuld	%f8,%f26,%f34		! (7_1) div = x * y;
-	srl	%o7,28,%o1		! (2_1) ux >>= 28;
-	lda	[%l5]0x82,%l6		! (1_0) ux = ((int*)px)[0];
-	faddd	%f4,K0,%f42		! (1_1) dtmp0 += K0;
+	fmuld	%f8,%f26,%f34		/* (7_1) div = x * y; */
+	srl	%o7,28,%o1		/* (2_1) ux >>= 28; */
+	lda	[%l5]0x82,%l6		/* (1_0) ux = ((int*)px)[0]; */
+	faddd	%f4,K0,%f42		/* (1_1) dtmp0 += K0; */
 
-	fmuld	K2,%f50,%f4		! (2_1) dtmp0 = K2 * x2;
-	and	%o7,MASK_0x7fffffff,%o7	! (2_1) ax = ux & 0x7fffffff;
-	st	%f12,[%o0]		! (0_1) py[0] = ftmp0;
-	fsubd	%f8,%f26,%f8		! (7_1) xx = x - y;
+	fmuld	K2,%f50,%f4		/* (2_1) dtmp0 = K2 * x2; */
+	and	%o7,MASK_0x7fffffff,%o7	/* (2_1) ax = ux & 0x7fffffff; */
+	st	%f12,[%o0]		/* (0_1) py[0] = ftmp0; */
+	fsubd	%f8,%f26,%f8		/* (7_1) xx = x - y; */
 
-	fmuld	%f38,%f46,%f26		! (3_1) y0 *= dtmp1;
-	add	%l5,stridex,%l4		! px += stridex;
-	add	%o7,MASK_0x100000,%o0	! (2_1) ax += 0x00100000;
-	fpsub32	%f0,%f24,%f38		! (5_1) y0 = vis_fpsub32(dtmp0, y0);
+	fmuld	%f38,%f46,%f26		/* (3_1) y0 *= dtmp1; */
+	add	%l5,stridex,%l4		/* px += stridex; */
+	add	%o7,MASK_0x100000,%o0	/* (2_1) ax += 0x00100000; */
+	fpsub32	%f0,%f24,%f38		/* (5_1) y0 = vis_fpsub32(dtmp0, y0); */
 
-	fmuld	%f40,%f44,%f40		! (4_1) y0 *= dtmp0;
-	and	%l6,MASK_0x7fffffff,%o7	! (1_0) ax = ux & 0x7fffffff;
-	lda	[%l5]0x82,%f0		! (1_0) ftmp0 = *px;
-	fpadd32	%f22,DC1,%f24		! (0_0) y = vis_fpadd32(x,dconst1);
+	fmuld	%f40,%f44,%f40		/* (4_1) y0 *= dtmp0; */
+	and	%l6,MASK_0x7fffffff,%o7	/* (1_0) ax = ux & 0x7fffffff; */
+	lda	[%l5]0x82,%f0		/* (1_0) ftmp0 = *px; */
+	fpadd32	%f22,DC1,%f24		/* (0_0) y = vis_fpadd32(x,dconst1); */
 
-	fmuld	%f42,%f20,%f44		! (1_1) dtmp0 *= xx;
-	cmp	%o7,%o4			! (1_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update16		! (1_0) if ( ax < 0x39b89c55 )
-	faddd	DONE,%f34,%f34		! (7_1) div += done;
+	fmuld	%f42,%f20,%f44		/* (1_1) dtmp0 *= xx; */
+	cmp	%o7,%o4			/* (1_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update16		/* (1_0) if ( ax < 0x39b89c55 ) */
+	faddd	DONE,%f34,%f34		/* (7_1) div += done; */
 .cont16:
-	fmuld	%f30,%f38,%f42		! (5_1) dtmp0 = div0 * y0;
-	cmp	%o7,%o5			! (1_0) ax ? 0x4c700518
-	bg,pn	%icc,.update17		! (1_0) if ( ax > 0x4c700518 )
-	faddd	%f4,K1,%f4		! (2_1) dtmp0 += K1;
+	fmuld	%f30,%f38,%f42		/* (5_1) dtmp0 = div0 * y0; */
+	cmp	%o7,%o5			/* (1_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update17		/* (1_0) if ( ax > 0x4c700518 ) */
+	faddd	%f4,K1,%f4		/* (2_1) dtmp0 += K1; */
 .cont17:
-	fmuld	%f16,%f26,%f16		! (3_1) xx *= y0;
-	srl	%o0,18,%o7		! (2_1) ax >>= 18;
-	std	%f34,[%fp+tmp1]		! (7_1) i = ((unsigned long long*)&div)[0];
-	fstod	%f0,%f20		! (1_0) x = (double)ftmp0;
+	fmuld	%f16,%f26,%f16		/* (3_1) xx *= y0; */
+	srl	%o0,18,%o7		/* (2_1) ax >>= 18; */
+	std	%f34,[%fp+tmp1]		/* (7_1) i = ((unsigned long long*)&div)[0]; */
+	fstod	%f0,%f20		/* (1_0) x = (double)ftmp0; */
 
-	fmuld	%f32,%f40,%f32		! (4_1) dtmp1 = div0 * y0;
-	ldx	[%fp+tmp0],%o0		! (6_1) i = ((unsigned long long*)&div)[0];
-	and	%o1,-8,%o1		! (2_1) ux &= -8;
-	fand	%f24,DC2,%f26		! (0_0) y = vis_fand(y,dconst2);
+	fmuld	%f32,%f40,%f32		/* (4_1) dtmp1 = div0 * y0; */
+	ldx	[%fp+tmp0],%o0		/* (6_1) i = ((unsigned long long*)&div)[0]; */
+	and	%o1,-8,%o1		/* (2_1) ux &= -8; */
+	fand	%f24,DC2,%f26		/* (0_0) y = vis_fand(y,dconst2); */
 
-	faddd	%f48,%f44,%f12		! (1_1) res += dtmp0;
-	and	%o7,-8,%o7		! (2_1) ax &= -8;
-	ldd	[%l0+%o1],%f48		! (2_1) dtmp0 = *(double*)((char*)sign_arr + ux);
+	faddd	%f48,%f44,%f12		/* (1_1) res += dtmp0; */
+	and	%o7,-8,%o7		/* (2_1) ax &= -8; */
+	ldd	[%l0+%o1],%f48		/* (2_1) dtmp0 = *(double*)((char*)sign_arr + ux); */
 	bn,pn	%icc,.exit
 
-	ldd	[%o7+%l7],%f0		! (2_1) res = *(double*)((char*)parr1 + ax);
+	ldd	[%o7+%l7],%f0		/* (2_1) res = *(double*)((char*)parr1 + ax); */
 	mov	%l6,%l5
-	fmuld	%f4,%f50,%f4		! (2_1) dtmp0 *= x2;
-	fand	%f28,DC3,%f24		! (6_1) y0 = vis_fand(div,dconst3);
+	fmuld	%f4,%f50,%f4		/* (2_1) dtmp0 *= x2; */
+	fand	%f28,DC3,%f24		/* (6_1) y0 = vis_fand(div,dconst3); */
 
-	fmuld	%f16,%f16,%f50		! (3_1) x2 = xx * xx;
-	srlx	%o0,43,%o0		! (6_1) i >>= 43;
+	fmuld	%f16,%f16,%f50		/* (3_1) x2 = xx * xx; */
+	srlx	%o0,43,%o0		/* (6_1) i >>= 43; */
 	mov	%l3,%o7
-	fsubd	DTWO,%f42,%f44		! (5_1) dtmp0 = dtwo - dtmp0;
+	fsubd	DTWO,%f42,%f44		/* (5_1) dtmp0 = dtwo - dtmp0; */
 
-	and	%o0,508,%l6		! (6_1) i &= 508;
-	add	%l4,stridex,%l3		! px += stridex;
+	and	%o0,508,%l6		/* (6_1) i &= 508; */
+	add	%l4,stridex,%l3		/* px += stridex; */
 	bn,pn	%icc,.exit
-	fsubd	DTWO,%f32,%f46		! (4_1) dtmp1 = dtwo - dtmp1;
+	fsubd	DTWO,%f32,%f46		/* (4_1) dtmp1 = dtwo - dtmp1; */
 
-	fmuld	%f0,%f48,%f48		! (2_1) res *= dtmp0;
-	add	%g1,stridey,%o0		! py += stridey;
-	ld	[%i4+%l6],%f0		! (6_1) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
-	fdtos	%f12,%f12		! (1_1) ftmp0 = (float)res;
+	fmuld	%f0,%f48,%f48		/* (2_1) res *= dtmp0; */
+	add	%g1,stridey,%o0		/* py += stridey; */
+	ld	[%i4+%l6],%f0		/* (6_1) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
+	fdtos	%f12,%f12		/* (1_1) ftmp0 = (float)res; */
 
-	fmuld	%f22,%f26,%f32		! (0_0) div = x * y;
-	srl	%o7,28,%o1		! (3_1) ux >>= 28;
-	lda	[%l4]0x82,%l6		! (2_0) ux = ((int*)px)[0];
-	faddd	%f4,K0,%f42		! (2_1) dtmp0 += K0;
+	fmuld	%f22,%f26,%f32		/* (0_0) div = x * y; */
+	srl	%o7,28,%o1		/* (3_1) ux >>= 28; */
+	lda	[%l4]0x82,%l6		/* (2_0) ux = ((int*)px)[0]; */
+	faddd	%f4,K0,%f42		/* (2_1) dtmp0 += K0; */
 
-	fmuld	K2,%f50,%f4		! (3_1) dtmp0 = K2 * x2;
-	and	%o7,MASK_0x7fffffff,%o7	! (3_1) ax = ux & 0x7fffffff;
-	st	%f12,[%g1]		! (1_1) py[0] = ftmp0;
-	fsubd	%f22,%f26,%f22		! (0_0) xx = x - y;
+	fmuld	K2,%f50,%f4		/* (3_1) dtmp0 = K2 * x2; */
+	and	%o7,MASK_0x7fffffff,%o7	/* (3_1) ax = ux & 0x7fffffff; */
+	st	%f12,[%g1]		/* (1_1) py[0] = ftmp0; */
+	fsubd	%f22,%f26,%f22		/* (0_0) xx = x - y; */
 
-	fmuld	%f40,%f46,%f26		! (4_1) y0 *= dtmp1;
-	add	%o7,MASK_0x100000,%g1	! (3_1) ax += 0x00100000;
-	and	%o1,-8,%o1		! (3_1) ux &= -8;
-	fpsub32	%f0,%f24,%f40		! (6_1) y0 = vis_fpsub32(dtmp0, y0);
+	fmuld	%f40,%f46,%f26		/* (4_1) y0 *= dtmp1; */
+	add	%o7,MASK_0x100000,%g1	/* (3_1) ax += 0x00100000; */
+	and	%o1,-8,%o1		/* (3_1) ux &= -8; */
+	fpsub32	%f0,%f24,%f40		/* (6_1) y0 = vis_fpsub32(dtmp0, y0); */
 
-	fmuld	%f38,%f44,%f38		! (5_1) y0 *= dtmp0;
-	and	%l6,MASK_0x7fffffff,%o7	! (2_0) ax = ux & 0x7fffffff;
-	lda	[%l4]0x82,%f0		! (2_0) ftmp0 = *px;
-	fpadd32	%f20,DC1,%f24		! (1_0) y = vis_fpadd32(x,dconst1);
+	fmuld	%f38,%f44,%f38		/* (5_1) y0 *= dtmp0; */
+	and	%l6,MASK_0x7fffffff,%o7	/* (2_0) ax = ux & 0x7fffffff; */
+	lda	[%l4]0x82,%f0		/* (2_0) ftmp0 = *px; */
+	fpadd32	%f20,DC1,%f24		/* (1_0) y = vis_fpadd32(x,dconst1); */
 
-	fmuld	%f42,%f18,%f44		! (2_1) dtmp0 *= xx;
-	cmp	%o7,%o4			! (2_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update18		! (2_0) if ( ax < 0x39b89c55 )
-	faddd	DONE,%f32,%f32		! (0_0) div += done;
+	fmuld	%f42,%f18,%f44		/* (2_1) dtmp0 *= xx; */
+	cmp	%o7,%o4			/* (2_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update18		/* (2_0) if ( ax < 0x39b89c55 ) */
+	faddd	DONE,%f32,%f32		/* (0_0) div += done; */
 .cont18:
-	fmuld	%f28,%f40,%f42		! (6_1) dtmp0 = div0 * y0;
-	cmp	%o7,%o5			! (2_0) ax ? 0x4c700518
-	bg,pn	%icc,.update19		! (2_0) if ( ax > 0x4c700518 )
-	faddd	%f4,K1,%f4		! (3_1) dtmp0 += K1;
+	fmuld	%f28,%f40,%f42		/* (6_1) dtmp0 = div0 * y0; */
+	cmp	%o7,%o5			/* (2_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update19		/* (2_0) if ( ax > 0x4c700518 ) */
+	faddd	%f4,K1,%f4		/* (3_1) dtmp0 += K1; */
 .cont19:
-	fmuld	%f14,%f26,%f14		! (4_1) xx *= y0;
-	srl	%g1,18,%o7		! (3_1) ax >>= 18;
-	std	%f32,[%fp+tmp0]		! (0_0) i = ((unsigned long long*)&div)[0];
-	fstod	%f0,%f18		! (2_0) x = (double)ftmp0;
+	fmuld	%f14,%f26,%f14		/* (4_1) xx *= y0; */
+	srl	%g1,18,%o7		/* (3_1) ax >>= 18; */
+	std	%f32,[%fp+tmp0]		/* (0_0) i = ((unsigned long long*)&div)[0]; */
+	fstod	%f0,%f18		/* (2_0) x = (double)ftmp0; */
 
-	fmuld	%f30,%f38,%f30		! (5_1) dtmp1 = div0 * y0;
-	and	%o7,-8,%o7		! (3_1) ax &= -8;
-	ldx	[%fp+tmp1],%g1		! (7_1) i = ((unsigned long long*)&div)[0];
-	fand	%f24,DC2,%f26		! (1_0) y = vis_fand(y,dconst2);
+	fmuld	%f30,%f38,%f30		/* (5_1) dtmp1 = div0 * y0; */
+	and	%o7,-8,%o7		/* (3_1) ax &= -8; */
+	ldx	[%fp+tmp1],%g1		/* (7_1) i = ((unsigned long long*)&div)[0]; */
+	fand	%f24,DC2,%f26		/* (1_0) y = vis_fand(y,dconst2); */
 
-	faddd	%f48,%f44,%f12		! (2_1) res += dtmp0;
+	faddd	%f48,%f44,%f12		/* (2_1) res += dtmp0; */
 	mov	%l6,%l4
-	ldd	[%l0+%o1],%f48		! (3_1) dtmp0 = *(double*)((char*)sign_arr + ux);
+	ldd	[%l0+%o1],%f48		/* (3_1) dtmp0 = *(double*)((char*)sign_arr + ux); */
 	bn,pn	%icc,.exit
 
-	fmuld	%f4,%f50,%f4		! (3_1) dtmp0 *= x2;
-	ldd	[%o7+%l7],%f0		! (3_1) res = *(double*)((char*)parr1 + ax)
+	fmuld	%f4,%f50,%f4		/* (3_1) dtmp0 *= x2; */
+	ldd	[%o7+%l7],%f0		/* (3_1) res = *(double*)((char*)parr1 + ax) */
 	nop
-	fand	%f34,DC3,%f24		! (7_1) y0 = vis_fand(div,dconst3);
+	fand	%f34,DC3,%f24		/* (7_1) y0 = vis_fand(div,dconst3); */
 
-	fmuld	%f14,%f14,%f50		! (4_1) x2 = xx * xx;
-	srlx	%g1,43,%g1		! (7_1) i >>= 43;
+	fmuld	%f14,%f14,%f50		/* (4_1) x2 = xx * xx; */
+	srlx	%g1,43,%g1		/* (7_1) i >>= 43; */
 	mov	%i0,%o7
-	fsubd	DTWO,%f42,%f44		! (6_1) dtmp0 = dtwo - dtmp0;
+	fsubd	DTWO,%f42,%f44		/* (6_1) dtmp0 = dtwo - dtmp0; */
 
-	and	%g1,508,%l6		! (7_1) i &= 508;
-	add	%l3,stridex,%i0		! px += stridex;
+	and	%g1,508,%l6		/* (7_1) i &= 508; */
+	add	%l3,stridex,%i0		/* px += stridex; */
 	bn,pn	%icc,.exit
-	fsubd	DTWO,%f30,%f46		! (5_1) dtmp1 = dtwo - dtmp1;
+	fsubd	DTWO,%f30,%f46		/* (5_1) dtmp1 = dtwo - dtmp1; */
 
-	fmuld	%f0,%f48,%f48		! (3_1) res *= dtmp0;
-	add	%o0,stridey,%g1		! py += stridey;
-	ld	[%i4+%l6],%f0		! (7_1) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
-	fdtos	%f12,%f12		! (2_1) ftmp0 = (float)res;
+	fmuld	%f0,%f48,%f48		/* (3_1) res *= dtmp0; */
+	add	%o0,stridey,%g1		/* py += stridey; */
+	ld	[%i4+%l6],%f0		/* (7_1) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
+	fdtos	%f12,%f12		/* (2_1) ftmp0 = (float)res; */
 
-	fmuld	%f20,%f26,%f30		! (1_0) div = x * y;
-	srl	%o7,28,%o1		! (4_1) ux >>= 28;
-	lda	[%l3]0x82,%l6		! (3_0) ux = ((int*)px)[0];
-	faddd	%f4,K0,%f42		! (3_1) dtmp0 += K0;
+	fmuld	%f20,%f26,%f30		/* (1_0) div = x * y; */
+	srl	%o7,28,%o1		/* (4_1) ux >>= 28; */
+	lda	[%l3]0x82,%l6		/* (3_0) ux = ((int*)px)[0]; */
+	faddd	%f4,K0,%f42		/* (3_1) dtmp0 += K0; */
 
-	fmuld	K2,%f50,%f4		! (4_1) dtmp0 = K2 * x2;
-	and	%o7,MASK_0x7fffffff,%o7	! (4_1) ax = ux & 0x7fffffff;
-	st	%f12,[%o0]		! (2_1) py[0] = ftmp0;
-	fsubd	%f20,%f26,%f20		! (1_0) xx = x - y;
+	fmuld	K2,%f50,%f4		/* (4_1) dtmp0 = K2 * x2; */
+	and	%o7,MASK_0x7fffffff,%o7	/* (4_1) ax = ux & 0x7fffffff; */
+	st	%f12,[%o0]		/* (2_1) py[0] = ftmp0; */
+	fsubd	%f20,%f26,%f20		/* (1_0) xx = x - y; */
 
-	fmuld	%f38,%f46,%f26		! (5_1) y0 *= dtmp1;
-	add	%o7,MASK_0x100000,%o0	! (4_1) ax += 0x00100000;
-	and	%o1,-8,%o1		! (4_1) ux &= -8;
-	fpsub32	%f0,%f24,%f38		! (7_1) y0 = vis_fpsub32(dtmp0, y0);
+	fmuld	%f38,%f46,%f26		/* (5_1) y0 *= dtmp1; */
+	add	%o7,MASK_0x100000,%o0	/* (4_1) ax += 0x00100000; */
+	and	%o1,-8,%o1		/* (4_1) ux &= -8; */
+	fpsub32	%f0,%f24,%f38		/* (7_1) y0 = vis_fpsub32(dtmp0, y0); */
 
-	fmuld	%f40,%f44,%f40		! (6_1) y0 *= dtmp0;
-	and	%l6,MASK_0x7fffffff,%o7	! (3_0) ax = ux & 0x7fffffff;
-	lda	[%l3]0x82,%f0		! (3_0) ftmp0 = *px;
-	fpadd32	%f18,DC1,%f24		! (2_0) y = vis_fpadd32(x,dconst1);
+	fmuld	%f40,%f44,%f40		/* (6_1) y0 *= dtmp0; */
+	and	%l6,MASK_0x7fffffff,%o7	/* (3_0) ax = ux & 0x7fffffff; */
+	lda	[%l3]0x82,%f0		/* (3_0) ftmp0 = *px; */
+	fpadd32	%f18,DC1,%f24		/* (2_0) y = vis_fpadd32(x,dconst1); */
 
-	fmuld	%f42,%f16,%f44		! (3_1) dtmp0 *= xx;
-	cmp	%o7,%o4			! (3_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update20		! (3_0) if ( ax < 0x39b89c55 )
-	faddd	DONE,%f30,%f30		! (1_0) div += done;
+	fmuld	%f42,%f16,%f44		/* (3_1) dtmp0 *= xx; */
+	cmp	%o7,%o4			/* (3_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update20		/* (3_0) if ( ax < 0x39b89c55 ) */
+	faddd	DONE,%f30,%f30		/* (1_0) div += done; */
 .cont20:
-	fmuld	%f34,%f38,%f42		! (7_1) dtmp0 = div0 * y0;
-	cmp	%o7,%o5			! (3_0) ax ? 0x4c700518
-	bg,pn	%icc,.update21		! (3_0) if ( ax > 0x4c700518 )
-	faddd	%f4,K1,%f4		! (4_1) dtmp0 += K1;
+	fmuld	%f34,%f38,%f42		/* (7_1) dtmp0 = div0 * y0; */
+	cmp	%o7,%o5			/* (3_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update21		/* (3_0) if ( ax > 0x4c700518 ) */
+	faddd	%f4,K1,%f4		/* (4_1) dtmp0 += K1; */
 .cont21:
-	fmuld	%f36,%f26,%f36		! (5_1) xx *= y0;
-	srl	%o0,18,%o7		! (4_1) ax >>= 18;
-	std	%f30,[%fp+tmp1]		! (1_0) i = ((unsigned long long*)&div)[0];
-	fstod	%f0,%f16		! (3_0) x = (double)ftmp0;
+	fmuld	%f36,%f26,%f36		/* (5_1) xx *= y0; */
+	srl	%o0,18,%o7		/* (4_1) ax >>= 18; */
+	std	%f30,[%fp+tmp1]		/* (1_0) i = ((unsigned long long*)&div)[0]; */
+	fstod	%f0,%f16		/* (3_0) x = (double)ftmp0; */
 
-	fmuld	%f28,%f40,%f28		! (6_1) dtmp1 = div0 * y0;
-	and	%o7,-8,%o7		! (4_1) ax &= -8;
-	ldx	[%fp+tmp0],%o0		! (0_0) i = ((unsigned long long*)&div)[0];
-	fand	%f24,DC2,%f26		! (2_0) y = vis_fand(y,dconst2);
+	fmuld	%f28,%f40,%f28		/* (6_1) dtmp1 = div0 * y0; */
+	and	%o7,-8,%o7		/* (4_1) ax &= -8; */
+	ldx	[%fp+tmp0],%o0		/* (0_0) i = ((unsigned long long*)&div)[0]; */
+	fand	%f24,DC2,%f26		/* (2_0) y = vis_fand(y,dconst2); */
 
-	faddd	%f48,%f44,%f12		! (3_1) res += dtmp0;
+	faddd	%f48,%f44,%f12		/* (3_1) res += dtmp0; */
 	nop
-	ldd	[%l0+%o1],%f48		! (4_1) dtmp0 = *(double*)((char*)sign_arr + ux);
+	ldd	[%l0+%o1],%f48		/* (4_1) dtmp0 = *(double*)((char*)sign_arr + ux); */
 	bn,pn	%icc,.exit
 
-	ldd	[%o7+%l7],%f0		! (4_1) res = *(double*)((char*)parr1 + ax);
+	ldd	[%o7+%l7],%f0		/* (4_1) res = *(double*)((char*)parr1 + ax); */
 	mov	%l6,%l3
-	fmuld	%f4,%f50,%f4		! (4_1) dtmp0 *= x2;
-	fand	%f32,DC3,%f24		! (0_0) y0 = vis_fand(div,dconst3);
+	fmuld	%f4,%f50,%f4		/* (4_1) dtmp0 *= x2; */
+	fand	%f32,DC3,%f24		/* (0_0) y0 = vis_fand(div,dconst3); */
 
-	fmuld	%f36,%f36,%f50		! (5_1) x2 = xx * xx;
-	srlx	%o0,43,%o0		! (0_0) i >>= 43;
+	fmuld	%f36,%f36,%f50		/* (5_1) x2 = xx * xx; */
+	srlx	%o0,43,%o0		/* (0_0) i >>= 43; */
 	mov	%i2,%o7
-	fsubd	DTWO,%f42,%f44		! (7_1) dtmp0 = dtwo - dtmp0;
+	fsubd	DTWO,%f42,%f44		/* (7_1) dtmp0 = dtwo - dtmp0; */
 
-	and	%o0,508,%l6		! (0_0) i &= 508;
-	add	%i0,stridex,%i2		! px += stridex;
+	and	%o0,508,%l6		/* (0_0) i &= 508; */
+	add	%i0,stridex,%i2		/* px += stridex; */
 	bn,pn	%icc,.exit
-	fsubd	DTWO,%f28,%f46		! (6_1) dtmp1 = dtwo - dtmp1;
+	fsubd	DTWO,%f28,%f46		/* (6_1) dtmp1 = dtwo - dtmp1; */
 
-	fmuld	%f0,%f48,%f48		! (4_1) res *= dtmp0;
-	add	%g1,stridey,%o0		! py += stridey;
-	ld	[%i4+%l6],%f0		! (0_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
-	fdtos	%f12,%f12		! (3_1) ftmp0 = (float)res;
+	fmuld	%f0,%f48,%f48		/* (4_1) res *= dtmp0; */
+	add	%g1,stridey,%o0		/* py += stridey; */
+	ld	[%i4+%l6],%f0		/* (0_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
+	fdtos	%f12,%f12		/* (3_1) ftmp0 = (float)res; */
 
-	fmuld	%f18,%f26,%f28		! (2_0) div = x * y;
-	srl	%o7,28,%o1		! (5_1) ux >>= 28;
-	lda	[%i0]0x82,%l6		! (4_0) ux = ((int*)px)[0];
-	faddd	%f4,K0,%f42		! (4_1) dtmp0 += K0;
+	fmuld	%f18,%f26,%f28		/* (2_0) div = x * y; */
+	srl	%o7,28,%o1		/* (5_1) ux >>= 28; */
+	lda	[%i0]0x82,%l6		/* (4_0) ux = ((int*)px)[0]; */
+	faddd	%f4,K0,%f42		/* (4_1) dtmp0 += K0; */
 
-	fmuld	K2,%f50,%f4		! (5_1) dtmp0 = K2 * x2;
-	and	%o7,MASK_0x7fffffff,%o7	! (5_1) ax = ux & 0x7fffffff;
-	st	%f12,[%g1]		! (3_1) py[0] = ftmp0;
-	fsubd	%f18,%f26,%f18		! (2_0) xx = x - y;
+	fmuld	K2,%f50,%f4		/* (5_1) dtmp0 = K2 * x2; */
+	and	%o7,MASK_0x7fffffff,%o7	/* (5_1) ax = ux & 0x7fffffff; */
+	st	%f12,[%g1]		/* (3_1) py[0] = ftmp0; */
+	fsubd	%f18,%f26,%f18		/* (2_0) xx = x - y; */
 
-	fmuld	%f40,%f46,%f26		! (6_1) y0 *= dtmp1;
-	add	%o7,MASK_0x100000,%g1	! (5_1) ax += 0x00100000;
-	and	%o1,-8,%o1		! (5_1) ux &= -8;
-	fpsub32	%f0,%f24,%f40		! (0_0) y0 = vis_fpsub32(dtmp0, y0);
+	fmuld	%f40,%f46,%f26		/* (6_1) y0 *= dtmp1; */
+	add	%o7,MASK_0x100000,%g1	/* (5_1) ax += 0x00100000; */
+	and	%o1,-8,%o1		/* (5_1) ux &= -8; */
+	fpsub32	%f0,%f24,%f40		/* (0_0) y0 = vis_fpsub32(dtmp0, y0); */
 
-	fmuld	%f38,%f44,%f38		! (7_1) y0 *= dtmp0;
-	and	%l6,MASK_0x7fffffff,%o7	! (4_0) ax = ux & 0x7fffffff;
-	lda	[%i0]0x82,%f0		! (4_0) ftmp0 = *px;
-	fpadd32	%f16,DC1,%f24		! (3_0) y = vis_fpadd32(x,dconst1);
+	fmuld	%f38,%f44,%f38		/* (7_1) y0 *= dtmp0; */
+	and	%l6,MASK_0x7fffffff,%o7	/* (4_0) ax = ux & 0x7fffffff; */
+	lda	[%i0]0x82,%f0		/* (4_0) ftmp0 = *px; */
+	fpadd32	%f16,DC1,%f24		/* (3_0) y = vis_fpadd32(x,dconst1); */
 
-	fmuld	%f42,%f14,%f44		! (4_1) dtmp0 *= xx;
-	cmp	%o7,%o4			! (4_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update22		! (4_0) if ( ax < 0x39b89c55 )
-	faddd	DONE,%f28,%f28		! (2_0) div += done;
+	fmuld	%f42,%f14,%f44		/* (4_1) dtmp0 *= xx; */
+	cmp	%o7,%o4			/* (4_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update22		/* (4_0) if ( ax < 0x39b89c55 ) */
+	faddd	DONE,%f28,%f28		/* (2_0) div += done; */
 .cont22:
-	fmuld	%f32,%f40,%f42		! (0_0) dtmp0 = div0 * y0;
-	cmp	%o7,%o5			! (4_0) ax ? 0x4c700518
-	bg,pn	%icc,.update23		! (4_0) if ( ax > 0x4c700518 )
-	faddd	%f4,K1,%f4		! (5_1) dtmp0 += K1;
+	fmuld	%f32,%f40,%f42		/* (0_0) dtmp0 = div0 * y0; */
+	cmp	%o7,%o5			/* (4_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update23		/* (4_0) if ( ax > 0x4c700518 ) */
+	faddd	%f4,K1,%f4		/* (5_1) dtmp0 += K1; */
 .cont23:
-	fmuld	%f10,%f26,%f10		! (6_1) xx *= y0;
-	srl	%g1,18,%o7		! (5_1) ax >>= 18;
-	std	%f28,[%fp+tmp0]		! (2_0) i = ((unsigned long long*)&div)[0];
-	fstod	%f0,%f14		! (4_0) x = (double)ftmp0;
+	fmuld	%f10,%f26,%f10		/* (6_1) xx *= y0; */
+	srl	%g1,18,%o7		/* (5_1) ax >>= 18; */
+	std	%f28,[%fp+tmp0]		/* (2_0) i = ((unsigned long long*)&div)[0]; */
+	fstod	%f0,%f14		/* (4_0) x = (double)ftmp0; */
 
-	fmuld	%f34,%f38,%f34		! (7_1) dtmp1 = div0 * y0;
-	and	%o7,-8,%o7		! (5_1) ax &= -8;
-	ldx	[%fp+tmp1],%g1		! (1_0) i = ((unsigned long long*)&div)[0];
-	fand	%f24,DC2,%f26		! (3_0) y = vis_fand(y,dconst2);
+	fmuld	%f34,%f38,%f34		/* (7_1) dtmp1 = div0 * y0; */
+	and	%o7,-8,%o7		/* (5_1) ax &= -8; */
+	ldx	[%fp+tmp1],%g1		/* (1_0) i = ((unsigned long long*)&div)[0]; */
+	fand	%f24,DC2,%f26		/* (3_0) y = vis_fand(y,dconst2); */
 
-	faddd	%f48,%f44,%f12		! (4_1) res += dtmp0;
+	faddd	%f48,%f44,%f12		/* (4_1) res += dtmp0; */
 	mov	%l6,%i0
-	ldd	[%l0+%o1],%f48		! (5_1) dtmp0 = *(double*)((char*)sign_arr + ux);
+	ldd	[%l0+%o1],%f48		/* (5_1) dtmp0 = *(double*)((char*)sign_arr + ux); */
 	bn,pn	%icc,.exit
 
-	ldd	[%o7+%l7],%f0		! (5_1) res = *(double*)((char*)parr1 + ax);
+	ldd	[%o7+%l7],%f0		/* (5_1) res = *(double*)((char*)parr1 + ax); */
 	nop
-	fmuld	%f4,%f50,%f4		! (5_1) dtmp0 *= x2;
-	fand	%f30,DC3,%f24		! (1_0) y0 = vis_fand(div,dconst3);
+	fmuld	%f4,%f50,%f4		/* (5_1) dtmp0 *= x2; */
+	fand	%f30,DC3,%f24		/* (1_0) y0 = vis_fand(div,dconst3); */
 
-	fmuld	%f10,%f10,%f50		! (6_1) x2 = xx * xx;
-	srlx	%g1,43,%g1		! (1_0) i >>= 43;
+	fmuld	%f10,%f10,%f50		/* (6_1) x2 = xx * xx; */
+	srlx	%g1,43,%g1		/* (1_0) i >>= 43; */
 	mov	%l2,%o7
-	fsubd	DTWO,%f42,%f44		! (0_0) dtmp0 = dtwo - dtmp0;
+	fsubd	DTWO,%f42,%f44		/* (0_0) dtmp0 = dtwo - dtmp0; */
 
-	and	%g1,508,%l6		! (1_0) i &= 508;
-	add	%i2,stridex,%l2		! px += stridex;
+	and	%g1,508,%l6		/* (1_0) i &= 508; */
+	add	%i2,stridex,%l2		/* px += stridex; */
 	bn,pn	%icc,.exit
-	fsubd	DTWO,%f34,%f46		! (7_1) dtmp1 = dtwo - dtmp1;
+	fsubd	DTWO,%f34,%f46		/* (7_1) dtmp1 = dtwo - dtmp1; */
 
-	fmuld	%f0,%f48,%f48		! (5_1) res *= dtmp0;
-	add	%o0,stridey,%g1		! py += stridey;
-	ld	[%i4+%l6],%f0		! (1_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
-	fdtos	%f12,%f12		! (4_1) ftmp0 = (float)res;
+	fmuld	%f0,%f48,%f48		/* (5_1) res *= dtmp0; */
+	add	%o0,stridey,%g1		/* py += stridey; */
+	ld	[%i4+%l6],%f0		/* (1_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
+	fdtos	%f12,%f12		/* (4_1) ftmp0 = (float)res; */
 
-	fmuld	%f16,%f26,%f34		! (3_0) div = x * y;
-	srl	%o7,28,%o1		! (6_1) ux >>= 28;
-	lda	[%i2]0x82,%l6		! (5_0) ux = ((int*)px)[0];
-	faddd	%f4,K0,%f42		! (5_1) dtmp0 += K0;
+	fmuld	%f16,%f26,%f34		/* (3_0) div = x * y; */
+	srl	%o7,28,%o1		/* (6_1) ux >>= 28; */
+	lda	[%i2]0x82,%l6		/* (5_0) ux = ((int*)px)[0]; */
+	faddd	%f4,K0,%f42		/* (5_1) dtmp0 += K0; */
 
-	fmuld	K2,%f50,%f4		! (6_1) dtmp0 = K2 * x2;
-	and	%o7,MASK_0x7fffffff,%o7	! (6_1) ax = ux & 0x7fffffff;
-	st	%f12,[%o0]		! (4_1) py[0] = ftmp0;
-	fsubd	%f16,%f26,%f16		! (3_0) xx = x - y;
+	fmuld	K2,%f50,%f4		/* (6_1) dtmp0 = K2 * x2; */
+	and	%o7,MASK_0x7fffffff,%o7	/* (6_1) ax = ux & 0x7fffffff; */
+	st	%f12,[%o0]		/* (4_1) py[0] = ftmp0; */
+	fsubd	%f16,%f26,%f16		/* (3_0) xx = x - y; */
 
-	fmuld	%f38,%f46,%f26		! (7_1) y0 *= dtmp1;
-	add	%o7,MASK_0x100000,%o0	! (6_1) ax += 0x00100000;
-	and	%o1,-8,%o1		! (6_1) ux &= -8;
-	fpsub32	%f0,%f24,%f38		! (1_0) y0 = vis_fpsub32(dtmp0, y0);
+	fmuld	%f38,%f46,%f26		/* (7_1) y0 *= dtmp1; */
+	add	%o7,MASK_0x100000,%o0	/* (6_1) ax += 0x00100000; */
+	and	%o1,-8,%o1		/* (6_1) ux &= -8; */
+	fpsub32	%f0,%f24,%f38		/* (1_0) y0 = vis_fpsub32(dtmp0, y0); */
 
-	fmuld	%f40,%f44,%f40		! (0_0) y0 *= dtmp0;
-	and	%l6,MASK_0x7fffffff,%o7	! (5_0) ax = ux & 0x7fffffff;
-	lda	[%i2]0x82,%f0		! (5_0) ftmp0 = *px;
-	fpadd32	%f14,DC1,%f24		! (4_0) y = vis_fpadd32(x,dconst1);
+	fmuld	%f40,%f44,%f40		/* (0_0) y0 *= dtmp0; */
+	and	%l6,MASK_0x7fffffff,%o7	/* (5_0) ax = ux & 0x7fffffff; */
+	lda	[%i2]0x82,%f0		/* (5_0) ftmp0 = *px; */
+	fpadd32	%f14,DC1,%f24		/* (4_0) y = vis_fpadd32(x,dconst1); */
 
-	fmuld	%f42,%f36,%f44		! (5_1) dtmp0 *= xx;
-	cmp	%o7,%o4			! (5_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update24		! (5_0) if ( ax < 0x39b89c55 )
-	faddd	DONE,%f34,%f34		! (3_0) div += done;
+	fmuld	%f42,%f36,%f44		/* (5_1) dtmp0 *= xx; */
+	cmp	%o7,%o4			/* (5_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update24		/* (5_0) if ( ax < 0x39b89c55 ) */
+	faddd	DONE,%f34,%f34		/* (3_0) div += done; */
 .cont24:
-	fmuld	%f30,%f38,%f42		! (1_0) dtmp0 = div0 * y0;
-	cmp	%o7,%o5			! (5_0) ax ? 0x4c700518
-	bg,pn	%icc,.update25		! (5_0) if ( ax > 0x4c700518 )
-	faddd	%f4,K1,%f4		! (6_1) dtmp0 += K1;
+	fmuld	%f30,%f38,%f42		/* (1_0) dtmp0 = div0 * y0; */
+	cmp	%o7,%o5			/* (5_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update25		/* (5_0) if ( ax > 0x4c700518 ) */
+	faddd	%f4,K1,%f4		/* (6_1) dtmp0 += K1; */
 .cont25:
-	fmuld	%f8,%f26,%f8		! (7_1) xx *= y0;
-	srl	%o0,18,%o7		! (6_1) ax >>= 18;
-	std	%f34,[%fp+tmp1]		! (3_0) i = ((unsigned long long*)&div)[0];
-	fstod	%f0,%f36		! (5_0) x = (double)ftmp0;
+	fmuld	%f8,%f26,%f8		/* (7_1) xx *= y0; */
+	srl	%o0,18,%o7		/* (6_1) ax >>= 18; */
+	std	%f34,[%fp+tmp1]		/* (3_0) i = ((unsigned long long*)&div)[0]; */
+	fstod	%f0,%f36		/* (5_0) x = (double)ftmp0; */
 
-	fmuld	%f32,%f40,%f32		! (0_0) dtmp1 = div0 * y0;
-	and	%o7,-8,%o7		! (6_1) ax &= -8;
-	ldx	[%fp+tmp0],%o0		! (2_0) i = ((unsigned long long*)&div)[0];
-	fand	%f24,DC2,%f26		! (4_0) y = vis_fand(y,dconst2);
+	fmuld	%f32,%f40,%f32		/* (0_0) dtmp1 = div0 * y0; */
+	and	%o7,-8,%o7		/* (6_1) ax &= -8; */
+	ldx	[%fp+tmp0],%o0		/* (2_0) i = ((unsigned long long*)&div)[0]; */
+	fand	%f24,DC2,%f26		/* (4_0) y = vis_fand(y,dconst2); */
 
-	faddd	%f48,%f44,%f12		! (5_1) res += dtmp0;
+	faddd	%f48,%f44,%f12		/* (5_1) res += dtmp0; */
 	mov	%l6,%i2
-	ldd	[%l0+%o1],%f48		! (6_1) dtmp0 = *(double*)((char*)sign_arr + ux);
+	ldd	[%l0+%o1],%f48		/* (6_1) dtmp0 = *(double*)((char*)sign_arr + ux); */
 	bn,pn	%icc,.exit
 
-	ldd	[%o7+%l7],%f0		! (6_1) res = *(double*)((char*)parr1 + ax);
+	ldd	[%o7+%l7],%f0		/* (6_1) res = *(double*)((char*)parr1 + ax); */
 	nop
-	fmuld	%f4,%f50,%f4		! (6_1) dtmp0 *= x2;
-	fand	%f28,DC3,%f24		! (2_0) y0 = vis_fand(div,dconst3);
+	fmuld	%f4,%f50,%f4		/* (6_1) dtmp0 *= x2; */
+	fand	%f28,DC3,%f24		/* (2_0) y0 = vis_fand(div,dconst3); */
 
-	fmuld	%f8,%f8,%f50		! (7_1) x2 = xx * xx;
-	srlx	%o0,43,%o0		! (2_0) i >>= 43;
+	fmuld	%f8,%f8,%f50		/* (7_1) x2 = xx * xx; */
+	srlx	%o0,43,%o0		/* (2_0) i >>= 43; */
 	mov	%g5,%o7
-	fsubd	DTWO,%f42,%f44		! (1_0) dtmp0 = dtwo - dtmp0;
+	fsubd	DTWO,%f42,%f44		/* (1_0) dtmp0 = dtwo - dtmp0; */
 
-	and	%o0,508,%l6		! (2_0) i &= 508;
-	add	%l2,stridex,%g5		! px += stridex;
+	and	%o0,508,%l6		/* (2_0) i &= 508; */
+	add	%l2,stridex,%g5		/* px += stridex; */
 	bn,pn	%icc,.exit
-	fsubd	DTWO,%f32,%f46		! (0_0) dtmp1 = dtwo - dtmp1;
+	fsubd	DTWO,%f32,%f46		/* (0_0) dtmp1 = dtwo - dtmp1; */
 
-	fmuld	%f0,%f48,%f48		! (6_1) res *= dtmp0;
-	add	%g1,stridey,%o0		! py += stridey;
-	ld	[%i4+%l6],%f0		! (2_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
-	fdtos	%f12,%f12		! (5_1) ftmp0 = (float)res;
+	fmuld	%f0,%f48,%f48		/* (6_1) res *= dtmp0; */
+	add	%g1,stridey,%o0		/* py += stridey; */
+	ld	[%i4+%l6],%f0		/* (2_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
+	fdtos	%f12,%f12		/* (5_1) ftmp0 = (float)res; */
 
-	fmuld	%f14,%f26,%f32		! (4_0) div = x * y;
-	srl	%o7,28,%o1		! (7_1) ux >>= 28;
-	lda	[%l2]0x82,%l6		! (6_0) ux = ((int*)px)[0];
-	faddd	%f4,K0,%f42		! (6_1) dtmp0 += K0;
+	fmuld	%f14,%f26,%f32		/* (4_0) div = x * y; */
+	srl	%o7,28,%o1		/* (7_1) ux >>= 28; */
+	lda	[%l2]0x82,%l6		/* (6_0) ux = ((int*)px)[0]; */
+	faddd	%f4,K0,%f42		/* (6_1) dtmp0 += K0; */
 
-	fmuld	K2,%f50,%f4		! (7_1) dtmp0 = K2 * x2;
-	and	%o7,MASK_0x7fffffff,%o7	! (7_1) ax = ux & 0x7fffffff;
-	st	%f12,[%g1]		! (5_1) py[0] = ftmp0;
-	fsubd	%f14,%f26,%f14		! (4_0) xx = x - y;
+	fmuld	K2,%f50,%f4		/* (7_1) dtmp0 = K2 * x2; */
+	and	%o7,MASK_0x7fffffff,%o7	/* (7_1) ax = ux & 0x7fffffff; */
+	st	%f12,[%g1]		/* (5_1) py[0] = ftmp0; */
+	fsubd	%f14,%f26,%f14		/* (4_0) xx = x - y; */
 
-	fmuld	%f40,%f46,%f26		! (0_0) y0 *= dtmp1;
-	add	%o7,MASK_0x100000,%g1	! (7_1) ax += 0x00100000;
-	and	%o1,-8,%o1		! (7_1) ux &= -8;
-	fpsub32	%f0,%f24,%f40		! (2_0) y0 = vis_fpsub32(dtmp0, y0);
+	fmuld	%f40,%f46,%f26		/* (0_0) y0 *= dtmp1; */
+	add	%o7,MASK_0x100000,%g1	/* (7_1) ax += 0x00100000; */
+	and	%o1,-8,%o1		/* (7_1) ux &= -8; */
+	fpsub32	%f0,%f24,%f40		/* (2_0) y0 = vis_fpsub32(dtmp0, y0); */
 
-	fmuld	%f38,%f44,%f38		! (1_0) y0 *= dtmp0;
-	and	%l6,MASK_0x7fffffff,%o7	! (6_0) ax = ux & 0x7fffffff;
-	lda	[%l2]0x82,%f0		! (6_0) ftmp0 = *px;
-	fpadd32	%f36,DC1,%f24		! (5_0) y = vis_fpadd32(x,dconst1);
+	fmuld	%f38,%f44,%f38		/* (1_0) y0 *= dtmp0; */
+	and	%l6,MASK_0x7fffffff,%o7	/* (6_0) ax = ux & 0x7fffffff; */
+	lda	[%l2]0x82,%f0		/* (6_0) ftmp0 = *px; */
+	fpadd32	%f36,DC1,%f24		/* (5_0) y = vis_fpadd32(x,dconst1); */
 
-	fmuld	%f42,%f10,%f44		! (6_1) dtmp0 *= xx;
-	cmp	%o7,%o4			! (6_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update26		! (6_0) if ( ax < 0x39b89c55 )
-	faddd	DONE,%f32,%f32		! (4_0) div += done;
+	fmuld	%f42,%f10,%f44		/* (6_1) dtmp0 *= xx; */
+	cmp	%o7,%o4			/* (6_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update26		/* (6_0) if ( ax < 0x39b89c55 ) */
+	faddd	DONE,%f32,%f32		/* (4_0) div += done; */
 .cont26:
-	fmuld	%f28,%f40,%f42		! (2_0) dtmp0 = div0 * y0;
-	cmp	%o7,%o5			! (6_0) ax ? 0x4c700518
-	bg,pn	%icc,.update27		! (6_0) if ( ax > 0x4c700518 )
-	faddd	%f4,K1,%f4		! (7_1) dtmp0 += K1;
+	fmuld	%f28,%f40,%f42		/* (2_0) dtmp0 = div0 * y0; */
+	cmp	%o7,%o5			/* (6_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update27		/* (6_0) if ( ax > 0x4c700518 ) */
+	faddd	%f4,K1,%f4		/* (7_1) dtmp0 += K1; */
 .cont27:
-	fmuld	%f22,%f26,%f22		! (0_0) xx *= y0;
-	srl	%g1,18,%o7		! (7_1) ax >>= 18;
-	std	%f32,[%fp+tmp0]		! (4_0) i = ((unsigned long long*)&div)[0];
-	fstod	%f0,%f10		! (6_0) x = (double)ftmp0;
+	fmuld	%f22,%f26,%f22		/* (0_0) xx *= y0; */
+	srl	%g1,18,%o7		/* (7_1) ax >>= 18; */
+	std	%f32,[%fp+tmp0]		/* (4_0) i = ((unsigned long long*)&div)[0]; */
+	fstod	%f0,%f10		/* (6_0) x = (double)ftmp0; */
 
-	fmuld	%f30,%f38,%f30		! (1_0) dtmp1 = div0 * y0;
-	and	%o7,-8,%o7		! (7_1) ax &= -8;
-	ldx	[%fp+tmp1],%g1		! (3_0) i = ((unsigned long long*)&div)[0];
-	fand	%f24,DC2,%f26		! (5_0) y = vis_fand(y,dconst2);
+	fmuld	%f30,%f38,%f30		/* (1_0) dtmp1 = div0 * y0; */
+	and	%o7,-8,%o7		/* (7_1) ax &= -8; */
+	ldx	[%fp+tmp1],%g1		/* (3_0) i = ((unsigned long long*)&div)[0]; */
+	fand	%f24,DC2,%f26		/* (5_0) y = vis_fand(y,dconst2); */
 
-	faddd	%f48,%f44,%f12		! (6_1) res += dtmp0;
+	faddd	%f48,%f44,%f12		/* (6_1) res += dtmp0; */
 	mov	%l6,%l2
-	ldd	[%l0+%o1],%f48		! (7_1) dtmp0 = *(double*)((char*)sign_arr + ux);
+	ldd	[%l0+%o1],%f48		/* (7_1) dtmp0 = *(double*)((char*)sign_arr + ux); */
 	bn,pn	%icc,.exit
 
-	ldd	[%o7+%l7],%f0		! (7_1) res = *(double*)((char*)parr1 + ax);
+	ldd	[%o7+%l7],%f0		/* (7_1) res = *(double*)((char*)parr1 + ax); */
 	nop
-	fmuld	%f4,%f50,%f4		! (7_1) dtmp0 *= x2;
-	fand	%f34,DC3,%f24		! (3_0) y0 = vis_fand(div,dconst3);
+	fmuld	%f4,%f50,%f4		/* (7_1) dtmp0 *= x2; */
+	fand	%f34,DC3,%f24		/* (3_0) y0 = vis_fand(div,dconst3); */
 
-	fmuld	%f22,%f22,%f50		! (0_0) x2 = xx * xx;
-	srlx	%g1,43,%g1		! (3_0) i >>= 43;
+	fmuld	%f22,%f22,%f50		/* (0_0) x2 = xx * xx; */
+	srlx	%g1,43,%g1		/* (3_0) i >>= 43; */
 	mov	%i3,%o7
-	fsubd	DTWO,%f42,%f44		! (2_0) dtmp0 = dtwo - dtmp0;
+	fsubd	DTWO,%f42,%f44		/* (2_0) dtmp0 = dtwo - dtmp0; */
 
-	and	%g1,508,%l6		! (3_0) i &= 508;
-	add	%g5,stridex,%i3		! px += stridex;
+	and	%g1,508,%l6		/* (3_0) i &= 508; */
+	add	%g5,stridex,%i3		/* px += stridex; */
 	bn,pn	%icc,.exit
-	fsubd	DTWO,%f30,%f46		! (1_0) dtmp1 = dtwo - dtmp1;
+	fsubd	DTWO,%f30,%f46		/* (1_0) dtmp1 = dtwo - dtmp1; */
 
-	fmuld	%f0,%f48,%f48		! (7_1) res *= dtmp0;
-	add	%o0,stridey,%g1		! py += stridey;
-	ld	[%i4+%l6],%f0		! (3_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
-	fdtos	%f12,%f12		! (6_1) ftmp0 = (float)res;
+	fmuld	%f0,%f48,%f48		/* (7_1) res *= dtmp0; */
+	add	%o0,stridey,%g1		/* py += stridey; */
+	ld	[%i4+%l6],%f0		/* (3_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
+	fdtos	%f12,%f12		/* (6_1) ftmp0 = (float)res; */
 
-	fmuld	%f36,%f26,%f30		! (5_0) div = x * y;
-	srl	%o7,28,%o1		! (0_0) ux >>= 28;
-	lda	[%g5]0x82,%l6		! (7_0) ux = ((int*)px)[0];
-	faddd	%f4,K0,%f42		! (7_1) dtmp0 += K0;
+	fmuld	%f36,%f26,%f30		/* (5_0) div = x * y; */
+	srl	%o7,28,%o1		/* (0_0) ux >>= 28; */
+	lda	[%g5]0x82,%l6		/* (7_0) ux = ((int*)px)[0]; */
+	faddd	%f4,K0,%f42		/* (7_1) dtmp0 += K0; */
 
-	fmuld	K2,%f50,%f4		! (0_0) dtmp0 = K2 * x2;
-	and	%o7,MASK_0x7fffffff,%o7	! (0_0) ax = ux & 0x7fffffff;
-	st	%f12,[%o0]		! (6_1) py[0] = ftmp0;
-	fsubd	%f36,%f26,%f36		! (5_0) xx = x - y;
+	fmuld	K2,%f50,%f4		/* (0_0) dtmp0 = K2 * x2; */
+	and	%o7,MASK_0x7fffffff,%o7	/* (0_0) ax = ux & 0x7fffffff; */
+	st	%f12,[%o0]		/* (6_1) py[0] = ftmp0; */
+	fsubd	%f36,%f26,%f36		/* (5_0) xx = x - y; */
 
-	fmuld	%f38,%f46,%f26		! (1_0) y0 *= dtmp1;
-	add	%o7,MASK_0x100000,%o0	! (0_0) ax += 0x00100000;
-	and	%o1,-8,%o1		! (0_0) ux &= -8;
-	fpsub32	%f0,%f24,%f38		! (3_0) y0 = vis_fpsub32(dtmp0, y0);
+	fmuld	%f38,%f46,%f26		/* (1_0) y0 *= dtmp1; */
+	add	%o7,MASK_0x100000,%o0	/* (0_0) ax += 0x00100000; */
+	and	%o1,-8,%o1		/* (0_0) ux &= -8; */
+	fpsub32	%f0,%f24,%f38		/* (3_0) y0 = vis_fpsub32(dtmp0, y0); */
 
-	fmuld	%f40,%f44,%f40		! (2_0) y0 *= dtmp0;
-	and	%l6,MASK_0x7fffffff,%o7	! (7_0) ax = ux & 0x7fffffff;
-	lda	[%g5]0x82,%f0		! (7_0) ftmp0 = *px;
-	fpadd32	%f10,DC1,%f24		! (6_0) y = vis_fpadd32(x,dconst1);
+	fmuld	%f40,%f44,%f40		/* (2_0) y0 *= dtmp0; */
+	and	%l6,MASK_0x7fffffff,%o7	/* (7_0) ax = ux & 0x7fffffff; */
+	lda	[%g5]0x82,%f0		/* (7_0) ftmp0 = *px; */
+	fpadd32	%f10,DC1,%f24		/* (6_0) y = vis_fpadd32(x,dconst1); */
 
-	fmuld	%f42,%f8,%f44		! (7_1) dtmp0 *= xx;
-	cmp	%o7,%o4			! (7_0) ax ? 0x39b89c55
-	bl,pn	%icc,.update28		! (7_0) if ( ax < 0x39b89c55 )
-	faddd	DONE,%f30,%f30		! (5_0) div += done;
+	fmuld	%f42,%f8,%f44		/* (7_1) dtmp0 *= xx; */
+	cmp	%o7,%o4			/* (7_0) ax ? 0x39b89c55 */
+	bl,pn	%icc,.update28		/* (7_0) if ( ax < 0x39b89c55 ) */
+	faddd	DONE,%f30,%f30		/* (5_0) div += done; */
 .cont28:
-	fmuld	%f34,%f38,%f42		! (3_0) dtmp0 = div0 * y0;
-	cmp	%o7,%o5			! (7_0) ax ? 0x4c700518
-	bg,pn	%icc,.update29		! (7_0) if ( ax > 0x4c700518 )
-	faddd	%f4,K1,%f4		! (0_0) dtmp0 += K1;
+	fmuld	%f34,%f38,%f42		/* (3_0) dtmp0 = div0 * y0; */
+	cmp	%o7,%o5			/* (7_0) ax ? 0x4c700518 */
+	bg,pn	%icc,.update29		/* (7_0) if ( ax > 0x4c700518 ) */
+	faddd	%f4,K1,%f4		/* (0_0) dtmp0 += K1; */
 .cont29:
-	fmuld	%f20,%f26,%f20		! (1_0) xx *= y0;
-	srl	%o0,18,%o7		! (0_0) ax >>= 18;
-	std	%f30,[%fp+tmp1]		! (5_0) i = ((unsigned long long*)&div)[0];
-	fstod	%f0,%f8			! (7_0) x = (double)ftmp0;
+	fmuld	%f20,%f26,%f20		/* (1_0) xx *= y0; */
+	srl	%o0,18,%o7		/* (0_0) ax >>= 18; */
+	std	%f30,[%fp+tmp1]		/* (5_0) i = ((unsigned long long*)&div)[0]; */
+	fstod	%f0,%f8			/* (7_0) x = (double)ftmp0; */
 
-	fmuld	%f28,%f40,%f28		! (2_0) dtmp1 = div0 * y0;
-	and	%o7,-8,%o7		! (0_0) ux &= -8;
-	ldx	[%fp+tmp0],%o0		! (4_0) i = ((unsigned long long*)&div)[0];
-	fand	%f24,DC2,%f26		! (6_0) y = vis_fand(y,dconst2);
+	fmuld	%f28,%f40,%f28		/* (2_0) dtmp1 = div0 * y0; */
+	and	%o7,-8,%o7		/* (0_0) ux &= -8; */
+	ldx	[%fp+tmp0],%o0		/* (4_0) i = ((unsigned long long*)&div)[0]; */
+	fand	%f24,DC2,%f26		/* (6_0) y = vis_fand(y,dconst2); */
 
-	faddd	%f48,%f44,%f12		! (7_1) res += dtmp0;
+	faddd	%f48,%f44,%f12		/* (7_1) res += dtmp0; */
 	subcc	counter,8,counter
-	ldd	[%l0+%o1],%f48		! (0_0) dtmp0 = *(double*)((char*)sign_arr + ux);
+	ldd	[%l0+%o1],%f48		/* (0_0) dtmp0 = *(double*)((char*)sign_arr + ux); */
 	bn,pn	%icc,.exit
 
-	fmuld	%f4,%f50,%f4		! (0_0) dtmp0 *= x2;
+	fmuld	%f4,%f50,%f4		/* (0_0) dtmp0 *= x2; */
 	mov	%l6,%g5
-	ldd	[%o7+%l7],%f0		! (0_0) res = *(double*)((char*)parr1 + ax);
-	fand	%f32,DC3,%f24		! (4_0) y0 = vis_fand(div,dconst3);
+	ldd	[%o7+%l7],%f0		/* (0_0) res = *(double*)((char*)parr1 + ax); */
+	fand	%f32,DC3,%f24		/* (4_0) y0 = vis_fand(div,dconst3); */
 
-	fmuld	%f20,%f20,%f50		! (1_0) x2 = xx * xx;
-	srlx	%o0,43,%l6		! (4_0) i >>= 43;
+	fmuld	%f20,%f20,%f50		/* (1_0) x2 = xx * xx; */
+	srlx	%o0,43,%l6		/* (4_0) i >>= 43; */
 	mov	%l5,%o7
-	fsubd	DTWO,%f42,%f44		! (3_0) dtmp0 = dtwo - dtmp0;
+	fsubd	DTWO,%f42,%f44		/* (3_0) dtmp0 = dtwo - dtmp0; */
 
-	add	%g1,stridey,%o0		! py += stridey;
-	and	%l6,508,%l6		! (4_0) i &= 508;
+	add	%g1,stridey,%o0		/* py += stridey; */
+	and	%l6,508,%l6		/* (4_0) i &= 508; */
 	bn,pn	%icc,.exit
-	fsubd	DTWO,%f28,%f46		! (2_0) dtmp1 = dtwo - dtmp1;
+	fsubd	DTWO,%f28,%f46		/* (2_0) dtmp1 = dtwo - dtmp1; */
 
-	fmuld	%f0,%f48,%f48		! (0_0) res *= dtmp0;
-	ld	[%i4+%l6],%f0		! (4_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
-	add	%i3,stridex,%l5		! px += stridex;
-	fdtos	%f12,%f12		! (7_1) ftmp0 = (float)res;
+	fmuld	%f0,%f48,%f48		/* (0_0) res *= dtmp0; */
+	ld	[%i4+%l6],%f0		/* (4_0) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
+	add	%i3,stridex,%l5		/* px += stridex; */
+	fdtos	%f12,%f12		/* (7_1) ftmp0 = (float)res; */
 
-	lda	[%i3]0x82,%l6		! (0_0) ux = ((int*)px)[0];
-	fmuld	%f10,%f26,%f28		! (6_0) div = x * y;
+	lda	[%i3]0x82,%l6		/* (0_0) ux = ((int*)px)[0]; */
+	fmuld	%f10,%f26,%f28		/* (6_0) div = x * y; */
 	bpos,pt	%icc,.main_loop
-	faddd	%f4,K0,%f42		! (0_0) dtmp0 += K0;
+	faddd	%f4,K0,%f42		/* (0_0) dtmp0 += K0; */
 
-	srl	%o7,28,%l5		! (1_0) ux >>= 28;
-	st	%f12,[%g1]		! (7_1) py[0] = ftmp0;
+	srl	%o7,28,%l5		/* (1_0) ux >>= 28; */
+	st	%f12,[%g1]		/* (7_1) py[0] = ftmp0; */
 
 .tail:
 	addcc	counter,7,counter
 	bneg,pn	%icc,.begin
 	or	%g0,%o0,%o1
 
-	fsubd	%f10,%f26,%f10		! (6_1) xx = x - y;
-	and	%o7,MASK_0x7fffffff,%g1	! (1_1) ax = ux & 0x7fffffff;
-	fmuld	K2,%f50,%f4		! (1_1) dtmp0 = K2 * x2;
+	fsubd	%f10,%f26,%f10		/* (6_1) xx = x - y; */
+	and	%o7,MASK_0x7fffffff,%g1	/* (1_1) ax = ux & 0x7fffffff; */
+	fmuld	K2,%f50,%f4		/* (1_1) dtmp0 = K2 * x2; */
 
-	fmuld	%f40,%f46,%f26		! (2_1) y0 *= dtmp1;
-	add	%g1,MASK_0x100000,%g1	! (1_1) ax += 0x00100000;
-	and	%l5,-8,%l5		! (1_1) ux &= -8;
-	fpsub32	%f0,%f24,%f40		! (4_1) y0 = vis_fpsub32(dtmp0, y0);
+	fmuld	%f40,%f46,%f26		/* (2_1) y0 *= dtmp1; */
+	add	%g1,MASK_0x100000,%g1	/* (1_1) ax += 0x00100000; */
+	and	%l5,-8,%l5		/* (1_1) ux &= -8; */
+	fpsub32	%f0,%f24,%f40		/* (4_1) y0 = vis_fpsub32(dtmp0, y0); */
 
-	fmuld	%f38,%f44,%f38		! (3_1) y0 *= dtmp0;
+	fmuld	%f38,%f44,%f38		/* (3_1) y0 *= dtmp0; */
 
-	fmuld	%f42,%f22,%f44		! (0_1) dtmp0 *= xx;
-	faddd	DONE,%f28,%f28		! (6_1) div += done;
+	fmuld	%f42,%f22,%f44		/* (0_1) dtmp0 *= xx; */
+	faddd	DONE,%f28,%f28		/* (6_1) div += done; */
 
-	fmuld	%f32,%f40,%f42		! (4_1) dtmp0 = div0 * y0;
-	faddd	%f4,K1,%f4		! (1_1) dtmp0 += K1;
+	fmuld	%f32,%f40,%f42		/* (4_1) dtmp0 = div0 * y0; */
+	faddd	%f4,K1,%f4		/* (1_1) dtmp0 += K1; */
 
-	fmuld	%f18,%f26,%f18		! (2_1) xx *= y0;
-	srl	%g1,18,%o7		! (1_1) ax >>= 18;
-	std	%f28,[%fp+tmp0]		! (6_1) i = ((unsigned long long*)&div)[0];
+	fmuld	%f18,%f26,%f18		/* (2_1) xx *= y0; */
+	srl	%g1,18,%o7		/* (1_1) ax >>= 18; */
+	std	%f28,[%fp+tmp0]		/* (6_1) i = ((unsigned long long*)&div)[0]; */
 
-	fmuld	%f34,%f38,%f34		! (3_1) dtmp1 = div0 * y0;
-	and	%o7,-8,%o7		! (1_1) ax &= -8;
-	ldx	[%fp+tmp1],%g1		! (5_1) i = ((unsigned long long*)&div)[0];
+	fmuld	%f34,%f38,%f34		/* (3_1) dtmp1 = div0 * y0; */
+	and	%o7,-8,%o7		/* (1_1) ax &= -8; */
+	ldx	[%fp+tmp1],%g1		/* (5_1) i = ((unsigned long long*)&div)[0]; */
 
-	faddd	%f48,%f44,%f12		! (0_1) res += dtmp0;
-	add	%o7,%l7,%o7		! (1_1) (char*)parr1 + ax;
-	ldd	[%l0+%l5],%f48		! (1_1) dtmp0 = *(double*)((char*)sign_arr + ux);
+	faddd	%f48,%f44,%f12		/* (0_1) res += dtmp0; */
+	add	%o7,%l7,%o7		/* (1_1) (char*)parr1 + ax; */
+	ldd	[%l0+%l5],%f48		/* (1_1) dtmp0 = *(double*)((char*)sign_arr + ux); */
 
-	fmuld	%f4,%f50,%f4		! (1_1) dtmp0 *= x2;
-	fand	%f30,DC3,%f24		! (5_1) y0 = vis_fand(div,dconst3);
-	ldd	[%o7],%f0		! (1_1) res = *(double*)((char*)parr1 + ax);
+	fmuld	%f4,%f50,%f4		/* (1_1) dtmp0 *= x2; */
+	fand	%f30,DC3,%f24		/* (5_1) y0 = vis_fand(div,dconst3); */
+	ldd	[%o7],%f0		/* (1_1) res = *(double*)((char*)parr1 + ax); */
 
-	fmuld	%f18,%f18,%f50		! (2_1) x2 = xx * xx;
-	fsubd	DTWO,%f42,%f44		! (4_1) dtmp0 = dtwo - dtmp0;
-	srlx	%g1,43,%g1		! (5_1) i >>= 43;
+	fmuld	%f18,%f18,%f50		/* (2_1) x2 = xx * xx; */
+	fsubd	DTWO,%f42,%f44		/* (4_1) dtmp0 = dtwo - dtmp0; */
+	srlx	%g1,43,%g1		/* (5_1) i >>= 43; */
 
-	and	%g1,508,%l6		! (5_1) i &= 508;
+	and	%g1,508,%l6		/* (5_1) i &= 508; */
 	mov	%l4,%o7
-	fsubd	DTWO,%f34,%f46		! (3_1) dtmp1 = dtwo - dtmp1;
+	fsubd	DTWO,%f34,%f46		/* (3_1) dtmp1 = dtwo - dtmp1; */
 
-	fmuld	%f0,%f48,%f48		! (1_1) res *= dtmp0;
-	add	%o0,stridey,%g1		! py += stridey;
-	ld	[%i4+%l6],%f0		! (5_1) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
-	fdtos	%f12,%f12		! (0_1) ftmp0 = (float)res;
+	fmuld	%f0,%f48,%f48		/* (1_1) res *= dtmp0; */
+	add	%o0,stridey,%g1		/* py += stridey; */
+	ld	[%i4+%l6],%f0		/* (5_1) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
+	fdtos	%f12,%f12		/* (0_1) ftmp0 = (float)res; */
 
-	srl	%o7,28,%l4		! (2_1) ux >>= 28;
-	st	%f12,[%o0]		! (0_1) py[0] = ftmp0;
-	faddd	%f4,K0,%f42		! (1_1) dtmp0 += K0;
+	srl	%o7,28,%l4		/* (2_1) ux >>= 28; */
+	st	%f12,[%o0]		/* (0_1) py[0] = ftmp0; */
+	faddd	%f4,K0,%f42		/* (1_1) dtmp0 += K0; */
 
 	subcc	counter,1,counter
 	bneg,pn	%icc,.begin
 	or	%g0,%g1,%o1
 
-	fmuld	K2,%f50,%f4		! (2_1) dtmp0 = K2 * x2;
-	and	%o7,MASK_0x7fffffff,%o0	! (2_1) ax = ux & 0x7fffffff;
+	fmuld	K2,%f50,%f4		/* (2_1) dtmp0 = K2 * x2; */
+	and	%o7,MASK_0x7fffffff,%o0	/* (2_1) ax = ux & 0x7fffffff; */
 
-	fmuld	%f38,%f46,%f26		! (3_1) y0 *= dtmp1;
-	add	%o0,MASK_0x100000,%o0	! (2_1) ax += 0x00100000;
-	and	%l4,-8,%l4		! (2_1) ux &= -8;
-	fpsub32	%f0,%f24,%f38		! (5_1) y0 = vis_fpsub32(dtmp0, y0);
+	fmuld	%f38,%f46,%f26		/* (3_1) y0 *= dtmp1; */
+	add	%o0,MASK_0x100000,%o0	/* (2_1) ax += 0x00100000; */
+	and	%l4,-8,%l4		/* (2_1) ux &= -8; */
+	fpsub32	%f0,%f24,%f38		/* (5_1) y0 = vis_fpsub32(dtmp0, y0); */
 
-	fmuld	%f40,%f44,%f40		! (4_1) y0 *= dtmp0;
+	fmuld	%f40,%f44,%f40		/* (4_1) y0 *= dtmp0; */
 
-	fmuld	%f42,%f20,%f44		! (1_1) dtmp0 *= xx;
+	fmuld	%f42,%f20,%f44		/* (1_1) dtmp0 *= xx; */
 
-	fmuld	%f30,%f38,%f42		! (5_1) dtmp0 = div0 * y0;
-	faddd	%f4,K1,%f4		! (2_1) dtmp0 += K1;
+	fmuld	%f30,%f38,%f42		/* (5_1) dtmp0 = div0 * y0; */
+	faddd	%f4,K1,%f4		/* (2_1) dtmp0 += K1; */
 
-	fmuld	%f16,%f26,%f16		! (3_1) xx *= y0;
-	srl	%o0,18,%o7		! (2_1) ax >>= 18;
+	fmuld	%f16,%f26,%f16		/* (3_1) xx *= y0; */
+	srl	%o0,18,%o7		/* (2_1) ax >>= 18; */
 
-	fmuld	%f32,%f40,%f32		! (4_1) dtmp1 = div0 * y0;
-	and	%o7,-8,%o7		! (2_1) ax &= -8;
-	ldx	[%fp+tmp0],%o0		! (6_1) i = ((unsigned long long*)&div)[0];
+	fmuld	%f32,%f40,%f32		/* (4_1) dtmp1 = div0 * y0; */
+	and	%o7,-8,%o7		/* (2_1) ax &= -8; */
+	ldx	[%fp+tmp0],%o0		/* (6_1) i = ((unsigned long long*)&div)[0]; */
 
-	faddd	%f48,%f44,%f12		! (1_1) res += dtmp0;
-	add	%o7,%l7,%o7		! (2_1) (char*)parr1 + ax;
-	ldd	[%l0+%l4],%f48		! (2_1) dtmp0 = *(double*)((char*)sign_arr + ux);
+	faddd	%f48,%f44,%f12		/* (1_1) res += dtmp0; */
+	add	%o7,%l7,%o7		/* (2_1) (char*)parr1 + ax; */
+	ldd	[%l0+%l4],%f48		/* (2_1) dtmp0 = *(double*)((char*)sign_arr + ux); */
 
-	fmuld	%f4,%f50,%f4		! (2_1) dtmp0 *= x2;
-	fand	%f28,DC3,%f24		! (6_1) y0 = vis_fand(div,dconst3);
-	ldd	[%o7],%f0		! (2_1) res = *(double*)((char*)parr1 + ax);
+	fmuld	%f4,%f50,%f4		/* (2_1) dtmp0 *= x2; */
+	fand	%f28,DC3,%f24		/* (6_1) y0 = vis_fand(div,dconst3); */
+	ldd	[%o7],%f0		/* (2_1) res = *(double*)((char*)parr1 + ax); */
 
-	fmuld	%f16,%f16,%f50		! (3_1) x2 = xx * xx;
-	fsubd	DTWO,%f42,%f44		! (5_1) dtmp0 = dtwo - dtmp0;
-	srlx	%o0,43,%o0		! (6_1) i >>= 43;
+	fmuld	%f16,%f16,%f50		/* (3_1) x2 = xx * xx; */
+	fsubd	DTWO,%f42,%f44		/* (5_1) dtmp0 = dtwo - dtmp0; */
+	srlx	%o0,43,%o0		/* (6_1) i >>= 43; */
 
-	and	%o0,508,%l6		! (6_1) i &= 508;
+	and	%o0,508,%l6		/* (6_1) i &= 508; */
 	mov	%l3,%o7
-	fsubd	DTWO,%f32,%f46		! (4_1) dtmp1 = dtwo - dtmp1;
+	fsubd	DTWO,%f32,%f46		/* (4_1) dtmp1 = dtwo - dtmp1; */
 
-	fmuld	%f0,%f48,%f48		! (2_1) res *= dtmp0;
-	add	%g1,stridey,%o0		! py += stridey;
-	ld	[%i4+%l6],%f0		! (6_1) *(float*)&dtmp0 = *(float*)((char*)parr0 + i);
-	fdtos	%f12,%f12		! (1_1) ftmp0 = (float)res;
+	fmuld	%f0,%f48,%f48		/* (2_1) res *= dtmp0; */
+	add	%g1,stridey,%o0		/* py += stridey; */
+	ld	[%i4+%l6],%f0		/* (6_1) *(float*)&dtmp0 = *(float*)((char*)parr0 + i); */
+	fdtos	%f12,%f12		/* (1_1) ftmp0 = (float)res; */
 
-	srl	%o7,28,%l3		! (3_1) ux >>= 28;
-	st	%f12,[%g1]		! (1_1) py[0] = ftmp0;
-	faddd	%f4,K0,%f42		! (2_1) dtmp0 += K0;
+	srl	%o7,28,%l3		/* (3_1) ux >>= 28; */
+	st	%f12,[%g1]		/* (1_1) py[0] = ftmp0; */
+	faddd	%f4,K0,%f42		/* (2_1) dtmp0 += K0; */
 
 	subcc	counter,1,counter
 	bneg,pn	%icc,.begin
 	or	%g0,%o0,%o1
 
-	fmuld	K2,%f50,%f4		! (3_1) dtmp0 = K2 * x2;
-	and	%o7,MASK_0x7fffffff,%g1	! (3_1) ax = ux & 0x7fffffff;
+	fmuld	K2,%f50,%f4		/* (3_1) dtmp0 = K2 * x2; */
+	and	%o7,MASK_0x7fffffff,%g1	/* (3_1) ax = ux & 0x7fffffff; */
 
-	fmuld	%f40,%f46,%f26		! (4_1) y0 *= dtmp1;
-	add	%g1,MASK_0x100000,%g1	! (3_1) ax += 0x00100000;
-	and	%l3,-8,%l3		! (3_1) ux &= -8;
-	fpsub32	%f0,%f24,%f40		! (6_1) y0 = vis_fpsub32(dtmp0, y0);
+	fmuld	%f40,%f46,%f26		/* (4_1) y0 *= dtmp1; */
+	add	%g1,MASK_0x100000,%g1	/* (3_1) ax += 0x00100000; */
+	and	%l3,-8,%l3		/* (3_1) ux &= -8; */
+	fpsub32	%f0,%f24,%f40		/* (6_1) y0 = vis_fpsub32(dtmp0, y0); */
 
-	fmuld	%f38,%f44,%f38		! (5_1) y0 *= dtmp0;
+	fmuld	%f38,%f44,%f38		/* (5_1) y0 *= dtmp0; */
 
-	fmuld	%f42,%f18,%f44		! (2_1) dtmp0 *= xx;
+	fmuld	%f42,%f18,%f44		/* (2_1) dtmp0 *= xx; */
 
-	fmuld	%f28,%f40,%f42		! (6_1) dtmp0 = div0 * y0;
-	faddd	%f4,K1,%f4		! (3_1) dtmp0 += K1;
+	fmuld	%f28,%f40,%f42		/* (6_1) dtmp0 = div0 * y0; */
+	faddd	%f4,K1,%f4		/* (3_1) dtmp0 += K1; */
 
-	fmuld	%f14,%f26,%f14		! (4_1) xx *= y0;
-	srl	%g1,18,%o7		! (3_1) ax >>= 18;
+	fmuld	%f14,%f26,%f14		/* (4_1) xx *= y0; */
+	srl	%g1,18,%o7		/* (3_1) ax >>= 18; */
 
-	fmuld	%f30,%f38,%f30		! (5_1) dtmp1 = div0 * y0;
-	and	%o7,-8,%o7		! (3_1) ax &= -8;
+	fmuld	%f30,%f38,%f30		/* (5_1) dtmp1 = div0 * y0; */
+	and	%o7,-8,%o7		/* (3_1) ax &= -8; */
 
-	faddd	%f48,%f44,%f12		! (2_1) res += dtmp0;
-	add	%o7,%l7,%o7		! (3_1) (char*)parr1 + ax;
-	ldd	[%l0+%l3],%f48		! (3_1) dtmp0 = *(double*)((char*)sign_arr + ux);
+	faddd	%f48,%f44,%f12		/* (2_1) res += dtmp0; */
+	add	%o7,%l7,%o7		/* (3_1) (char*)parr1 + ax; */
+	ldd	[%l0+%l3],%f48		/* (3_1) dtmp0 = *(double*)((char*)sign_arr + ux); */
 
-	fmuld	%f4,%f50,%f4		! (3_1) dtmp0 *= x2;
-	ldd	[%o7],%f0		! (3_1) res = *(double*)((char*)parr1 + ax)
+	fmuld	%f4,%f50,%f4		/* (3_1) dtmp0 *= x2; */
+	ldd	[%o7],%f0		/* (3_1) res = *(double*)((char*)parr1 + ax) */
 
-	fmuld	%f14,%f14,%f50		! (4_1) x2 = xx * xx;
-	fsubd	DTWO,%f42,%f44		! (6_1) dtmp0 = dtwo - dtmp0;
+	fmuld	%f14,%f14,%f50		/* (4_1) x2 = xx * xx; */
+	fsubd	DTWO,%f42,%f44		/* (6_1) dtmp0 = dtwo - dtmp0; */
 
 	mov	%i0,%o7
-	fsubd	DTWO,%f30,%f46		! (5_1) dtmp1 = dtwo - dtmp1;
+	fsubd	DTWO,%f30,%f46		/* (5_1) dtmp1 = dtwo - dtmp1; */
 
-	fmuld	%f0,%f48,%f48		! (3_1) res *= dtmp0;
-	add	%o0,stridey,%g1		! py += stridey;
-	fdtos	%f12,%f12		! (2_1) ftmp0 = (float)res;
+	fmuld	%f0,%f48,%f48		/* (3_1) res *= dtmp0; */
+	add	%o0,stridey,%g1		/* py += stridey; */
+	fdtos	%f12,%f12		/* (2_1) ftmp0 = (float)res; */
 
-	srl	%o7,28,%i0		! (4_1) ux >>= 28;
-	st	%f12,[%o0]		! (2_1) py[0] = ftmp0;
-	faddd	%f4,K0,%f42		! (3_1) dtmp0 += K0;
+	srl	%o7,28,%i0		/* (4_1) ux >>= 28; */
+	st	%f12,[%o0]		/* (2_1) py[0] = ftmp0; */
+	faddd	%f4,K0,%f42		/* (3_1) dtmp0 += K0; */
 
 	subcc	counter,1,counter
 	bneg,pn	%icc,.begin
 	or	%g0,%g1,%o1
 
-	fmuld	K2,%f50,%f4		! (4_1) dtmp0 = K2 * x2;
-	and	%o7,MASK_0x7fffffff,%o0	! (4_1) ax = ux & 0x7fffffff;
+	fmuld	K2,%f50,%f4		/* (4_1) dtmp0 = K2 * x2; */
+	and	%o7,MASK_0x7fffffff,%o0	/* (4_1) ax = ux & 0x7fffffff; */
 
-	fmuld	%f38,%f46,%f26		! (5_1) y0 *= dtmp1;
-	add	%o0,MASK_0x100000,%o0	! (4_1) ax += 0x00100000;
-	and	%i0,-8,%i0		! (4_1) ux &= -8;
+	fmuld	%f38,%f46,%f26		/* (5_1) y0 *= dtmp1; */
+	add	%o0,MASK_0x100000,%o0	/* (4_1) ax += 0x00100000; */
+	and	%i0,-8,%i0		/* (4_1) ux &= -8; */
 
-	fmuld	%f40,%f44,%f40		! (6_1) y0 *= dtmp0;
+	fmuld	%f40,%f44,%f40		/* (6_1) y0 *= dtmp0; */
 
-	fmuld	%f42,%f16,%f44		! (3_1) dtmp0 *= xx;
+	fmuld	%f42,%f16,%f44		/* (3_1) dtmp0 *= xx; */
 
-	faddd	%f4,K1,%f4		! (4_1) dtmp0 += K1;
+	faddd	%f4,K1,%f4		/* (4_1) dtmp0 += K1; */
 
-	fmuld	%f36,%f26,%f36		! (5_1) xx *= y0;
-	srl	%o0,18,%o7		! (4_1) ax >>= 18;
+	fmuld	%f36,%f26,%f36		/* (5_1) xx *= y0; */
+	srl	%o0,18,%o7		/* (4_1) ax >>= 18; */
 
-	fmuld	%f28,%f40,%f28		! (6_1) dtmp1 = div0 * y0;
-	and	%o7,-8,%o7		! (4_1) ax &= -8;
+	fmuld	%f28,%f40,%f28		/* (6_1) dtmp1 = div0 * y0; */
+	and	%o7,-8,%o7		/* (4_1) ax &= -8; */
 
-	faddd	%f48,%f44,%f12		! (3_1) res += dtmp0;
-	add	%o7,%l7,%o7		! (4_1) (char*)parr1 + ax;
-	ldd	[%l0+%i0],%f48		! (4_1) dtmp0 = *(double*)((char*)sign_arr + ux);
+	faddd	%f48,%f44,%f12		/* (3_1) res += dtmp0; */
+	add	%o7,%l7,%o7		/* (4_1) (char*)parr1 + ax; */
+	ldd	[%l0+%i0],%f48		/* (4_1) dtmp0 = *(double*)((char*)sign_arr + ux); */
 
-	fmuld	%f4,%f50,%f4		! (4_1) dtmp0 *= x2;
-	ldd	[%o7],%f0		! (4_1) res = *(double*)((char*)parr1 + ax);
+	fmuld	%f4,%f50,%f4		/* (4_1) dtmp0 *= x2; */
+	ldd	[%o7],%f0		/* (4_1) res = *(double*)((char*)parr1 + ax); */
 
-	fmuld	%f36,%f36,%f50		! (5_1) x2 = xx * xx;
+	fmuld	%f36,%f36,%f50		/* (5_1) x2 = xx * xx; */
 
 	mov	%i2,%o7
-	fsubd	DTWO,%f28,%f46		! (6_1) dtmp1 = dtwo - dtmp1;
+	fsubd	DTWO,%f28,%f46		/* (6_1) dtmp1 = dtwo - dtmp1; */
 
-	fmuld	%f0,%f48,%f48		! (4_1) res *= dtmp0;
-	add	%g1,stridey,%o0		! py += stridey;
-	fdtos	%f12,%f12		! (3_1) ftmp0 = (float)res;
+	fmuld	%f0,%f48,%f48		/* (4_1) res *= dtmp0; */
+	add	%g1,stridey,%o0		/* py += stridey; */
+	fdtos	%f12,%f12		/* (3_1) ftmp0 = (float)res; */
 
-	srl	%o7,28,%i2		! (5_1) ux >>= 28;
-	st	%f12,[%g1]		! (3_1) py[0] = ftmp0;
-	faddd	%f4,K0,%f42		! (4_1) dtmp0 += K0;
+	srl	%o7,28,%i2		/* (5_1) ux >>= 28; */
+	st	%f12,[%g1]		/* (3_1) py[0] = ftmp0; */
+	faddd	%f4,K0,%f42		/* (4_1) dtmp0 += K0; */
 
 	subcc	counter,1,counter
 	bneg,pn	%icc,.begin
 	or	%g0,%o0,%o1
 
-	fmuld	K2,%f50,%f4		! (5_1) dtmp0 = K2 * x2;
-	and	%o7,MASK_0x7fffffff,%g1	! (5_1) ax = ux & 0x7fffffff;
+	fmuld	K2,%f50,%f4		/* (5_1) dtmp0 = K2 * x2; */
+	and	%o7,MASK_0x7fffffff,%g1	/* (5_1) ax = ux & 0x7fffffff; */
 
-	fmuld	%f40,%f46,%f26		! (6_1) y0 *= dtmp1;
-	add	%g1,MASK_0x100000,%g1	! (5_1) ax += 0x00100000;
-	and	%i2,-8,%i2		! (5_1) ux &= -8;
+	fmuld	%f40,%f46,%f26		/* (6_1) y0 *= dtmp1; */
+	add	%g1,MASK_0x100000,%g1	/* (5_1) ax += 0x00100000; */
+	and	%i2,-8,%i2		/* (5_1) ux &= -8; */
 
-	fmuld	%f42,%f14,%f44		! (4_1) dtmp0 *= xx;
+	fmuld	%f42,%f14,%f44		/* (4_1) dtmp0 *= xx; */
 
-	faddd	%f4,K1,%f4		! (5_1) dtmp0 += K1;
+	faddd	%f4,K1,%f4		/* (5_1) dtmp0 += K1; */
 
-	fmuld	%f10,%f26,%f10		! (6_1) xx *= y0;
-	srl	%g1,18,%o7		! (5_1) ax >>= 18;
+	fmuld	%f10,%f26,%f10		/* (6_1) xx *= y0; */
+	srl	%g1,18,%o7		/* (5_1) ax >>= 18; */
 
-	and	%o7,-8,%o7		! (5_1) ax &= -8;
+	and	%o7,-8,%o7		/* (5_1) ax &= -8; */
 
-	faddd	%f48,%f44,%f12		! (4_1) res += dtmp0;
-	add	%o7,%l7,%o7		! (5_1) (char*)parr1 + ax;
-	ldd	[%l0+%i2],%f48		! (5_1) dtmp0 = *(double*)((char*)sign_arr + ux);
+	faddd	%f48,%f44,%f12		/* (4_1) res += dtmp0; */
+	add	%o7,%l7,%o7		/* (5_1) (char*)parr1 + ax; */
+	ldd	[%l0+%i2],%f48		/* (5_1) dtmp0 = *(double*)((char*)sign_arr + ux); */
 
-	fmuld	%f4,%f50,%f4		! (5_1) dtmp0 *= x2;
-	ldd	[%o7],%f0		! (5_1) res = *(double*)((char*)parr1 + ax);
+	fmuld	%f4,%f50,%f4		/* (5_1) dtmp0 *= x2; */
+	ldd	[%o7],%f0		/* (5_1) res = *(double*)((char*)parr1 + ax); */
 
-	fmuld	%f10,%f10,%f50		! (6_1) x2 = xx * xx;
+	fmuld	%f10,%f10,%f50		/* (6_1) x2 = xx * xx; */
 
 	mov	%l2,%o7
 
-	fmuld	%f0,%f48,%f48		! (5_1) res *= dtmp0;
-	add	%o0,stridey,%g1		! py += stridey;
-	fdtos	%f12,%f12		! (4_1) ftmp0 = (float)res;
+	fmuld	%f0,%f48,%f48		/* (5_1) res *= dtmp0; */
+	add	%o0,stridey,%g1		/* py += stridey; */
+	fdtos	%f12,%f12		/* (4_1) ftmp0 = (float)res; */
 
-	srl	%o7,28,%l2		! (6_1) ux >>= 28;
-	st	%f12,[%o0]		! (4_1) py[0] = ftmp0;
-	faddd	%f4,K0,%f42		! (5_1) dtmp0 += K0;
+	srl	%o7,28,%l2		/* (6_1) ux >>= 28; */
+	st	%f12,[%o0]		/* (4_1) py[0] = ftmp0; */
+	faddd	%f4,K0,%f42		/* (5_1) dtmp0 += K0; */
 
 	subcc	counter,1,counter
 	bneg,pn	%icc,.begin
 	or	%g0,%g1,%o1
 
-	fmuld	K2,%f50,%f4		! (6_1) dtmp0 = K2 * x2;
-	and	%o7,MASK_0x7fffffff,%o0	! (6_1) ax = ux & 0x7fffffff;
+	fmuld	K2,%f50,%f4		/* (6_1) dtmp0 = K2 * x2; */
+	and	%o7,MASK_0x7fffffff,%o0	/* (6_1) ax = ux & 0x7fffffff; */
 
-	add	%o0,MASK_0x100000,%o0	! (6_1) ax += 0x00100000;
-	and	%l2,-8,%l2		! (6_1) ux &= -8;
+	add	%o0,MASK_0x100000,%o0	/* (6_1) ax += 0x00100000; */
+	and	%l2,-8,%l2		/* (6_1) ux &= -8; */
 
-	fmuld	%f42,%f36,%f44		! (5_1) dtmp0 *= xx;
+	fmuld	%f42,%f36,%f44		/* (5_1) dtmp0 *= xx; */
 
-	faddd	%f4,K1,%f4		! (6_1) dtmp0 += K1;
+	faddd	%f4,K1,%f4		/* (6_1) dtmp0 += K1; */
 
-	srl	%o0,18,%o7		! (6_1) ax >>= 18;
+	srl	%o0,18,%o7		/* (6_1) ax >>= 18; */
 
-	and	%o7,-8,%o7		! (6_1) ax &= -8;
+	and	%o7,-8,%o7		/* (6_1) ax &= -8; */
 
-	faddd	%f48,%f44,%f12		! (5_1) res += dtmp0;
-	add	%o7,%l7,%o7		! (6_1) (char*)parr1 + ax;
-	ldd	[%l0+%l2],%f48		! (6_1) dtmp0 = *(double*)((char*)sign_arr + ux);
+	faddd	%f48,%f44,%f12		/* (5_1) res += dtmp0; */
+	add	%o7,%l7,%o7		/* (6_1) (char*)parr1 + ax; */
+	ldd	[%l0+%l2],%f48		/* (6_1) dtmp0 = *(double*)((char*)sign_arr + ux); */
 
-	fmuld	%f4,%f50,%f4		! (6_1) dtmp0 *= x2;
-	ldd	[%o7],%f0		! (6_1) res = *(double*)((char*)parr1 + ax);
+	fmuld	%f4,%f50,%f4		/* (6_1) dtmp0 *= x2; */
+	ldd	[%o7],%f0		/* (6_1) res = *(double*)((char*)parr1 + ax); */
 
-	fmuld	%f0,%f48,%f48		! (6_1) res *= dtmp0;
-	add	%g1,stridey,%o0		! py += stridey;
-	fdtos	%f12,%f12		! (5_1) ftmp0 = (float)res;
+	fmuld	%f0,%f48,%f48		/* (6_1) res *= dtmp0; */
+	add	%g1,stridey,%o0		/* py += stridey; */
+	fdtos	%f12,%f12		/* (5_1) ftmp0 = (float)res; */
 
-	st	%f12,[%g1]		! (5_1) py[0] = ftmp0;
-	faddd	%f4,K0,%f42		! (6_1) dtmp0 += K0;
+	st	%f12,[%g1]		/* (5_1) py[0] = ftmp0; */
+	faddd	%f4,K0,%f42		/* (6_1) dtmp0 += K0; */
 
 	subcc	counter,1,counter
 	bneg,pn	%icc,.begin
 	or	%g0,%o0,%o1
 
-	fmuld	%f42,%f10,%f44		! (6_1) dtmp0 *= xx;
+	fmuld	%f42,%f10,%f44		/* (6_1) dtmp0 *= xx; */
 
-	faddd	%f48,%f44,%f12		! (6_1) res += dtmp0;
+	faddd	%f48,%f44,%f12		/* (6_1) res += dtmp0; */
 
-	add	%o0,stridey,%g1		! py += stridey;
-	fdtos	%f12,%f12		! (6_1) ftmp0 = (float)res;
+	add	%o0,stridey,%g1		/* py += stridey; */
+	fdtos	%f12,%f12		/* (6_1) ftmp0 = (float)res; */
 
-	st	%f12,[%o0]		! (6_1) py[0] = ftmp0;
+	st	%f12,[%o0]		/* (6_1) py[0] = ftmp0; */
 
 	ba	.begin
-	or	%g0,%g1,%o1		! py += stridey;
+	or	%g0,%g1,%o1		/* py += stridey; */
 
 .exit:
 	ret
@@ -1398,45 +1398,45 @@
 
 	.align	16
 .spec0:
-	add	%i3,stridex,%i3		! px += stridex;
+	add	%i3,stridex,%i3		/* px += stridex; */
 	sub	counter,1,counter
-	st	%l6,[%o1]		! *(int*)py = ux;
+	st	%l6,[%o1]		/* *(int*)py = ux; */
 
 	ba	.begin1
-	add	%o1,stridey,%o1		! py += stridey;
+	add	%o1,stridey,%o1		/* py += stridey; */
 
 	.align	16
 .spec1:
 	sethi	%hi(0x7f800000),%l3
-	sethi	%hi(0x3fc90c00),%l4	! pi_2
+	sethi	%hi(0x3fc90c00),%l4	/* pi_2 */
 
 	sethi	%hi(0x80000000),%o0
-	add	%l4,0x3db,%l4		! pi_2
+	add	%l4,0x3db,%l4		/* pi_2 */
 
-	cmp	%l5,%l3			! if ( ax > 0x7f800000 )
+	cmp	%l5,%l3			/* if ( ax > 0x7f800000 ) */
 	bg,a,pn	%icc,1f
-	fabss	%f0,%f0			! fpx = fabsf(*px);
+	fabss	%f0,%f0			/* fpx = fabsf(*px); */
 
-	and	%l6,%o0,%l6		! sign = ux & 0x80000000;
+	and	%l6,%o0,%l6		/* sign = ux & 0x80000000; */
 
-	or	%l6,%l4,%l6		! sign |= pi_2;
+	or	%l6,%l4,%l6		/* sign |= pi_2; */
 
-	add	%i3,stridex,%i3		! px += stridex;
+	add	%i3,stridex,%i3		/* px += stridex; */
 	sub	counter,1,counter
-	st	%l6,[%o1]		! *(int*)py = sign;
+	st	%l6,[%o1]		/* *(int*)py = sign; */
 
 	ba	.begin1
-	add	%o1,stridey,%o1		! py += stridey;
+	add	%o1,stridey,%o1		/* py += stridey; */
 
 1:
-	fmuls	%f0,%f0,%f0		! fpx *= fpx;
+	fmuls	%f0,%f0,%f0		/* fpx *= fpx; */
 
-	add	%i3,stridex,%i3		! px += stridex
+	add	%i3,stridex,%i3		/* px += stridex */
 	sub	counter,1,counter
-	st	%f0,[%o1]		! *py = fpx;
+	st	%f0,[%o1]		/* *py = fpx; */
 
 	ba	.begin1
-	add	%o1,stridey,%o1		! py += stridey;
+	add	%o1,stridey,%o1		/* py += stridey; */
 
 	.align	16
 .update0:

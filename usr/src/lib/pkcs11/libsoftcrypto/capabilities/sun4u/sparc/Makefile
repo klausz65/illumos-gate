@@ -27,8 +27,6 @@ include		../Makefile.com
 
 CSTD =		$(CSTD_GNU99)
 
-ASFLAGS +=	-xarch=v8plusa
-
 .KEEP_STATE:
 
 all install:	$(SYMCAP)

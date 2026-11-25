@@ -53,6 +53,10 @@
 
 /* BEGIN CSTYLED */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 #define	DCACHE_FLUSHPAGE(arg1, arg2, tmp1, tmp2, tmp3)			\
 	ldxa	[%g0]ASI_DCU, tmp1					;\
 	btst	DCU_DC, tmp1		/* is dcache enabled? */	;\
@@ -395,7 +399,7 @@
  *		The cheetah dcache is a 64k psuedo 4 way accaociative cache.
  *		It is virtual indexed, physically tagged cache.
  */
-	.seg	".data"
+	.section	".data"
 	.align	8
 	.global	dflush_type
 dflush_type:
@@ -475,7 +479,7 @@ _dispatch_status_busy:
  *	%o0 - function or inumber to call
  *	%o1, %o2 - arguments (2 uint64_t's)
  */
-	.seg "text"
+	.section "text"
 
 	ENTRY(init_mondo)
 #ifdef DEBUG
@@ -2347,7 +2351,7 @@ icache_inval_all_1:
 	rd	%asi, %g1
 	wr	%g0, ASI_P, %asi
 	GET_ECACHE_DTAGS(%o0, %o1, %o3, %o4, %o5)
-	wr	%g1, %asi
+	wr	%g1, %g0, %asi
 	UNPARK_SIBLING_CORE(%o2, %o3, %o4)	! can use %o2 again
 	rdpr	%pstate, %o2
 	or	%o2, PSTATE_IE, %o2

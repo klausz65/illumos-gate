@@ -41,6 +41,9 @@
 #include <sys/mmu.h>
 #include <sys/lpad.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+
 	/*
 	 * %o0 - hcall specified arg (cpuid)
 	 * %i0 - real memory base

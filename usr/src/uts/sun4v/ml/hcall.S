@@ -32,6 +32,10 @@
 #include <sys/machparam.h>
 #include <sys/hypervisor_api.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 	/*
 	 * int hv_mach_exit(uint64_t exit_code)
 	 */

@@ -23,8 +23,6 @@
  * Use is subject to license terms.
  */
 
-# ident	"%Z%%M%	%I%	%E% SMI"
-
 #include <sys/param.h>
 #include <sys/errno.h>
 #include <sys/asm_linkage.h>
@@ -56,9 +54,11 @@
  * Returns errno value on pagefault error, 0 if all ok
  */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
-
-	.seg	".text"
+	.section	".text"
 	.align	4
 
 	ENTRY(kcopy)

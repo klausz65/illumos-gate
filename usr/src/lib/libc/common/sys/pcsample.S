@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"pcsample.s"
+	.file	"pcsample.S"
 
 /* C library -- pcsample */
 /* long pcsample(uintptr_t buf[], long nsamples); */

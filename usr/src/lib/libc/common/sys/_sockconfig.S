@@ -26,7 +26,7 @@
  * Copyright (c) 1996, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
-	.file	"_sockconfig.s"
+	.file	"_sockconfig.S"
 
 /* C library -- _sockconfig					*/
 /*

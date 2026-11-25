@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_getsockopt.s"
+	.file	"_so_getsockopt.S"
 
 /* C library -- _so_getsockopt					*/
 /* int _so_getsockopt (int socket, int level, int option_name,	*/

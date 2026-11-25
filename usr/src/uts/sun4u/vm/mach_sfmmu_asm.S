@@ -46,6 +46,10 @@
 #include <sys/clock.h>
 #include <sys/trapstat.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * sfmmu related subroutines
  */

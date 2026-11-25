@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"lseek.s"
+	.file	"lseek.S"
 
 /* C library -- lseek						*/
 /* off_t lseek(int fildes, off_t offset, int whence);		*/

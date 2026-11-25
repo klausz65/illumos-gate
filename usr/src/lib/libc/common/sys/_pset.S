@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_pset.s"
+	.file	"_pset.S"
 
 #include "SYS.h"
 

@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"readv.s"
+	.file	"readv.S"
 
 /* C library -- readv							*/
 /* ssize_t __readv(int fd, const struct iovec *iovp, int iovcnt)	*/

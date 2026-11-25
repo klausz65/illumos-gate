@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"memcntl.s"
+	.file	"memcntl.S"
 
 /* C library -- memcntl	*/
 /* int memcntl(caddr_t addr, size_t len, int cmd,

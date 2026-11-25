@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"facl.s"
+	.file	"facl.S"
 
 /* C library -- facl						*/
 /* int facl(int fd, int cmd, int cnt, struct aclent *buf)	*/

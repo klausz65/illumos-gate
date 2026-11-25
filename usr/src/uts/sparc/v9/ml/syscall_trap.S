@@ -45,6 +45,10 @@
 #error	"SYSENT_SHIFT does not correspond to size of sysent structure"
 #endif
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * Native System call trap handler.
  *

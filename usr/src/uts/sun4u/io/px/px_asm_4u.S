@@ -50,6 +50,9 @@
 !
 ! Assumes alignment is correct and that on_trap handling has been installed
 
+	/* GNU assembler */ 
+	.register	%g2, #scratch
+
 	ENTRY(px_phys_peek_4u)
 
 	rdpr	%pstate, %o4		! Disable interrupts if not already
@@ -62,7 +65,7 @@
 	tst	%o3			! Set up %asi with modifier for
 	movz	%xcc, ASI_IOL, %g1	! Big/little endian physical space
 	movnz	%xcc, ASI_IO, %g1
-	mov	%g1, %asi
+	wr	%g0, %g1, %asi
 
 	cmp	%o0, 8			! 64-bit?
 	bne	.peek_int
@@ -118,7 +121,7 @@
 	tst	%o3
 	movz	%xcc, ASI_IOL, %g1	! Big/little endian physical space
 	movnz	%xcc, ASI_IO, %g1
-	mov	%g1, %asi
+	wr	%g0, %g1, %asi
 
 	cmp	%o0, 8			! 64 bit?
 	bne	.poke_int

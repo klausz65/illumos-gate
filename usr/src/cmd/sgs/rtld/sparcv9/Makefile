@@ -84,6 +84,11 @@ CONVLIBDIR =	$(CONVLIBDIR64)
 
 .KEEP_STATE:
 
+pics/crti.o:
+	$(CC) $(ASFLAGS64) $(AS_CPPFLAGS) \
+	-c -o $@ $(CRTSRCS)/crti.S
+	$(POST_PROCESS_O)
+
 all:		$(RTLD)
 
 install:	all $(ROOTDYNLIB64) $(ROOTCOMPATLINKS64)

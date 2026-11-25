@@ -500,15 +500,15 @@
 	.word	0x3ff0a7c1, 0x819e90d8, 0x3ff0bdba, 0x3692d514
 	.word	0x3ff0d3c2, 0x2b8f71f1, 0x3ff0e9d9, 0x6b2a23d9
 
-	.word	0xc057150d, 0x5f6e1c54	! KA3 = -3.60659926599003171364e-01*256.0
-	.word	0x405ec71c, 0x2e92efda	! KA2 =  4.80902715189356683026e-01*256.0
-	.word	0xc0671547, 0x653cbec4	! KA1 = -7.21347520569871841065e-01*256.0
-	.word	0x40771547, 0x652af190	! KA0 =  1.44269504088069658645e+00*256.0
-	.word	0x3ecebfbe, 0x9d182250	! KB2 = 3.66556671660783833261e-06
-	.word	0x3f662e43, 0xe2528362	! KB1 = 2.70760782821392980564e-03
-	.word	0x40e00000, 0x00000000	! HTHRESH = 32768.0
-	.word	0xc0e2c000, 0x00000000	! LTHRESH = -38400.0 ; 0.0f
-	.word	0x3f800000, 0x00000000 	! 1.0f               ; free
+	.word	0xc057150d, 0x5f6e1c54	/* KA3 = -3.60659926599003171364e-01*256.0 */
+	.word	0x405ec71c, 0x2e92efda	/* KA2 =  4.80902715189356683026e-01*256.0 */
+	.word	0xc0671547, 0x653cbec4	/* KA1 = -7.21347520569871841065e-01*256.0 */
+	.word	0x40771547, 0x652af190	/* KA0 =  1.44269504088069658645e+00*256.0 */
+	.word	0x3ecebfbe, 0x9d182250	/* KB2 = 3.66556671660783833261e-06 */
+	.word	0x3f662e43, 0xe2528362	/* KB1 = 2.70760782821392980564e-03 */
+	.word	0x40e00000, 0x00000000	/* HTHRESH = 32768.0 */
+	.word	0xc0e2c000, 0x00000000	/* LTHRESH = -38400.0 ; 0.0f */
+	.word	0x3f800000, 0x00000000	/* 1.0f               ; free */
 
 #define tmp_px		STACK_BIAS-48
 #define tmp_py		STACK_BIAS-40
@@ -785,323 +785,323 @@
 .begin1:
 	cmp	counter,0
 	ble,pn	%icc,.exit
-	lda	[%o2]0x82,%i1		! (Y0_2) ax0 = *px;
+	lda	[%o2]0x82,%i1		/* (Y0_2) ax0 = *px; */
 
 	lda	[%i2]0x82,%l7
 	sethi	%hi(0xffff0000),%l6
 	sethi	%hi(0x7f800000),%o5
 
-	and	%i1,MASK_0x7fffffff,%i3	! (Y0_2) exp0 = ax0 & 0x7fffffff;
-	and	%i1,MASK_0x007fffff,%g5	! (Y0_2) ax0 &= 0x007fffff;
+	and	%i1,MASK_0x7fffffff,%i3	/* (Y0_2) exp0 = ax0 & 0x7fffffff; */
+	and	%i1,MASK_0x007fffff,%g5	/* (Y0_2) ax0 &= 0x007fffff; */
 
-	cmp	%i3,%o5			! (Y0_2) ax0 ? 0x7f800000
-	bge,pn	%icc,.spec1		! (Y0_2) if( ax0 >= 0x7f800000 )
+	cmp	%i3,%o5			/* (Y0_2) ax0 ? 0x7f800000 */
+	bge,pn	%icc,.spec1		/* (Y0_2) if( ax0 >= 0x7f800000 ) */
 	and	%l7,MASK_0x7fffffff,%o4
 
-	cmp	%o4,%o5			! (Y0_2) ay0 ? 0x7f800000
-	bge,pn	%icc,.spec1		! (Y0_2) if( ay0 >= 0x7f800000 )
+	cmp	%o4,%o5			/* (Y0_2) ay0 ? 0x7f800000 */
+	bge,pn	%icc,.spec1		/* (Y0_2) if( ay0 >= 0x7f800000 ) */
 	nop
 
-	cmp	%i1,MASK_0x007fffff	! (Y0_2) ux0 ? 0x800000
-	ble,pn	%icc,.spec2		! (Y0_2) if(ux0 < 0x800000)
-	srl	%i3,23,%o3		! (Y0_2) exp0 >>= 23;
+	cmp	%i1,MASK_0x007fffff	/* (Y0_2) ux0 ? 0x800000 */
+	ble,pn	%icc,.spec2		/* (Y0_2) if(ux0 < 0x800000) */
+	srl	%i3,23,%o3		/* (Y0_2) exp0 >>= 23; */
 
-	sub	%o3,127,%o3		! (Y0_2) exp0 -= 127;
+	sub	%o3,127,%o3		/* (Y0_2) exp0 -= 127; */
 
-	add	%g5,CONST_0x8000,%i3	! (Y0_2) i0 = ax0 + 0x8000;
+	add	%g5,CONST_0x8000,%i3	/* (Y0_2) i0 = ax0 + 0x8000; */
 
-	sll	%o3,8,%o4		! (Y0_2) exp0 <<= 8;
-	and	%i3,%l6,%i3		! (Y0_2) i0 &= 0xffff0000;
-	st	%o4,[%fp+tmp3]		! (Y0_2) STORE exp0
+	sll	%o3,8,%o4		/* (Y0_2) exp0 <<= 8; */
+	and	%i3,%l6,%i3		/* (Y0_2) i0 &= 0xffff0000; */
+	st	%o4,[%fp+tmp3]		/* (Y0_2) STORE exp0 */
 
-	sub	%g5,%i3,%o4		! (Y0_2) i0 = ax0 - i0;
-	st	%o4,[%fp+tmp2]		! (Y0_2) STORE i0
-	add	%o2,stridex,%o2		! px += stridex
+	sub	%g5,%i3,%o4		/* (Y0_2) i0 = ax0 - i0; */
+	st	%o4,[%fp+tmp2]		/* (Y0_2) STORE i0 */
+	add	%o2,stridex,%o2		/* px += stridex */
 
-	sra	%i3,12,%o0		! (Y0_2) ind0 = i0 >> 12;
-	lda	[%o2]0x82,%o3		! (Y1_2) ax0 = *px;
+	sra	%i3,12,%o0		/* (Y0_2) ind0 = i0 >> 12; */
+	lda	[%o2]0x82,%o3		/* (Y1_2) ax0 = *px; */
 
-	and	%o0,-8,%g5		! (Y0_2) ind0 &= -8;
-	ld	[%fp+tmp2],%f14		! (Y0_2) dtmp0 = (double) i0;
+	and	%o0,-8,%g5		/* (Y0_2) ind0 &= -8; */
+	ld	[%fp+tmp2],%f14		/* (Y0_2) dtmp0 = (double) i0; */
 
-	and	%o3,MASK_0x7fffffff,%i3	! (Y1_2) exp0 = ax0 & 0x7fffffff;
-	and	%o3,MASK_0x007fffff,%o0	! (Y1_2) ax0 &= 0x007fffff;
+	and	%o3,MASK_0x7fffffff,%i3	/* (Y1_2) exp0 = ax0 & 0x7fffffff; */
+	and	%o3,MASK_0x007fffff,%o0	/* (Y1_2) ax0 &= 0x007fffff; */
 
-	cmp	%i3,%o5			! (Y1_2) ax0 ? 0x7f800000
-	add	%l2,%g5,%g1		! (Y0_2) (char*)__mt_constlog4f + ind0
+	cmp	%i3,%o5			/* (Y1_2) ax0 ? 0x7f800000 */
+	add	%l2,%g5,%g1		/* (Y0_2) (char*)__mt_constlog4f + ind0 */
 
-	srl	%i3,23,%i3		! (Y1_2) exp0 >>= 23;
-	add	%o0,CONST_0x8000,%i1	! (Y1_2) i0 = ax0 + 0x8000;
+	srl	%i3,23,%i3		/* (Y1_2) exp0 >>= 23; */
+	add	%o0,CONST_0x8000,%i1	/* (Y1_2) i0 = ax0 + 0x8000; */
 
-	ldd	[%g1+8],%f48		! (Y0_2) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8);
-	sub	%i3,127,%i3		! (Y1_2) exp0 -= 127;
-	fitod	%f14,%f60		! (Y0_2) dtmp0 = (double) i0;
+	ldd	[%g1+8],%f48		/* (Y0_2) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8); */
+	sub	%i3,127,%i3		/* (Y1_2) exp0 -= 127; */
+	fitod	%f14,%f60		/* (Y0_2) dtmp0 = (double) i0; */
 
-	sll	%i3,8,%i3		! (Y1_2) exp0 <<= 8;
-	and	%i1,%l6,%i1		! (Y1_2) i0 &= 0xffff0000;
-	st	%i3,[%fp+tmp4]		! (Y1_2) STORE exp0
+	sll	%i3,8,%i3		/* (Y1_2) exp0 <<= 8; */
+	and	%i1,%l6,%i1		/* (Y1_2) i0 &= 0xffff0000; */
+	st	%i3,[%fp+tmp4]		/* (Y1_2) STORE exp0 */
 
-	sub	%o0,%i1,%o0		! (Y1_2) i0 = ax0 - i0;
-	st	%o0,[%fp+tmp5]		! (Y1_2) STORE i0
-	bge,pn 	%icc,.update0		! (Y1_2) if(ax0 >= 0x7f800000)
+	sub	%o0,%i1,%o0		/* (Y1_2) i0 = ax0 - i0; */
+	st	%o0,[%fp+tmp5]		/* (Y1_2) STORE i0 */
+	bge,pn	%icc,.update0		/* (Y1_2) if(ax0 >= 0x7f800000) */
 	nop
 .cont0:
-	cmp	%o3,MASK_0x007fffff	! (Y1_2) ux0 ? 0x800000
+	cmp	%o3,MASK_0x007fffff	/* (Y1_2) ux0 ? 0x800000 */
 
-	fmuld	%f60,%f48,%f48		! (Y0_2) y0 =  dtmp0 * dtmp1;
-	ble,pn 	%icc,.update1		! (Y1_2) if(ux0 < 0x800000)
+	fmuld	%f60,%f48,%f48		/* (Y0_2) y0 =  dtmp0 * dtmp1; */
+	ble,pn	%icc,.update1		/* (Y1_2) if(ux0 < 0x800000) */
 	nop
 .cont1:
-	fmuld	KA3,%f48,%f62		! (Y0_2) dtmp0 = KA3 * y0;
+	fmuld	KA3,%f48,%f62		/* (Y0_2) dtmp0 = KA3 * y0; */
 
-	faddd	%f62,KA2,%f22		! (Y0_2) dtmp0 += KA2;
+	faddd	%f62,KA2,%f22		/* (Y0_2) dtmp0 += KA2; */
 
-	sra	%i1,12,%o1		! (Y1_2) ind0 = i0 >> 12;
-	add	%o2,stridex,%i3		! px += stridex
-	lda	[stridex+%o2]0x82,%g1	! (Y2_2) ax0 = *px;
+	sra	%i1,12,%o1		/* (Y1_2) ind0 = i0 >> 12; */
+	add	%o2,stridex,%i3		/* px += stridex */
+	lda	[stridex+%o2]0x82,%g1	/* (Y2_2) ax0 = *px; */
 
-	and	%o1,-8,%o0		! (Y1_2) ind0 &= -8;
-	ld	[%fp+tmp5],%f12		! (Y1_2) LOAD i0
+	and	%o1,-8,%o0		/* (Y1_2) ind0 &= -8; */
+	ld	[%fp+tmp5],%f12		/* (Y1_2) LOAD i0 */
 
-	and	%g1,MASK_0x7fffffff,%i1	! (Y2_2) exp0 = ax0 & 0x7fffffff;
-	and	%g1,MASK_0x007fffff,%o2	! (Y2_2) ax0 &= 0x007fffff;
-	lda	[%i2]0x82,%f0		! (Y0_2) ftmp0 = *py0;
+	and	%g1,MASK_0x7fffffff,%i1	/* (Y2_2) exp0 = ax0 & 0x7fffffff; */
+	and	%g1,MASK_0x007fffff,%o2	/* (Y2_2) ax0 &= 0x007fffff; */
+	lda	[%i2]0x82,%f0		/* (Y0_2) ftmp0 = *py0; */
 
-	srl	%i1,23,%o3		! (Y2_2) exp0 >>= 23;
-	cmp	%i1,%o5			! (Y2_2) ax0 ? 0x7f800000
+	srl	%i1,23,%o3		/* (Y2_2) exp0 >>= 23; */
+	cmp	%i1,%o5			/* (Y2_2) ax0 ? 0x7f800000 */
 
-	fmuld	%f22,%f48,%f26 		! (Y0_2) dtmp0 *= y0;
-	add	%l2,%o0,%i1		! (Y1_2) (char*)__mt_constlog4f + ind0
-	sub	%o3,127,%l7		! (Y2_2) exp0 -= 127;
+	fmuld	%f22,%f48,%f26		/* (Y0_2) dtmp0 *= y0; */
+	add	%l2,%o0,%i1		/* (Y1_2) (char*)__mt_constlog4f + ind0 */
+	sub	%o3,127,%l7		/* (Y2_2) exp0 -= 127; */
 
-	add	%o2,CONST_0x8000,%o1	! (Y2_2) i0 = ax0 + 0x8000;
-	ldd	[%i1+8],%f50		! (Y1_2) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8);
-	fitod	%f12,%f28		! (Y1_2) dtmp0 = (double) i0;
+	add	%o2,CONST_0x8000,%o1	/* (Y2_2) i0 = ax0 + 0x8000; */
+	ldd	[%i1+8],%f50		/* (Y1_2) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8); */
+	fitod	%f12,%f28		/* (Y1_2) dtmp0 = (double) i0; */
 
-	sll	%l7,8,%l7		! (Y2_2) exp0 <<= 8;
-	and	%o1,%l6,%o1		! (Y2_2) i0 &= 0xffff0000;
-	st	%l7,[%fp+tmp6]		! (Y2_2) STORE exp0
+	sll	%l7,8,%l7		/* (Y2_2) exp0 <<= 8; */
+	and	%o1,%l6,%o1		/* (Y2_2) i0 &= 0xffff0000; */
+	st	%l7,[%fp+tmp6]		/* (Y2_2) STORE exp0 */
 
-	sub	%o2,%o1,%i1		! (Y2_2) i0 = ax0 - i0;
-	st	%i1,[%fp+tmp2]		! (Y2_2) STORE i0
-	bge,pn	%icc,.update2		! (Y2_2) if(ax0 >= 0x7f800000)
+	sub	%o2,%o1,%i1		/* (Y2_2) i0 = ax0 - i0; */
+	st	%i1,[%fp+tmp2]		/* (Y2_2) STORE i0 */
+	bge,pn	%icc,.update2		/* (Y2_2) if(ax0 >= 0x7f800000) */
 	nop
 .cont2:
-	cmp	%g1,MASK_0x007fffff	! (Y2_2) ux0 ? 0x800000
+	cmp	%g1,MASK_0x007fffff	/* (Y2_2) ux0 ? 0x800000 */
 
-	fmuld	%f28,%f50,%f46		! (Y1_2) y0 =  dtmp0 * dtmp1;
-	ble,pn	%icc,.update3		! (Y2_2) if(ux0 < 0x800000)
-	faddd	%f26,KA1,%f50		! (Y0_2) dtmp0 += KA1;
+	fmuld	%f28,%f50,%f46		/* (Y1_2) y0 =  dtmp0 * dtmp1; */
+	ble,pn	%icc,.update3		/* (Y2_2) if(ux0 < 0x800000) */
+	faddd	%f26,KA1,%f50		/* (Y0_2) dtmp0 += KA1; */
 .cont3:
-	ld	[%fp+tmp3],%f4		! (Y0_2) dtmp1 = (double) exp0;
+	ld	[%fp+tmp3],%f4		/* (Y0_2) dtmp1 = (double) exp0; */
 
-	fstod	%f0,%f24		! (Y0_2) dtmp0 = (double)ftmp0;
+	fstod	%f0,%f24		/* (Y0_2) dtmp0 = (double)ftmp0; */
 
-	fmuld	KA3,%f46,%f28		! (Y1_1) dtmp0 = KA3 * y0;
+	fmuld	KA3,%f46,%f28		/* (Y1_1) dtmp0 = KA3 * y0; */
 
-	fitod	%f4,%f26		! (Y0_1) dtmp1 = (double) exp0;
+	fitod	%f4,%f26		/* (Y0_1) dtmp1 = (double) exp0; */
 
-	fmuld	%f50,%f48,%f50		! (Y0_1) dtmp0 *= y0;
+	fmuld	%f50,%f48,%f50		/* (Y0_1) dtmp0 *= y0; */
 
-	faddd	%f28,KA2,%f28		! (Y1_1) dtmp0 += KA2;
+	faddd	%f28,KA2,%f28		/* (Y1_1) dtmp0 += KA2; */
 
-	ldd	[%l2+%g5],%f60		! (Y0_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0);
-	add	%i3,stridex,%o2		! px += stridex
+	ldd	[%l2+%g5],%f60		/* (Y0_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0); */
+	add	%i3,stridex,%o2		/* px += stridex */
 
-	lda	[%o2]0x82,%i1		! (Y0_2) ax0 = *px;
-	sra	%o1,12,%g5		! (Y2_1) ind0 = i0 >> 12;
+	lda	[%o2]0x82,%i1		/* (Y0_2) ax0 = *px; */
+	sra	%o1,12,%g5		/* (Y2_1) ind0 = i0 >> 12; */
 
-	faddd	%f50,KA0,%f58		! (Y0_1) dtmp0 += KA0;
-	and	%g5,-8,%o1		! (Y2_1) ind0 &= -8;
-	ld	[%fp+tmp2],%f6		! (Y2_1) dtmp0 = (double) i0;
+	faddd	%f50,KA0,%f58		/* (Y0_1) dtmp0 += KA0; */
+	and	%g5,-8,%o1		/* (Y2_1) ind0 &= -8; */
+	ld	[%fp+tmp2],%f6		/* (Y2_1) dtmp0 = (double) i0; */
 
-	and	%i1,MASK_0x7fffffff,%i3	! (Y0_2) exp0 = ax0 & 0x7fffffff;
-	and	%i1,MASK_0x007fffff,%g5	! (Y0_2) ax0 &= 0x007fffff;
+	and	%i1,MASK_0x7fffffff,%i3	/* (Y0_2) exp0 = ax0 & 0x7fffffff; */
+	and	%i1,MASK_0x007fffff,%g5	/* (Y0_2) ax0 &= 0x007fffff; */
 
-	srl	%i3,23,%o3		! (Y0_2) exp0 >>= 23;
-	add	%l2,%o1,%g1		! (Y2_1) (char*)__mt_constlog4f + ind0
-	faddd	%f60,%f26,%f26		! (Y0_1) yy0 = dtmp0 + dtmp1;
+	srl	%i3,23,%o3		/* (Y0_2) exp0 >>= 23; */
+	add	%l2,%o1,%g1		/* (Y2_1) (char*)__mt_constlog4f + ind0 */
+	faddd	%f60,%f26,%f26		/* (Y0_1) yy0 = dtmp0 + dtmp1; */
 
-	fmuld	%f28,%f46,%f50		! (Y1_1) dtmp0 *= y0;
-	sub	%o3,127,%o3		! (Y0_2) exp0 -= 127;
-	cmp	%i3,%o5			! (Y0_2) ax0 ? 0x7f800000
+	fmuld	%f28,%f46,%f50		/* (Y1_1) dtmp0 *= y0; */
+	sub	%o3,127,%o3		/* (Y0_2) exp0 -= 127; */
+	cmp	%i3,%o5			/* (Y0_2) ax0 ? 0x7f800000 */
 
-	fmuld	%f58,%f48,%f48		! (Y0_1) dtmp0 *= y0;
-	add	%g5,CONST_0x8000,%i3	! (Y0_2) i0 = ax0 + 0x8000;
-	ldd	[%g1+8],%f58		! (Y2_1) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8);
-	fitod	%f6,%f54		! (Y2_1) dtmp0 = (double) i0;
+	fmuld	%f58,%f48,%f48		/* (Y0_1) dtmp0 *= y0; */
+	add	%g5,CONST_0x8000,%i3	/* (Y0_2) i0 = ax0 + 0x8000; */
+	ldd	[%g1+8],%f58		/* (Y2_1) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8); */
+	fitod	%f6,%f54		/* (Y2_1) dtmp0 = (double) i0; */
 
-	sll	%o3,8,%o4		! (Y0_2) exp0 <<= 8;
-	and	%i3,%l6,%i3		! (Y0_2) i0 &= 0xffff0000;
-	st	%o4,[%fp+tmp3]		! (Y0_2) STORE exp0
+	sll	%o3,8,%o4		/* (Y0_2) exp0 <<= 8; */
+	and	%i3,%l6,%i3		/* (Y0_2) i0 &= 0xffff0000; */
+	st	%o4,[%fp+tmp3]		/* (Y0_2) STORE exp0 */
 
-	sub	%g5,%i3,%o4		! (Y0_2) i0 = ax0 - i0;
-	st	%o4,[%fp+tmp2]		! (Y0_2) STORE i0
-	bge,pn 	%icc,.update4		! (Y0_2) if( ax0 >= 0x7f800000 )
+	sub	%g5,%i3,%o4		/* (Y0_2) i0 = ax0 - i0; */
+	st	%o4,[%fp+tmp2]		/* (Y0_2) STORE i0 */
+	bge,pn	%icc,.update4		/* (Y0_2) if( ax0 >= 0x7f800000 ) */
 	nop
 .cont4:
-	lda	[stridey+%i2]0x82,%g1	! (Y1_1) ay0 = *(unsigned*)py0
-	add	%i2,stridey,%o4		! py += stridey
-	cmp	%i1,MASK_0x007fffff	! (Y0_2) ux0 ? 0x800000
+	lda	[stridey+%i2]0x82,%g1	/* (Y1_1) ay0 = *(unsigned*)py0 */
+	add	%i2,stridey,%o4		/* py += stridey */
+	cmp	%i1,MASK_0x007fffff	/* (Y0_2) ux0 ? 0x800000 */
 
-	fmuld	%f54,%f58,%f28		! (Y2_1) y0 =  dtmp0 * dtmp1;
-	lda	[stridey+%i2]0x82,%f2	! (Y1_1) ftmp0 = *py0;
-	ble,pn 	%icc,.update5		! (Y0_2) if(ux0 < 0x800000)
-	faddd	%f50,KA1,%f54		! (Y1_1) dtmp0 += KA1;
+	fmuld	%f54,%f58,%f28		/* (Y2_1) y0 =  dtmp0 * dtmp1; */
+	lda	[stridey+%i2]0x82,%f2	/* (Y1_1) ftmp0 = *py0; */
+	ble,pn	%icc,.update5		/* (Y0_2) if(ux0 < 0x800000) */
+	faddd	%f50,KA1,%f54		/* (Y1_1) dtmp0 += KA1; */
 .cont5:
-	and	%g1,MASK_0x7fffffff,%g1	! (Y1_1) ay0 &= 0x7fffffff;
-	ld	[%fp+tmp4],%f1		! (Y1_1) LOAD exp0
-	faddd	%f26,%f48,%f58		! (Y0_1) yy0 += dtmp0;
+	and	%g1,MASK_0x7fffffff,%g1	/* (Y1_1) ay0 &= 0x7fffffff; */
+	ld	[%fp+tmp4],%f1		/* (Y1_1) LOAD exp0 */
+	faddd	%f26,%f48,%f58		/* (Y0_1) yy0 += dtmp0; */
 
-	cmp	%g1,%o5			! (Y1_1) ay0 ? 0x7f800000
-	bge,pn 	%icc,.update6		! (Y1_1) if(ay0 >= 0x7f800000)
+	cmp	%g1,%o5			/* (Y1_1) ay0 ? 0x7f800000 */
+	bge,pn	%icc,.update6		/* (Y1_1) if(ay0 >= 0x7f800000) */
 	nop
 .cont6:
-	fmuld	KA3,%f28,%f62		! (Y2_1) dtmp0 = KA3 * y0;
-	fstod	%f2,%f22		! (Y1_1) dtmp0 = (double)ftmp0;
+	fmuld	KA3,%f28,%f62		/* (Y2_1) dtmp0 = KA3 * y0; */
+	fstod	%f2,%f22		/* (Y1_1) dtmp0 = (double)ftmp0; */
 
-	fmuld	%f24,%f58,%f58		! (Y0_1) yy0 *= dtmp0;
+	fmuld	%f24,%f58,%f58		/* (Y0_1) yy0 *= dtmp0; */
 
-	fitod	%f1,%f48		! (Y1_1) dtmp1 = (double) exp0;
+	fitod	%f1,%f48		/* (Y1_1) dtmp1 = (double) exp0; */
 
-	fmuld	%f54,%f46,%f54		! (Y1_1) dtmp0 *= y0;
+	fmuld	%f54,%f46,%f54		/* (Y1_1) dtmp0 *= y0; */
 
-	faddd	%f62,KA2,%f26		! (Y2_1) dtmp0 += KA2;
+	faddd	%f62,KA2,%f26		/* (Y2_1) dtmp0 += KA2; */
 
-	add	%o2,stridex,%o2		! px += stridex
-	ldd	[%l2+%o0],%f60		! (Y1_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0);
-	fcmped	%fcc0,HTHRESHOLD,%f58	! (Y0_1) if (yy0 >= HTHRESH)
+	add	%o2,stridex,%o2		/* px += stridex */
+	ldd	[%l2+%o0],%f60		/* (Y1_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0); */
+	fcmped	%fcc0,HTHRESHOLD,%f58	/* (Y0_1) if (yy0 >= HTHRESH) */
 
-	sra	%i3,12,%o0		! (Y0_2) ind0 = i0 >> 12;
-	lda	[%o2]0x82,%o3		! (Y1_2) ax0 = *px;
+	sra	%i3,12,%o0		/* (Y0_2) ind0 = i0 >> 12; */
+	lda	[%o2]0x82,%o3		/* (Y1_2) ax0 = *px; */
 
-	faddd	%f54,KA0,%f56		! (Y1_1) dtmp0 += KA0;
-	and	%o0,-8,%g5		! (Y0_2) ind0 &= -8;
-	ld	[%fp+tmp2],%f14		! (Y0_2) dtmp0 = (double) i0;
+	faddd	%f54,KA0,%f56		/* (Y1_1) dtmp0 += KA0; */
+	and	%o0,-8,%g5		/* (Y0_2) ind0 &= -8; */
+	ld	[%fp+tmp2],%f14		/* (Y0_2) dtmp0 = (double) i0; */
 
-	and	%o3,MASK_0x7fffffff,%i3	! (Y1_2) exp0 = ax0 & 0x7fffffff;
-	and	%o3,MASK_0x007fffff,%o0	! (Y1_2) ax0 &= 0x007fffff;
+	and	%o3,MASK_0x7fffffff,%i3	/* (Y1_2) exp0 = ax0 & 0x7fffffff; */
+	and	%o3,MASK_0x007fffff,%o0	/* (Y1_2) ax0 &= 0x007fffff; */
 
-	cmp	%i3,%o5			! (Y1_2) ax0 ? 0x7f800000
-	add	%l2,%g5,%g1		! (Y0_2) (char*)__mt_constlog4f + ind0
-	faddd	%f60,%f48,%f12		! (Y1_1) yy0 = dtmp0 + dtmp1;
+	cmp	%i3,%o5			/* (Y1_2) ax0 ? 0x7f800000 */
+	add	%l2,%g5,%g1		/* (Y0_2) (char*)__mt_constlog4f + ind0 */
+	faddd	%f60,%f48,%f12		/* (Y1_1) yy0 = dtmp0 + dtmp1; */
 
-	fmuld	%f26,%f28,%f50		! (Y2_1) dtmp0 *= y0;
-	srl	%i3,23,%i3		! (Y1_2) exp0 >>= 23;
-	add	%o0,CONST_0x8000,%i1	! (Y1_2) i0 = ax0 + 0x8000;
-	fcmped	%fcc1,LTHRESHOLD,%f58	! (Y0_1) if (yy0 <= LTHRESH)
+	fmuld	%f26,%f28,%f50		/* (Y2_1) dtmp0 *= y0; */
+	srl	%i3,23,%i3		/* (Y1_2) exp0 >>= 23; */
+	add	%o0,CONST_0x8000,%i1	/* (Y1_2) i0 = ax0 + 0x8000; */
+	fcmped	%fcc1,LTHRESHOLD,%f58	/* (Y0_1) if (yy0 <= LTHRESH) */
 
-	fmuld	%f56,%f46,%f46		! (Y1_1) dtmp0 *= y0;
-	ldd	[%g1+8],%f48		! (Y0_2) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8);
-	sub	%i3,127,%i3		! (Y1_2) exp0 -= 127;
-	fitod	%f14,%f60		! (Y0_2) dtmp0 = (double) i0;
+	fmuld	%f56,%f46,%f46		/* (Y1_1) dtmp0 *= y0; */
+	ldd	[%g1+8],%f48		/* (Y0_2) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8); */
+	sub	%i3,127,%i3		/* (Y1_2) exp0 -= 127; */
+	fitod	%f14,%f60		/* (Y0_2) dtmp0 = (double) i0; */
 
-	sll	%i3,8,%i2		! (Y1_2) exp0 <<= 8;
-	and	%i1,%l6,%i1		! (Y1_2) i0 &= 0xffff0000;
-	st	%i2,[%fp+tmp4]		! (Y1_2) STORE exp0
+	sll	%i3,8,%i2		/* (Y1_2) exp0 <<= 8; */
+	and	%i1,%l6,%i1		/* (Y1_2) i0 &= 0xffff0000; */
+	st	%i2,[%fp+tmp4]		/* (Y1_2) STORE exp0 */
 
-	sub	%o0,%i1,%o0		! (Y1_2) i0 = ax0 - i0;
-	st	%o0,[%fp+tmp5]		! (Y1_2) STORE i0
-	bge,pn 	%icc,.update7		! (Y1_2) if(ax0 >= 0x7f800000)
+	sub	%o0,%i1,%o0		/* (Y1_2) i0 = ax0 - i0; */
+	st	%o0,[%fp+tmp5]		/* (Y1_2) STORE i0 */
+	bge,pn	%icc,.update7		/* (Y1_2) if(ax0 >= 0x7f800000) */
 	nop
 .cont7:
-	lda	[stridey+%o4]0x82,%i3 	! Y(2_1) ay0 = *py0
-	cmp	%o3,MASK_0x007fffff	! (Y1_2) ux0 ? 0x800000
-	add	%o4,stridey,%i2		! py += stridey;
-	fmovdl	%fcc0,HTHRESHOLD,%f58	! (Y0_1) yy0 = HTHRESH;
+	lda	[stridey+%o4]0x82,%i3	/* Y(2_1) ay0 = *py0 */
+	cmp	%o3,MASK_0x007fffff	/* (Y1_2) ux0 ? 0x800000 */
+	add	%o4,stridey,%i2		/* py += stridey; */
+	fmovdl	%fcc0,HTHRESHOLD,%f58	/* (Y0_1) yy0 = HTHRESH; */
 
-	fmuld	%f60,%f48,%f48		! (Y0_2) y0 =  dtmp0 * dtmp1;
-	lda	[stridey+%o4]0x82,%f16	! (Y2_1) ftmp0 = *py0;
-	ble,pn 	%icc,.update8		! (Y1_2) if(ux0 < 0x800000)
-	faddd	%f50,KA1,%f52		! (Y2_1) dtmp0 += KA1;
+	fmuld	%f60,%f48,%f48		/* (Y0_2) y0 =  dtmp0 * dtmp1; */
+	lda	[stridey+%o4]0x82,%f16	/* (Y2_1) ftmp0 = *py0; */
+	ble,pn	%icc,.update8		/* (Y1_2) if(ux0 < 0x800000) */
+	faddd	%f50,KA1,%f52		/* (Y2_1) dtmp0 += KA1; */
 .cont8:
-	and	%i3,MASK_0x7fffffff,%i3	! (Y2_1) ay0 &= 0x7fffffff
-	ld	[%fp+tmp6],%f17		! (Y2_1) dtmp1 = (double) exp0;
-	faddd	%f12,%f46,%f60		! (Y1_1) yy0 += dtmp0;
+	and	%i3,MASK_0x7fffffff,%i3	/* (Y2_1) ay0 &= 0x7fffffff */
+	ld	[%fp+tmp6],%f17		/* (Y2_1) dtmp1 = (double) exp0; */
+	faddd	%f12,%f46,%f60		/* (Y1_1) yy0 += dtmp0; */
 
-	cmp	%i3,%o5			! (Y2_1) ay0 ? 0x7f800000
-	bge,pn 	%icc,.update9		! (Y2_1) if(ay0 >= 0x7f800000)
+	cmp	%i3,%o5			/* (Y2_1) ay0 ? 0x7f800000 */
+	bge,pn	%icc,.update9		/* (Y2_1) if(ay0 >= 0x7f800000) */
 	nop
 
 .cont9:
-	fmovdg	%fcc1,LTHRESHOLD,%f58	! (Y0_1) yy0 = LTHRESH;
+	fmovdg	%fcc1,LTHRESHOLD,%f58	/* (Y0_1) yy0 = LTHRESH; */
 
-	fmuld	KA3,%f48,%f62		! (Y0_2) dtmp0 = KA3 * y0;
-	fstod	%f16,%f54		! (Y2_1) dtmp0 = (double)ftmp0;
+	fmuld	KA3,%f48,%f62		/* (Y0_2) dtmp0 = KA3 * y0; */
+	fstod	%f16,%f54		/* (Y2_1) dtmp0 = (double)ftmp0; */
 
-	fmuld	%f22,%f60,%f56		! (Y1_1) yy0 *= dtmp0;
+	fmuld	%f22,%f60,%f56		/* (Y1_1) yy0 *= dtmp0; */
 
-	fitod	%f17,%f24		! (Y2_1) dtmp1 = (double) exp0;
+	fitod	%f17,%f24		/* (Y2_1) dtmp1 = (double) exp0; */
 
-	fmuld	%f52,%f28,%f52		! (Y2_1) dtmp0 *= y0;
-	fdtoi	%f58,%f10		! (Y0_1) ind0 = (int) yy0;
+	fmuld	%f52,%f28,%f52		/* (Y2_1) dtmp0 *= y0; */
+	fdtoi	%f58,%f10		/* (Y0_1) ind0 = (int) yy0; */
 
-	st	%f10,[%fp+tmp0]		! (Y0_1) STORE ind0
-	faddd	%f62,KA2,%f22		! (Y0_2) dtmp0 += KA2;
+	st	%f10,[%fp+tmp0]		/* (Y0_1) STORE ind0 */
+	faddd	%f62,KA2,%f22		/* (Y0_2) dtmp0 += KA2; */
 
-	fcmped	%fcc0,HTHRESHOLD,%f56	! (Y1_1) if (yy0 >= HTHRESH)
-	ldd	[%l2+%o1],%f60		! (Y2_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0);
+	fcmped	%fcc0,HTHRESHOLD,%f56	/* (Y1_1) if (yy0 >= HTHRESH) */
+	ldd	[%l2+%o1],%f60		/* (Y2_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0); */
 
-	sra	%i1,12,%o1		! (Y1_2) ind0 = i0 >> 12;
-	add	%o2,stridex,%i3		! px += stridex
-	lda	[stridex+%o2]0x82,%g1	! (Y2_2) ax0 = *px;
+	sra	%i1,12,%o1		/* (Y1_2) ind0 = i0 >> 12; */
+	add	%o2,stridex,%i3		/* px += stridex */
+	lda	[stridex+%o2]0x82,%g1	/* (Y2_2) ax0 = *px; */
 
-	and	%o1,-8,%o0		! (Y1_2) ind0 &= -8;
-	add	%i2,stridey,%i2		! py += stridey
-	ld	[%fp+tmp5],%f12		! (Y1_2) LOAD i0
-	faddd	%f52,KA0,%f4		! (Y2_1) dtmp0 += KA0;
+	and	%o1,-8,%o0		/* (Y1_2) ind0 &= -8; */
+	add	%i2,stridey,%i2		/* py += stridey */
+	ld	[%fp+tmp5],%f12		/* (Y1_2) LOAD i0 */
+	faddd	%f52,KA0,%f4		/* (Y2_1) dtmp0 += KA0; */
 
-	and	%g1,MASK_0x7fffffff,%i1	! (Y2_2) exp0 = ax0 & 0x7fffffff;
-	and	%g1,MASK_0x007fffff,%o2	! (Y2_2) ax0 &= 0x007fffff;
-	lda	[%i2]0x82,%f0		! (Y0_2) ftmp0 = *py0;
-	fitod	%f10,%f52		! (Y0_1) dtmp0 = (double)ind0;
+	and	%g1,MASK_0x7fffffff,%i1	/* (Y2_2) exp0 = ax0 & 0x7fffffff; */
+	and	%g1,MASK_0x007fffff,%o2	/* (Y2_2) ax0 &= 0x007fffff; */
+	lda	[%i2]0x82,%f0		/* (Y0_2) ftmp0 = *py0; */
+	fitod	%f10,%f52		/* (Y0_1) dtmp0 = (double)ind0; */
 
-	srl	%i1,23,%o3		! (Y2_2) exp0 >>= 23;
-	cmp	%i1,%o5			! (Y2_2) ax0 ? 0x7f800000
-	faddd	%f60,%f24,%f18		! (Y2_1) yy0 = dtmp0 + dtmp1;
+	srl	%i1,23,%o3		/* (Y2_2) exp0 >>= 23; */
+	cmp	%i1,%o5			/* (Y2_2) ax0 ? 0x7f800000 */
+	faddd	%f60,%f24,%f18		/* (Y2_1) yy0 = dtmp0 + dtmp1; */
 
-	fmuld	%f22,%f48,%f26		! (Y0_2) dtmp0 *= y0;
-	add	%l2,%o0,%i1		! (Y1_2) (char*)__mt_constlog4f + ind0
-	sub	%o3,127,%l7		! (Y2_2) exp0 -= 127;
-	fcmped	%fcc1,LTHRESHOLD,%f56	! (Y1_1) if (yy0 <= LTHRESH)
+	fmuld	%f22,%f48,%f26		/* (Y0_2) dtmp0 *= y0; */
+	add	%l2,%o0,%i1		/* (Y1_2) (char*)__mt_constlog4f + ind0 */
+	sub	%o3,127,%l7		/* (Y2_2) exp0 -= 127; */
+	fcmped	%fcc1,LTHRESHOLD,%f56	/* (Y1_1) if (yy0 <= LTHRESH) */
 
-	fmuld	%f4,%f28,%f24		! (Y2_1) dtmp0 *= y0;
-	add	%o2,CONST_0x8000,%o1	! (Y2_2) i0 = ax0 + 0x8000;
-	ldd	[%i1+8],%f50		! (Y1_2) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8);
-	fitod	%f12,%f28		! (Y1_2) dtmp0 = (double) i0;
+	fmuld	%f4,%f28,%f24		/* (Y2_1) dtmp0 *= y0; */
+	add	%o2,CONST_0x8000,%o1	/* (Y2_2) i0 = ax0 + 0x8000; */
+	ldd	[%i1+8],%f50		/* (Y1_2) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8); */
+	fitod	%f12,%f28		/* (Y1_2) dtmp0 = (double) i0; */
 
-	sll	%l7,8,%l7		! (Y2_2) exp0 <<= 8;
-	and	%o1,%l6,%o1		! (Y2_2) i0 &= 0xffff0000;
-	st	%l7,[%fp+tmp6]		! (Y2_2) STORE exp0
-	fsubd	%f58,%f52,%f60		! (Y0_1) y0 = yy0 - dtmp0;
+	sll	%l7,8,%l7		/* (Y2_2) exp0 <<= 8; */
+	and	%o1,%l6,%o1		/* (Y2_2) i0 &= 0xffff0000; */
+	st	%l7,[%fp+tmp6]		/* (Y2_2) STORE exp0 */
+	fsubd	%f58,%f52,%f60		/* (Y0_1) y0 = yy0 - dtmp0; */
 
 
-	sub	%o2,%o1,%i1		! (Y2_2) i0 = ax0 - i0;
-	st	%i1,[%fp+tmp2]		! (Y2_2) STORE i0
-	bge,pn	%icc,.update10		! (Y2_2) if(ax0 >= 0x7f800000)
+	sub	%o2,%o1,%i1		/* (Y2_2) i0 = ax0 - i0; */
+	st	%i1,[%fp+tmp2]		/* (Y2_2) STORE i0 */
+	bge,pn	%icc,.update10		/* (Y2_2) if(ax0 >= 0x7f800000) */
 	nop
 .cont10:
-	lda	[%i2]0x82,%o2		! (Y0_2) ay0 = *(int*)py0;
-	cmp	%g1,MASK_0x007fffff	! (Y2_2) ux0 ? 0x800000
-	fmovdl	%fcc0,HTHRESHOLD,%f56	! (Y1_1) yy0 = HTHRESH;
+	lda	[%i2]0x82,%o2		/* (Y0_2) ay0 = *(int*)py0; */
+	cmp	%g1,MASK_0x007fffff	/* (Y2_2) ux0 ? 0x800000 */
+	fmovdl	%fcc0,HTHRESHOLD,%f56	/* (Y1_1) yy0 = HTHRESH; */
 
-	fmuld	%f28,%f50,%f46		! (Y1_2) y0 =  dtmp0 * dtmp1;
-	ble,pn	%icc,.update11		! (Y2_2) if(ux0 < 0x800000)
-	faddd	%f26,KA1,%f50		! (Y0_2) dtmp0 += KA1;
+	fmuld	%f28,%f50,%f46		/* (Y1_2) y0 =  dtmp0 * dtmp1; */
+	ble,pn	%icc,.update11		/* (Y2_2) if(ux0 < 0x800000) */
+	faddd	%f26,KA1,%f50		/* (Y0_2) dtmp0 += KA1; */
 .cont11:
-	fmuld	KB2,%f60,%f62		! (Y0_1) dtmp0 = KB2 * y0;
-	and	%o2,MASK_0x7fffffff,%o2	! (Y0_2) ay0 &= 0x7fffffff
-	ld	[%fp+tmp3],%f4		! (Y0_2) dtmp1 = (double) exp0;
-	faddd	%f18,%f24,%f52		! (Y2_1) yy0 += dtmp0;
+	fmuld	KB2,%f60,%f62		/* (Y0_1) dtmp0 = KB2 * y0; */
+	and	%o2,MASK_0x7fffffff,%o2	/* (Y0_2) ay0 &= 0x7fffffff */
+	ld	[%fp+tmp3],%f4		/* (Y0_2) dtmp1 = (double) exp0; */
+	faddd	%f18,%f24,%f52		/* (Y2_1) yy0 += dtmp0; */
 
-	ld	[%fp+tmp0],%g1		! (Y0_1) LAOD ind0
-	cmp	%o2,%o5			! (Y0_2) ay0 ? 0x7f800000
-	bge,pn	%icc,.update12		! (Y0_2) if( ay0 >= 0x7f800000)
+	ld	[%fp+tmp0],%g1		/* (Y0_1) LAOD ind0 */
+	cmp	%o2,%o5			/* (Y0_2) ay0 ? 0x7f800000 */
+	bge,pn	%icc,.update12		/* (Y0_2) if( ay0 >= 0x7f800000) */
 	nop
 .cont12:
-	fstod	%f0,%f24		! (Y0_2) dtmp0 = (double)ftmp0;
+	fstod	%f0,%f24		/* (Y0_2) dtmp0 = (double)ftmp0; */
 
-	cmp	counter,6		! counter
+	cmp	counter,6		/* counter */
 	bl,pn	%icc,.tail
 	sub	%i5,stridez,%o4
 
@@ -1110,487 +1110,487 @@
 
 	.align	16
 .main_loop:
-	fmuld	KA3,%f46,%f28		! (Y1_1) dtmp0 = KA3 * y0;
-	and	%g1,255,%o2		! (Y0_0) ind0 &= 255;
-	sub	counter,3,counter	! counter
-	fmovdg	%fcc1,LTHRESHOLD,%f56	! (Y1_0) yy0 = LTHRESH;
+	fmuld	KA3,%f46,%f28		/* (Y1_1) dtmp0 = KA3 * y0; */
+	and	%g1,255,%o2		/* (Y0_0) ind0 &= 255; */
+	sub	counter,3,counter	/* counter */
+	fmovdg	%fcc1,LTHRESHOLD,%f56	/* (Y1_0) yy0 = LTHRESH; */
 
-	fmuld	%f54,%f52,%f18		! (Y2_0) yy0 *= dtmp0;
-	sll	%o2,3,%i1		! (Y0_0) ind0 <<= 3;
-	add	%o4,stridez,%l7     	! pz += stridez
-	faddd	%f62,KB1,%f62		! (Y0_0) dtmp0 += KB1;
+	fmuld	%f54,%f52,%f18		/* (Y2_0) yy0 *= dtmp0; */
+	sll	%o2,3,%i1		/* (Y0_0) ind0 <<= 3; */
+	add	%o4,stridez,%l7		/* pz += stridez */
+	faddd	%f62,KB1,%f62		/* (Y0_0) dtmp0 += KB1; */
 
-	fpackfix	%f10,%f10	! (Y0_0) dtmp1 = vis_fpackfix(dtmp1);
-	fitod	%f4,%f26		! (Y0_1) dtmp1 = (double) exp0;
-	ldd	[%l0+%i1],%f58		! (Y0_0) di0 = *(double*)((char*)__mt_constexp2f + ind0);
+	fpackfix	%f10,%f10	/* (Y0_0) dtmp1 = vis_fpackfix(dtmp1); */
+	fitod	%f4,%f26		/* (Y0_1) dtmp1 = (double) exp0; */
+	ldd	[%l0+%i1],%f58		/* (Y0_0) di0 = *(double*)((char*)__mt_constexp2f + ind0); */
 
-	fmuld	%f50,%f48,%f50		! (Y0_1) dtmp0 *= y0;
-	fdtoi	%f56,%f20		! (Y1_0) ind0 = (int) yy0;
-	st	%f20,[%fp+tmp1]		! (Y1_0) STORE ind0
+	fmuld	%f50,%f48,%f50		/* (Y0_1) dtmp0 *= y0; */
+	fdtoi	%f56,%f20		/* (Y1_0) ind0 = (int) yy0; */
+	st	%f20,[%fp+tmp1]		/* (Y1_0) STORE ind0 */
 
-	faddd	%f28,KA2,%f28		! (Y1_1) dtmp0 += KA2;
+	faddd	%f28,KA2,%f28		/* (Y1_1) dtmp0 += KA2; */
 
-	fmuld	%f62,%f60,%f62		! (Y0_0) yy0 = dtmp0 * y0;
-	ldd	[%l2+%g5],%f60		! (Y0_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0);
-	add	%i3,stridex,%o2		! px += stridex
-	fcmped	%fcc0,HTHRESHOLD,%f18	! (Y2_0) if (yy0 >= HTHRESH)
+	fmuld	%f62,%f60,%f62		/* (Y0_0) yy0 = dtmp0 * y0; */
+	ldd	[%l2+%g5],%f60		/* (Y0_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0); */
+	add	%i3,stridex,%o2		/* px += stridex */
+	fcmped	%fcc0,HTHRESHOLD,%f18	/* (Y2_0) if (yy0 >= HTHRESH) */
 
-	lda	[%o2]0x82,%i1		! (Y0_2) ax0 = *px;
-	sra	%o1,12,%g5		! (Y2_1) ind0 = i0 >> 12;
-	fpadd32	%f10,%f58,%f22		! (Y0_0) di0 = vis_fpadd32(di0,dtmp1);
+	lda	[%o2]0x82,%i1		/* (Y0_2) ax0 = *px; */
+	sra	%o1,12,%g5		/* (Y2_1) ind0 = i0 >> 12; */
+	fpadd32	%f10,%f58,%f22		/* (Y0_0) di0 = vis_fpadd32(di0,dtmp1); */
 
-	faddd	%f50,KA0,%f58		! (Y0_1) dtmp0 += KA0;
-	and	%g5,-8,%o1		! (Y2_1) ind0 &= -8;
-	ld	[%fp+tmp2],%f6		! (Y2_1) dtmp0 = (double) i0;
+	faddd	%f50,KA0,%f58		/* (Y0_1) dtmp0 += KA0; */
+	and	%g5,-8,%o1		/* (Y2_1) ind0 &= -8; */
+	ld	[%fp+tmp2],%f6		/* (Y2_1) dtmp0 = (double) i0; */
 
-	fitod	%f20,%f52		! (Y1_0) dtmp0 = (double)ind0;
-	and	%i1,MASK_0x7fffffff,%i3	! (Y0_2) exp0 = ax0 & 0x7fffffff;
-	and	%i1,MASK_0x007fffff,%g5	! (Y0_2) ax0 &= 0x007fffff;
+	fitod	%f20,%f52		/* (Y1_0) dtmp0 = (double)ind0; */
+	and	%i1,MASK_0x7fffffff,%i3	/* (Y0_2) exp0 = ax0 & 0x7fffffff; */
+	and	%i1,MASK_0x007fffff,%g5	/* (Y0_2) ax0 &= 0x007fffff; */
 
-	fmuld	%f62,%f22,%f62		! (Y0_0) yy0 *= di0;
-	srl	%i3,23,%o3		! (Y0_2) exp0 >>= 23;
-	add	%l2,%o1,%g1		! (Y2_1) (char*)__mt_constlog4f + ind0
-	faddd	%f60,%f26,%f26		! (Y0_1) yy0 = dtmp0 + dtmp1;
+	fmuld	%f62,%f22,%f62		/* (Y0_0) yy0 *= di0; */
+	srl	%i3,23,%o3		/* (Y0_2) exp0 >>= 23; */
+	add	%l2,%o1,%g1		/* (Y2_1) (char*)__mt_constlog4f + ind0 */
+	faddd	%f60,%f26,%f26		/* (Y0_1) yy0 = dtmp0 + dtmp1; */
 
-	fmuld	%f28,%f46,%f50		! (Y1_1) dtmp0 *= y0;
-	sub	%o3,127,%o3		! (Y0_2) exp0 -= 127;
-	cmp	%i3,%o5			! (Y0_2) ax0 ? 0x7f800000
-	fcmped	%fcc1,LTHRESHOLD,%f18	! (Y2_0) if (yy0 <= LTHRESH)
+	fmuld	%f28,%f46,%f50		/* (Y1_1) dtmp0 *= y0; */
+	sub	%o3,127,%o3		/* (Y0_2) exp0 -= 127; */
+	cmp	%i3,%o5			/* (Y0_2) ax0 ? 0x7f800000 */
+	fcmped	%fcc1,LTHRESHOLD,%f18	/* (Y2_0) if (yy0 <= LTHRESH) */
 
-	fmuld	%f58,%f48,%f48		! (Y0_1) dtmp0 *= y0;
-	add	%g5,CONST_0x8000,%i3	! (Y0_2) i0 = ax0 + 0x8000;
-	ldd	[%g1+8],%f58		! (Y2_1) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8);
-	fitod	%f6,%f54		! (Y2_1) dtmp0 = (double) i0;
+	fmuld	%f58,%f48,%f48		/* (Y0_1) dtmp0 *= y0; */
+	add	%g5,CONST_0x8000,%i3	/* (Y0_2) i0 = ax0 + 0x8000; */
+	ldd	[%g1+8],%f58		/* (Y2_1) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8); */
+	fitod	%f6,%f54		/* (Y2_1) dtmp0 = (double) i0; */
 
-	sll	%o3,8,%o4		! (Y0_2) exp0 <<= 8;
-	and	%i3,%l6,%i3		! (Y0_2) i0 &= 0xffff0000;
-	st	%o4,[%fp+tmp3]		! (Y0_2) STORE exp0
-	fsubd	%f56,%f52,%f52		! (Y1_0) y0 = yy0 - dtmp0;
+	sll	%o3,8,%o4		/* (Y0_2) exp0 <<= 8; */
+	and	%i3,%l6,%i3		/* (Y0_2) i0 &= 0xffff0000; */
+	st	%o4,[%fp+tmp3]		/* (Y0_2) STORE exp0 */
+	fsubd	%f56,%f52,%f52		/* (Y1_0) y0 = yy0 - dtmp0; */
 
-	sub	%g5,%i3,%o4		! (Y0_2) i0 = ax0 - i0;
-	st	%o4,[%fp+tmp2]		! (Y0_2) STORE i0
-	bge,pn 	%icc,.update13		! (Y0_2) if( ax0 >= 0x7f800000 )
-	faddd	%f62,%f22,%f62		! (Y0_0) yy0 += di0;
+	sub	%g5,%i3,%o4		/* (Y0_2) i0 = ax0 - i0; */
+	st	%o4,[%fp+tmp2]		/* (Y0_2) STORE i0 */
+	bge,pn	%icc,.update13		/* (Y0_2) if( ax0 >= 0x7f800000 ) */
+	faddd	%f62,%f22,%f62		/* (Y0_0) yy0 += di0; */
 .cont13:
-	lda	[stridey+%i2]0x82,%g1	! (Y1_1) ay0 = *(unsigned*)py0
-	add	%i2,stridey,%o4		! py += stridey
-	cmp	%i1,MASK_0x007fffff	! (Y0_2) ux0 ? 0x800000
-	fmovdl	%fcc0,HTHRESHOLD,%f18	! (Y2_0) yy0 = HTHRESH;
+	lda	[stridey+%i2]0x82,%g1	/* (Y1_1) ay0 = *(unsigned*)py0 */
+	add	%i2,stridey,%o4		/* py += stridey */
+	cmp	%i1,MASK_0x007fffff	/* (Y0_2) ux0 ? 0x800000 */
+	fmovdl	%fcc0,HTHRESHOLD,%f18	/* (Y2_0) yy0 = HTHRESH; */
 
-	fmuld	%f54,%f58,%f28		! (Y2_1) y0 =  dtmp0 * dtmp1;
-	lda	[stridey+%i2]0x82,%f2	! (Y1_1) ftmp0 = *py0;
-	ble,pn 	%icc,.update14		! (Y0_2) if(ux0 < 0x800000)
-	faddd	%f50,KA1,%f54		! (Y1_1) dtmp0 += KA1;
+	fmuld	%f54,%f58,%f28		/* (Y2_1) y0 =  dtmp0 * dtmp1; */
+	lda	[stridey+%i2]0x82,%f2	/* (Y1_1) ftmp0 = *py0; */
+	ble,pn	%icc,.update14		/* (Y0_2) if(ux0 < 0x800000) */
+	faddd	%f50,KA1,%f54		/* (Y1_1) dtmp0 += KA1; */
 .cont14:
-	fmuld	KB2,%f52,%f56		! (Y1_0) dtmp0 = KB2 * y0;
-	and	%g1,MASK_0x7fffffff,%g1	! (Y1_1) ay0 &= 0x7fffffff;
-	ld	[%fp+tmp4],%f1		! (Y1_1) LOAD exp0
-	faddd	%f26,%f48,%f58		! (Y0_1) yy0 += dtmp0;
+	fmuld	KB2,%f52,%f56		/* (Y1_0) dtmp0 = KB2 * y0; */
+	and	%g1,MASK_0x7fffffff,%g1	/* (Y1_1) ay0 &= 0x7fffffff; */
+	ld	[%fp+tmp4],%f1		/* (Y1_1) LOAD exp0 */
+	faddd	%f26,%f48,%f58		/* (Y0_1) yy0 += dtmp0; */
 
-	ld	[%fp+tmp1],%g5		! (Y1_0) ind0 = (int) yy0;
-	cmp	%g1,%o5			! (Y1_1) ay0 ? 0x7f800000
-	bge,pn 	%icc,.update15		! (Y1_1) if(ay0 >= 0x7f800000)
-	fdtos	%f62,%f8		! (Y0_0) ftmp0 = (float)yy0;
+	ld	[%fp+tmp1],%g5		/* (Y1_0) ind0 = (int) yy0; */
+	cmp	%g1,%o5			/* (Y1_1) ay0 ? 0x7f800000 */
+	bge,pn	%icc,.update15		/* (Y1_1) if(ay0 >= 0x7f800000) */
+	fdtos	%f62,%f8		/* (Y0_0) ftmp0 = (float)yy0; */
 .cont15:
-	st	%f8,[%l7]		! (Y0_0) *pz0 = ftmp0;
-	fmovdg	%fcc1,LTHRESHOLD,%f18	! (Y2_0) yy0 = LTHRESH;
+	st	%f8,[%l7]		/* (Y0_0) *pz0 = ftmp0; */
+	fmovdg	%fcc1,LTHRESHOLD,%f18	/* (Y2_0) yy0 = LTHRESH; */
 
-	add	%l7,stridez,%l7		! pz += stridez
-	fmuld	KA3,%f28,%f62		! (Y2_1) dtmp0 = KA3 * y0;
-	and	%g5,255,%g5		! (Y1_0) ind0 &= 255;
-	fstod	%f2,%f22		! (Y1_1) dtmp0 = (double)ftmp0;
+	add	%l7,stridez,%l7		/* pz += stridez */
+	fmuld	KA3,%f28,%f62		/* (Y2_1) dtmp0 = KA3 * y0; */
+	and	%g5,255,%g5		/* (Y1_0) ind0 &= 255; */
+	fstod	%f2,%f22		/* (Y1_1) dtmp0 = (double)ftmp0; */
 
-	fmuld	%f24,%f58,%f58		! (Y0_1) yy0 *= dtmp0;
-	sll	%g5,3,%i2		! (Y1_0) ind0 <<= 3;
-	faddd	%f56,KB1,%f60		! (Y1_0) dtmp0 += KB1;
+	fmuld	%f24,%f58,%f58		/* (Y0_1) yy0 *= dtmp0; */
+	sll	%g5,3,%i2		/* (Y1_0) ind0 <<= 3; */
+	faddd	%f56,KB1,%f60		/* (Y1_0) dtmp0 += KB1; */
 
-	fpackfix	%f20,%f20	! (Y1_0) dtmp1 = vis_fpackfix(dtmp1);
-	fitod	%f1,%f48		! (Y1_1) dtmp1 = (double) exp0;
-	ldd	[%l0+%i2],%f56		! (Y1_0) di0 = *(double*)((char*)__mt_constexp2f + ind0);
+	fpackfix	%f20,%f20	/* (Y1_0) dtmp1 = vis_fpackfix(dtmp1); */
+	fitod	%f1,%f48		/* (Y1_1) dtmp1 = (double) exp0; */
+	ldd	[%l0+%i2],%f56		/* (Y1_0) di0 = *(double*)((char*)__mt_constexp2f + ind0); */
 
-	fmuld	%f54,%f46,%f54		! (Y1_1) dtmp0 *= y0;
-	fdtoi	%f18,%f2		! (Y2_0) ind0 = (int) yy0;
-	st	%f2,[%fp+tmp1]		! (Y2_0) STORE ind0
+	fmuld	%f54,%f46,%f54		/* (Y1_1) dtmp0 *= y0; */
+	fdtoi	%f18,%f2		/* (Y2_0) ind0 = (int) yy0; */
+	st	%f2,[%fp+tmp1]		/* (Y2_0) STORE ind0 */
 
-	faddd	%f62,KA2,%f26		! (Y2_1) dtmp0 += KA2;
+	faddd	%f62,KA2,%f26		/* (Y2_1) dtmp0 += KA2; */
 
-	fmuld	%f60,%f52,%f62		! (Y1_0) yy0 = dtmp0 * y0;
-	add	%o2,stridex,%o2		! px += stridex
-	ldd	[%l2+%o0],%f60		! (Y1_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0);
-	fcmped	%fcc0,HTHRESHOLD,%f58	! (Y0_1) if (yy0 >= HTHRESH)
+	fmuld	%f60,%f52,%f62		/* (Y1_0) yy0 = dtmp0 * y0; */
+	add	%o2,stridex,%o2		/* px += stridex */
+	ldd	[%l2+%o0],%f60		/* (Y1_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0); */
+	fcmped	%fcc0,HTHRESHOLD,%f58	/* (Y0_1) if (yy0 >= HTHRESH) */
 
-	fpadd32	%f20,%f56,%f52		! (Y1_0) di0 = vis_fpadd32(di0,dtmp1);
-	sra	%i3,12,%o0		! (Y0_2) ind0 = i0 >> 12;
-	lda	[%o2]0x82,%o3		! (Y1_2) ax0 = *px;
+	fpadd32	%f20,%f56,%f52		/* (Y1_0) di0 = vis_fpadd32(di0,dtmp1); */
+	sra	%i3,12,%o0		/* (Y0_2) ind0 = i0 >> 12; */
+	lda	[%o2]0x82,%o3		/* (Y1_2) ax0 = *px; */
 
-	faddd	%f54,KA0,%f56		! (Y1_1) dtmp0 += KA0;
-	and	%o0,-8,%g5		! (Y0_2) ind0 &= -8;
-	ld	[%fp+tmp2],%f14		! (Y0_2) dtmp0 = (double) i0;
+	faddd	%f54,KA0,%f56		/* (Y1_1) dtmp0 += KA0; */
+	and	%o0,-8,%g5		/* (Y0_2) ind0 &= -8; */
+	ld	[%fp+tmp2],%f14		/* (Y0_2) dtmp0 = (double) i0; */
 
-	fitod	%f2,%f54		! (Y2_0) dtmp0 = (double)ind0;
-	and	%o3,MASK_0x7fffffff,%i3	! (Y1_2) exp0 = ax0 & 0x7fffffff;
-	and	%o3,MASK_0x007fffff,%o0	! (Y1_2) ax0 &= 0x007fffff;
+	fitod	%f2,%f54		/* (Y2_0) dtmp0 = (double)ind0; */
+	and	%o3,MASK_0x7fffffff,%i3	/* (Y1_2) exp0 = ax0 & 0x7fffffff; */
+	and	%o3,MASK_0x007fffff,%o0	/* (Y1_2) ax0 &= 0x007fffff; */
 
-	fmuld	%f62,%f52,%f62		! (Y1_0) yy0 *= di0;
-	cmp	%i3,%o5			! (Y1_2) ax0 ? 0x7f800000
-	add	%l2,%g5,%g1		! (Y0_2) (char*)__mt_constlog4f + ind0
-	faddd	%f60,%f48,%f12		! (Y1_1) yy0 = dtmp0 + dtmp1;
+	fmuld	%f62,%f52,%f62		/* (Y1_0) yy0 *= di0; */
+	cmp	%i3,%o5			/* (Y1_2) ax0 ? 0x7f800000 */
+	add	%l2,%g5,%g1		/* (Y0_2) (char*)__mt_constlog4f + ind0 */
+	faddd	%f60,%f48,%f12		/* (Y1_1) yy0 = dtmp0 + dtmp1; */
 
-	fmuld	%f26,%f28,%f50		! (Y2_1) dtmp0 *= y0;
-	srl	%i3,23,%i3		! (Y1_2) exp0 >>= 23;
-	add	%o0,CONST_0x8000,%i1	! (Y1_2) i0 = ax0 + 0x8000;
-	fcmped	%fcc1,LTHRESHOLD,%f58	! (Y0_1) if (yy0 <= LTHRESH)
+	fmuld	%f26,%f28,%f50		/* (Y2_1) dtmp0 *= y0; */
+	srl	%i3,23,%i3		/* (Y1_2) exp0 >>= 23; */
+	add	%o0,CONST_0x8000,%i1	/* (Y1_2) i0 = ax0 + 0x8000; */
+	fcmped	%fcc1,LTHRESHOLD,%f58	/* (Y0_1) if (yy0 <= LTHRESH) */
 
-	fmuld	%f56,%f46,%f46		! (Y1_1) dtmp0 *= y0;
-	ldd	[%g1+8],%f48		! (Y0_2) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8);
-	sub	%i3,127,%i3		! (Y1_2) exp0 -= 127;
-	fitod	%f14,%f60		! (Y0_2) dtmp0 = (double) i0;
+	fmuld	%f56,%f46,%f46		/* (Y1_1) dtmp0 *= y0; */
+	ldd	[%g1+8],%f48		/* (Y0_2) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8); */
+	sub	%i3,127,%i3		/* (Y1_2) exp0 -= 127; */
+	fitod	%f14,%f60		/* (Y0_2) dtmp0 = (double) i0; */
 
-	sll	%i3,8,%i2		! (Y1_2) exp0 <<= 8;
-	and	%i1,%l6,%i1		! (Y1_2) i0 &= 0xffff0000;
-	st	%i2,[%fp+tmp4]		! (Y1_2) STORE exp0
-	fsubd	%f18,%f54,%f26		! (Y2_0) y0 = yy0 - dtmp0;
+	sll	%i3,8,%i2		/* (Y1_2) exp0 <<= 8; */
+	and	%i1,%l6,%i1		/* (Y1_2) i0 &= 0xffff0000; */
+	st	%i2,[%fp+tmp4]		/* (Y1_2) STORE exp0 */
+	fsubd	%f18,%f54,%f26		/* (Y2_0) y0 = yy0 - dtmp0; */
 
-	sub	%o0,%i1,%o0		! (Y1_2) i0 = ax0 - i0;
-	st	%o0,[%fp+tmp5]		! (Y1_2) STORE i0
-	bge,pn 	%icc,.update16		! (Y1_2) if(ax0 >= 0x7f800000)
-	faddd	%f62,%f52,%f54		! (Y1_0) yy0 += di0;
+	sub	%o0,%i1,%o0		/* (Y1_2) i0 = ax0 - i0; */
+	st	%o0,[%fp+tmp5]		/* (Y1_2) STORE i0 */
+	bge,pn	%icc,.update16		/* (Y1_2) if(ax0 >= 0x7f800000) */
+	faddd	%f62,%f52,%f54		/* (Y1_0) yy0 += di0; */
 .cont16:
-	lda	[stridey+%o4]0x82,%i3 	! Y(2_1) ay0 = *py0
-	cmp	%o3,MASK_0x007fffff	! (Y1_2) ux0 ? 0x800000
-	add	%o4,stridey,%i2		! py += stridey;
-	fmovdl	%fcc0,HTHRESHOLD,%f58	! (Y0_1) yy0 = HTHRESH;
+	lda	[stridey+%o4]0x82,%i3	/* Y(2_1) ay0 = *py0 */
+	cmp	%o3,MASK_0x007fffff	/* (Y1_2) ux0 ? 0x800000 */
+	add	%o4,stridey,%i2		/* py += stridey; */
+	fmovdl	%fcc0,HTHRESHOLD,%f58	/* (Y0_1) yy0 = HTHRESH; */
 
-	fmuld	%f60,%f48,%f48		! (Y0_2) y0 =  dtmp0 * dtmp1;
-	lda	[stridey+%o4]0x82,%f16	! (Y2_1) ftmp0 = *py0;
-	ble,pn 	%icc,.update17		! (Y1_2) if(ux0 < 0x800000)
-	faddd	%f50,KA1,%f52		! (Y2_1) dtmp0 += KA1;
+	fmuld	%f60,%f48,%f48		/* (Y0_2) y0 =  dtmp0 * dtmp1; */
+	lda	[stridey+%o4]0x82,%f16	/* (Y2_1) ftmp0 = *py0; */
+	ble,pn	%icc,.update17		/* (Y1_2) if(ux0 < 0x800000) */
+	faddd	%f50,KA1,%f52		/* (Y2_1) dtmp0 += KA1; */
 .cont17:
-	fmuld	KB2,%f26,%f4		! (Y2_0) dtmp0 = KB2 * y0;
-	and	%i3,MASK_0x7fffffff,%i3	! (Y2_1) ay0 &= 0x7fffffff
-	ld	[%fp+tmp6],%f17		! (Y2_1) dtmp1 = (double) exp0;
-	faddd	%f12,%f46,%f60		! (Y1_1) yy0 += dtmp0;
+	fmuld	KB2,%f26,%f4		/* (Y2_0) dtmp0 = KB2 * y0; */
+	and	%i3,MASK_0x7fffffff,%i3	/* (Y2_1) ay0 &= 0x7fffffff */
+	ld	[%fp+tmp6],%f17		/* (Y2_1) dtmp1 = (double) exp0; */
+	faddd	%f12,%f46,%f60		/* (Y1_1) yy0 += dtmp0; */
 
 	ld	[%fp+tmp1],%o0
-	cmp	%i3,%o5			! (Y2_1) ay0 ? 0x7f800000
-	bge,pn 	%icc,.update18		! (Y2_1) if(ay0 >= 0x7f800000)
-	fdtos	%f54,%f15		! (Y1_0) ftmp0 = (float)yy0;
+	cmp	%i3,%o5			/* (Y2_1) ay0 ? 0x7f800000 */
+	bge,pn	%icc,.update18		/* (Y2_1) if(ay0 >= 0x7f800000) */
+	fdtos	%f54,%f15		/* (Y1_0) ftmp0 = (float)yy0; */
 .cont18:
-	st	%f15,[%l7]		! (Y1_0) *pz0 = ftmp0;
-	add	%l7,stridez,%o4		! pz += stridez
-	fmovdg	%fcc1,LTHRESHOLD,%f58	! (Y0_1) yy0 = LTHRESH;
+	st	%f15,[%l7]		/* (Y1_0) *pz0 = ftmp0; */
+	add	%l7,stridez,%o4		/* pz += stridez */
+	fmovdg	%fcc1,LTHRESHOLD,%f58	/* (Y0_1) yy0 = LTHRESH; */
 
-	fmuld	KA3,%f48,%f62		! (Y0_2) dtmp0 = KA3 * y0;
-	and	%o0,255,%o0		! (Y2_0) ind0 &= 255;
-	fstod	%f16,%f54		! (Y2_1) dtmp0 = (double)ftmp0;
+	fmuld	KA3,%f48,%f62		/* (Y0_2) dtmp0 = KA3 * y0; */
+	and	%o0,255,%o0		/* (Y2_0) ind0 &= 255; */
+	fstod	%f16,%f54		/* (Y2_1) dtmp0 = (double)ftmp0; */
 
-	fmuld	%f22,%f60,%f56		! (Y1_1) yy0 *= dtmp0;
-	sll	%o0,3,%l7		! (Y2_0) ind0 <<= 3;
-	faddd	%f4,KB1,%f60		! (Y2_0) dtmp0 += KB1;
+	fmuld	%f22,%f60,%f56		/* (Y1_1) yy0 *= dtmp0; */
+	sll	%o0,3,%l7		/* (Y2_0) ind0 <<= 3; */
+	faddd	%f4,KB1,%f60		/* (Y2_0) dtmp0 += KB1; */
 
-	fpackfix	%f2,%f2		! (Y2_0) dtmp1 = vis_fpackfix(dtmp1);
-	fitod	%f17,%f24		! (Y2_1) dtmp1 = (double) exp0;
-	ldd	[%l0+%l7],%f4		! (Y2_0) di0 = *(double*)((char*)__mt_constexp2f + ind0);
+	fpackfix	%f2,%f2		/* (Y2_0) dtmp1 = vis_fpackfix(dtmp1); */
+	fitod	%f17,%f24		/* (Y2_1) dtmp1 = (double) exp0; */
+	ldd	[%l0+%l7],%f4		/* (Y2_0) di0 = *(double*)((char*)__mt_constexp2f + ind0); */
 
-	fmuld	%f52,%f28,%f52		! (Y2_1) dtmp0 *= y0;
-	fdtoi	%f58,%f10		! (Y0_1) ind0 = (int) yy0;
+	fmuld	%f52,%f28,%f52		/* (Y2_1) dtmp0 *= y0; */
+	fdtoi	%f58,%f10		/* (Y0_1) ind0 = (int) yy0; */
 
-	st	%f10,[%fp+tmp0]		! (Y0_1) STORE ind0
-	faddd	%f62,KA2,%f22		! (Y0_2) dtmp0 += KA2;
+	st	%f10,[%fp+tmp0]		/* (Y0_1) STORE ind0 */
+	faddd	%f62,KA2,%f22		/* (Y0_2) dtmp0 += KA2; */
 
-	fmuld	%f60,%f26,%f62		! (Y2_0) yy0 = dtmp0 * y0;
-	fcmped	%fcc0,HTHRESHOLD,%f56	! (Y1_1) if (yy0 >= HTHRESH)
-	ldd	[%l2+%o1],%f60		! (Y2_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0);
+	fmuld	%f60,%f26,%f62		/* (Y2_0) yy0 = dtmp0 * y0; */
+	fcmped	%fcc0,HTHRESHOLD,%f56	/* (Y1_1) if (yy0 >= HTHRESH) */
+	ldd	[%l2+%o1],%f60		/* (Y2_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0); */
 
-	sra	%i1,12,%o1		! (Y1_2) ind0 = i0 >> 12;
-	add	%o2,stridex,%i3		! px += stridex
-	lda	[stridex+%o2]0x82,%g1	! (Y2_2) ax0 = *px;
-	fpadd32	%f2,%f4,%f46		! (Y2_0) di0 = vis_fpadd32(di0,dtmp1);
+	sra	%i1,12,%o1		/* (Y1_2) ind0 = i0 >> 12; */
+	add	%o2,stridex,%i3		/* px += stridex */
+	lda	[stridex+%o2]0x82,%g1	/* (Y2_2) ax0 = *px; */
+	fpadd32	%f2,%f4,%f46		/* (Y2_0) di0 = vis_fpadd32(di0,dtmp1); */
 
-	and	%o1,-8,%o0		! (Y1_2) ind0 &= -8;
-	add	%i2,stridey,%i2		! py += stridey
-	ld	[%fp+tmp5],%f12		! (Y1_2) LOAD i0
-	faddd	%f52,KA0,%f4		! (Y2_1) dtmp0 += KA0;
+	and	%o1,-8,%o0		/* (Y1_2) ind0 &= -8; */
+	add	%i2,stridey,%i2		/* py += stridey */
+	ld	[%fp+tmp5],%f12		/* (Y1_2) LOAD i0 */
+	faddd	%f52,KA0,%f4		/* (Y2_1) dtmp0 += KA0; */
 
-	and	%g1,MASK_0x7fffffff,%i1	! (Y2_2) exp0 = ax0 & 0x7fffffff;
-	and	%g1,MASK_0x007fffff,%o2	! (Y2_2) ax0 &= 0x007fffff;
-	lda	[%i2]0x82,%f0		! (Y0_2) ftmp0 = *py0;
-	fitod	%f10,%f52		! (Y0_1) dtmp0 = (double)ind0;
+	and	%g1,MASK_0x7fffffff,%i1	/* (Y2_2) exp0 = ax0 & 0x7fffffff; */
+	and	%g1,MASK_0x007fffff,%o2	/* (Y2_2) ax0 &= 0x007fffff; */
+	lda	[%i2]0x82,%f0		/* (Y0_2) ftmp0 = *py0; */
+	fitod	%f10,%f52		/* (Y0_1) dtmp0 = (double)ind0; */
 
-	fmuld	%f62,%f46,%f62		! (Y2_0) yy0 *= di0;
-	srl	%i1,23,%o3		! (Y2_2) exp0 >>= 23;
-	cmp	%i1,%o5			! (Y2_2) ax0 ? 0x7f800000
-	faddd	%f60,%f24,%f18		! (Y2_1) yy0 = dtmp0 + dtmp1;
+	fmuld	%f62,%f46,%f62		/* (Y2_0) yy0 *= di0; */
+	srl	%i1,23,%o3		/* (Y2_2) exp0 >>= 23; */
+	cmp	%i1,%o5			/* (Y2_2) ax0 ? 0x7f800000 */
+	faddd	%f60,%f24,%f18		/* (Y2_1) yy0 = dtmp0 + dtmp1; */
 
-	fmuld	%f22,%f48,%f26		! (Y0_2) dtmp0 *= y0;
-	add	%l2,%o0,%i1		! (Y1_2) (char*)__mt_constlog4f + ind0
-	sub	%o3,127,%l7		! (Y2_2) exp0 -= 127;
-	fcmped	%fcc1,LTHRESHOLD,%f56	! (Y1_1) if (yy0 <= LTHRESH)
+	fmuld	%f22,%f48,%f26		/* (Y0_2) dtmp0 *= y0; */
+	add	%l2,%o0,%i1		/* (Y1_2) (char*)__mt_constlog4f + ind0 */
+	sub	%o3,127,%l7		/* (Y2_2) exp0 -= 127; */
+	fcmped	%fcc1,LTHRESHOLD,%f56	/* (Y1_1) if (yy0 <= LTHRESH) */
 
-	fmuld	%f4,%f28,%f24		! (Y2_1) dtmp0 *= y0;
-	add	%o2,CONST_0x8000,%o1	! (Y2_2) i0 = ax0 + 0x8000;
-	ldd	[%i1+8],%f50		! (Y1_2) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8);
-	fitod	%f12,%f28		! (Y1_2) dtmp0 = (double) i0;
+	fmuld	%f4,%f28,%f24		/* (Y2_1) dtmp0 *= y0; */
+	add	%o2,CONST_0x8000,%o1	/* (Y2_2) i0 = ax0 + 0x8000; */
+	ldd	[%i1+8],%f50		/* (Y1_2) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8); */
+	fitod	%f12,%f28		/* (Y1_2) dtmp0 = (double) i0; */
 
-	sll	%l7,8,%l7		! (Y2_2) exp0 <<= 8;
-	and	%o1,%l6,%o1		! (Y2_2) i0 &= 0xffff0000;
-	st	%l7,[%fp+tmp6]		! (Y2_2) STORE exp0
-	fsubd	%f58,%f52,%f60		! (Y0_1) y0 = yy0 - dtmp0;
+	sll	%l7,8,%l7		/* (Y2_2) exp0 <<= 8; */
+	and	%o1,%l6,%o1		/* (Y2_2) i0 &= 0xffff0000; */
+	st	%l7,[%fp+tmp6]		/* (Y2_2) STORE exp0 */
+	fsubd	%f58,%f52,%f60		/* (Y0_1) y0 = yy0 - dtmp0; */
 
-	sub	%o2,%o1,%i1		! (Y2_2) i0 = ax0 - i0;
-	st	%i1,[%fp+tmp2]		! (Y2_2) STORE i0
-	bge,pn	%icc,.update19		! (Y2_2) if(ax0 >= 0x7f800000)
-	faddd	%f62,%f46,%f22		! (Y2_0) yy0 += di0;
+	sub	%o2,%o1,%i1		/* (Y2_2) i0 = ax0 - i0; */
+	st	%i1,[%fp+tmp2]		/* (Y2_2) STORE i0 */
+	bge,pn	%icc,.update19		/* (Y2_2) if(ax0 >= 0x7f800000) */
+	faddd	%f62,%f46,%f22		/* (Y2_0) yy0 += di0; */
 .cont19:
-	lda	[%i2]0x82,%o2		! (Y0_2) ay0 = *(int*)py0;
-	cmp	%g1,MASK_0x007fffff	! (Y2_2) ux0 ? 0x800000
-	fmovdl	%fcc0,HTHRESHOLD,%f56	! (Y1_1) yy0 = HTHRESH;
+	lda	[%i2]0x82,%o2		/* (Y0_2) ay0 = *(int*)py0; */
+	cmp	%g1,MASK_0x007fffff	/* (Y2_2) ux0 ? 0x800000 */
+	fmovdl	%fcc0,HTHRESHOLD,%f56	/* (Y1_1) yy0 = HTHRESH; */
 
-	fmuld	%f28,%f50,%f46		! (Y1_2) y0 =  dtmp0 * dtmp1;
-	ble,pn	%icc,.update20		! (Y2_2) if(ux0 < 0x800000)
-	faddd	%f26,KA1,%f50		! (Y0_2) dtmp0 += KA1;
+	fmuld	%f28,%f50,%f46		/* (Y1_2) y0 =  dtmp0 * dtmp1; */
+	ble,pn	%icc,.update20		/* (Y2_2) if(ux0 < 0x800000) */
+	faddd	%f26,KA1,%f50		/* (Y0_2) dtmp0 += KA1; */
 .cont20:
-	fmuld	KB2,%f60,%f62		! (Y0_1) dtmp0 = KB2 * y0;
-	and	%o2,MASK_0x7fffffff,%o2	! (Y0_2) ay0 &= 0x7fffffff
-	ld	[%fp+tmp3],%f4		! (Y0_2) dtmp1 = (double) exp0;
-	faddd	%f18,%f24,%f52		! (Y2_1) yy0 += dtmp0;
+	fmuld	KB2,%f60,%f62		/* (Y0_1) dtmp0 = KB2 * y0; */
+	and	%o2,MASK_0x7fffffff,%o2	/* (Y0_2) ay0 &= 0x7fffffff */
+	ld	[%fp+tmp3],%f4		/* (Y0_2) dtmp1 = (double) exp0; */
+	faddd	%f18,%f24,%f52		/* (Y2_1) yy0 += dtmp0; */
 
-	ld	[%fp+tmp0],%g1		! (Y0_1) LAOD ind0
-	cmp	%o2,%o5			! (Y0_2) ay0 ? 0x7f800000
-	bge,pn	%icc,.update21		! (Y0_2) if( ay0 >= 0x7f800000)
-	fdtos	%f22,%f12		! (Y2_0) ftmp0 = (float)yy0;
+	ld	[%fp+tmp0],%g1		/* (Y0_1) LAOD ind0 */
+	cmp	%o2,%o5			/* (Y0_2) ay0 ? 0x7f800000 */
+	bge,pn	%icc,.update21		/* (Y0_2) if( ay0 >= 0x7f800000) */
+	fdtos	%f22,%f12		/* (Y2_0) ftmp0 = (float)yy0; */
 .cont21:
-	st	%f12,[%o4]		! (Y2_0) *pz0 = ftmp0;
-	cmp	counter,6		! counter
+	st	%f12,[%o4]		/* (Y2_0) *pz0 = ftmp0; */
+	cmp	counter,6		/* counter */
 	bge,pt	%icc,.main_loop
-	fstod	%f0,%f24		! (Y0_2) dtmp0 = (double)ftmp0;
+	fstod	%f0,%f24		/* (Y0_2) dtmp0 = (double)ftmp0; */
 
 .tail:
 	subcc	counter,1,counter
 	bneg,pn	%icc,.begin
 	add	%o4,stridez,%i5
 
-	fmuld	KA3,%f46,%f28		! (Y1_1) dtmp0 = KA3 * y0;
-	and	%g1,255,%o2		! (Y0_0) ind0 &= 255;
-	fmovdg	%fcc1,LTHRESHOLD,%f56	! (Y1_0) yy0 = LTHRESH;
+	fmuld	KA3,%f46,%f28		/* (Y1_1) dtmp0 = KA3 * y0; */
+	and	%g1,255,%o2		/* (Y0_0) ind0 &= 255; */
+	fmovdg	%fcc1,LTHRESHOLD,%f56	/* (Y1_0) yy0 = LTHRESH; */
 
-	fmuld	%f54,%f52,%f18		! (Y2_0) yy0 *= dtmp0;
-	sll	%o2,3,%i1		! (Y0_0) ind0 <<= 3;
-	add	%o4,stridez,%l7    	! pz += stridez
-	faddd	%f62,KB1,%f62		! (Y0_0) dtmp0 += KB1;
+	fmuld	%f54,%f52,%f18		/* (Y2_0) yy0 *= dtmp0; */
+	sll	%o2,3,%i1		/* (Y0_0) ind0 <<= 3; */
+	add	%o4,stridez,%l7		/* pz += stridez */
+	faddd	%f62,KB1,%f62		/* (Y0_0) dtmp0 += KB1; */
 
-	fpackfix	%f10,%f10	! (Y0_0) dtmp1 = vis_fpackfix(dtmp1);
-	fitod	%f4,%f26		! (Y0_1) dtmp1 = (double) exp0;
-	ldd	[%l0+%i1],%f58		! (Y0_0) di0 = *(double*)((char*)__mt_constexp2f + ind0);
+	fpackfix	%f10,%f10	/* (Y0_0) dtmp1 = vis_fpackfix(dtmp1); */
+	fitod	%f4,%f26		/* (Y0_1) dtmp1 = (double) exp0; */
+	ldd	[%l0+%i1],%f58		/* (Y0_0) di0 = *(double*)((char*)__mt_constexp2f + ind0); */
 
-	fmuld	%f50,%f48,%f50		! (Y0_1) dtmp0 *= y0;
-	fdtoi	%f56,%f20		! (Y1_0) ind0 = (int) yy0;
-	st	%f20,[%fp+tmp1]		! (Y1_0) STORE ind0
+	fmuld	%f50,%f48,%f50		/* (Y0_1) dtmp0 *= y0; */
+	fdtoi	%f56,%f20		/* (Y1_0) ind0 = (int) yy0; */
+	st	%f20,[%fp+tmp1]		/* (Y1_0) STORE ind0 */
 
-	faddd	%f28,KA2,%f28		! (Y1_1) dtmp0 += KA2;
+	faddd	%f28,KA2,%f28		/* (Y1_1) dtmp0 += KA2; */
 
-	fmuld	%f62,%f60,%f62		! (Y0_0) yy0 = dtmp0 * y0;
-	ldd	[%l2+%g5],%f60		! (Y0_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0);
-	fcmped	%fcc0,HTHRESHOLD,%f18	! (Y2_0) if (yy0 >= HTHRESH)
+	fmuld	%f62,%f60,%f62		/* (Y0_0) yy0 = dtmp0 * y0; */
+	ldd	[%l2+%g5],%f60		/* (Y0_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0); */
+	fcmped	%fcc0,HTHRESHOLD,%f18	/* (Y2_0) if (yy0 >= HTHRESH) */
 
-	fpadd32	%f10,%f58,%f22		! (Y0_0) di0 = vis_fpadd32(di0,dtmp1);
+	fpadd32	%f10,%f58,%f22		/* (Y0_0) di0 = vis_fpadd32(di0,dtmp1); */
 
-	faddd	%f50,KA0,%f58		! (Y0_1) dtmp0 += KA0;
+	faddd	%f50,KA0,%f58		/* (Y0_1) dtmp0 += KA0; */
 
-	fitod	%f20,%f52		! (Y1_0) dtmp0 = (double)ind0;
+	fitod	%f20,%f52		/* (Y1_0) dtmp0 = (double)ind0; */
 
-	fmuld	%f62,%f22,%f62		! (Y0_0) yy0 *= di0;
-	faddd	%f60,%f26,%f26		! (Y0_1) yy0 = dtmp0 + dtmp1;
+	fmuld	%f62,%f22,%f62		/* (Y0_0) yy0 *= di0; */
+	faddd	%f60,%f26,%f26		/* (Y0_1) yy0 = dtmp0 + dtmp1; */
 
-	fmuld	%f28,%f46,%f50		! (Y1_1) dtmp0 *= y0;
-	fcmped	%fcc1,LTHRESHOLD,%f18	! (Y2_0) if (yy0 <= LTHRESH)
+	fmuld	%f28,%f46,%f50		/* (Y1_1) dtmp0 *= y0; */
+	fcmped	%fcc1,LTHRESHOLD,%f18	/* (Y2_0) if (yy0 <= LTHRESH) */
 
-	fmuld	%f58,%f48,%f48		! (Y0_1) dtmp0 *= y0;
+	fmuld	%f58,%f48,%f48		/* (Y0_1) dtmp0 *= y0; */
 
-	fsubd	%f56,%f52,%f52		! (Y1_0) y0 = yy0 - dtmp0;
+	fsubd	%f56,%f52,%f52		/* (Y1_0) y0 = yy0 - dtmp0; */
 
-	faddd	%f62,%f22,%f62		! (Y0_0) yy0 += di0;
+	faddd	%f62,%f22,%f62		/* (Y0_0) yy0 += di0; */
 
-	lda	[stridey+%i2]0x82,%g1	! (Y1_1) ay0 = *(unsigned*)py0
-	add	%i2,stridey,%o4		! py += stridey
-	fmovdl	%fcc0,HTHRESHOLD,%f18	! (Y2_0) yy0 = HTHRESH;
+	lda	[stridey+%i2]0x82,%g1	/* (Y1_1) ay0 = *(unsigned*)py0 */
+	add	%i2,stridey,%o4		/* py += stridey */
+	fmovdl	%fcc0,HTHRESHOLD,%f18	/* (Y2_0) yy0 = HTHRESH; */
 
-	lda	[stridey+%i2]0x82,%f2	! (Y1_1) ftmp0 = *py0;
-	faddd	%f50,KA1,%f54		! (Y1_1) dtmp0 += KA1;
+	lda	[stridey+%i2]0x82,%f2	/* (Y1_1) ftmp0 = *py0; */
+	faddd	%f50,KA1,%f54		/* (Y1_1) dtmp0 += KA1; */
 
-	fmuld	KB2,%f52,%f56		! (Y1_0) dtmp0 = KB2 * y0;
-	and	%g1,MASK_0x7fffffff,%g1	! (Y1_1) ay0 &= 0x7fffffff;
-	ld	[%fp+tmp4],%f1		! (Y1_1) LOAD exp0
-	faddd	%f26,%f48,%f58		! (Y0_1) yy0 += dtmp0;
+	fmuld	KB2,%f52,%f56		/* (Y1_0) dtmp0 = KB2 * y0; */
+	and	%g1,MASK_0x7fffffff,%g1	/* (Y1_1) ay0 &= 0x7fffffff; */
+	ld	[%fp+tmp4],%f1		/* (Y1_1) LOAD exp0 */
+	faddd	%f26,%f48,%f58		/* (Y0_1) yy0 += dtmp0; */
 
-	ld	[%fp+tmp1],%g5		! (Y1_0) ind0 = (int) yy0;
-	cmp	%g1,%o5			! (Y1_1) ay0 ? 0x7f800000
-	bge,pn 	%icc,.update22		! (Y1_1) if(ay0 >= 0x7f800000)
-	fdtos	%f62,%f8		! (Y0_0) ftmp0 = (float)yy0;
+	ld	[%fp+tmp1],%g5		/* (Y1_0) ind0 = (int) yy0; */
+	cmp	%g1,%o5			/* (Y1_1) ay0 ? 0x7f800000 */
+	bge,pn	%icc,.update22		/* (Y1_1) if(ay0 >= 0x7f800000) */
+	fdtos	%f62,%f8		/* (Y0_0) ftmp0 = (float)yy0; */
 .cont22:
-	st	%f8,[%l7]		! (Y0_0) *pz0 = ftmp0;
-	fmovdg	%fcc1,LTHRESHOLD,%f18	! (Y2_0) yy0 = LTHRESH;
+	st	%f8,[%l7]		/* (Y0_0) *pz0 = ftmp0; */
+	fmovdg	%fcc1,LTHRESHOLD,%f18	/* (Y2_0) yy0 = LTHRESH; */
 
 	subcc	counter,1,counter
 	bneg,pn %icc,.begin
 	add	%l7,stridez,%i5
 
-	add	%l7,stridez,%l7		! pz += stridez
-	and	%g5,255,%g5		! (Y1_0) ind0 &= 255;
-	fstod	%f2,%f22		! (Y1_1) dtmp0 = (double)ftmp0;
+	add	%l7,stridez,%l7		/* pz += stridez */
+	and	%g5,255,%g5		/* (Y1_0) ind0 &= 255; */
+	fstod	%f2,%f22		/* (Y1_1) dtmp0 = (double)ftmp0; */
 
-	fmuld	%f24,%f58,%f58		! (Y0_1) yy0 *= dtmp0;
-	sll	%g5,3,%i2		! (Y1_0) ind0 <<= 3;
-	faddd	%f56,KB1,%f60		! (Y1_0) dtmp0 += KB1;
+	fmuld	%f24,%f58,%f58		/* (Y0_1) yy0 *= dtmp0; */
+	sll	%g5,3,%i2		/* (Y1_0) ind0 <<= 3; */
+	faddd	%f56,KB1,%f60		/* (Y1_0) dtmp0 += KB1; */
 
-	fpackfix	%f20,%f20	! (Y1_0) dtmp1 = vis_fpackfix(dtmp1);
-	fitod	%f1,%f48		! (Y1_1) dtmp1 = (double) exp0;
-	ldd	[%l0+%i2],%f56		! (Y1_0) di0 = *(double*)((char*)__mt_constexp2f + ind0);
+	fpackfix	%f20,%f20	/* (Y1_0) dtmp1 = vis_fpackfix(dtmp1); */
+	fitod	%f1,%f48		/* (Y1_1) dtmp1 = (double) exp0; */
+	ldd	[%l0+%i2],%f56		/* (Y1_0) di0 = *(double*)((char*)__mt_constexp2f + ind0); */
 
-	fmuld	%f54,%f46,%f54		! (Y1_1) dtmp0 *= y0;
-	fdtoi	%f18,%f2		! (Y2_0) ind0 = (int) yy0;
-	st	%f2,[%fp+tmp1]		! (Y2_0) STORE ind0
-
-
-	fmuld	%f60,%f52,%f62		! (Y1_0) yy0 = dtmp0 * y0;
-	ldd	[%l2+%o0],%f60		! (Y1_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0);
-	fcmped	%fcc0,HTHRESHOLD,%f58	! (Y0_1) if (yy0 >= HTHRESH)
-
-	fpadd32	%f20,%f56,%f52		! (Y1_0) di0 = vis_fpadd32(di0,dtmp1);
-
-	faddd	%f54,KA0,%f56		! (Y1_1) dtmp0 += KA0;
-
-	fitod	%f2,%f54		! (Y2_0) dtmp0 = (double)ind0;
-
-	fmuld	%f62,%f52,%f62		! (Y1_0) yy0 *= di0;
-	faddd	%f60,%f48,%f12		! (Y1_1) yy0 = dtmp0 + dtmp1;
-
-	fcmped	%fcc1,LTHRESHOLD,%f58	! (Y0_1) if (yy0 <= LTHRESH)
-
-	fmuld	%f56,%f46,%f46		! (Y1_1) dtmp0 *= y0;
-
-	fsubd	%f18,%f54,%f26		! (Y2_0) y0 = yy0 - dtmp0;
-
-	faddd	%f62,%f52,%f54		! (Y1_0) yy0 += di0;
-
-	fmovdl	%fcc0,HTHRESHOLD,%f58	! (Y0_1) yy0 = HTHRESH;
+	fmuld	%f54,%f46,%f54		/* (Y1_1) dtmp0 *= y0; */
+	fdtoi	%f18,%f2		/* (Y2_0) ind0 = (int) yy0; */
+	st	%f2,[%fp+tmp1]		/* (Y2_0) STORE ind0 */
 
 
-	fmuld	KB2,%f26,%f4		! (Y2_0) dtmp0 = KB2 * y0;
-	faddd	%f12,%f46,%f60		! (Y1_1) yy0 += dtmp0;
+	fmuld	%f60,%f52,%f62		/* (Y1_0) yy0 = dtmp0 * y0; */
+	ldd	[%l2+%o0],%f60		/* (Y1_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0); */
+	fcmped	%fcc0,HTHRESHOLD,%f58	/* (Y0_1) if (yy0 >= HTHRESH) */
+
+	fpadd32	%f20,%f56,%f52		/* (Y1_0) di0 = vis_fpadd32(di0,dtmp1); */
+
+	faddd	%f54,KA0,%f56		/* (Y1_1) dtmp0 += KA0; */
+
+	fitod	%f2,%f54		/* (Y2_0) dtmp0 = (double)ind0; */
+
+	fmuld	%f62,%f52,%f62		/* (Y1_0) yy0 *= di0; */
+	faddd	%f60,%f48,%f12		/* (Y1_1) yy0 = dtmp0 + dtmp1; */
+
+	fcmped	%fcc1,LTHRESHOLD,%f58	/* (Y0_1) if (yy0 <= LTHRESH) */
+
+	fmuld	%f56,%f46,%f46		/* (Y1_1) dtmp0 *= y0; */
+
+	fsubd	%f18,%f54,%f26		/* (Y2_0) y0 = yy0 - dtmp0; */
+
+	faddd	%f62,%f52,%f54		/* (Y1_0) yy0 += di0; */
+
+	fmovdl	%fcc0,HTHRESHOLD,%f58	/* (Y0_1) yy0 = HTHRESH; */
+
+
+	fmuld	KB2,%f26,%f4		/* (Y2_0) dtmp0 = KB2 * y0; */
+	faddd	%f12,%f46,%f60		/* (Y1_1) yy0 += dtmp0; */
 
 	ld	[%fp+tmp1],%o0
-	fdtos	%f54,%f15		! (Y1_0) ftmp0 = (float)yy0;
+	fdtos	%f54,%f15		/* (Y1_0) ftmp0 = (float)yy0; */
 
-	st	%f15,[%l7]		! (Y1_0) *pz0 = ftmp0;
-	add	%l7,stridez,%o4		! pz += stridez
-	fmovdg	%fcc1,LTHRESHOLD,%f58	! (Y0_1) yy0 = LTHRESH;
+	st	%f15,[%l7]		/* (Y1_0) *pz0 = ftmp0; */
+	add	%l7,stridez,%o4		/* pz += stridez */
+	fmovdg	%fcc1,LTHRESHOLD,%f58	/* (Y0_1) yy0 = LTHRESH; */
 
 	subcc	counter,1,counter
 	bneg,pn %icc,.begin
 	or	%g0,%o4,%i5
 
-	and	%o0,255,%o0		! (Y2_0) ind0 &= 255;
+	and	%o0,255,%o0		/* (Y2_0) ind0 &= 255; */
 
-	fmuld	%f22,%f60,%f56		! (Y1_1) yy0 *= dtmp0;
-	sll	%o0,3,%l7		! (Y2_0) ind0 <<= 3;
-	faddd	%f4,KB1,%f60		! (Y2_0) dtmp0 += KB1;
+	fmuld	%f22,%f60,%f56		/* (Y1_1) yy0 *= dtmp0; */
+	sll	%o0,3,%l7		/* (Y2_0) ind0 <<= 3; */
+	faddd	%f4,KB1,%f60		/* (Y2_0) dtmp0 += KB1; */
 
-	fpackfix	%f2,%f2		! (Y2_0) dtmp1 = vis_fpackfix(dtmp1);
-	ldd	[%l0+%l7],%f4		! (Y2_0) di0 = *(double*)((char*)__mt_constexp2f + ind0);
+	fpackfix	%f2,%f2		/* (Y2_0) dtmp1 = vis_fpackfix(dtmp1); */
+	ldd	[%l0+%l7],%f4		/* (Y2_0) di0 = *(double*)((char*)__mt_constexp2f + ind0); */
 
-	fdtoi	%f58,%f10		! (Y0_1) ind0 = (int) yy0;
+	fdtoi	%f58,%f10		/* (Y0_1) ind0 = (int) yy0; */
 
-	st	%f10,[%fp+tmp0]		! (Y0_1) STORE ind0
+	st	%f10,[%fp+tmp0]		/* (Y0_1) STORE ind0 */
 
-	fmuld	%f60,%f26,%f62		! (Y2_0) yy0 = dtmp0 * y0;
-	fcmped	%fcc0,HTHRESHOLD,%f56	! (Y1_1) if (yy0 >= HTHRESH)
+	fmuld	%f60,%f26,%f62		/* (Y2_0) yy0 = dtmp0 * y0; */
+	fcmped	%fcc0,HTHRESHOLD,%f56	/* (Y1_1) if (yy0 >= HTHRESH) */
 
-	fpadd32	%f2,%f4,%f46		! (Y2_0) di0 = vis_fpadd32(di0,dtmp1);
+	fpadd32	%f2,%f4,%f46		/* (Y2_0) di0 = vis_fpadd32(di0,dtmp1); */
 
-	add	%i2,stridey,%i2		! py += stridey
+	add	%i2,stridey,%i2		/* py += stridey */
 
-	fitod	%f10,%f52		! (Y0_1) dtmp0 = (double)ind0;
+	fitod	%f10,%f52		/* (Y0_1) dtmp0 = (double)ind0; */
 
-	fmuld	%f62,%f46,%f62		! (Y2_0) yy0 *= di0;
+	fmuld	%f62,%f46,%f62		/* (Y2_0) yy0 *= di0; */
 
-	fcmped	%fcc1,LTHRESHOLD,%f56	! (Y1_1) if (yy0 <= LTHRESH)
+	fcmped	%fcc1,LTHRESHOLD,%f56	/* (Y1_1) if (yy0 <= LTHRESH) */
 
 
-	fsubd	%f58,%f52,%f60		! (Y0_1) y0 = yy0 - dtmp0;
+	fsubd	%f58,%f52,%f60		/* (Y0_1) y0 = yy0 - dtmp0; */
 
-	faddd	%f62,%f46,%f22		! (Y2_0) yy0 += di0;
+	faddd	%f62,%f46,%f22		/* (Y2_0) yy0 += di0; */
 
-	fmovdl	%fcc0,HTHRESHOLD,%f56	! (Y1_1) yy0 = HTHRESH;
+	fmovdl	%fcc0,HTHRESHOLD,%f56	/* (Y1_1) yy0 = HTHRESH; */
 
-	fmuld	KB2,%f60,%f62		! (Y0_1) dtmp0 = KB2 * y0;
+	fmuld	KB2,%f60,%f62		/* (Y0_1) dtmp0 = KB2 * y0; */
 
-	ld	[%fp+tmp0],%g1		! (Y0_1) LAOD ind0
-	fdtos	%f22,%f12		! (Y2_0) ftmp0 = (float)yy0;
+	ld	[%fp+tmp0],%g1		/* (Y0_1) LAOD ind0 */
+	fdtos	%f22,%f12		/* (Y2_0) ftmp0 = (float)yy0; */
 
-	st	%f12,[%o4]		! (Y2_0) *pz0 = ftmp0;
+	st	%f12,[%o4]		/* (Y2_0) *pz0 = ftmp0; */
 
 	subcc	counter,1,counter
 	bneg,pn %icc,.begin
 	add	%o4,stridez,%i5
 
-	and	%g1,255,%o2		! (Y0_0) ind0 &= 255;
-	fmovdg	%fcc1,LTHRESHOLD,%f56	! (Y1_0) yy0 = LTHRESH;
+	and	%g1,255,%o2		/* (Y0_0) ind0 &= 255; */
+	fmovdg	%fcc1,LTHRESHOLD,%f56	/* (Y1_0) yy0 = LTHRESH; */
 
-	sll	%o2,3,%i1		! (Y0_0) ind0 <<= 3;
-	add	%o4,stridez,%l7    	! pz += stridez
-	faddd	%f62,KB1,%f62		! (Y0_0) dtmp0 += KB1;
+	sll	%o2,3,%i1		/* (Y0_0) ind0 <<= 3; */
+	add	%o4,stridez,%l7		/* pz += stridez */
+	faddd	%f62,KB1,%f62		/* (Y0_0) dtmp0 += KB1; */
 
-	fpackfix	%f10,%f10	! (Y0_0) dtmp1 = vis_fpackfix(dtmp1);
-	ldd	[%l0+%i1],%f58		! (Y0_0) di0 = *(double*)((char*)__mt_constexp2f + ind0);
+	fpackfix	%f10,%f10	/* (Y0_0) dtmp1 = vis_fpackfix(dtmp1); */
+	ldd	[%l0+%i1],%f58		/* (Y0_0) di0 = *(double*)((char*)__mt_constexp2f + ind0); */
 
-	fdtoi	%f56,%f20		! (Y1_0) ind0 = (int) yy0;
-	st	%f20,[%fp+tmp1]		! (Y1_0) STORE ind0
+	fdtoi	%f56,%f20		/* (Y1_0) ind0 = (int) yy0; */
+	st	%f20,[%fp+tmp1]		/* (Y1_0) STORE ind0 */
 
-	fmuld	%f62,%f60,%f62		! (Y0_0) yy0 = dtmp0 * y0;
+	fmuld	%f62,%f60,%f62		/* (Y0_0) yy0 = dtmp0 * y0; */
 
-	fpadd32	%f10,%f58,%f22		! (Y0_0) di0 = vis_fpadd32(di0,dtmp1);
+	fpadd32	%f10,%f58,%f22		/* (Y0_0) di0 = vis_fpadd32(di0,dtmp1); */
 
-	fitod	%f20,%f52		! (Y1_0) dtmp0 = (double)ind0;
+	fitod	%f20,%f52		/* (Y1_0) dtmp0 = (double)ind0; */
 
-	fmuld	%f62,%f22,%f62		! (Y0_0) yy0 *= di0;
+	fmuld	%f62,%f22,%f62		/* (Y0_0) yy0 *= di0; */
 
-	fsubd	%f56,%f52,%f52		! (Y1_0) y0 = yy0 - dtmp0;
+	fsubd	%f56,%f52,%f52		/* (Y1_0) y0 = yy0 - dtmp0; */
 
-	faddd	%f62,%f22,%f62		! (Y0_0) yy0 += di0;
+	faddd	%f62,%f22,%f62		/* (Y0_0) yy0 += di0; */
 
-	fmuld	KB2,%f52,%f56		! (Y1_0) dtmp0 = KB2 * y0;
+	fmuld	KB2,%f52,%f56		/* (Y1_0) dtmp0 = KB2 * y0; */
 
-	ld	[%fp+tmp1],%g5		! (Y1_0) ind0 = (int) yy0;
-	fdtos	%f62,%f8		! (Y0_0) ftmp0 = (float)yy0;
-	st	%f8,[%l7]		! (Y0_0) *pz0 = ftmp0;
+	ld	[%fp+tmp1],%g5		/* (Y1_0) ind0 = (int) yy0; */
+	fdtos	%f62,%f8		/* (Y0_0) ftmp0 = (float)yy0; */
+	st	%f8,[%l7]		/* (Y0_0) *pz0 = ftmp0; */
 
 	subcc	counter,1,counter
 	bneg	.begin
 	add	%l7,stridez,%i5
 
-	add	%l7,stridez,%l7		! pz += stridez
-	and	%g5,255,%g5		! (Y1_0) ind0 &= 255;
+	add	%l7,stridez,%l7		/* pz += stridez */
+	and	%g5,255,%g5		/* (Y1_0) ind0 &= 255; */
 
-	sll	%g5,3,%i2		! (Y1_0) ind0 <<= 3;
-	faddd	%f56,KB1,%f60		! (Y1_0) dtmp0 += KB1;
+	sll	%g5,3,%i2		/* (Y1_0) ind0 <<= 3; */
+	faddd	%f56,KB1,%f60		/* (Y1_0) dtmp0 += KB1; */
 
-	fpackfix	%f20,%f20	! (Y1_0) dtmp1 = vis_fpackfix(dtmp1);
-	ldd	[%l0+%i2],%f56		! (Y1_0) di0 = *(double*)((char*)__mt_constexp2f + ind0);
+	fpackfix	%f20,%f20	/* (Y1_0) dtmp1 = vis_fpackfix(dtmp1); */
+	ldd	[%l0+%i2],%f56		/* (Y1_0) di0 = *(double*)((char*)__mt_constexp2f + ind0); */
 
-	fmuld	%f60,%f52,%f62		! (Y1_0) yy0 = dtmp0 * y0;
+	fmuld	%f60,%f52,%f62		/* (Y1_0) yy0 = dtmp0 * y0; */
 
-	fpadd32	%f20,%f56,%f52		! (Y1_0) di0 = vis_fpadd32(di0,dtmp1);
+	fpadd32	%f20,%f56,%f52		/* (Y1_0) di0 = vis_fpadd32(di0,dtmp1); */
 
-	fmuld	%f62,%f52,%f62		! (Y1_0) yy0 *= di0;
+	fmuld	%f62,%f52,%f62		/* (Y1_0) yy0 *= di0; */
 
-	faddd	%f62,%f52,%f54		! (Y1_0) yy0 += di0;
+	faddd	%f62,%f52,%f54		/* (Y1_0) yy0 += di0; */
 
-	fdtos	%f54,%f15		! (Y1_0) ftmp0 = (float)yy0;
+	fdtos	%f54,%f15		/* (Y1_0) ftmp0 = (float)yy0; */
 
-	st	%f15,[%l7]		! (Y1_0) *pz0 = ftmp0;
+	st	%f15,[%l7]		/* (Y1_0) *pz0 = ftmp0; */
 	ba	.begin
-	add	%l7,stridez,%i5		! pz += stridez
+	add	%l7,stridez,%i5		/* pz += stridez */
 
 .exit:
 	ret
@@ -1607,227 +1607,227 @@
 	add	%i5,stridez,%i5
 
 .spec1:
-	ld	[%l0+2048+64],%f0	! LOAD 1.0f
+	ld	[%l0+2048+64],%f0	/* LOAD 1.0f */
 	or	%g0,%i1,%o1
 	or	%g0,%i3,%o3
 
-	ld	[%o2],%f4		! *px
+	ld	[%o2],%f4		/* *px */
 	or	%g0,%o2,%i1
 	or	%g0,%i2,%i3
 
-	ld	[%i3],%f6		! *py
+	ld	[%i3],%f6		/* *py */
 	or	%g0,%l7,%o2
-	fsubs	%f0,%f0,%f5		! 0.0f
+	fsubs	%f0,%f0,%f5		/* 0.0f */
 
 	sethi	%hi(0x7f800000),%l6
-	cmp	%o4,0			! ay ? 0
-	be,a,pn	%icc,.specs_exit	! if(ay == 0)
-	fmovs	%f0,%f4			! return 1.0f
+	cmp	%o4,0			/* ay ? 0 */
+	be,a,pn	%icc,.specs_exit	/* if(ay == 0) */
+	fmovs	%f0,%f4			/* return 1.0f */
 
-	cmp	%o3,%l6			! ax0 ? 0x7f800000
-	bgu,a	%icc,.specs_exit	! ax0 > 0x7f800000
-	fmuls	%f4,%f6,%f4		! return *px * *py; /* |X| or |Y| = Nan */
+	cmp	%o3,%l6			/* ax0 ? 0x7f800000 */
+	bgu,a	%icc,.specs_exit	/* ax0 > 0x7f800000 */
+	fmuls	%f4,%f6,%f4		/* return *px * *py; |X| or |Y| = Nan */
 
-	cmp	%o4,%l6			! ay ? 0x7f800000
-	bgu,a	.specs_exit		! ay > 0x7f800000
-	fmuls	%f4,%f6,%f4		! return *px * *py; /* |X| or |Y| = Nan */
+	cmp	%o4,%l6			/* ay ? 0x7f800000 */
+	bgu,a	.specs_exit		/* ay > 0x7f800000 */
+	fmuls	%f4,%f6,%f4		/* return *px * *py; |X| or |Y| = Nan */
 
 	sethi	%hi(0x3f800000),%o5
-	bne,a	%icc,1f			! if (ay != 0x7f800000) { /* |Y| = Inf */
-	srl	%o1,31,%o1		! sx = ux >> 31
+	bne,a	%icc,1f			/* if (ay != 0x7f800000) {  |Y| = Inf */
+	srl	%o1,31,%o1		/* sx = ux >> 31 */
 
-	cmp	%o3,%o5			! ax0 ? 0x3f800000
-	be,a	.specs_exit		! if (ax0 == 0x3f800000)
-	fmuls	%f6,%f5,%f4		! return *py * 0.0f; /* +-1 ** +-Inf = NaN */
+	cmp	%o3,%o5			/* ax0 ? 0x3f800000 */
+	be,a	.specs_exit		/* if (ax0 == 0x3f800000) */
+	fmuls	%f6,%f5,%f4		/* return *py * 0.0f; +-1 ** +-Inf = NaN */
 
-	sub	%o3,%o5,%o3		! ax0 - 0x3f800000
-	srl	%o2,31,%o2		! uy >> 31
+	sub	%o3,%o5,%o3		/* ax0 - 0x3f800000 */
+	srl	%o2,31,%o2		/* uy >> 31 */
 
-	srlx	%o3,63,%o3		! (ax0 - 0x3f800000) << 63
+	srlx	%o3,63,%o3		/* (ax0 - 0x3f800000) << 63 */
 
-	cmp	%o3,%o2			! ((ax0 - 0x3f800000) << 63) ? (uy >> 31)
+	cmp	%o3,%o2			/* ((ax0 - 0x3f800000) << 63) ? (uy >> 31) */
 	bne,a	.specs_exit
-	fzeros	%f4			! return 0.f;
+	fzeros	%f4			/* return 0.f; */
 
 	ba	.specs_exit
-	fabss	%f6,%f4			! return fabss(*py)
+	fabss	%f6,%f4			/* return fabss(*py) */
 1:
-	cmp	%o1,0			! sx ? 0
-	be,pn	%icc,.spec1_exit	! if (sx == 0)
-	or	%g0,%g0,%o5		! yisint0 = 0;
+	cmp	%o1,0			/* sx ? 0 */
+	be,pn	%icc,.spec1_exit	/* if (sx == 0) */
+	or	%g0,%g0,%o5		/* yisint0 = 0; */
 
-	srl	%o4,23,%l7		! exp = ay >> 23;
-	cmp	%l7,0x97		! exp ? 0x97
-	bge,a,pn %icc,.spec1_exit	! if (exp >= 0x97) /* |Y| >= 2^24  */
-	add	%g0,2,%o5		! yisint = 2;
+	srl	%o4,23,%l7		/* exp = ay >> 23; */
+	cmp	%l7,0x97		/* exp ? 0x97 */
+	bge,a,pn %icc,.spec1_exit	/* if (exp >= 0x97) |Y| >= 2^24  */
+	add	%g0,2,%o5		/* yisint = 2; */
 
-	cmp	%l7,0x7f		! exp ? 0x7f
-	bl,pn	%icc,.spec1_exit	! if (exp < 0x7f)
-	sub	%g0,%l7,%l7		! exp = -exp;
+	cmp	%l7,0x7f		/* exp ? 0x7f */
+	bl,pn	%icc,.spec1_exit	/* if (exp < 0x7f) */
+	sub	%g0,%l7,%l7		/* exp = -exp; */
 
-	add	%l7,(0x7f + 23),%l7	! exp += (0x07f + 23);
-	srl	%o4,%l7,%l6		! i0 = ay >> exp
-	sll	%l6,%l7,%l7		! i0 << exp
+	add	%l7,(0x7f + 23),%l7	/* exp += (0x07f + 23); */
+	srl	%o4,%l7,%l6		/* i0 = ay >> exp */
+	sll	%l6,%l7,%l7		/* i0 << exp */
 
-	cmp	%l7,%o4			! (i0 << exp) ? ay
-	bne,pn	%icc,.spec1_exit	! if((i0 << exp) != ay)
-	and	%l6,1,%l6		! i0 &= 1
+	cmp	%l7,%o4			/* (i0 << exp) ? ay */
+	bne,pn	%icc,.spec1_exit	/* if((i0 << exp) != ay) */
+	and	%l6,1,%l6		/* i0 &= 1 */
 
-	sub	%g0,%l6,%l6		! i0 = -i0;
-	add	%l6,2,%o5		! yisint0 = 2 + i0;
+	sub	%g0,%l6,%l6		/* i0 = -i0; */
+	add	%l6,2,%o5		/* yisint0 = 2 + i0; */
 
 .spec1_exit:
-	srl	%o2,31,%o2		! uy >> 31
-	cmp	%o2,0			! (uy >> 31) ? 0
-	movne	%icc,%g0,%o3		! if (uy >> 31) ax0 = 0;
+	srl	%o2,31,%o2		/* uy >> 31 */
+	cmp	%o2,0			/* (uy >> 31) ? 0 */
+	movne	%icc,%g0,%o3		/* if (uy >> 31) ax0 = 0; */
 
-	sll	%o5,31,%o5		! yisint0 <<= 31;
-	add	%o5,%o3,%o5		! ax0 += yisint0;
+	sll	%o5,31,%o5		/* yisint0 <<= 31; */
+	add	%o5,%o3,%o5		/* ax0 += yisint0; */
 
-	add	%i1,stridex,%o2		! px += stridex;
-	add	%i3,stridey,%i2		! py += stridey;
-	st	%o5,[%i5]		! return *(float*)&ax0;
+	add	%i1,stridex,%o2		/* px += stridex; */
+	add	%i3,stridey,%i2		/* py += stridey; */
+	st	%o5,[%i5]		/* return *(float*)&ax0; */
 
-	sub	counter,1,counter	! counter--;
+	sub	counter,1,counter	/* counter--; */
 	ba	.begin1
-	add	%i5,stridez,%i5		! pz += stridez;
+	add	%i5,stridez,%i5		/* pz += stridez; */
 
 .spec2:
 	or	%g0,%i1,%o1
 	or	%g0,%i3,%o3
-	ld	[%l0+2048+64],%f0	! LOAD 1.0f
+	ld	[%l0+2048+64],%f0	/* LOAD 1.0f */
 	or	%g0,%o2,%i1
 	or	%g0,%i2,%i3
 
 	or	%g0,%l7,%o2
-	cmp	%o4,0			! ay ? 0
-	be,a,pn	%icc,.specs_exit	! if(ay == 0)
-	fmovs	%f0,%f4			! return 1.0f
+	cmp	%o4,0			/* ay ? 0 */
+	be,a,pn	%icc,.specs_exit	/* if(ay == 0) */
+	fmovs	%f0,%f4			/* return 1.0f */
 
-	srl	%o3,23,%l7		! exp0 = (ax0 >> 23);
-	sub	%l7,127,%l7		! exp = exp0 = exp0 - 127;
+	srl	%o3,23,%l7		/* exp0 = (ax0 >> 23); */
+	sub	%l7,127,%l7		/* exp = exp0 = exp0 - 127; */
 
-	or	%g0,%g0,%o5		! yisint = 0;
-	cmp	%o3,MASK_0x007fffff	! (int)ax0 ? 0x00800000
-	bg,pn	%icc,1f			! if ((int)ax0 >= 0x00800000)
+	or	%g0,%g0,%o5		/* yisint = 0; */
+	cmp	%o3,MASK_0x007fffff	/* (int)ax0 ? 0x00800000 */
+	bg,pn	%icc,1f			/* if ((int)ax0 >= 0x00800000) */
 	nop
 
-					! X = denormal or negative
-	st	%o3,[%fp+tmp0]		! *((float*) &ax0) = (float) (int)ax0;
+					/* X = denormal or negative */
+	st	%o3,[%fp+tmp0]		/* *((float*) &ax0) = (float) (int)ax0; */
 	ld	[%fp+tmp0],%f4
 	fitos	%f4,%f4
 	st	%f4,[%fp+tmp0]
 	ld	[%fp+tmp0],%o3
 
-	srl	%o3,23,%l7		! exp = (ax0 >> 23)
-	sub	%l7,127+149,%l7		! exp -= (127+149)
+	srl	%o3,23,%l7		/* exp = (ax0 >> 23) */
+	sub	%l7,127+149,%l7		/* exp -= (127+149) */
 1:
-	cmp	%o1,0			! ux ? 0
-	bg,a	%icc,.spec_proc		! if((int)ux > 0)
+	cmp	%o1,0			/* ux ? 0 */
+	bg,a	%icc,.spec_proc		/* if((int)ux > 0) */
 	sethi	%hi(0xffff0000),%l6
 
-	srl	%o4,23,%o0		! exp = ay >> 23;
-	cmp	%o0,0x97		! exp ? 0x97
-	bge,a,pn %icc,2f		! if (exp >= 0x97) /* |Y| >= 2^24  */
-	add	%g0,2,%o5		! yisint0 = 2;     /* Y - even */
+	srl	%o4,23,%o0		/* exp = ay >> 23; */
+	cmp	%o0,0x97		/* exp ? 0x97 */
+	bge,a,pn %icc,2f		/* if (exp >= 0x97)  |Y| >= 2^24 */
+	add	%g0,2,%o5		/* yisint0 = 2;       Y - even */
 
-	cmp	%o0,0x7f		! exp ? 0x7f
-	bl,pn	%icc,2f			! if(exp < 0x7f)
+	cmp	%o0,0x7f		/* exp ? 0x7f */
+	bl,pn	%icc,2f			/* if(exp < 0x7f) */
 	nop
 
-	sub	%g0,%o0,%o0		! exp = -exp;
-	add	%o0,(0x7f + 23),%o0	! exp += (0x7f + 23)
-	srl	%o4,%o0,%l6		! i0 = ay >> ((0x7f + 23) - exp);
-	sll	%l6,%o0,%o0		! i0 << ((0x7f + 23) - exp
-	cmp	%o0,%o4			! (i0 << ((0x7f + 23) - exp)) ? ay
-	bne,pn	%icc,2f			! if(i0 << ((0x7f + 23) - exp)) != ay)
+	sub	%g0,%o0,%o0		/* exp = -exp; */
+	add	%o0,(0x7f + 23),%o0	/* exp += (0x7f + 23) */
+	srl	%o4,%o0,%l6		/* i0 = ay >> ((0x7f + 23) - exp); */
+	sll	%l6,%o0,%o0		/* i0 << ((0x7f + 23) - exp */
+	cmp	%o0,%o4			/* (i0 << ((0x7f + 23) - exp)) ? ay */
+	bne,pn	%icc,2f			/* if(i0 << ((0x7f + 23) - exp)) != ay) */
 	nop
 
-	and	%l6,1,%l6		! i0 &= 1;
-	sub	%g0,%l6,%l6		! i0 = -i0;
-	add	%l6,2,%o5		! yisint = i0 + 2;
+	and	%l6,1,%l6		/* i0 &= 1; */
+	sub	%g0,%l6,%l6		/* i0 = -i0; */
+	add	%l6,2,%o5		/* yisint = i0 + 2; */
 2:
-	cmp	%o3,0			! ax0 ? 0
-	bne,pn	%icc,4f			! if(ax0 != 0)
+	cmp	%o3,0			/* ax0 ? 0 */
+	bne,pn	%icc,4f			/* if(ax0 != 0) */
 	nop
 
-	srl	%o1,31,%o1		! sx = ux >> 31
-	srl	%o2,31,%o2		! uy >> 31
+	srl	%o1,31,%o1		/* sx = ux >> 31 */
+	srl	%o2,31,%o2		/* uy >> 31 */
 
-	cmp	%o2,0			! (uy >> 31) ? 0
-	be,a,pn	%icc,3f			! if((uy >> 31) == 0)
-	fzeros	%f4			! return ZERO
+	cmp	%o2,0			/* (uy >> 31) ? 0 */
+	be,a,pn	%icc,3f			/* if((uy >> 31) == 0) */
+	fzeros	%f4			/* return ZERO */
 
-	fdivs	%f0,%f3,%f4		! fy = ONE/ZERO
+	fdivs	%f0,%f3,%f4		/* fy = ONE/ZERO */
 3:
-	andcc	%o1,%o5,%g0		! sx & yisint0
-	be,pn	%icc,.specs_exit	! if( (sx & yisint0) == 0 )
+	andcc	%o1,%o5,%g0		/* sx & yisint0 */
+	be,pn	%icc,.specs_exit	/* if( (sx & yisint0) == 0 ) */
 	nop
 
 	ba	.specs_exit
-	fnegs	%f4,%f4			! fy = -fy;
+	fnegs	%f4,%f4			/* fy = -fy; */
 4:
-	cmp	%o5,0			! ysisint0 ? 0
-	be,a	%icc,.specs_exit	! if(yisint0 == 0)
-	fdivs	%f3,%f3,%f4		! return ZERO/ZERO
+	cmp	%o5,0			/* ysisint0 ? 0 */
+	be,a	%icc,.specs_exit	/* if(yisint0 == 0) */
+	fdivs	%f3,%f3,%f4		/* return ZERO/ZERO */
 
 	sethi	%hi(0xffff0000),%l6
 
 .spec_proc:
-	sll	%l7,8,%l7		! exp0 = exp0 << 8;
-	st	%l7,[%fp+tmp1]		! STORE exp0
-	and	%o3,MASK_0x007fffff,%g5	! ax0 &= 0x007fffff;
-	ld	[%i3],%f14		! ftmp0 = py[0]
-	sllx	%o5,63,%o5		! ysisint0 <<= 63;
-	add	%g5,CONST_0x8000,%o3	! i0 = ax0 + 0x8000;
-	stx	%o5,[%fp+tmp5]		! STORE yisint0
-	and	%o3,%l6,%l7		! i0 &= 0xffff0000;
-	sub	%g5,%l7,%o1		! i0 = ax0 - i0;
-	sra	%l7,12,%g5		! ind0 = i0 >> 12;
-	st	%o1,[%fp+tmp2]		! STORE i0
-	fstod	%f14,%f54		! dtmp1 = (double)ftmp0
-	and	%g5,-8,%g5		! ind0 &= -8;
-	add	%l2,%g5,%l7		! (char*)__mt_constlog4f + ind0
-	ld	[%fp+tmp1],%f18		! LOAD exp0
-	ld	[%fp+tmp2],%f16		! LOAD i0
-	ldd	[%l7+8],%f62		! dtmp2 = *(double *)((char*)__mt_constlog4f + ind0 + 8);
-	ldd	[%l2+%g5],%f56		! dtmp3 = *(double *)((char*)__mt_constlog4f + ind0);
-	fitod	%f18,%f58		! dtmp4 = (double)exp0
-	fitod	%f16,%f60		! dtmp5 = (double)i0
-	fmuld	%f60,%f62,%f60		! y0 =  dtmp5 * dtmp2;
-	faddd	%f56,%f58,%f58		! yy0 = dtmp3 + dtmp4;
-	fmuld	KA3,%f60,%f52		! dtmp0 = KA3 * y0;
-	faddd	%f52,KA2,%f50		! dtmp0 += KA2;
-	fmuld	%f50,%f60,%f48		! dtmp0 *= y0;
-	faddd	%f48,KA1,%f46		! dtmp0 += KA1;
-	fmuld	%f46,%f60,%f62		! dtmp0 *= y0;
-	ldd	[%fp+tmp5],%f24		! LOAD yisint0
-	faddd	%f62,KA0,%f56		! dtmp0 += KA0;
-	fmuld	%f56,%f60,%f52		! dtmp0 *= y0;
-	faddd	%f58,%f52,%f50		! yy0 += dtmp1;
-	fmuld	%f54,%f50,%f52		! yy0 *= dtmp1;
-	fcmped	%fcc0,HTHRESHOLD,%f52	! if (yy0 >= HTHRESH)
-	fcmped	%fcc1,LTHRESHOLD,%f52	! yy0 = HTHRESH;
-	fmovdl	%fcc0,HTHRESHOLD,%f52	! if (yy0 <= LTHRESH)
-	fmovdg	%fcc1,LTHRESHOLD,%f52	! yy0 = LTHRESH;
-	fdtoi	%f52,%f20		! ind0 = (int) yy0;
-	st	%f20,[%fp+tmp3]		! STORE ind0
-	fitod	%f20,%f58		! dtmp0 = (double) ind0;
-	fpackfix	%f20,%f20	! dtmp1 = vis_fpackfix(dtmp1)
-	ld	[%fp+tmp3],%g1		! LOAD ind0
-	fsubd	%f52,%f58,%f46		! y0 = yy0 - dtmp0;
-	fpadd32	%f20,%f24,%f56		! dtmp1 += yisint0
-	and	%g1,255,%o4		! ind0 &= 255;
-	sll	%o4,3,%o3		! ind0 <<= 3;
-	ldd	[%l0+%o3],%f54		! di0 = *(double*)((char*)__mt_constexp2f + ind0);
-	fmuld	KB2,%f46,%f48		! dtmp0 = KB2 * y0;
-	fpadd32	%f56,%f54,%f56		! di0 = vis_fpadd32(di0,dtmp1);
-	faddd	%f48,KB1,%f62		! dtmp0 += KB1;
-	fmuld	%f62,%f46,%f60		! yy0 = dtmp0 * y0;
-	fmuld	%f60,%f56,%f52		! yy0 *= di0;
-	faddd	%f52,%f56,%f58		! yy0 += di0;
+	sll	%l7,8,%l7		/* exp0 = exp0 << 8; */
+	st	%l7,[%fp+tmp1]		/* STORE exp0 */
+	and	%o3,MASK_0x007fffff,%g5	/* ax0 &= 0x007fffff; */
+	ld	[%i3],%f14		/* ftmp0 = py[0] */
+	sllx	%o5,63,%o5		/* ysisint0 <<= 63; */
+	add	%g5,CONST_0x8000,%o3	/* i0 = ax0 + 0x8000; */
+	stx	%o5,[%fp+tmp5]		/* STORE yisint0 */
+	and	%o3,%l6,%l7		/* i0 &= 0xffff0000; */
+	sub	%g5,%l7,%o1		/* i0 = ax0 - i0; */
+	sra	%l7,12,%g5		/* ind0 = i0 >> 12; */
+	st	%o1,[%fp+tmp2]		/* STORE i0 */
+	fstod	%f14,%f54		/* dtmp1 = (double)ftmp0 */
+	and	%g5,-8,%g5		/* ind0 &= -8; */
+	add	%l2,%g5,%l7		/* (char*)__mt_constlog4f + ind0 */
+	ld	[%fp+tmp1],%f18		/* LOAD exp0 */
+	ld	[%fp+tmp2],%f16		/* LOAD i0 */
+	ldd	[%l7+8],%f62		/* dtmp2 = *(double *)((char*)__mt_constlog4f + ind0 + 8); */
+	ldd	[%l2+%g5],%f56		/* dtmp3 = *(double *)((char*)__mt_constlog4f + ind0); */
+	fitod	%f18,%f58		/* dtmp4 = (double)exp0 */
+	fitod	%f16,%f60		/* dtmp5 = (double)i0 */
+	fmuld	%f60,%f62,%f60		/* y0 =  dtmp5 * dtmp2; */
+	faddd	%f56,%f58,%f58		/* yy0 = dtmp3 + dtmp4; */
+	fmuld	KA3,%f60,%f52		/* dtmp0 = KA3 * y0; */
+	faddd	%f52,KA2,%f50		/* dtmp0 += KA2; */
+	fmuld	%f50,%f60,%f48		/* dtmp0 *= y0; */
+	faddd	%f48,KA1,%f46		/* dtmp0 += KA1; */
+	fmuld	%f46,%f60,%f62		/* dtmp0 *= y0; */
+	ldd	[%fp+tmp5],%f24		/* LOAD yisint0 */
+	faddd	%f62,KA0,%f56		/* dtmp0 += KA0; */
+	fmuld	%f56,%f60,%f52		/* dtmp0 *= y0; */
+	faddd	%f58,%f52,%f50		/* yy0 += dtmp1; */
+	fmuld	%f54,%f50,%f52		/* yy0 *= dtmp1; */
+	fcmped	%fcc0,HTHRESHOLD,%f52	/* if (yy0 >= HTHRESH) */
+	fcmped	%fcc1,LTHRESHOLD,%f52	/* yy0 = HTHRESH; */
+	fmovdl	%fcc0,HTHRESHOLD,%f52	/* if (yy0 <= LTHRESH) */
+	fmovdg	%fcc1,LTHRESHOLD,%f52	/* yy0 = LTHRESH; */
+	fdtoi	%f52,%f20		/* ind0 = (int) yy0; */
+	st	%f20,[%fp+tmp3]		/* STORE ind0 */
+	fitod	%f20,%f58		/* dtmp0 = (double) ind0; */
+	fpackfix	%f20,%f20	/* dtmp1 = vis_fpackfix(dtmp1) */
+	ld	[%fp+tmp3],%g1		/* LOAD ind0 */
+	fsubd	%f52,%f58,%f46		/* y0 = yy0 - dtmp0; */
+	fpadd32	%f20,%f24,%f56		/* dtmp1 += yisint0 */
+	and	%g1,255,%o4		/* ind0 &= 255; */
+	sll	%o4,3,%o3		/* ind0 <<= 3; */
+	ldd	[%l0+%o3],%f54		/* di0 = *(double*)((char*)__mt_constexp2f + ind0); */
+	fmuld	KB2,%f46,%f48		/* dtmp0 = KB2 * y0; */
+	fpadd32	%f56,%f54,%f56		/* di0 = vis_fpadd32(di0,dtmp1); */
+	faddd	%f48,KB1,%f62		/* dtmp0 += KB1; */
+	fmuld	%f62,%f46,%f60		/* yy0 = dtmp0 * y0; */
+	fmuld	%f60,%f56,%f52		/* yy0 *= di0; */
+	faddd	%f52,%f56,%f58		/* yy0 += di0; */
 	ba	.specs_exit
-	fdtos	%f58,%f4		! ftmp0 = (float)yy0;
+	fdtos	%f58,%f4		/* ftmp0 = (float)yy0; */
 
 	.align	16
 .update0:
@@ -2257,43 +2257,43 @@
 
 	cmp	counter,0
 	ble,pn	%icc,.exit
-	lda	[%i1]0x82,%i1		! (Y0_2) ax0 = *px;
+	lda	[%i1]0x82,%i1		/* (Y0_2) ax0 = *px; */
 
-	and	%i1,MASK_0x7fffffff,%i3	! (Y0_2) exp0 = ax0 & 0x7fffffff;
+	and	%i1,MASK_0x7fffffff,%i3	/* (Y0_2) exp0 = ax0 & 0x7fffffff; */
 	sub	%i3,%l6,%l6
-	and	%i1,MASK_0x007fffff,%g5	! (Y0_2) ax0 &= 0x007fffff;
-	srl	%i3,23,%o3		! (Y0_2) exp0 >>= 23;
+	and	%i1,MASK_0x007fffff,%g5	/* (Y0_2) ax0 &= 0x007fffff; */
+	srl	%i3,23,%o3		/* (Y0_2) exp0 >>= 23; */
 	srl	%l6,31,%l6
 	st	%l6,[%fp+tmp5]
-	add	%g5,CONST_0x8000,%i3	! (Y0_2) i0 = ax0 + 0x8000;
+	add	%g5,CONST_0x8000,%i3	/* (Y0_2) i0 = ax0 + 0x8000; */
 	sethi	%hi(0xffff0000),%l6
-	sub	%o3,127,%o3		! (Y0_2) exp0 -= 127;
-	and	%i3,%l6,%i3		! (Y0_2) i0 &= 0xffff0000;
-	sll	%o3,8,%o4		! (Y0_2) exp0 <<= 8;
-	st	%o4,[%fp+tmp3]		! (Y0_2) STORE exp0
-	sra	%i3,12,%o0		! (Y0_2) ind0 = i0 >> 12;
-	sub	%g5,%i3,%o4		! (Y0_2) i0 = ax0 - i0;
-	st	%o4,[%fp+tmp2]		! (Y0_2) STORE i0
-	and	%o0,-8,%g5		! (Y0_2) ind0 &= -8;
-	ld	[%fp+tmp2],%f14		! (Y0_2) dtmp0 = (double) i0;
-	add	%l2,%g5,%g1		! (Y0_2) (char*)__mt_constlog4f + ind0
-	ldd	[%g1+8],%f48		! (Y0_2) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8);
-	fitod	%f14,%f60		! (Y0_2) dtmp0 = (double) i0;
-	fmuld	%f60,%f48,%f48		! (Y0_2) y0 =  dtmp0 * dtmp1;
-	fmuld	KA3,%f48,%f62		! (Y0_2) dtmp0 = KA3 * y0;
-	faddd	%f62,KA2,%f22		! (Y0_2) dtmp0 += KA2;
-	fmuld	%f22,%f48,%f26 		! (Y0_2) dtmp0 *= y0;
-	faddd	%f26,KA1,%f50		! (Y0_2) dtmp0 += KA1;
-	ld	[%fp+tmp3],%f4		! (Y0_2) dtmp1 = (double) exp0;
-	fitod	%f4,%f26		! (Y0_1) dtmp1 = (double) exp0;
-	fmuld	%f50,%f48,%f50		! (Y0_1) dtmp0 *= y0;
-	ldd	[%l2+%g5],%f60		! (Y0_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0);
-	faddd	%f50,KA0,%f58		! (Y0_1) dtmp0 += KA0;
-	faddd	%f60,%f26,%f26		! (Y0_1) yy0 = dtmp0 + dtmp1;
-	fmuld	%f58,%f48,%f48		! (Y0_1) dtmp0 *= y0;
+	sub	%o3,127,%o3		/* (Y0_2) exp0 -= 127; */
+	and	%i3,%l6,%i3		/* (Y0_2) i0 &= 0xffff0000; */
+	sll	%o3,8,%o4		/* (Y0_2) exp0 <<= 8; */
+	st	%o4,[%fp+tmp3]		/* (Y0_2) STORE exp0 */
+	sra	%i3,12,%o0		/* (Y0_2) ind0 = i0 >> 12; */
+	sub	%g5,%i3,%o4		/* (Y0_2) i0 = ax0 - i0; */
+	st	%o4,[%fp+tmp2]		/* (Y0_2) STORE i0 */
+	and	%o0,-8,%g5		/* (Y0_2) ind0 &= -8; */
+	ld	[%fp+tmp2],%f14		/* (Y0_2) dtmp0 = (double) i0; */
+	add	%l2,%g5,%g1		/* (Y0_2) (char*)__mt_constlog4f + ind0 */
+	ldd	[%g1+8],%f48		/* (Y0_2) dtmp1 = *(double *)((char*)__mt_constlog4f + ind0 + 8); */
+	fitod	%f14,%f60		/* (Y0_2) dtmp0 = (double) i0; */
+	fmuld	%f60,%f48,%f48		/* (Y0_2) y0 =  dtmp0 * dtmp1; */
+	fmuld	KA3,%f48,%f62		/* (Y0_2) dtmp0 = KA3 * y0; */
+	faddd	%f62,KA2,%f22		/* (Y0_2) dtmp0 += KA2; */
+	fmuld	%f22,%f48,%f26		/* (Y0_2) dtmp0 *= y0; */
+	faddd	%f26,KA1,%f50		/* (Y0_2) dtmp0 += KA1; */
+	ld	[%fp+tmp3],%f4		/* (Y0_2) dtmp1 = (double) exp0; */
+	fitod	%f4,%f26		/* (Y0_1) dtmp1 = (double) exp0; */
+	fmuld	%f50,%f48,%f50		/* (Y0_1) dtmp0 *= y0; */
+	ldd	[%l2+%g5],%f60		/* (Y0_1) dtmp0 = *(double *)((char*)__mt_constlog4f + ind0); */
+	faddd	%f50,KA0,%f58		/* (Y0_1) dtmp0 += KA0; */
+	faddd	%f60,%f26,%f26		/* (Y0_1) yy0 = dtmp0 + dtmp1; */
+	fmuld	%f58,%f48,%f48		/* (Y0_1) dtmp0 *= y0; */
 	sub	%l2,3200,%o4
 	sub	%l2,1152-600,%o3
-	faddd	%f26,%f48,%f46		! (Y0_1) yy0 += dtmp0;
+	faddd	%f26,%f48,%f46		/* (Y0_1) yy0 += dtmp0; */
 	or	%g0,%i5,%g1
 	sethi	%hi(0x7f800000),%o1
 
@@ -2306,234 +2306,234 @@
 	bneg,pn	%icc,.exit
 	nop
 
-	lda	[%o5]0x82,%i5		! (Y0_0) ay = py[0];
+	lda	[%o5]0x82,%i5		/* (Y0_0) ay = py[0]; */
 
-	lda	[%o5]0x82,%f5		! (Y0_0) ftmp0 = py[0];
+	lda	[%o5]0x82,%f5		/* (Y0_0) ftmp0 = py[0]; */
 
-	and	%i5,MASK_0x7fffffff,%i3	! (Y0_0) ay &= 0x7fffffff
+	and	%i5,MASK_0x7fffffff,%i3	/* (Y0_0) ay &= 0x7fffffff */
 
 	cmp	%i3,%o1
 	bge,pn	%icc,.xspec
 	nop
 
-	fstod	%f5,%f52		! (Y0_0) dtmp0 = (double)ftmp0;
+	fstod	%f5,%f52		/* (Y0_0) dtmp0 = (double)ftmp0; */
 
-	fmuld	%f52,%f46,%f26		! (Y0_0) yy0 = dtmp0 * yy;
-	add	%o5,stridey,%o5		! py += stridey
+	fmuld	%f52,%f46,%f26		/* (Y0_0) yy0 = dtmp0 * yy; */
+	add	%o5,stridey,%o5		/* py += stridey */
 
-	lda	[%o5]0x82,%i5		! (Y1_0) ay = ((int*)py)[0];
+	lda	[%o5]0x82,%i5		/* (Y1_0) ay = ((int*)py)[0]; */
 
-	lda	[%o5]0x82,%f7		! (Y1_0) ftmp0 = py[0];
+	lda	[%o5]0x82,%f7		/* (Y1_0) ftmp0 = py[0]; */
 
-	and	%i5,MASK_0x7fffffff,%i5	! (Y1_0) ay &= 0x7fffffff
-	fcmped	%fcc0,HTHRESHOLD,%f26	! (Y0_0) if (yy0 >= HTHRESH)
+	and	%i5,MASK_0x7fffffff,%i5	/* (Y1_0) ay &= 0x7fffffff */
+	fcmped	%fcc0,HTHRESHOLD,%f26	/* (Y0_0) if (yy0 >= HTHRESH) */
 
 	cmp	%i5,%o1
 	bge,pn	%icc,.xupdate0
 	nop
 
 .xcont0:
-	fstod	%f7,%f48		! (Y1_0) dtmp0 = (double)ftmp0;
+	fstod	%f7,%f48		/* (Y1_0) dtmp0 = (double)ftmp0; */
 
-	fcmped	%fcc1,LTHRESHOLD,%f26	! (Y0_1) if (yy0 <= LTHRESH)
+	fcmped	%fcc1,LTHRESHOLD,%f26	/* (Y0_1) if (yy0 <= LTHRESH) */
 
-	add	%o5,stridey,%o5		! py += stridey
-	fmuld	%f48,%f46,%f28		! (Y1_1) yy0 = dtmp0 * yy;
+	add	%o5,stridey,%o5		/* py += stridey */
+	fmuld	%f48,%f46,%f28		/* (Y1_1) yy0 = dtmp0 * yy; */
 
-	lda	[%o5]0x82,%i3		! (Y0_0) ay = py[0];
+	lda	[%o5]0x82,%i3		/* (Y0_0) ay = py[0]; */
 
-	lda	[%o5]0x82,%f5		! (Y0_0) ftmp0 = py[0];
+	lda	[%o5]0x82,%f5		/* (Y0_0) ftmp0 = py[0]; */
 
-	and	%i3,MASK_0x7fffffff,%i3	! (Y0_0) ay &= 0x7fffffff
-	fmovdl	%fcc0,HTHRESHOLD,%f26	! (Y0_1) yy0 = HTHRESH;
+	and	%i3,MASK_0x7fffffff,%i3	/* (Y0_0) ay &= 0x7fffffff */
+	fmovdl	%fcc0,HTHRESHOLD,%f26	/* (Y0_1) yy0 = HTHRESH; */
 
 	cmp	%i3,%o1
 	bge,pn	%icc,.xupdate1
-	fcmped	%fcc2,HTHRESHOLD,%f28	! (Y1_1) if (yy0 >= HTHRESH)
+	fcmped	%fcc2,HTHRESHOLD,%f28	/* (Y1_1) if (yy0 >= HTHRESH) */
 .xcont1:
-	fstod	%f5,%f52		! (Y0_0) dtmp0 = (double)ftmp0;
+	fstod	%f5,%f52		/* (Y0_0) dtmp0 = (double)ftmp0; */
 
-	fmovdg	%fcc1,LTHRESHOLD,%f26	! (Y0_1) yy0 = LTHRESH;
+	fmovdg	%fcc1,LTHRESHOLD,%f26	/* (Y0_1) yy0 = LTHRESH; */
 
-	fcmped	%fcc3,LTHRESHOLD,%f28	! (Y1_1) if (yy0 <= LTHRESH)
+	fcmped	%fcc3,LTHRESHOLD,%f28	/* (Y1_1) if (yy0 <= LTHRESH) */
 
-	fmuld	%f52,%f46,%f22		! (Y0_0) yy0 = dtmp0 * yy;
+	fmuld	%f52,%f46,%f22		/* (Y0_0) yy0 = dtmp0 * yy; */
 
-	fdtoi	%f26,%f0		! (Y0_1) ii0 = (int) yy0;
+	fdtoi	%f26,%f0		/* (Y0_1) ii0 = (int) yy0; */
 
-	add	%o5,stridey,%o5		! py += stridey
-	st	%f0,[%fp+tmp1]		! (Y0_1) STORE ii0
+	add	%o5,stridey,%o5		/* py += stridey */
+	st	%f0,[%fp+tmp1]		/* (Y0_1) STORE ii0 */
 
-	lda	[%o5]0x82,%l7		! (Y1_0) ay = ((int*)py)[0];
+	lda	[%o5]0x82,%l7		/* (Y1_0) ay = ((int*)py)[0]; */
 
-	lda	[%o5]0x82,%f7		! (Y1_0) ftmp0 = py[0];
-	fmovdl	%fcc2,HTHRESHOLD,%f28	! (Y1_1) yy0 = HTHRESH;
+	lda	[%o5]0x82,%f7		/* (Y1_0) ftmp0 = py[0]; */
+	fmovdl	%fcc2,HTHRESHOLD,%f28	/* (Y1_1) yy0 = HTHRESH; */
 
-	and	%l7,MASK_0x7fffffff,%l7	! (Y1_0) ay &= 0x7fffffff
-	fcmped	%fcc0,HTHRESHOLD,%f22	! (Y0_0) if (yy0 >= HTHRESH)
+	and	%l7,MASK_0x7fffffff,%l7	/* (Y1_0) ay &= 0x7fffffff */
+	fcmped	%fcc0,HTHRESHOLD,%f22	/* (Y0_0) if (yy0 >= HTHRESH) */
 
 	cmp	%l7,%o1
 	bge,pn	%icc,.xupdate2
 	nop
 .xcont2:
-	fstod	%f7,%f48		! (Y1_0) dtmp0 = (double)ftmp0;
+	fstod	%f7,%f48		/* (Y1_0) dtmp0 = (double)ftmp0; */
 
-	fmovdg	%fcc3,LTHRESHOLD,%f28	! (Y1_2) yy0 = LTHRESH;
+	fmovdg	%fcc3,LTHRESHOLD,%f28	/* (Y1_2) yy0 = LTHRESH; */
 
-	fcmped	%fcc1,LTHRESHOLD,%f22	! (Y0_1) if (yy0 <= LTHRESH)
+	fcmped	%fcc1,LTHRESHOLD,%f22	/* (Y0_1) if (yy0 <= LTHRESH) */
 
-	fitod	%f0,%f52		! (Y0_2) dtmp0 = (double)ii0;
+	fitod	%f0,%f52		/* (Y0_2) dtmp0 = (double)ii0; */
 
-	add	%o5,stridey,%o5		! py += stridey
-	fmuld	%f48,%f46,%f24		! (Y1_1) yy0 = dtmp0 * yy;
+	add	%o5,stridey,%o5		/* py += stridey */
+	fmuld	%f48,%f46,%f24		/* (Y1_1) yy0 = dtmp0 * yy; */
 
-	fdtoi	%f28,%f3		! (Y1_2) ii0 = (int) yy0;
-	lda	[%o5]0x82,%i3		! (Y0_0) ay = py[0];
+	fdtoi	%f28,%f3		/* (Y1_2) ii0 = (int) yy0; */
+	lda	[%o5]0x82,%i3		/* (Y0_0) ay = py[0]; */
 
-	st	%f3,[%fp+tmp0]		! (Y1_2) STORE ii0
+	st	%f3,[%fp+tmp0]		/* (Y1_2) STORE ii0 */
 
-	fsubd	%f26,%f52,%f40		! (Y0_2) y0 = yy0 - dtmp0;
-	lda	[%o5]0x82,%f5		! (Y0_0) ftmp0 = py[0];
+	fsubd	%f26,%f52,%f40		/* (Y0_2) y0 = yy0 - dtmp0; */
+	lda	[%o5]0x82,%f5		/* (Y0_0) ftmp0 = py[0]; */
 
-	and	%i3,MASK_0x7fffffff,%i3	! (Y0_0) ay &= 0x7fffffff
-	fmovdl	%fcc0,HTHRESHOLD,%f22	! (Y0_1) yy0 = HTHRESH;
+	and	%i3,MASK_0x7fffffff,%i3	/* (Y0_0) ay &= 0x7fffffff */
+	fmovdl	%fcc0,HTHRESHOLD,%f22	/* (Y0_1) yy0 = HTHRESH; */
 
 	cmp	%i3,%o1
 	bge,pn	%icc,.xupdate3
-	fcmped	%fcc2,HTHRESHOLD,%f24	! (Y1_1) if (yy0 >= HTHRESH)
+	fcmped	%fcc2,HTHRESHOLD,%f24	/* (Y1_1) if (yy0 >= HTHRESH) */
 .xcont3:
-	ld	[%fp+tmp1],%i2		! (Y0_2) LOAD ii0
-	fmuld	KB2,%f40,%f36		! (Y0_2) dtmp0 = KB2 * y0;
-	fstod	%f5,%f52		! (Y0_0) dtmp0 = (double)ftmp0;
+	ld	[%fp+tmp1],%i2		/* (Y0_2) LOAD ii0 */
+	fmuld	KB2,%f40,%f36		/* (Y0_2) dtmp0 = KB2 * y0; */
+	fstod	%f5,%f52		/* (Y0_0) dtmp0 = (double)ftmp0; */
 
-	fmovdg	%fcc1,LTHRESHOLD,%f22	! (Y0_1) yy0 = LTHRESH;
+	fmovdg	%fcc1,LTHRESHOLD,%f22	/* (Y0_1) yy0 = LTHRESH; */
 
-	sra	%i2,6,%l6		! (Y0_2) i0 = ii0 >> 6;
-	and	%i2,255,%l7		! (Y0_2) ii0 &= 255;
-	fcmped	%fcc3,LTHRESHOLD,%f24	! (Y1_1) if (yy0 <= LTHRESH)
+	sra	%i2,6,%l6		/* (Y0_2) i0 = ii0 >> 6; */
+	and	%i2,255,%l7		/* (Y0_2) ii0 &= 255; */
+	fcmped	%fcc3,LTHRESHOLD,%f24	/* (Y1_1) if (yy0 <= LTHRESH) */
 
-	fitod	%f3,%f56		! (Y1_2) dtmp0 = (double)ii0;
-	sll	%l7,3,%o0		! (Y0_2) ii0 <<= 3;
-	and	%l6,-4,%g5		! (Y0_2) i0 &= -4;
+	fitod	%f3,%f56		/* (Y1_2) dtmp0 = (double)ii0; */
+	sll	%l7,3,%o0		/* (Y0_2) ii0 <<= 3; */
+	and	%l6,-4,%g5		/* (Y0_2) i0 &= -4; */
 
-	faddd	%f36,KB1,%f60		! (Y0_2) dtmp0 += KB1;
-	fmuld	%f52,%f46,%f26		! (Y0_0) yy0 = dtmp0 * yy;
-	ld	[%g5+%o3],%f10		! (Y0_2) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0]
+	faddd	%f36,KB1,%f60		/* (Y0_2) dtmp0 += KB1; */
+	fmuld	%f52,%f46,%f26		/* (Y0_0) yy0 = dtmp0 * yy; */
+	ld	[%g5+%o3],%f10		/* (Y0_2) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0] */
 
-	fdtoi	%f22,%f0		! (Y0_1) ii0 = (int) yy0;
-	ldd	[%o4+%o0],%f62		! (Y0_2) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0];
+	fdtoi	%f22,%f0		/* (Y0_1) ii0 = (int) yy0; */
+	ldd	[%o4+%o0],%f62		/* (Y0_2) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0]; */
 
-	add	%o5,stridey,%o5		! py += stridey
-	st	%f0,[%fp+tmp1]		! (Y0_1) STORE ii0
+	add	%o5,stridey,%o5		/* py += stridey */
+	st	%f0,[%fp+tmp1]		/* (Y0_1) STORE ii0 */
 
-	fsubd	%f28,%f56,%f56		! (Y1_2) y0 = yy0 - dtmp0;
-	lda	[%o5]0x82,%i5		! (Y1_0) ay = ((int*)py)[0];
+	fsubd	%f28,%f56,%f56		/* (Y1_2) y0 = yy0 - dtmp0; */
+	lda	[%o5]0x82,%i5		/* (Y1_0) ay = ((int*)py)[0]; */
 
-	fmuld	%f60,%f40,%f60		! (Y0_2) yy0 = dtmp0 * y0;
-	fmovdl	%fcc2,HTHRESHOLD,%f24	! (Y1_1) yy0 = HTHRESH;
-	lda	[%o5]0x82,%f7		! (Y1_0) ftmp0 = py[0];
+	fmuld	%f60,%f40,%f60		/* (Y0_2) yy0 = dtmp0 * y0; */
+	fmovdl	%fcc2,HTHRESHOLD,%f24	/* (Y1_1) yy0 = HTHRESH; */
+	lda	[%o5]0x82,%f7		/* (Y1_0) ftmp0 = py[0]; */
 
-	fmuld	%f10,%f62,%f62		! (Y0_2) di0 *= dtmp0;
-	ld	[%fp+tmp0],%g5		! (Y1_2) LOAD ii0
-	and	%i5,MASK_0x7fffffff,%i5	! (Y1_0) ay &= 0x7fffffff
-	fcmped	%fcc0,HTHRESHOLD,%f26	! (Y0_0) if (yy0 >= HTHRESH)
+	fmuld	%f10,%f62,%f62		/* (Y0_2) di0 *= dtmp0; */
+	ld	[%fp+tmp0],%g5		/* (Y1_2) LOAD ii0 */
+	and	%i5,MASK_0x7fffffff,%i5	/* (Y1_0) ay &= 0x7fffffff */
+	fcmped	%fcc0,HTHRESHOLD,%f26	/* (Y0_0) if (yy0 >= HTHRESH) */
 
 	cmp	%i5,%o1
 	bge,pn	%icc,.xupdate4
 .xcont4:
-	fmuld	KB2,%f56,%f58		! (Y1_2) dtmp0 = KB2 * y0;
-	fstod	%f7,%f48		! (Y1_0) dtmp0 = (double)ftmp0;
+	fmuld	KB2,%f56,%f58		/* (Y1_2) dtmp0 = KB2 * y0; */
+	fstod	%f7,%f48		/* (Y1_0) dtmp0 = (double)ftmp0; */
 
-	fmovdg	%fcc3,LTHRESHOLD,%f24	! (Y1_2) yy0 = LTHRESH;
-	sra	%g5,6,%i0		! (Y1_3) i0 = ii0 >> 6;
-	and	%g5,255,%i1		! (Y1_3) ii0 &= 255;
-	fmuld	%f60,%f62,%f40		! (Y0_3) dtmp0 = yy0 * di0;
+	fmovdg	%fcc3,LTHRESHOLD,%f24	/* (Y1_2) yy0 = LTHRESH; */
+	sra	%g5,6,%i0		/* (Y1_3) i0 = ii0 >> 6; */
+	and	%g5,255,%i1		/* (Y1_3) ii0 &= 255; */
+	fmuld	%f60,%f62,%f40		/* (Y0_3) dtmp0 = yy0 * di0; */
 
-	fcmped	%fcc1,LTHRESHOLD,%f26	! (Y0_1) if (yy0 <= LTHRESH)
-	sll	%i1,3,%i3		! (Y1_3) ii0 <<= 3;
-	and	%i0,-4,%i0		! (Y1_3) i0 &= -4;
+	fcmped	%fcc1,LTHRESHOLD,%f26	/* (Y0_1) if (yy0 <= LTHRESH) */
+	sll	%i1,3,%i3		/* (Y1_3) ii0 <<= 3; */
+	and	%i0,-4,%i0		/* (Y1_3) i0 &= -4; */
 
-	fitod	%f0,%f52		! (Y0_2) dtmp0 = (double)ii0;
-	ld	[%i0+%o3],%f10		! (Y1_3) di0 = ((double*)((char*)(__mt_constexp2fb + 150) + i0))[0];
+	fitod	%f0,%f52		/* (Y0_2) dtmp0 = (double)ii0; */
+	ld	[%i0+%o3],%f10		/* (Y1_3) di0 = ((double*)((char*)(__mt_constexp2fb + 150) + i0))[0]; */
 
-	faddd	%f58,KB1,%f58		! (Y1_3) dtmp0 += KB1;
-	add	%o5,stridey,%o5		! py += stridey
-	ldd	[%o4+%i3],%f18		! (Y1_3) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0];
-	fmuld	%f48,%f46,%f28		! (Y1_1) yy0 = dtmp0 * yy;
+	faddd	%f58,KB1,%f58		/* (Y1_3) dtmp0 += KB1; */
+	add	%o5,stridey,%o5		/* py += stridey */
+	ldd	[%o4+%i3],%f18		/* (Y1_3) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0]; */
+	fmuld	%f48,%f46,%f28		/* (Y1_1) yy0 = dtmp0 * yy; */
 
-	fdtoi	%f24,%f3		! (Y1_2) ii0 = (int) yy0;
-	lda	[%o5]0x82,%i3		! (Y0_0) ay = py[0];
+	fdtoi	%f24,%f3		/* (Y1_2) ii0 = (int) yy0; */
+	lda	[%o5]0x82,%i3		/* (Y0_0) ay = py[0]; */
 
-	faddd	%f40,%f62,%f60		! (Y0_3) dtmp0 += di0;
-	st	%f3,[%fp+tmp0]		! (Y1_2) STORE ii0
+	faddd	%f40,%f62,%f60		/* (Y0_3) dtmp0 += di0; */
+	st	%f3,[%fp+tmp0]		/* (Y1_2) STORE ii0 */
 
-	fsubd	%f22,%f52,%f40		! (Y0_2) y0 = yy0 - dtmp0;
-	lda	[%o5]0x82,%f5		! (Y0_0) ftmp0 = py[0];
+	fsubd	%f22,%f52,%f40		/* (Y0_2) y0 = yy0 - dtmp0; */
+	lda	[%o5]0x82,%f5		/* (Y0_0) ftmp0 = py[0]; */
 
-	fmuld	%f58,%f56,%f56		! (Y1_3) yy0 = dtmp0 * y0;
-	and	%i3,MASK_0x7fffffff,%i3	! (Y0_0) ay &= 0x7fffffff
-	fmovdl	%fcc0,HTHRESHOLD,%f26	! (Y0_1) yy0 = HTHRESH;
+	fmuld	%f58,%f56,%f56		/* (Y1_3) yy0 = dtmp0 * y0; */
+	and	%i3,MASK_0x7fffffff,%i3	/* (Y0_0) ay &= 0x7fffffff */
+	fmovdl	%fcc0,HTHRESHOLD,%f26	/* (Y0_1) yy0 = HTHRESH; */
 
-	fmuld	%f10,%f18,%f50		! (Y1_3) di0 *= dtmp0;
+	fmuld	%f10,%f18,%f50		/* (Y1_3) di0 *= dtmp0; */
 	cmp	%i3,%o1
 	bge,pn	%icc,.xupdate5
-	fcmped	%fcc2,HTHRESHOLD,%f28	! (Y1_1) if (yy0 >= HTHRESH)
+	fcmped	%fcc2,HTHRESHOLD,%f28	/* (Y1_1) if (yy0 >= HTHRESH) */
 .xcont5:
-	fdtos	%f60,%f1		! (Y0_3) ftmp0 = (float)dtmp0;
-	add	%g1,stridez,%i3		! pz += stridez
-	st	%f1,[%g1]		! (Y0_3) pz[0] = ftmp0;
+	fdtos	%f60,%f1		/* (Y0_3) ftmp0 = (float)dtmp0; */
+	add	%g1,stridez,%i3		/* pz += stridez */
+	st	%f1,[%g1]		/* (Y0_3) pz[0] = ftmp0; */
 
 	subcc	counter,1,counter
 	bneg,pn	%icc,.xbegin
 	or	%g0,%i3,%g1
 
-	ld	[%fp+tmp1],%i2		! (Y0_2) LOAD ii0
-	fmuld	KB2,%f40,%f36		! (Y0_2) dtmp0 = KB2 * y0;
-	fstod	%f5,%f52		! (Y0_0) dtmp0 = (double)ftmp0;
+	ld	[%fp+tmp1],%i2		/* (Y0_2) LOAD ii0 */
+	fmuld	KB2,%f40,%f36		/* (Y0_2) dtmp0 = KB2 * y0; */
+	fstod	%f5,%f52		/* (Y0_0) dtmp0 = (double)ftmp0; */
 
-	fmovdg	%fcc1,LTHRESHOLD,%f26	! (Y0_1) yy0 = LTHRESH;
+	fmovdg	%fcc1,LTHRESHOLD,%f26	/* (Y0_1) yy0 = LTHRESH; */
 
-	fmuld	%f56,%f50,%f58		! (Y1_3) dtmp0 = yy0 * di0;
-	sra	%i2,6,%l6		! (Y0_2) i0 = ii0 >> 6;
-	and	%i2,255,%l7		! (Y0_2) ii0 &= 255;
-	fcmped	%fcc3,LTHRESHOLD,%f28	! (Y1_1) if (yy0 <= LTHRESH)
+	fmuld	%f56,%f50,%f58		/* (Y1_3) dtmp0 = yy0 * di0; */
+	sra	%i2,6,%l6		/* (Y0_2) i0 = ii0 >> 6; */
+	and	%i2,255,%l7		/* (Y0_2) ii0 &= 255; */
+	fcmped	%fcc3,LTHRESHOLD,%f28	/* (Y1_1) if (yy0 <= LTHRESH) */
 
-	fitod	%f3,%f56		! (Y1_2) dtmp0 = (double)ii0;
-	sll	%l7,3,%o0		! (Y0_2) ii0 <<= 3;
-	and	%l6,-4,%g5		! (Y0_2) i0 &= -4;
+	fitod	%f3,%f56		/* (Y1_2) dtmp0 = (double)ii0; */
+	sll	%l7,3,%o0		/* (Y0_2) ii0 <<= 3; */
+	and	%l6,-4,%g5		/* (Y0_2) i0 &= -4; */
 
-	faddd	%f36,KB1,%f60		! (Y0_2) dtmp0 += KB1;
-	fmuld	%f52,%f46,%f22		! (Y0_0) yy0 = dtmp0 * yy;
-	ld	[%g5+%o3],%f10		! (Y0_2) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0]
+	faddd	%f36,KB1,%f60		/* (Y0_2) dtmp0 += KB1; */
+	fmuld	%f52,%f46,%f22		/* (Y0_0) yy0 = dtmp0 * yy; */
+	ld	[%g5+%o3],%f10		/* (Y0_2) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0] */
 
-	fdtoi	%f26,%f0		! (Y0_1) ii0 = (int) yy0;
-	ldd	[%o4+%o0],%f62		! (Y0_2) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0];
+	fdtoi	%f26,%f0		/* (Y0_1) ii0 = (int) yy0; */
+	ldd	[%o4+%o0],%f62		/* (Y0_2) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0]; */
 
-	faddd	%f58,%f50,%f58		! (Y1_3) dtmp0 += di0;
-	add	%o5,stridey,%o5		! py += stridey
-	st	%f0,[%fp+tmp1]		! (Y0_1) STORE ii0
+	faddd	%f58,%f50,%f58		/* (Y1_3) dtmp0 += di0; */
+	add	%o5,stridey,%o5		/* py += stridey */
+	st	%f0,[%fp+tmp1]		/* (Y0_1) STORE ii0 */
 
-	fsubd	%f24,%f56,%f56		! (Y1_2) y0 = yy0 - dtmp0;
-	lda	[%o5]0x82,%l7		! (Y1_0) ay = ((int*)py)[0];
+	fsubd	%f24,%f56,%f56		/* (Y1_2) y0 = yy0 - dtmp0; */
+	lda	[%o5]0x82,%l7		/* (Y1_0) ay = ((int*)py)[0]; */
 
-	fmuld	%f60,%f40,%f60		! (Y0_2) yy0 = dtmp0 * y0;
-	add	%i3,stridez,%i5		! pz += stridez
-	lda	[%o5]0x82,%f7		! (Y1_0) ftmp0 = py[0];
-	fmovdl	%fcc2,HTHRESHOLD,%f28	! (Y1_1) yy0 = HTHRESH;
+	fmuld	%f60,%f40,%f60		/* (Y0_2) yy0 = dtmp0 * y0; */
+	add	%i3,stridez,%i5		/* pz += stridez */
+	lda	[%o5]0x82,%f7		/* (Y1_0) ftmp0 = py[0]; */
+	fmovdl	%fcc2,HTHRESHOLD,%f28	/* (Y1_1) yy0 = HTHRESH; */
 
-	fmuld	%f10,%f62,%f62		! (Y0_2) di0 *= dtmp0;
-	and	%l7,MASK_0x7fffffff,%l7	! (Y1_0) ay &= 0x7fffffff
-	ld	[%fp+tmp0],%g5		! (Y1_2) LOAD ii0
-	fcmped	%fcc0,HTHRESHOLD,%f22	! (Y0_0) if (yy0 >= HTHRESH)
+	fmuld	%f10,%f62,%f62		/* (Y0_2) di0 *= dtmp0; */
+	and	%l7,MASK_0x7fffffff,%l7	/* (Y1_0) ay &= 0x7fffffff */
+	ld	[%fp+tmp0],%g5		/* (Y1_2) LOAD ii0 */
+	fcmped	%fcc0,HTHRESHOLD,%f22	/* (Y0_0) if (yy0 >= HTHRESH) */
 
-	fdtos	%f58,%f9		! (Y1_3) ftmp0 = (float)dtmp0;
-	st	%f9,[%i3]		! (Y1_3) pz[0] = ftmp0;
+	fdtos	%f58,%f9		/* (Y1_3) ftmp0 = (float)dtmp0; */
+	st	%f9,[%i3]		/* (Y1_3) pz[0] = ftmp0; */
 	cmp	%l7,%o1
 	bge,pn	%icc,.xupdate6
 
 .xcont6:
-	fmuld	KB2,%f56,%f58		! (Y1_2) dtmp0 = KB2 * y0;
-	fstod	%f7,%f48		! (Y1_0) dtmp0 = (double)ftmp0;
+	fmuld	KB2,%f56,%f58		/* (Y1_2) dtmp0 = KB2 * y0; */
+	fstod	%f7,%f48		/* (Y1_0) dtmp0 = (double)ftmp0; */
 
 	cmp	counter,8
 	bl,pn	%icc,.xtail
@@ -2544,435 +2544,435 @@
 
 	.align	16
 .xmain_loop:
-	fmovdg	%fcc3,LTHRESHOLD,%f28	! (Y1_2) yy0 = LTHRESH;
-	sra	%g5,6,%i0		! (Y1_3) i0 = ii0 >> 6;
-	and	%g5,255,%i1		! (Y1_3) ii0 &= 255;
-	fmuld	%f60,%f62,%f40		! (Y0_3) dtmp0 = yy0 * di0;
+	fmovdg	%fcc3,LTHRESHOLD,%f28	/* (Y1_2) yy0 = LTHRESH; */
+	sra	%g5,6,%i0		/* (Y1_3) i0 = ii0 >> 6; */
+	and	%g5,255,%i1		/* (Y1_3) ii0 &= 255; */
+	fmuld	%f60,%f62,%f40		/* (Y0_3) dtmp0 = yy0 * di0; */
 
-	fcmped	%fcc1,LTHRESHOLD,%f22	! (Y0_1) if (yy0 <= LTHRESH)
-	sll	%i1,3,%i3		! (Y1_3) ii0 <<= 3;
-	and	%i0,-4,%i0		! (Y1_3) i0 &= -4;
+	fcmped	%fcc1,LTHRESHOLD,%f22	/* (Y0_1) if (yy0 <= LTHRESH) */
+	sll	%i1,3,%i3		/* (Y1_3) ii0 <<= 3; */
+	and	%i0,-4,%i0		/* (Y1_3) i0 &= -4; */
 
-	fitod	%f0,%f52		! (Y0_2) dtmp0 = (double)ii0;
+	fitod	%f0,%f52		/* (Y0_2) dtmp0 = (double)ii0; */
 	sub	counter,4,counter
-	ld	[%i0+%o3],%f10		! (Y1_3) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0];
+	ld	[%i0+%o3],%f10		/* (Y1_3) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0]; */
 
-	faddd	%f58,KB1,%f58		! (Y1_3) dtmp0 += KB1;
-	add	%o5,stridey,%o5		! py += stridey
-	ldd	[%o4+%i3],%f18		! (Y1_3) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0];
-	fmuld	%f48,%f46,%f24		! (Y1_1) yy0 = dtmp0 * yy;
+	faddd	%f58,KB1,%f58		/* (Y1_3) dtmp0 += KB1; */
+	add	%o5,stridey,%o5		/* py += stridey */
+	ldd	[%o4+%i3],%f18		/* (Y1_3) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0]; */
+	fmuld	%f48,%f46,%f24		/* (Y1_1) yy0 = dtmp0 * yy; */
 
-	fdtoi	%f28,%f3		! (Y1_2) ii0 = (int) yy0;
-	lda	[%o5]0x82,%i3		! (Y0_0) ay = py[0];
+	fdtoi	%f28,%f3		/* (Y1_2) ii0 = (int) yy0; */
+	lda	[%o5]0x82,%i3		/* (Y0_0) ay = py[0]; */
 
-	faddd	%f40,%f62,%f60		! (Y0_3) dtmp0 += di0;
-	st	%f3,[%fp+tmp0]		! (Y1_2) STORE ii0
+	faddd	%f40,%f62,%f60		/* (Y0_3) dtmp0 += di0; */
+	st	%f3,[%fp+tmp0]		/* (Y1_2) STORE ii0 */
 
-	fsubd	%f26,%f52,%f40		! (Y0_2) y0 = yy0 - dtmp0;
-	lda	[%o5]0x82,%f5		! (Y0_0) ftmp0 = py[0];
+	fsubd	%f26,%f52,%f40		/* (Y0_2) y0 = yy0 - dtmp0; */
+	lda	[%o5]0x82,%f5		/* (Y0_0) ftmp0 = py[0]; */
 
-	fmuld	%f58,%f56,%f56		! (Y1_3) yy0 = dtmp0 * y0;
-	and	%i3,MASK_0x7fffffff,%i3	! (Y0_0) ay &= 0x7fffffff
-	fmovdl	%fcc0,HTHRESHOLD,%f22	! (Y0_1) yy0 = HTHRESH;
+	fmuld	%f58,%f56,%f56		/* (Y1_3) yy0 = dtmp0 * y0; */
+	and	%i3,MASK_0x7fffffff,%i3	/* (Y0_0) ay &= 0x7fffffff */
+	fmovdl	%fcc0,HTHRESHOLD,%f22	/* (Y0_1) yy0 = HTHRESH; */
 
-	fmuld	%f10,%f18,%f50		! (Y1_3) di0 *= dtmp0;
+	fmuld	%f10,%f18,%f50		/* (Y1_3) di0 *= dtmp0; */
 	cmp	%i3,%o1
 	bge,pn	%icc,.xupdate7
-	fcmped	%fcc2,HTHRESHOLD,%f24	! (Y1_1) if (yy0 >= HTHRESH)
+	fcmped	%fcc2,HTHRESHOLD,%f24	/* (Y1_1) if (yy0 >= HTHRESH) */
 .xcont7:
-	fdtos	%f60,%f1		! (Y0_3) ftmp0 = (float)dtmp0;
-	add	%i5,stridez,%i3		! pz += stridez
-	st	%f1,[%i5]		! (Y0_3) pz[0] = ftmp0;
+	fdtos	%f60,%f1		/* (Y0_3) ftmp0 = (float)dtmp0; */
+	add	%i5,stridez,%i3		/* pz += stridez */
+	st	%f1,[%i5]		/* (Y0_3) pz[0] = ftmp0; */
 
-	ld	[%fp+tmp1],%i2		! (Y0_2) LOAD ii0
-	fmuld	KB2,%f40,%f36		! (Y0_2) dtmp0 = KB2 * y0;
-	fstod	%f5,%f52		! (Y0_0) dtmp0 = (double)ftmp0;
+	ld	[%fp+tmp1],%i2		/* (Y0_2) LOAD ii0 */
+	fmuld	KB2,%f40,%f36		/* (Y0_2) dtmp0 = KB2 * y0; */
+	fstod	%f5,%f52		/* (Y0_0) dtmp0 = (double)ftmp0; */
 
-	fmovdg	%fcc1,LTHRESHOLD,%f22	! (Y0_1) yy0 = LTHRESH;
+	fmovdg	%fcc1,LTHRESHOLD,%f22	/* (Y0_1) yy0 = LTHRESH; */
 
-	fmuld	%f56,%f50,%f58		! (Y1_3) dtmp0 = yy0 * di0;
-	sra	%i2,6,%l6		! (Y0_2) i0 = ii0 >> 6;
-	and	%i2,255,%l7		! (Y0_2) ii0 &= 255;
-	fcmped	%fcc3,LTHRESHOLD,%f24	! (Y1_1) if (yy0 <= LTHRESH)
+	fmuld	%f56,%f50,%f58		/* (Y1_3) dtmp0 = yy0 * di0; */
+	sra	%i2,6,%l6		/* (Y0_2) i0 = ii0 >> 6; */
+	and	%i2,255,%l7		/* (Y0_2) ii0 &= 255; */
+	fcmped	%fcc3,LTHRESHOLD,%f24	/* (Y1_1) if (yy0 <= LTHRESH) */
 
-	fitod	%f3,%f56		! (Y1_2) dtmp0 = (double)ii0;
-	sll	%l7,3,%o0		! (Y0_2) ii0 <<= 3;
-	and	%l6,-4,%g5		! (Y0_2) i0 &= -4;
+	fitod	%f3,%f56		/* (Y1_2) dtmp0 = (double)ii0; */
+	sll	%l7,3,%o0		/* (Y0_2) ii0 <<= 3; */
+	and	%l6,-4,%g5		/* (Y0_2) i0 &= -4; */
 
-	faddd	%f36,KB1,%f60		! (Y0_2) dtmp0 += KB1;
-	fmuld	%f52,%f46,%f26		! (Y0_0) yy0 = dtmp0 * yy;
-	ld	[%g5+%o3],%f10		! (Y0_2) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0]
+	faddd	%f36,KB1,%f60		/* (Y0_2) dtmp0 += KB1; */
+	fmuld	%f52,%f46,%f26		/* (Y0_0) yy0 = dtmp0 * yy; */
+	ld	[%g5+%o3],%f10		/* (Y0_2) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0] */
 
-	fdtoi	%f22,%f0		! (Y0_1) ii0 = (int) yy0;
-	ldd	[%o4+%o0],%f62		! (Y0_2) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0];
+	fdtoi	%f22,%f0		/* (Y0_1) ii0 = (int) yy0; */
+	ldd	[%o4+%o0],%f62		/* (Y0_2) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0]; */
 
-	faddd	%f58,%f50,%f58		! (Y1_3) dtmp0 += di0;
-	add	%o5,stridey,%o5		! py += stridey
-	st	%f0,[%fp+tmp1]		! (Y0_1) STORE ii0
+	faddd	%f58,%f50,%f58		/* (Y1_3) dtmp0 += di0; */
+	add	%o5,stridey,%o5		/* py += stridey */
+	st	%f0,[%fp+tmp1]		/* (Y0_1) STORE ii0 */
 
-	fsubd	%f28,%f56,%f56		! (Y1_2) y0 = yy0 - dtmp0;
-	lda	[%o5]0x82,%i5		! (Y1_0) ay = ((int*)py)[0];
+	fsubd	%f28,%f56,%f56		/* (Y1_2) y0 = yy0 - dtmp0; */
+	lda	[%o5]0x82,%i5		/* (Y1_0) ay = ((int*)py)[0]; */
 
-	fmuld	%f60,%f40,%f60		! (Y0_2) yy0 = dtmp0 * y0;
-	fmovdl	%fcc2,HTHRESHOLD,%f24	! (Y1_1) yy0 = HTHRESH;
-	lda	[%o5]0x82,%f7		! (Y1_0) ftmp0 = py[0];
+	fmuld	%f60,%f40,%f60		/* (Y0_2) yy0 = dtmp0 * y0; */
+	fmovdl	%fcc2,HTHRESHOLD,%f24	/* (Y1_1) yy0 = HTHRESH; */
+	lda	[%o5]0x82,%f7		/* (Y1_0) ftmp0 = py[0]; */
 
-	fmuld	%f10,%f62,%f62		! (Y0_2) di0 *= dtmp0;
-	ld	[%fp+tmp0],%g5		! (Y1_2) LOAD ii0
-	and	%i5,MASK_0x7fffffff,%i5	! (Y1_0) ay &= 0x7fffffff
-	fcmped	%fcc0,HTHRESHOLD,%f26	! (Y0_0) if (yy0 >= HTHRESH)
+	fmuld	%f10,%f62,%f62		/* (Y0_2) di0 *= dtmp0; */
+	ld	[%fp+tmp0],%g5		/* (Y1_2) LOAD ii0 */
+	and	%i5,MASK_0x7fffffff,%i5	/* (Y1_0) ay &= 0x7fffffff */
+	fcmped	%fcc0,HTHRESHOLD,%f26	/* (Y0_0) if (yy0 >= HTHRESH) */
 
-	fdtos	%f58,%f9		! (Y1_3) ftmp0 = (float)dtmp0;
+	fdtos	%f58,%f9		/* (Y1_3) ftmp0 = (float)dtmp0; */
 	cmp	%i5,%o1
 	bge,pn	%icc,.xupdate8
 
 .xcont8:
-	fmuld	KB2,%f56,%f58		! (Y1_2) dtmp0 = KB2 * y0;
-	add	%i3,stridez,%i5		! pz += stridez
-	st	%f9,[%i3]		! (Y1_3) pz[0] = ftmp0;
-	fstod	%f7,%f48		! (Y1_0) dtmp0 = (double)ftmp0;
+	fmuld	KB2,%f56,%f58		/* (Y1_2) dtmp0 = KB2 * y0; */
+	add	%i3,stridez,%i5		/* pz += stridez */
+	st	%f9,[%i3]		/* (Y1_3) pz[0] = ftmp0; */
+	fstod	%f7,%f48		/* (Y1_0) dtmp0 = (double)ftmp0; */
 
-	fmovdg	%fcc3,LTHRESHOLD,%f24	! (Y1_2) yy0 = LTHRESH;
-	sra	%g5,6,%i0		! (Y1_3) i0 = ii0 >> 6;
-	and	%g5,255,%i1		! (Y1_3) ii0 &= 255;
-	fmuld	%f60,%f62,%f40		! (Y0_3) dtmp0 = yy0 * di0;
+	fmovdg	%fcc3,LTHRESHOLD,%f24	/* (Y1_2) yy0 = LTHRESH; */
+	sra	%g5,6,%i0		/* (Y1_3) i0 = ii0 >> 6; */
+	and	%g5,255,%i1		/* (Y1_3) ii0 &= 255; */
+	fmuld	%f60,%f62,%f40		/* (Y0_3) dtmp0 = yy0 * di0; */
 
-	fcmped	%fcc1,LTHRESHOLD,%f26	! (Y0_1) if (yy0 <= LTHRESH)
-	sll	%i1,3,%i3		! (Y1_3) ii0 <<= 3;
-	and	%i0,-4,%i0		! (Y1_3) i0 &= -4;
+	fcmped	%fcc1,LTHRESHOLD,%f26	/* (Y0_1) if (yy0 <= LTHRESH) */
+	sll	%i1,3,%i3		/* (Y1_3) ii0 <<= 3; */
+	and	%i0,-4,%i0		/* (Y1_3) i0 &= -4; */
 
-	fitod	%f0,%f52		! (Y0_2) dtmp0 = (double)ii0;
-	ld	[%i0+%o3],%f10		! (Y1_3) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0];
+	fitod	%f0,%f52		/* (Y0_2) dtmp0 = (double)ii0; */
+	ld	[%i0+%o3],%f10		/* (Y1_3) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0]; */
 
-	faddd	%f58,KB1,%f58		! (Y1_3) dtmp0 += KB1;
-	add	%o5,stridey,%o5		! py += stridey
-	ldd	[%o4+%i3],%f18		! (Y1_3) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0];
-	fmuld	%f48,%f46,%f28		! (Y1_1) yy0 = dtmp0 * yy;
+	faddd	%f58,KB1,%f58		/* (Y1_3) dtmp0 += KB1; */
+	add	%o5,stridey,%o5		/* py += stridey */
+	ldd	[%o4+%i3],%f18		/* (Y1_3) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0]; */
+	fmuld	%f48,%f46,%f28		/* (Y1_1) yy0 = dtmp0 * yy; */
 
-	fdtoi	%f24,%f3		! (Y1_2) ii0 = (int) yy0;
-	lda	[%o5]0x82,%i3		! (Y0_0) ay = py[0];
+	fdtoi	%f24,%f3		/* (Y1_2) ii0 = (int) yy0; */
+	lda	[%o5]0x82,%i3		/* (Y0_0) ay = py[0]; */
 
-	faddd	%f40,%f62,%f60		! (Y0_3) dtmp0 += di0;
-	st	%f3,[%fp+tmp0]		! (Y1_2) STORE ii0
+	faddd	%f40,%f62,%f60		/* (Y0_3) dtmp0 += di0; */
+	st	%f3,[%fp+tmp0]		/* (Y1_2) STORE ii0 */
 
-	fsubd	%f22,%f52,%f40		! (Y0_2) y0 = yy0 - dtmp0;
-	lda	[%o5]0x82,%f5		! (Y0_0) ftmp0 = py[0];
+	fsubd	%f22,%f52,%f40		/* (Y0_2) y0 = yy0 - dtmp0; */
+	lda	[%o5]0x82,%f5		/* (Y0_0) ftmp0 = py[0]; */
 
-	fmuld	%f58,%f56,%f56		! (Y1_3) yy0 = dtmp0 * y0;
-	and	%i3,MASK_0x7fffffff,%i3	! (Y0_0) ay &= 0x7fffffff
-	fmovdl	%fcc0,HTHRESHOLD,%f26	! (Y0_1) yy0 = HTHRESH;
+	fmuld	%f58,%f56,%f56		/* (Y1_3) yy0 = dtmp0 * y0; */
+	and	%i3,MASK_0x7fffffff,%i3	/* (Y0_0) ay &= 0x7fffffff */
+	fmovdl	%fcc0,HTHRESHOLD,%f26	/* (Y0_1) yy0 = HTHRESH; */
 
-	fmuld	%f10,%f18,%f50		! (Y1_3) di0 *= dtmp0;
+	fmuld	%f10,%f18,%f50		/* (Y1_3) di0 *= dtmp0; */
 	cmp	%i3,%o1
 	bge,pn	%icc,.xupdate9
-	fcmped	%fcc2,HTHRESHOLD,%f28	! (Y1_1) if (yy0 >= HTHRESH)
+	fcmped	%fcc2,HTHRESHOLD,%f28	/* (Y1_1) if (yy0 >= HTHRESH) */
 .xcont9:
-	fdtos	%f60,%f1		! (Y0_3) ftmp0 = (float)dtmp0;
-	add	%i5,stridez,%i3		! pz += stridez
-	st	%f1,[%i5]		! (Y0_3) pz[0] = ftmp0;
+	fdtos	%f60,%f1		/* (Y0_3) ftmp0 = (float)dtmp0; */
+	add	%i5,stridez,%i3		/* pz += stridez */
+	st	%f1,[%i5]		/* (Y0_3) pz[0] = ftmp0; */
 
-	ld	[%fp+tmp1],%i2		! (Y0_2) LOAD ii0
-	fmuld	KB2,%f40,%f36		! (Y0_2) dtmp0 = KB2 * y0;
-	fstod	%f5,%f52		! (Y0_0) dtmp0 = (double)ftmp0;
+	ld	[%fp+tmp1],%i2		/* (Y0_2) LOAD ii0 */
+	fmuld	KB2,%f40,%f36		/* (Y0_2) dtmp0 = KB2 * y0; */
+	fstod	%f5,%f52		/* (Y0_0) dtmp0 = (double)ftmp0; */
 
-	fmovdg	%fcc1,LTHRESHOLD,%f26	! (Y0_1) yy0 = LTHRESH;
+	fmovdg	%fcc1,LTHRESHOLD,%f26	/* (Y0_1) yy0 = LTHRESH; */
 
-	fmuld	%f56,%f50,%f58		! (Y1_3) dtmp0 = yy0 * di0;
-	sra	%i2,6,%l6		! (Y0_2) i0 = ii0 >> 6;
-	and	%i2,255,%l7		! (Y0_2) ii0 &= 255;
-	fcmped	%fcc3,LTHRESHOLD,%f28	! (Y1_1) if (yy0 <= LTHRESH)
+	fmuld	%f56,%f50,%f58		/* (Y1_3) dtmp0 = yy0 * di0; */
+	sra	%i2,6,%l6		/* (Y0_2) i0 = ii0 >> 6; */
+	and	%i2,255,%l7		/* (Y0_2) ii0 &= 255; */
+	fcmped	%fcc3,LTHRESHOLD,%f28	/* (Y1_1) if (yy0 <= LTHRESH) */
 
-	fitod	%f3,%f56		! (Y1_2) dtmp0 = (double)ii0;
-	sll	%l7,3,%o0		! (Y0_2) ii0 <<= 3;
-	and	%l6,-4,%g5		! (Y0_2) i0 &= -4;
+	fitod	%f3,%f56		/* (Y1_2) dtmp0 = (double)ii0; */
+	sll	%l7,3,%o0		/* (Y0_2) ii0 <<= 3; */
+	and	%l6,-4,%g5		/* (Y0_2) i0 &= -4; */
 
-	faddd	%f36,KB1,%f60		! (Y0_2) dtmp0 += KB1;
-	fmuld	%f52,%f46,%f22		! (Y0_0) yy0 = dtmp0 * yy;
-	ld	[%g5+%o3],%f10		! (Y0_2) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0]
+	faddd	%f36,KB1,%f60		/* (Y0_2) dtmp0 += KB1; */
+	fmuld	%f52,%f46,%f22		/* (Y0_0) yy0 = dtmp0 * yy; */
+	ld	[%g5+%o3],%f10		/* (Y0_2) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0] */
 
-	fdtoi	%f26,%f0		! (Y0_1) ii0 = (int) yy0;
-	ldd	[%o4+%o0],%f62		! (Y0_2) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0];
+	fdtoi	%f26,%f0		/* (Y0_1) ii0 = (int) yy0; */
+	ldd	[%o4+%o0],%f62		/* (Y0_2) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0]; */
 
-	faddd	%f58,%f50,%f58		! (Y1_3) dtmp0 += di0;
-	add	%o5,stridey,%o5		! py += stridey
-	st	%f0,[%fp+tmp1]		! (Y0_1) STORE ii0
+	faddd	%f58,%f50,%f58		/* (Y1_3) dtmp0 += di0; */
+	add	%o5,stridey,%o5		/* py += stridey */
+	st	%f0,[%fp+tmp1]		/* (Y0_1) STORE ii0 */
 
-	fsubd	%f24,%f56,%f56		! (Y1_2) y0 = yy0 - dtmp0;
-	lda	[%o5]0x82,%l7		! (Y1_0) ay = ((int*)py)[0];
+	fsubd	%f24,%f56,%f56		/* (Y1_2) y0 = yy0 - dtmp0; */
+	lda	[%o5]0x82,%l7		/* (Y1_0) ay = ((int*)py)[0]; */
 
-	fmuld	%f60,%f40,%f60		! (Y0_2) yy0 = dtmp0 * y0;
-	add	%i3,stridez,%i5		! pz += stridez
-	lda	[%o5]0x82,%f7		! (Y1_0) ftmp0 = py[0];
-	fmovdl	%fcc2,HTHRESHOLD,%f28	! (Y1_1) yy0 = HTHRESH;
+	fmuld	%f60,%f40,%f60		/* (Y0_2) yy0 = dtmp0 * y0; */
+	add	%i3,stridez,%i5		/* pz += stridez */
+	lda	[%o5]0x82,%f7		/* (Y1_0) ftmp0 = py[0]; */
+	fmovdl	%fcc2,HTHRESHOLD,%f28	/* (Y1_1) yy0 = HTHRESH; */
 
-	fmuld	%f10,%f62,%f62		! (Y0_2) di0 *= dtmp0;
-	and	%l7,MASK_0x7fffffff,%l7	! (Y1_0) ay &= 0x7fffffff
-	ld	[%fp+tmp0],%g5		! (Y1_2) LOAD ii0
-	fcmped	%fcc0,HTHRESHOLD,%f22	! (Y0_0) if (yy0 >= HTHRESH)
+	fmuld	%f10,%f62,%f62		/* (Y0_2) di0 *= dtmp0; */
+	and	%l7,MASK_0x7fffffff,%l7	/* (Y1_0) ay &= 0x7fffffff */
+	ld	[%fp+tmp0],%g5		/* (Y1_2) LOAD ii0 */
+	fcmped	%fcc0,HTHRESHOLD,%f22	/* (Y0_0) if (yy0 >= HTHRESH) */
 
-	fdtos	%f58,%f9		! (Y1_3) ftmp0 = (float)dtmp0;
-	st	%f9,[%i3]		! (Y1_3) pz[0] = ftmp0;
+	fdtos	%f58,%f9		/* (Y1_3) ftmp0 = (float)dtmp0; */
+	st	%f9,[%i3]		/* (Y1_3) pz[0] = ftmp0; */
 	cmp	%l7,%o1
 	bge,pn	%icc,.xupdate10
 .xcont10:
-	fmuld	KB2,%f56,%f58		! (Y1_2) dtmp0 = KB2 * y0;
+	fmuld	KB2,%f56,%f58		/* (Y1_2) dtmp0 = KB2 * y0; */
 	cmp	counter,4
 	bge,pt	%icc,.xmain_loop
-	fstod	%f7,%f48		! (Y1_0) dtmp0 = (double)ftmp0;
+	fstod	%f7,%f48		/* (Y1_0) dtmp0 = (double)ftmp0; */
 
 .xtail:
 	subcc	counter,1,counter
 	bneg,pn	%icc,.xbegin
 	or	%g0,%i5,%g1
 
-	fmovdg	%fcc3,LTHRESHOLD,%f28	! (Y1_2) yy0 = LTHRESH;
-	sra	%g5,6,%i0		! (Y1_3) i0 = ii0 >> 6;
-	and	%g5,255,%i1		! (Y1_3) ii0 &= 255;
-	fmuld	%f60,%f62,%f40		! (Y0_3) dtmp0 = yy0 * di0;
+	fmovdg	%fcc3,LTHRESHOLD,%f28	/* (Y1_2) yy0 = LTHRESH; */
+	sra	%g5,6,%i0		/* (Y1_3) i0 = ii0 >> 6; */
+	and	%g5,255,%i1		/* (Y1_3) ii0 &= 255; */
+	fmuld	%f60,%f62,%f40		/* (Y0_3) dtmp0 = yy0 * di0; */
 
-	fcmped	%fcc1,LTHRESHOLD,%f22	! (Y0_1) if (yy0 <= LTHRESH)
-	sll	%i1,3,%i3		! (Y1_3) ii0 <<= 3;
-	and	%i0,-4,%i0		! (Y1_3) i0 &= -4;
+	fcmped	%fcc1,LTHRESHOLD,%f22	/* (Y0_1) if (yy0 <= LTHRESH) */
+	sll	%i1,3,%i3		/* (Y1_3) ii0 <<= 3; */
+	and	%i0,-4,%i0		/* (Y1_3) i0 &= -4; */
 
-	fitod	%f0,%f52		! (Y0_2) dtmp0 = (double)ii0;
-	ld	[%i0+%o3],%f10		! (Y1_3) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0];
+	fitod	%f0,%f52		/* (Y0_2) dtmp0 = (double)ii0; */
+	ld	[%i0+%o3],%f10		/* (Y1_3) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0]; */
 
-	faddd	%f58,KB1,%f58		! (Y1_3) dtmp0 += KB1;
-	add	%o5,stridey,%o5		! py += stridey
-	ldd	[%o4+%i3],%f18		! (Y1_3) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0];
-	fmuld	%f48,%f46,%f24		! (Y1_1) yy0 = dtmp0 * yy;
+	faddd	%f58,KB1,%f58		/* (Y1_3) dtmp0 += KB1; */
+	add	%o5,stridey,%o5		/* py += stridey */
+	ldd	[%o4+%i3],%f18		/* (Y1_3) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0]; */
+	fmuld	%f48,%f46,%f24		/* (Y1_1) yy0 = dtmp0 * yy; */
 
-	fdtoi	%f28,%f3		! (Y1_2) ii0 = (int) yy0;
-	lda	[%o5]0x82,%i3		! (Y0_0) ay = py[0];
+	fdtoi	%f28,%f3		/* (Y1_2) ii0 = (int) yy0; */
+	lda	[%o5]0x82,%i3		/* (Y0_0) ay = py[0]; */
 
-	faddd	%f40,%f62,%f60		! (Y0_3) dtmp0 += di0;
-	st	%f3,[%fp+tmp0]		! (Y1_2) STORE ii0
+	faddd	%f40,%f62,%f60		/* (Y0_3) dtmp0 += di0; */
+	st	%f3,[%fp+tmp0]		/* (Y1_2) STORE ii0 */
 
-	fsubd	%f26,%f52,%f40		! (Y0_2) y0 = yy0 - dtmp0;
-	lda	[%o5]0x82,%f5		! (Y0_0) ftmp0 = py[0];
+	fsubd	%f26,%f52,%f40		/* (Y0_2) y0 = yy0 - dtmp0; */
+	lda	[%o5]0x82,%f5		/* (Y0_0) ftmp0 = py[0]; */
 
-	fmuld	%f58,%f56,%f56		! (Y1_3) yy0 = dtmp0 * y0;
-	and	%i3,MASK_0x7fffffff,%i3	! (Y0_0) ay &= 0x7fffffff
-	fmovdl	%fcc0,HTHRESHOLD,%f22	! (Y0_1) yy0 = HTHRESH;
+	fmuld	%f58,%f56,%f56		/* (Y1_3) yy0 = dtmp0 * y0; */
+	and	%i3,MASK_0x7fffffff,%i3	/* (Y0_0) ay &= 0x7fffffff */
+	fmovdl	%fcc0,HTHRESHOLD,%f22	/* (Y0_1) yy0 = HTHRESH; */
 
-	fmuld	%f10,%f18,%f50		! (Y1_3) di0 *= dtmp0;
+	fmuld	%f10,%f18,%f50		/* (Y1_3) di0 *= dtmp0; */
 	cmp	%i3,%o1
 	bge,pn	%icc,.xupdate11
-	fcmped	%fcc2,HTHRESHOLD,%f24	! (Y1_1) if (yy0 >= HTHRESH)
+	fcmped	%fcc2,HTHRESHOLD,%f24	/* (Y1_1) if (yy0 >= HTHRESH) */
 .xcont11:
-	fdtos	%f60,%f1		! (Y0_3) ftmp0 = (float)dtmp0;
-	add	%i5,stridez,%i3		! pz += stridez
-	st	%f1,[%i5]		! (Y0_3) pz[0] = ftmp0;
+	fdtos	%f60,%f1		/* (Y0_3) ftmp0 = (float)dtmp0; */
+	add	%i5,stridez,%i3		/* pz += stridez */
+	st	%f1,[%i5]		/* (Y0_3) pz[0] = ftmp0; */
 
 	subcc	counter,1,counter
 	bneg,pn	%icc,.xbegin
 	or	%g0,%i3,%g1
 
-	ld	[%fp+tmp1],%i2		! (Y0_2) LOAD ii0
-	fmuld	KB2,%f40,%f36		! (Y0_2) dtmp0 = KB2 * y0;
-	fstod	%f5,%f52		! (Y0_0) dtmp0 = (double)ftmp0;
+	ld	[%fp+tmp1],%i2		/* (Y0_2) LOAD ii0 */
+	fmuld	KB2,%f40,%f36		/* (Y0_2) dtmp0 = KB2 * y0; */
+	fstod	%f5,%f52		/* (Y0_0) dtmp0 = (double)ftmp0; */
 
-	fmovdg	%fcc1,LTHRESHOLD,%f22	! (Y0_1) yy0 = LTHRESH;
+	fmovdg	%fcc1,LTHRESHOLD,%f22	/* (Y0_1) yy0 = LTHRESH; */
 
-	fmuld	%f56,%f50,%f58		! (Y1_3) dtmp0 = yy0 * di0;
-	sra	%i2,6,%l6		! (Y0_2) i0 = ii0 >> 6;
-	and	%i2,255,%l7		! (Y0_2) ii0 &= 255;
-	fcmped	%fcc3,LTHRESHOLD,%f24	! (Y1_1) if (yy0 <= LTHRESH)
+	fmuld	%f56,%f50,%f58		/* (Y1_3) dtmp0 = yy0 * di0; */
+	sra	%i2,6,%l6		/* (Y0_2) i0 = ii0 >> 6; */
+	and	%i2,255,%l7		/* (Y0_2) ii0 &= 255; */
+	fcmped	%fcc3,LTHRESHOLD,%f24	/* (Y1_1) if (yy0 <= LTHRESH) */
 
-	fitod	%f3,%f56		! (Y1_2) dtmp0 = (double)ii0;
-	sll	%l7,3,%o0		! (Y0_2) ii0 <<= 3;
-	and	%l6,-4,%g5		! (Y0_2) i0 &= -4;
+	fitod	%f3,%f56		/* (Y1_2) dtmp0 = (double)ii0; */
+	sll	%l7,3,%o0		/* (Y0_2) ii0 <<= 3; */
+	and	%l6,-4,%g5		/* (Y0_2) i0 &= -4; */
 
-	faddd	%f36,KB1,%f60		! (Y0_2) dtmp0 += KB1;
-	fmuld	%f52,%f46,%f26		! (Y0_0) yy0 = dtmp0 * yy;
-	ld	[%g5+%o3],%f10		! (Y0_2) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0]
+	faddd	%f36,KB1,%f60		/* (Y0_2) dtmp0 += KB1; */
+	fmuld	%f52,%f46,%f26		/* (Y0_0) yy0 = dtmp0 * yy; */
+	ld	[%g5+%o3],%f10		/* (Y0_2) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0] */
 
-	fdtoi	%f22,%f0		! (Y0_1) ii0 = (int) yy0;
-	ldd	[%o4+%o0],%f62		! (Y0_2) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0];
+	fdtoi	%f22,%f0		/* (Y0_1) ii0 = (int) yy0; */
+	ldd	[%o4+%o0],%f62		/* (Y0_2) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0]; */
 
-	faddd	%f58,%f50,%f58		! (Y1_3) dtmp0 += di0;
-	st	%f0,[%fp+tmp1]		! (Y0_1) STORE ii0
+	faddd	%f58,%f50,%f58		/* (Y1_3) dtmp0 += di0; */
+	st	%f0,[%fp+tmp1]		/* (Y0_1) STORE ii0 */
 
-	fsubd	%f28,%f56,%f56		! (Y1_2) y0 = yy0 - dtmp0;
+	fsubd	%f28,%f56,%f56		/* (Y1_2) y0 = yy0 - dtmp0; */
 
-	fmuld	%f60,%f40,%f60		! (Y0_2) yy0 = dtmp0 * y0;
-	fmovdl	%fcc2,HTHRESHOLD,%f24	! (Y1_1) yy0 = HTHRESH;
+	fmuld	%f60,%f40,%f60		/* (Y0_2) yy0 = dtmp0 * y0; */
+	fmovdl	%fcc2,HTHRESHOLD,%f24	/* (Y1_1) yy0 = HTHRESH; */
 
-	fmuld	%f10,%f62,%f62		! (Y0_2) di0 *= dtmp0;
-	ld	[%fp+tmp0],%g5		! (Y1_2) LOAD ii0
-	fcmped	%fcc0,HTHRESHOLD,%f26	! (Y0_0) if (yy0 >= HTHRESH)
+	fmuld	%f10,%f62,%f62		/* (Y0_2) di0 *= dtmp0; */
+	ld	[%fp+tmp0],%g5		/* (Y1_2) LOAD ii0 */
+	fcmped	%fcc0,HTHRESHOLD,%f26	/* (Y0_0) if (yy0 >= HTHRESH) */
 
-	fdtos	%f58,%f9		! (Y1_3) ftmp0 = (float)dtmp0;
+	fdtos	%f58,%f9		/* (Y1_3) ftmp0 = (float)dtmp0; */
 
-	fmuld	KB2,%f56,%f58		! (Y1_2) dtmp0 = KB2 * y0;
-	add	%i3,stridez,%i5		! pz += stridez
-	st	%f9,[%i3]		! (Y1_3) pz[0] = ftmp0;
+	fmuld	KB2,%f56,%f58		/* (Y1_2) dtmp0 = KB2 * y0; */
+	add	%i3,stridez,%i5		/* pz += stridez */
+	st	%f9,[%i3]		/* (Y1_3) pz[0] = ftmp0; */
 
 	subcc	counter,1,counter
 	bneg,pn	%icc,.xbegin
 	or	%g0,%i5,%g1
 
-	fmovdg	%fcc3,LTHRESHOLD,%f24	! (Y1_2) yy0 = LTHRESH;
-	sra	%g5,6,%i0		! (Y1_3) i0 = ii0 >> 6;
-	and	%g5,255,%i1		! (Y1_3) ii0 &= 255;
-	fmuld	%f60,%f62,%f40		! (Y0_3) dtmp0 = yy0 * di0;
+	fmovdg	%fcc3,LTHRESHOLD,%f24	/* (Y1_2) yy0 = LTHRESH; */
+	sra	%g5,6,%i0		/* (Y1_3) i0 = ii0 >> 6; */
+	and	%g5,255,%i1		/* (Y1_3) ii0 &= 255; */
+	fmuld	%f60,%f62,%f40		/* (Y0_3) dtmp0 = yy0 * di0; */
 
-	fcmped	%fcc1,LTHRESHOLD,%f26	! (Y0_1) if (yy0 <= LTHRESH)
-	sll	%i1,3,%i3		! (Y1_3) ii0 <<= 3;
-	and	%i0,-4,%i0		! (Y1_3) i0 &= -4;
+	fcmped	%fcc1,LTHRESHOLD,%f26	/* (Y0_1) if (yy0 <= LTHRESH) */
+	sll	%i1,3,%i3		/* (Y1_3) ii0 <<= 3; */
+	and	%i0,-4,%i0		/* (Y1_3) i0 &= -4; */
 
-	fitod	%f0,%f52		! (Y0_2) dtmp0 = (double)ii0;
-	ld	[%i0+%o3],%f10		! (Y1_3) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0];
+	fitod	%f0,%f52		/* (Y0_2) dtmp0 = (double)ii0; */
+	ld	[%i0+%o3],%f10		/* (Y1_3) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0]; */
 
-	faddd	%f58,KB1,%f58		! (Y1_3) dtmp0 += KB1;
-	ldd	[%o4+%i3],%f18		! (Y1_3) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0];
+	faddd	%f58,KB1,%f58		/* (Y1_3) dtmp0 += KB1; */
+	ldd	[%o4+%i3],%f18		/* (Y1_3) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0]; */
 
-	fdtoi	%f24,%f3		! (Y1_2) ii0 = (int) yy0;
+	fdtoi	%f24,%f3		/* (Y1_2) ii0 = (int) yy0; */
 
-	faddd	%f40,%f62,%f60		! (Y0_3) dtmp0 += di0;
-	st	%f3,[%fp+tmp0]		! (Y1_2) STORE ii0
+	faddd	%f40,%f62,%f60		/* (Y0_3) dtmp0 += di0; */
+	st	%f3,[%fp+tmp0]		/* (Y1_2) STORE ii0 */
 
-	fsubd	%f22,%f52,%f40		! (Y0_2) y0 = yy0 - dtmp0;
+	fsubd	%f22,%f52,%f40		/* (Y0_2) y0 = yy0 - dtmp0; */
 
-	fmuld	%f58,%f56,%f56		! (Y1_3) yy0 = dtmp0 * y0;
-	fmovdl	%fcc0,HTHRESHOLD,%f26	! (Y0_1) yy0 = HTHRESH;
+	fmuld	%f58,%f56,%f56		/* (Y1_3) yy0 = dtmp0 * y0; */
+	fmovdl	%fcc0,HTHRESHOLD,%f26	/* (Y0_1) yy0 = HTHRESH; */
 
-	fmuld	%f10,%f18,%f50		! (Y1_3) di0 *= dtmp0;
+	fmuld	%f10,%f18,%f50		/* (Y1_3) di0 *= dtmp0; */
 
-	fdtos	%f60,%f1		! (Y0_3) ftmp0 = (float)dtmp0;
-	add	%i5,stridez,%i3		! pz += stridez
-	st	%f1,[%i5]		! (Y0_3) pz[0] = ftmp0;
+	fdtos	%f60,%f1		/* (Y0_3) ftmp0 = (float)dtmp0; */
+	add	%i5,stridez,%i3		/* pz += stridez */
+	st	%f1,[%i5]		/* (Y0_3) pz[0] = ftmp0; */
 
 	subcc	counter,1,counter
 	bneg,pn	%icc,.xbegin
 	or	%g0,%i3,%g1
 
-	ld	[%fp+tmp1],%i2		! (Y0_2) LOAD ii0
-	fmuld	KB2,%f40,%f36		! (Y0_2) dtmp0 = KB2 * y0;
+	ld	[%fp+tmp1],%i2		/* (Y0_2) LOAD ii0 */
+	fmuld	KB2,%f40,%f36		/* (Y0_2) dtmp0 = KB2 * y0; */
 
-	fmovdg	%fcc1,LTHRESHOLD,%f26	! (Y0_1) yy0 = LTHRESH;
+	fmovdg	%fcc1,LTHRESHOLD,%f26	/* (Y0_1) yy0 = LTHRESH; */
 
-	fmuld	%f56,%f50,%f58		! (Y1_3) dtmp0 = yy0 * di0;
-	sra	%i2,6,%l6		! (Y0_2) i0 = ii0 >> 6;
-	and	%i2,255,%l7		! (Y0_2) ii0 &= 255;
+	fmuld	%f56,%f50,%f58		/* (Y1_3) dtmp0 = yy0 * di0; */
+	sra	%i2,6,%l6		/* (Y0_2) i0 = ii0 >> 6; */
+	and	%i2,255,%l7		/* (Y0_2) ii0 &= 255; */
 
-	fitod	%f3,%f56		! (Y1_2) dtmp0 = (double)ii0;
-	sll	%l7,3,%o0		! (Y0_2) ii0 <<= 3;
-	and	%l6,-4,%g5		! (Y0_2) i0 &= -4;
+	fitod	%f3,%f56		/* (Y1_2) dtmp0 = (double)ii0; */
+	sll	%l7,3,%o0		/* (Y0_2) ii0 <<= 3; */
+	and	%l6,-4,%g5		/* (Y0_2) i0 &= -4; */
 
-	faddd	%f36,KB1,%f60		! (Y0_2) dtmp0 += KB1;
-	ld	[%g5+%o3],%f10		! (Y0_2) di0 = ((double*)((char*)(__mt_constexp2fb + 150) + i0))[0];
+	faddd	%f36,KB1,%f60		/* (Y0_2) dtmp0 += KB1; */
+	ld	[%g5+%o3],%f10		/* (Y0_2) di0 = ((double*)((char*)(__mt_constexp2fb + 150) + i0))[0]; */
 
-	fdtoi	%f26,%f0		! (Y0_1) ii0 = (int) yy0;
-	ldd	[%o4+%o0],%f62		! (Y0_2) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0];
+	fdtoi	%f26,%f0		/* (Y0_1) ii0 = (int) yy0; */
+	ldd	[%o4+%o0],%f62		/* (Y0_2) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0]; */
 
-	faddd	%f58,%f50,%f58		! (Y1_3) dtmp0 += di0;
-	st	%f0,[%fp+tmp1]		! (Y0_1) STORE ii0
+	faddd	%f58,%f50,%f58		/* (Y1_3) dtmp0 += di0; */
+	st	%f0,[%fp+tmp1]		/* (Y0_1) STORE ii0 */
 
-	fsubd	%f24,%f56,%f56		! (Y1_2) y0 = yy0 - dtmp0;
+	fsubd	%f24,%f56,%f56		/* (Y1_2) y0 = yy0 - dtmp0; */
 
-	fmuld	%f60,%f40,%f60		! (Y0_2) yy0 = dtmp0 * y0;
-	add	%i3,stridez,%i5		! pz += stridez
+	fmuld	%f60,%f40,%f60		/* (Y0_2) yy0 = dtmp0 * y0; */
+	add	%i3,stridez,%i5		/* pz += stridez */
 
-	fmuld	%f10,%f62,%f62		! (Y0_2) di0 *= dtmp0;
-	ld	[%fp+tmp0],%g5		! (Y1_2) LOAD ii0
+	fmuld	%f10,%f62,%f62		/* (Y0_2) di0 *= dtmp0; */
+	ld	[%fp+tmp0],%g5		/* (Y1_2) LOAD ii0 */
 
-	fdtos	%f58,%f9		! (Y1_3) ftmp0 = (float)dtmp0;
-	st	%f9,[%i3]		! (Y1_3) pz[0] = ftmp0;
+	fdtos	%f58,%f9		/* (Y1_3) ftmp0 = (float)dtmp0; */
+	st	%f9,[%i3]		/* (Y1_3) pz[0] = ftmp0; */
 
 	subcc	counter,1,counter
 	bneg,pn	%icc,.xbegin
 	or	%g0,%i5,%g1
 
-	fmuld	KB2,%f56,%f58		! (Y1_2) dtmp0 = KB2 * y0;
+	fmuld	KB2,%f56,%f58		/* (Y1_2) dtmp0 = KB2 * y0; */
 
-	sra	%g5,6,%i0		! (Y1_3) i0 = ii0 >> 6;
-	and	%g5,255,%i1		! (Y1_3) ii0 &= 255;
-	fmuld	%f60,%f62,%f40		! (Y0_3) dtmp0 = yy0 * di0;
+	sra	%g5,6,%i0		/* (Y1_3) i0 = ii0 >> 6; */
+	and	%g5,255,%i1		/* (Y1_3) ii0 &= 255; */
+	fmuld	%f60,%f62,%f40		/* (Y0_3) dtmp0 = yy0 * di0; */
 
-	sll	%i1,3,%i3		! (Y1_3) ii0 <<= 3;
-	and	%i0,-4,%i0		! (Y1_3) i0 &= -4;
+	sll	%i1,3,%i3		/* (Y1_3) ii0 <<= 3; */
+	and	%i0,-4,%i0		/* (Y1_3) i0 &= -4; */
 
-	fitod	%f0,%f52		! (Y0_2) dtmp0 = (double)ii0;
-	ld	[%i0+%o3],%f10		! (Y1_3) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0];
+	fitod	%f0,%f52		/* (Y0_2) dtmp0 = (double)ii0; */
+	ld	[%i0+%o3],%f10		/* (Y1_3) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0]; */
 
-	faddd	%f58,KB1,%f58		! (Y1_3) dtmp0 += KB1;
-	ldd	[%o4+%i3],%f18		! (Y1_3) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0];
+	faddd	%f58,KB1,%f58		/* (Y1_3) dtmp0 += KB1; */
+	ldd	[%o4+%i3],%f18		/* (Y1_3) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0]; */
 
-	faddd	%f40,%f62,%f60		! (Y0_3) dtmp0 += di0;
+	faddd	%f40,%f62,%f60		/* (Y0_3) dtmp0 += di0; */
 
-	fsubd	%f26,%f52,%f40		! (Y0_2) y0 = yy0 - dtmp0;
+	fsubd	%f26,%f52,%f40		/* (Y0_2) y0 = yy0 - dtmp0; */
 
-	fmuld	%f58,%f56,%f56		! (Y1_3) yy0 = dtmp0 * y0;
+	fmuld	%f58,%f56,%f56		/* (Y1_3) yy0 = dtmp0 * y0; */
 
-	fmuld	%f10,%f18,%f50		! (Y1_3) di0 *= dtmp0;
+	fmuld	%f10,%f18,%f50		/* (Y1_3) di0 *= dtmp0; */
 
-	fdtos	%f60,%f1		! (Y0_3) ftmp0 = (float)dtmp0;
-	add	%i5,stridez,%i3		! pz += stridez
-	st	%f1,[%i5]		! (Y0_3) pz[0] = ftmp0;
+	fdtos	%f60,%f1		/* (Y0_3) ftmp0 = (float)dtmp0; */
+	add	%i5,stridez,%i3		/* pz += stridez */
+	st	%f1,[%i5]		/* (Y0_3) pz[0] = ftmp0; */
 
 	subcc	counter,1,counter
 	bneg,pn	%icc,.xbegin
 	or	%g0,%i3,%g1
 
-	ld	[%fp+tmp1],%i2		! (Y0_2) LOAD ii0
-	fmuld	KB2,%f40,%f36		! (Y0_2) dtmp0 = KB2 * y0;
+	ld	[%fp+tmp1],%i2		/* (Y0_2) LOAD ii0 */
+	fmuld	KB2,%f40,%f36		/* (Y0_2) dtmp0 = KB2 * y0; */
 
-	fmuld	%f56,%f50,%f58		! (Y1_3) dtmp0 = yy0 * di0;
-	sra	%i2,6,%l6		! (Y0_2) i0 = ii0 >> 6;
-	and	%i2,255,%l7		! (Y0_2) ii0 &= 255;
+	fmuld	%f56,%f50,%f58		/* (Y1_3) dtmp0 = yy0 * di0; */
+	sra	%i2,6,%l6		/* (Y0_2) i0 = ii0 >> 6; */
+	and	%i2,255,%l7		/* (Y0_2) ii0 &= 255; */
 
-	sll	%l7,3,%o0		! (Y0_2) ii0 <<= 3;
-	and	%l6,-4,%g5		! (Y0_2) i0 &= -4;
+	sll	%l7,3,%o0		/* (Y0_2) ii0 <<= 3; */
+	and	%l6,-4,%g5		/* (Y0_2) i0 &= -4; */
 
-	faddd	%f36,KB1,%f60		! (Y0_2) dtmp0 += KB1;
-	ld	[%g5+%o3],%f10		! (Y0_2) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0]
+	faddd	%f36,KB1,%f60		/* (Y0_2) dtmp0 += KB1; */
+	ld	[%g5+%o3],%f10		/* (Y0_2) di0 = ((double*)((char*)(__mt_constexp2fb + 150 ) + i0))[0] */
 
-	ldd	[%o4+%o0],%f62		! (Y0_2) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0];
+	ldd	[%o4+%o0],%f62		/* (Y0_2) dtmp0 = ((double*)((char*)__mt_constexp2fa + ii0))[0]; */
 
-	faddd	%f58,%f50,%f58		! (Y1_3) dtmp0 += di0;
+	faddd	%f58,%f50,%f58		/* (Y1_3) dtmp0 += di0; */
 
-	fmuld	%f60,%f40,%f60		! (Y0_2) yy0 = dtmp0 * y0;
+	fmuld	%f60,%f40,%f60		/* (Y0_2) yy0 = dtmp0 * y0; */
 
-	fmuld	%f10,%f62,%f62		! (Y0_2) di0 *= dtmp0;
+	fmuld	%f10,%f62,%f62		/* (Y0_2) di0 *= dtmp0; */
 
-	fdtos	%f58,%f9		! (Y1_3) ftmp0 = (float)dtmp0;
-	add	%i3,stridez,%i5		! pz += stridez
-	st	%f9,[%i3]		! (Y1_3) pz[0] = ftmp0;
+	fdtos	%f58,%f9		/* (Y1_3) ftmp0 = (float)dtmp0; */
+	add	%i3,stridez,%i5		/* pz += stridez */
+	st	%f9,[%i3]		/* (Y1_3) pz[0] = ftmp0; */
 
 	subcc	counter,1,counter
 	bneg,pn	%icc,.xbegin
 	or	%g0,%i5,%g1
 
-	fmuld	%f60,%f62,%f40		! (Y0_3) dtmp0 = yy0 * di0;
+	fmuld	%f60,%f62,%f40		/* (Y0_3) dtmp0 = yy0 * di0; */
 
-	faddd	%f40,%f62,%f60		! (Y0_3) dtmp0 += di0;
+	faddd	%f40,%f62,%f60		/* (Y0_3) dtmp0 += di0; */
 
-	fdtos	%f60,%f1		! (Y0_3) ftmp0 = (float)dtmp0;
-	add	%i5,stridez,%i3		! pz += stridez
-	st	%f1,[%i5]		! (Y0_3) pz[0] = ftmp0;
+	fdtos	%f60,%f1		/* (Y0_3) ftmp0 = (float)dtmp0; */
+	add	%i5,stridez,%i3		/* pz += stridez */
+	st	%f1,[%i5]		/* (Y0_3) pz[0] = ftmp0; */
 
 	ba	.xbegin
 	or	%g0,%i3,%g1
 
 .xspec:
-	bg,a,pn	%icc,.yisnan		! if (ay > 0x7f800000) /* |Y| = Nan */
-	ld	[%o5],%f8		! fy = *py;
+	bg,a,pn	%icc,.yisnan		/* if (ay > 0x7f800000) |Y| = Nan */
+	ld	[%o5],%f8		/* fy = *py; */
 
-	ld	[%fp+tmp5],%l6		! LOAD (ax-0x3f800000)<<63
-	srl	%i5,31,%i5		! uy >> 31
+	ld	[%fp+tmp5],%l6		/* LOAD (ax-0x3f800000)<<63 */
+	srl	%i5,31,%i5		/* uy >> 31 */
 
-	cmp	%l6,%i5			! if((ax < 0x3f800000) != (uy >> 31))
-	be,a,pn	%icc,.xspec_exit	! if((ax < 0x3f800000) != (uy >> 31))
-	st	%i3,[%g1]		! fy = *(float*)&ay;
+	cmp	%l6,%i5			/* if((ax < 0x3f800000) != (uy >> 31)) */
+	be,a,pn	%icc,.xspec_exit	/* if((ax < 0x3f800000) != (uy >> 31)) */
+	st	%i3,[%g1]		/* fy = *(float*)&ay; */
 
-	st	%g0,[%g1]		! fy = ZERO
+	st	%g0,[%g1]		/* fy = ZERO */
 	add	%g1,stridez,%g1
 	ba	.xbegin1
 	add	%o5,stridey,%o5
 
 .yisnan:
-	fmuls	%f8,%f8,%f8		! fy = *py * *py;  /* |Y| = Nan */
+	fmuls	%f8,%f8,%f8		/* fy = *py * *py;  |Y| = Nan */
 	st	%f8,[%g1]
 
 .xspec_exit:

@@ -151,19 +151,19 @@ constants:
 	PIC_SETUP(l7)
 	PIC_SET(l7,constants,l1)
 	mov	%l1,%g1
-	wr	%g0,0x82,%asi		! set %asi for non-faulting loads
+	wr	%g0,0x82,%asi		/* set %asi for non-faulting loads */
 #ifdef __sparcv9
-	stx	%i1,[%fp+xsave]		! save arguments
+	stx	%i1,[%fp+xsave]		/* save arguments */
 	stx	%i3,[%fp+ysave]
 #else
-	st	%i1,[%fp+xsave]		! save arguments
+	st	%i1,[%fp+xsave]		/* save arguments */
 	st	%i3,[%fp+ysave]
 #endif
 	st	%i0,[%fp+nsave]
 	st	%i2,[%fp+sxsave]
 	st	%i4,[%fp+sysave]
-	mov	0,%i5			! biguns = 0
-	ldd	[%g1+S0],%f40		! load constants
+	mov	0,%i5			/* biguns = 0 */
+	ldd	[%g1+S0],%f40		/* load constants */
 	ldd	[%g1+S1],%f42
 	ldd	[%g1+S2],%f44
 	ldd	[%g1+one],%f46
@@ -179,9 +179,9 @@ constants:
 	ldd	[%g1+thresh2],%f18
 	ldd	[%g1+inf],%f38
 	ldd	[%g1+signbit],%f28
-	sll	%i2,2,%i2		! scale strides
+	sll	%i2,2,%i2		/* scale strides */
 	sll	%i4,2,%i4
-	fzero	%f10			! loop prologue
+	fzero	%f10			/* loop prologue */
 	add	%fp,junk,%o0
 	fzero	%f12
 	add	%fp,junk,%o1
@@ -194,47 +194,47 @@ constants:
 ! 16-byte aligned
 	.align	16
 .start:
-	ld	[%i1],%f0		! *x
-	add	%i1,%i2,%i1		! x += stridex
+	ld	[%i1],%f0		/* *x */
+	add	%i1,%i2,%i1		/* x += stridex */
 	addcc	%i0,-1,%i0
 	fdtos	%f10,%f10
 
 	st	%f10,[%o0]
-	mov	%i3,%o0			! py0 = y
+	mov	%i3,%o0			/* py0 = y */
 	ble,pn	%icc,.last1
 ! delay slot
-	add	%i3,%i4,%i3		! y += stridey
+	add	%i3,%i4,%i3		/* y += stridey */
 
-	ld	[%i1],%f2		! *x
-	add	%i1,%i2,%i1		! x += stridex
+	ld	[%i1],%f2		/* *x */
+	add	%i1,%i2,%i1		/* x += stridex */
 	addcc	%i0,-1,%i0
 	fdtos	%f12,%f12
 
 	st	%f12,[%o1]
-	mov	%i3,%o1			! py1 = y
+	mov	%i3,%o1			/* py1 = y */
 	ble,pn	%icc,.last2
 ! delay slot
-	add	%i3,%i4,%i3		! y += stridey
+	add	%i3,%i4,%i3		/* y += stridey */
 
-	ld	[%i1],%f4		! *x
-	add	%i1,%i2,%i1		! x += stridex
+	ld	[%i1],%f4		/* *x */
+	add	%i1,%i2,%i1		/* x += stridex */
 	addcc	%i0,-1,%i0
 	fdtos	%f14,%f14
 
 	st	%f14,[%o2]
-	mov	%i3,%o2			! py2 = y
+	mov	%i3,%o2			/* py2 = y */
 	ble,pn	%icc,.last3
 ! delay slot
-	add	%i3,%i4,%i3		! y += stridey
+	add	%i3,%i4,%i3		/* y += stridey */
 
-	ld	[%i1],%f6		! *x
-	add	%i1,%i2,%i1		! x += stridex
+	ld	[%i1],%f6		/* *x */
+	add	%i1,%i2,%i1		/* x += stridex */
 	nop
 	fdtos	%f16,%f16
 
 	st	%f16,[%o3]
-	mov	%i3,%o3			! py3 = y
-	add	%i3,%i4,%i3		! y += stridey
+	mov	%i3,%o3			/* py3 = y */
+	add	%i3,%i4,%i3		/* y += stridey */
 .cont:
 	fabsd	%f0,%f30
 
@@ -254,25 +254,25 @@ constants:
 
 ! 16-byte aligned
 	andcc	%l0,2,%g0
-	bz,pn	%icc,.range0		! branch if > 2^19 pi
+	bz,pn	%icc,.range0		/* branch if > 2^19 pi */
 ! delay slot
 	fcmple32 %f30,%f8,%l0
 
 .check1:
 	andcc	%l1,2,%g0
-	bz,pn	%icc,.range1		! branch if > 2^19 pi
+	bz,pn	%icc,.range1		/* branch if > 2^19 pi */
 ! delay slot
 	fcmple32 %f32,%f8,%l1
 
 .check2:
 	andcc	%l2,2,%g0
-	bz,pn	%icc,.range2		! branch if > 2^19 pi
+	bz,pn	%icc,.range2		/* branch if > 2^19 pi */
 ! delay slot
 	fcmple32 %f34,%f8,%l2
 
 .check3:
 	andcc	%l3,2,%g0
-	bz,pn	%icc,.range3		! branch if > 2^19 pi
+	bz,pn	%icc,.range3		/* branch if > 2^19 pi */
 ! delay slot
 	fcmple32 %f36,%f8,%l3
 
@@ -296,7 +296,7 @@ constants:
 
 	fmuld	%f32,%f44,%f12
 	andcc	%o5,2,%g0
-	bz,pn	%icc,.medium		! branch if any argument is > pi/4
+	bz,pn	%icc,.medium		/* branch if any argument is > pi/4 */
 ! delay slot
 	nop
 
@@ -444,16 +444,16 @@ constants:
 	nop
 
 !.case0:
-	fmuld	%f30,%f54,%f10		! cos(x0)
+	fmuld	%f30,%f54,%f10		/* cos(x0) */
 	fzero	%f0
 
-	fmuld	%f32,%f54,%f12		! cos(x1)
+	fmuld	%f32,%f54,%f12		/* cos(x1) */
 	fzero	%f2
 
-	fmuld	%f34,%f54,%f14		! cos(x2)
+	fmuld	%f34,%f54,%f14		/* cos(x2) */
 	fzero	%f4
 
-	fmuld	%f36,%f54,%f16		! cos(x3)
+	fmuld	%f36,%f54,%f16		/* cos(x3) */
 	fzero	%f6
 
 	fmuld	%f30,%f48,%f20
@@ -533,16 +533,16 @@ constants:
 
 	.align	16
 .case1:
-	fmuld	%f30,%f54,%f10		! cos(x0)
+	fmuld	%f30,%f54,%f10		/* cos(x0) */
 	fzero	%f0
 
-	fmuld	%f32,%f54,%f12		! cos(x1)
+	fmuld	%f32,%f54,%f12		/* cos(x1) */
 	fzero	%f2
 
-	fmuld	%f34,%f54,%f14		! cos(x2)
+	fmuld	%f34,%f54,%f14		/* cos(x2) */
 	fzero	%f4
 
-	fmuld	%f36,%f44,%f16		! sin(x3)
+	fmuld	%f36,%f44,%f16		/* sin(x3) */
 
 	fmuld	%f30,%f48,%f20
 	faddd	%f10,%f52,%f10
@@ -626,15 +626,15 @@ constants:
 ! delay slot
 	nop
 
-	fmuld	%f30,%f54,%f10		! cos(x0)
+	fmuld	%f30,%f54,%f10		/* cos(x0) */
 	fzero	%f0
 
-	fmuld	%f32,%f54,%f12		! cos(x1)
+	fmuld	%f32,%f54,%f12		/* cos(x1) */
 	fzero	%f2
 
-	fmuld	%f34,%f44,%f14		! sin(x2)
+	fmuld	%f34,%f44,%f14		/* sin(x2) */
 
-	fmuld	%f36,%f54,%f16		! cos(x3)
+	fmuld	%f36,%f54,%f16		/* cos(x3) */
 	fzero	%f6
 
 	fmuld	%f30,%f48,%f20
@@ -714,15 +714,15 @@ constants:
 
 	.align	16
 .case3:
-	fmuld	%f30,%f54,%f10		! cos(x0)
+	fmuld	%f30,%f54,%f10		/* cos(x0) */
 	fzero	%f0
 
-	fmuld	%f32,%f54,%f12		! cos(x1)
+	fmuld	%f32,%f54,%f12		/* cos(x1) */
 	fzero	%f2
 
-	fmuld	%f34,%f44,%f14		! sin(x2)
+	fmuld	%f34,%f44,%f14		/* sin(x2) */
 
-	fmuld	%f36,%f44,%f16		! sin(x3)
+	fmuld	%f36,%f44,%f16		/* sin(x3) */
 
 	fmuld	%f30,%f48,%f20
 	faddd	%f10,%f52,%f10
@@ -811,15 +811,15 @@ constants:
 ! delay slot
 	nop
 
-	fmuld	%f30,%f54,%f10		! cos(x0)
+	fmuld	%f30,%f54,%f10		/* cos(x0) */
 	fzero	%f0
 
-	fmuld	%f32,%f44,%f12		! sin(x1)
+	fmuld	%f32,%f44,%f12		/* sin(x1) */
 
-	fmuld	%f34,%f54,%f14		! cos(x2)
+	fmuld	%f34,%f54,%f14		/* cos(x2) */
 	fzero	%f4
 
-	fmuld	%f36,%f54,%f16		! cos(x3)
+	fmuld	%f36,%f54,%f16		/* cos(x3) */
 	fzero	%f6
 
 	fmuld	%f30,%f48,%f20
@@ -899,15 +899,15 @@ constants:
 
 	.align	16
 .case5:
-	fmuld	%f30,%f54,%f10		! cos(x0)
+	fmuld	%f30,%f54,%f10		/* cos(x0) */
 	fzero	%f0
 
-	fmuld	%f32,%f44,%f12		! sin(x1)
+	fmuld	%f32,%f44,%f12		/* sin(x1) */
 
-	fmuld	%f34,%f54,%f14		! cos(x2)
+	fmuld	%f34,%f54,%f14		/* cos(x2) */
 	fzero	%f4
 
-	fmuld	%f36,%f44,%f16		! sin(x3)
+	fmuld	%f36,%f44,%f16		/* sin(x3) */
 
 	fmuld	%f30,%f48,%f20
 	faddd	%f10,%f52,%f10
@@ -991,14 +991,14 @@ constants:
 ! delay slot
 	nop
 
-	fmuld	%f30,%f54,%f10		! cos(x0)
+	fmuld	%f30,%f54,%f10		/* cos(x0) */
 	fzero	%f0
 
-	fmuld	%f32,%f44,%f12		! sin(x1)
+	fmuld	%f32,%f44,%f12		/* sin(x1) */
 
-	fmuld	%f34,%f44,%f14		! sin(x2)
+	fmuld	%f34,%f44,%f14		/* sin(x2) */
 
-	fmuld	%f36,%f54,%f16		! cos(x3)
+	fmuld	%f36,%f54,%f16		/* cos(x3) */
 	fzero	%f6
 
 	fmuld	%f30,%f48,%f20
@@ -1078,14 +1078,14 @@ constants:
 
 	.align	16
 .case7:
-	fmuld	%f30,%f54,%f10		! cos(x0)
+	fmuld	%f30,%f54,%f10		/* cos(x0) */
 	fzero	%f0
 
-	fmuld	%f32,%f44,%f12		! sin(x1)
+	fmuld	%f32,%f44,%f12		/* sin(x1) */
 
-	fmuld	%f34,%f44,%f14		! sin(x2)
+	fmuld	%f34,%f44,%f14		/* sin(x2) */
 
-	fmuld	%f36,%f44,%f16		! sin(x3)
+	fmuld	%f36,%f44,%f16		/* sin(x3) */
 
 	fmuld	%f30,%f48,%f20
 	faddd	%f10,%f52,%f10
@@ -1180,15 +1180,15 @@ constants:
 ! delay slot
 	nop
 
-	fmuld	%f30,%f44,%f10		! sin(x0)
+	fmuld	%f30,%f44,%f10		/* sin(x0) */
 
-	fmuld	%f32,%f54,%f12		! cos(x1)
+	fmuld	%f32,%f54,%f12		/* cos(x1) */
 	fzero	%f2
 
-	fmuld	%f34,%f54,%f14		! cos(x2)
+	fmuld	%f34,%f54,%f14		/* cos(x2) */
 	fzero	%f4
 
-	fmuld	%f36,%f54,%f16		! cos(x3)
+	fmuld	%f36,%f54,%f16		/* cos(x3) */
 	fzero	%f6
 
 	fmuld	%f30,%f40,%f20
@@ -1268,15 +1268,15 @@ constants:
 
 	.align	16
 .case9:
-	fmuld	%f30,%f44,%f10		! sin(x0)
+	fmuld	%f30,%f44,%f10		/* sin(x0) */
 
-	fmuld	%f32,%f54,%f12		! cos(x1)
+	fmuld	%f32,%f54,%f12		/* cos(x1) */
 	fzero	%f2
 
-	fmuld	%f34,%f54,%f14		! cos(x2)
+	fmuld	%f34,%f54,%f14		/* cos(x2) */
 	fzero	%f4
 
-	fmuld	%f36,%f44,%f16		! sin(x3)
+	fmuld	%f36,%f44,%f16		/* sin(x3) */
 
 	fmuld	%f30,%f40,%f20
 	faddd	%f10,%f42,%f10
@@ -1360,14 +1360,14 @@ constants:
 ! delay slot
 	nop
 
-	fmuld	%f30,%f44,%f10		! sin(x0)
+	fmuld	%f30,%f44,%f10		/* sin(x0) */
 
-	fmuld	%f32,%f54,%f12		! cos(x1)
+	fmuld	%f32,%f54,%f12		/* cos(x1) */
 	fzero	%f2
 
-	fmuld	%f34,%f44,%f14		! sin(x2)
+	fmuld	%f34,%f44,%f14		/* sin(x2) */
 
-	fmuld	%f36,%f54,%f16		! cos(x3)
+	fmuld	%f36,%f54,%f16		/* cos(x3) */
 	fzero	%f6
 
 	fmuld	%f30,%f40,%f20
@@ -1447,14 +1447,14 @@ constants:
 
 	.align	16
 .case11:
-	fmuld	%f30,%f44,%f10		! sin(x0)
+	fmuld	%f30,%f44,%f10		/* sin(x0) */
 
-	fmuld	%f32,%f54,%f12		! cos(x1)
+	fmuld	%f32,%f54,%f12		/* cos(x1) */
 	fzero	%f2
 
-	fmuld	%f34,%f44,%f14		! sin(x2)
+	fmuld	%f34,%f44,%f14		/* sin(x2) */
 
-	fmuld	%f36,%f44,%f16		! sin(x3)
+	fmuld	%f36,%f44,%f16		/* sin(x3) */
 
 	fmuld	%f30,%f40,%f20
 	faddd	%f10,%f42,%f10
@@ -1543,14 +1543,14 @@ constants:
 ! delay slot
 	nop
 
-	fmuld	%f30,%f44,%f10		! sin(x0)
+	fmuld	%f30,%f44,%f10		/* sin(x0) */
 
-	fmuld	%f32,%f44,%f12		! sin(x1)
+	fmuld	%f32,%f44,%f12		/* sin(x1) */
 
-	fmuld	%f34,%f54,%f14		! cos(x2)
+	fmuld	%f34,%f54,%f14		/* cos(x2) */
 	fzero	%f4
 
-	fmuld	%f36,%f54,%f16		! cos(x3)
+	fmuld	%f36,%f54,%f16		/* cos(x3) */
 	fzero	%f6
 
 	fmuld	%f30,%f40,%f20
@@ -1630,14 +1630,14 @@ constants:
 
 	.align	16
 .case13:
-	fmuld	%f30,%f44,%f10		! sin(x0)
+	fmuld	%f30,%f44,%f10		/* sin(x0) */
 
-	fmuld	%f32,%f44,%f12		! sin(x1)
+	fmuld	%f32,%f44,%f12		/* sin(x1) */
 
-	fmuld	%f34,%f54,%f14		! cos(x2)
+	fmuld	%f34,%f54,%f14		/* cos(x2) */
 	fzero	%f4
 
-	fmuld	%f36,%f44,%f16		! sin(x3)
+	fmuld	%f36,%f44,%f16		/* sin(x3) */
 
 	fmuld	%f30,%f40,%f20
 	faddd	%f10,%f42,%f10
@@ -1721,13 +1721,13 @@ constants:
 ! delay slot
 	nop
 
-	fmuld	%f30,%f44,%f10		! sin(x0)
+	fmuld	%f30,%f44,%f10		/* sin(x0) */
 
-	fmuld	%f32,%f44,%f12		! sin(x1)
+	fmuld	%f32,%f44,%f12		/* sin(x1) */
 
-	fmuld	%f34,%f44,%f14		! sin(x2)
+	fmuld	%f34,%f44,%f14		/* sin(x2) */
 
-	fmuld	%f36,%f54,%f16		! cos(x3)
+	fmuld	%f36,%f54,%f16		/* cos(x3) */
 	fzero	%f6
 
 	fmuld	%f30,%f40,%f20
@@ -1807,13 +1807,13 @@ constants:
 
 	.align	16
 .case15:
-	fmuld	%f30,%f44,%f10		! sin(x0)
+	fmuld	%f30,%f44,%f10		/* sin(x0) */
 
-	fmuld	%f32,%f44,%f12		! sin(x1)
+	fmuld	%f32,%f44,%f12		/* sin(x1) */
 
-	fmuld	%f34,%f44,%f14		! sin(x2)
+	fmuld	%f34,%f44,%f14		/* sin(x2) */
 
-	fmuld	%f36,%f44,%f16		! sin(x3)
+	fmuld	%f36,%f44,%f16		/* sin(x3) */
 
 	fmuld	%f30,%f40,%f20
 	faddd	%f10,%f42,%f10
@@ -1900,7 +1900,7 @@ constants:
 	fdtos	%f14,%f14
 	st	%f14,[%o2]
 	fdtos	%f16,%f16
-	tst	%i5			! check for huge arguments remaining
+	tst	%i5			/* check for huge arguments remaining */
 	be,pt	%icc,.exit
 ! delay slot
 	st	%f16,[%o3]
@@ -1914,9 +1914,9 @@ constants:
 	ld	[%fp+nsave],%o0
 	ld	[%fp+sxsave],%o2
 	ld	[%fp+sysave],%o4
-	sra	%o2,0,%o2		! sign-extend for V9
+	sra	%o2,0,%o2		/* sign-extend for V9 */
 	call	__vlibm_vsin_bigf
-	sra	%o4,0,%o4		! delay slot
+	sra	%o4,0,%o4		/* delay slot */
 
 .exit:
 	ret
@@ -1947,9 +1947,9 @@ constants:
 .range0:
 	fcmpgt32 %f38,%f30,%l0
 	andcc	%l0,2,%g0
-	bnz,a,pt %icc,1f		! branch if finite
+	bnz,a,pt %icc,1f		/* branch if finite */
 ! delay slot, squashed if branch not taken
-	mov	1,%i5			! set biguns
+	mov	1,%i5			/* set biguns */
 	fzeros	%f1
 	fmuls	%f0,%f1,%f0
 	st	%f0,[%o0]
@@ -1972,7 +1972,7 @@ constants:
 ! delay slot
 	fcmple32 %f30,%f8,%l0
 1:
-	fzero	%f0			! set up dummy argument
+	fzero	%f0			/* set up dummy argument */
 	add	%fp,junk,%o0
 	mov	2,%l0
 	ba,pt	%icc,.check1
@@ -1984,9 +1984,9 @@ constants:
 .range1:
 	fcmpgt32 %f38,%f32,%l1
 	andcc	%l1,2,%g0
-	bnz,a,pt %icc,1f		! branch if finite
+	bnz,a,pt %icc,1f		/* branch if finite */
 ! delay slot, squashed if branch not taken
-	mov	1,%i5			! set biguns
+	mov	1,%i5			/* set biguns */
 	fzeros	%f3
 	fmuls	%f2,%f3,%f2
 	st	%f2,[%o1]
@@ -2009,7 +2009,7 @@ constants:
 ! delay slot
 	fcmple32 %f32,%f8,%l1
 1:
-	fzero	%f2			! set up dummy argument
+	fzero	%f2			/* set up dummy argument */
 	add	%fp,junk,%o1
 	mov	2,%l1
 	ba,pt	%icc,.check2
@@ -2021,9 +2021,9 @@ constants:
 .range2:
 	fcmpgt32 %f38,%f34,%l2
 	andcc	%l2,2,%g0
-	bnz,a,pt %icc,1f		! branch if finite
+	bnz,a,pt %icc,1f		/* branch if finite */
 ! delay slot, squashed if branch not taken
-	mov	1,%i5			! set biguns
+	mov	1,%i5			/* set biguns */
 	fzeros	%f5
 	fmuls	%f4,%f5,%f4
 	st	%f4,[%o2]
@@ -2046,7 +2046,7 @@ constants:
 ! delay slot
 	fcmple32 %f34,%f8,%l2
 1:
-	fzero	%f4			! set up dummy argument
+	fzero	%f4			/* set up dummy argument */
 	add	%fp,junk,%o2
 	mov	2,%l2
 	ba,pt	%icc,.check3
@@ -2058,9 +2058,9 @@ constants:
 .range3:
 	fcmpgt32 %f38,%f36,%l3
 	andcc	%l3,2,%g0
-	bnz,a,pt %icc,1f		! branch if finite
+	bnz,a,pt %icc,1f		/* branch if finite */
 ! delay slot, squashed if branch not taken
-	mov	1,%i5			! set biguns
+	mov	1,%i5			/* set biguns */
 	fzeros	%f7
 	fmuls	%f6,%f7,%f6
 	st	%f6,[%o3]
@@ -2083,7 +2083,7 @@ constants:
 ! delay slot
 	fcmple32 %f36,%f8,%l3
 1:
-	fzero	%f6			! set up dummy argument
+	fzero	%f6			/* set up dummy argument */
 	add	%fp,junk,%o3
 	mov	2,%l3
 	ba,pt	%icc,.checkprimary

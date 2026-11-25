@@ -31,6 +31,10 @@
 #include <sys/machparam.h>
 #include <vm/hat_sfmmu.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * This file contains a kmdb-support function which retrieves the TTE for a
  * given VA/context pair, and returns it to the caller if the TTE is valid.

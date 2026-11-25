@@ -63,7 +63,7 @@
 	wr	%g0, FPRS_FEF, %fprs
 
 	bz,a	1f
-	 nop
+	nop
 
 	! save in-use fpregs on stack
 	membar	#Sync
@@ -73,18 +73,18 @@
 	membar	#Sync
 
 1:
-	brz,pn	%i2, 2f				! while (linecount) {
-	 nop
-	ldda	[%i0]ASI_BLK_P, %d0		! *dst = *src;
+	brz,pn	%i2, 2f				/* while (linecount) { */
+	nop
+	ldda	[%i0]ASI_BLK_P, %d0		/* *dst = *src; */
 	membar	#Sync
 	stda	%d0, [%i1]ASI_BLK_COMMIT_P
 	membar	#Sync
 
-	add	%i0, %i3, %i0			! dst++, src++;
+	add	%i0, %i3, %i0			/* dst++, src++; */
 	add	%i1, %i3, %i1
 
-	ba	1b				! linecount-- }
-	 dec	%i2
+	ba	1b				/* linecount-- } */
+	dec	%i2
 
 2:
 	membar	#Sync
@@ -92,7 +92,7 @@
 	! restore fp to the way we got it
 	btst	(FPRS_DU|FPRS_DL|FPRS_FEF), %i4
 	bz,a	3f
-	 nop
+	nop
 
 	! restore fpregs from stack
 	add	%fp, STACK_BIAS - 81, %o2
@@ -101,7 +101,7 @@
 	membar	#Sync
 
 3:
-	wr	%g0, %i4, %fprs			! fpu back to the way it was
+	wr	%g0, %i4, %fprs			/* fpu back to the way it was */
 	ret
-	 restore
+	restore
 	SET_SIZE(ac_blkcopy)

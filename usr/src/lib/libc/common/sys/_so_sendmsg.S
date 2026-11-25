@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_sendmsg.s"
+	.file	"_so_sendmsg.S"
 
 /* C library -- __so_sendmsg						*/
 /* int __so_sendmsg(int sock, const struct msghdr *msg, int flags)	*/

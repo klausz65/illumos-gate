@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"ntp_gettime.s"
+	.file	"ntp_gettime.S"
 
 /* C library -- ntp_gettime					*/
 /* int ntp_gettime (struct ntptimeval *);			*/

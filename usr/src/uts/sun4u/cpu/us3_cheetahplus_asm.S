@@ -50,6 +50,9 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /* BEGIN CSTYLED */
 

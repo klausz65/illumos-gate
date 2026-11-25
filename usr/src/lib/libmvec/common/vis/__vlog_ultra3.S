@@ -30,7 +30,7 @@
 
 #include "libm.h"
 	.weak	__vlog
-	.type	__vlog,#function
+	.type	__vlog, #function
 	__vlog = __vlog_ultra3
 
 /*

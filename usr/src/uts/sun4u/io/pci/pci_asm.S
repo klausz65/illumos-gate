@@ -49,6 +49,9 @@
 !
 ! Assumes alignment is correct.
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+
 	ENTRY(pci_do_phys_peek)
 
 	rdpr	%pstate, %o4		! Disable interrupts if not already
@@ -61,7 +64,7 @@
 	tst	%o3			! Set up %asi with modifier for
 	movz	%xcc, ASI_IOL, %g1	! Big/little endian physical space
 	movnz	%xcc, ASI_IO, %g1
-	mov	%g1, %asi
+	wr	%g0, %g1, %asi
 
 	cmp	%o0, 8			! 64-bit?
 	bne	.peek_int
@@ -116,8 +119,8 @@
 
 	tst	%o3
 	bz	.poke_asi_set
-	mov	ASI_IOL, %asi
-	mov	ASI_IO, %asi
+	wr	%g0, ASI_IOL, %asi
+	wr	%g0, ASI_IO, %asi
 .poke_asi_set:
 
 	cmp	%o0, 8			! 64 bit?

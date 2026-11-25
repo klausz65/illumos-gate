@@ -49,6 +49,10 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * Macro that flushes the entire Ecache.
  *
@@ -338,7 +342,7 @@ _dispatch_status_busy:
  *	%o0 - function or inumber to call
  *	%o1, %o2 - arguments (2 uint64_t's)
  */
-	.seg "text"
+	.section "text"
 
 	ENTRY(init_mondo)
 #ifdef DEBUG
@@ -725,8 +729,8 @@ label##1:
 	set	TSTATE_KERN, tmp1				;\
 	wrpr	%g0, tmp1, %tstate				;\
 	mov	%g0, %y						;\
-	mov	%g0, %asi					;\
-	mov	%g0, %ccr					;\
+	wr	%g0, %g0, %asi					;\
+	wr	%g0, %g0, %ccr					;\
 	mov	%g0, %l0					;\
 	mov	%g0, %l1					;\
 	mov	%g0, %l2					;\
@@ -1000,7 +1004,7 @@ label##1:
 	sub	%g0, 1, %g4
 	SET_SIZE(async_err)
 
-	.seg	".data"
+	.section	".data"
 	.global	opl_clr_freg
 	.global opl_cpu0_err_log
 
@@ -1372,10 +1376,10 @@ opl_uger_r:
 	set	UGESR_IUG_R, %g2
 	andcc	%g1, %g2, %g0
 	bz,pt	%xcc, opl_uger_panic1
-	 nop
+	nop
 	CLEAR_GEN_REGS(%g2, opl_uger_r_1)
 	ba	%xcc, opl_uger_panic1
-	 nop
+	nop
 
 opl_uger_panic:
 	mov	%g1, %g2			! %g2 = arg #1

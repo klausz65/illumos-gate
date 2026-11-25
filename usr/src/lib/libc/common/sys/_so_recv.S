@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_recv.s"
+	.file	"_so_recv.S"
 
 /* C library -- _so_recv						*/
 /* int __so_recv(int sock, void *buffer, size_t len, int flags)		*/

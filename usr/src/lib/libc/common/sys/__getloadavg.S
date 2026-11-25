@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"__getloadavg.s"
+	.file	"__getloadavg.S"
 
 /*
  * int __getloadavg(int *buf, int nelem);

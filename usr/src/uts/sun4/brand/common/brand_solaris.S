@@ -27,7 +27,7 @@
  * assembly files (e.g. sn1_brand_asm.s) for Solaris-derived brands.
  * We can't make these into functions since in the trap context there's
  * no easy place to save the extra parameters that would be required, so
- * each brand module needs its own copy of this code.  We #include this and
+ * each brand module needs its own copy of this code. We #include this and
  * use brand-specific #defines to replace the XXX_brand_... definitions.
  */
 
@@ -37,6 +37,10 @@
 #include "assym.h"
 
 #ifdef _ASM	/* The remainder of this file is only for assembly files */
+
+/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 #if defined(sun4v)
 
@@ -110,7 +114,7 @@ _entry:
 	 * %g2: pointer to our cpu structure
 	 *
 	 * Note that we're free to use any %g? registers as long as
-	 * we are are executing with alternate globals.  If we're
+	 * we are are executing with alternate globals. If we're
 	 * executing with user globals we need to backup any registers
 	 * that we want to use so that we can restore them when we're
 	 * done.
@@ -199,9 +203,9 @@ _emulation_check:
 	GLOBALS_RESTORE(%l0);		/* switch back to alternate globals */
 
 	/*
-	 * Check to see if we want to interpose on this system call.  If
+	 * Check to see if we want to interpose on this system call. If
 	 * not, we jump back into the normal syscall path and pretend
-	 * nothing happened.  %l1 contains the syscall we're invoking.
+	 * nothing happened. %l1 contains the syscall we're invoking.
 	 */
 	set	XXX_emulation_table, %g3;
 	ldn	[%g3], %g3;
@@ -237,13 +241,13 @@ _emulation_check:
 	nop;
 
 	/*
-	 * Now the magic happens.  Grab the trap return address and then
-	 * reset it to point to the user space handler.  When we execute
+	 * Now the magic happens. Grab the trap return address and then
+	 * reset it to point to the user space handler. When we execute
 	 * the 'done' instruction, we will jump into our handler instead of
-	 * the user's code.  We also stick the old return address in %g5,
+	 * the user's code. We also stick the old return address in %g5,
 	 * so we can return to the proper instruction in the user's code.
 	 * Note: we also pass back the base address of the syscall
-	 * emulation table.  This is a performance hack to avoid having to
+	 * emulation table. This is a performance hack to avoid having to
 	 * look it up on every call.
 	 */
 	rdpr	%tnpc, %l1;		/* save old tnpc */

@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"yield.s"
+	.file	"yield.S"
 
 #include "SYS.h"
 

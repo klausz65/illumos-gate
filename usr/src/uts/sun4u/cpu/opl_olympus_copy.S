@@ -35,6 +35,9 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+
 /*
  * Pseudo-code to aid in understanding the control flow of the
  * bcopy/copyin/copyout routines.
@@ -649,37 +652,37 @@
  * }
  */
 
-#define	FP_NOMIGRATE(label1, label2)				\
-	ldn	[THREAD_REG + T_LWP], %o0			;\
-	brz,a,pn %o0, label1/**/f				;\
-	  ldsb	[THREAD_REG + T_PREEMPT], %o1			;\
-	call	thread_nomigrate				;\
-	  nop							;\
-	ba	label2/**/f					;\
-	  nop							;\
-label1:								;\
-	inc	%o1						;\
-	stb	%o1, [THREAD_REG + T_PREEMPT]			;\
+#define	FP_NOMIGRATE(label1, label2)		\
+	ldn	[THREAD_REG + T_LWP], %o0	;\
+	brz,a,pn %o0, label1##f			;\
+	  ldsb	[THREAD_REG + T_PREEMPT], %o1	;\
+	call	thread_nomigrate		;\
+	  nop					;\
+	ba	label2##f			;\
+	  nop					;\
+label1:						;\
+	inc	%o1				;\
+	stb	%o1, [THREAD_REG + T_PREEMPT]	;\
 label2:
 
-#define	FP_ALLOWMIGRATE(label1, label2)			\
-	ldn	[THREAD_REG + T_LWP], %o0			;\
-	brz,a,pn %o0, label1/**/f				;\
-	  ldsb	[THREAD_REG + T_PREEMPT], %o1			;\
-	call thread_allowmigrate				;\
-	  nop							;\
-	ba	label2/**/f					;\
-	  nop							;\
-label1:								;\
-	dec	%o1						;\
-	brnz,pn	%o1, label2/**/f				;\
-	  stb	%o1, [THREAD_REG + T_PREEMPT]			;\
-	ldn	[THREAD_REG + T_CPU], %o0			;\
-	ldub	[%o0 + CPU_KPRUNRUN], %o0			;\
-	brz,pt	%o0, label2/**/f				;\
-	  nop							;\
-	call	kpreempt					;\
-	  rdpr	%pil, %o0					;\
+#define	FP_ALLOWMIGRATE(label1, label2)		\
+	ldn	[THREAD_REG + T_LWP], %o0	;\
+	brz,a,pn %o0, label1##f			;\
+	  ldsb	[THREAD_REG + T_PREEMPT], %o1	;\
+	call thread_allowmigrate		;\
+	  nop					;\
+	ba	label2##f			;\
+	  nop					;\
+label1:						;\
+	dec	%o1				;\
+	brnz,pn	%o1, label2##f			;\
+	  stb	%o1, [THREAD_REG + T_PREEMPT]	;\
+	ldn	[THREAD_REG + T_CPU], %o0	;\
+	ldub	[%o0 + CPU_KPRUNRUN], %o0	;\
+	brz,pt	%o0, label2##f			;\
+	  nop					;\
+	call	kpreempt			;\
+	  rdpr	%pil, %o0			;\
 label2:
 
 /*
@@ -688,7 +691,7 @@ label2:
  * Returns errno value on pagefault error, 0 if all ok
  */
 
-	.seg	".text"
+	.section	".text"
 	.align	4
 
 	ENTRY(kcopy)
@@ -2124,7 +2127,7 @@ fp_panic_msg:
 	st	%o2, [%fp + STACK_BIAS - SAVED_FPRS_OFFSET] ! save orig %fprs
 	btst	FPRS_FEF, %o2
 	bz,a,pt	%icc, .do_blockcopyout
-	  wr	%g0, FPRS_FEF, %fprs
+	wr	%g0, FPRS_FEF, %fprs
 
 	BST_FPQ2Q4_TOSTACK(%o2)
 
@@ -2134,16 +2137,16 @@ fp_panic_msg:
 	or	%l6, FPUSED_FLAG, %l6
 
 	andcc	DST, VIS_BLOCKSIZE - 1, TMP
-	mov	ASI_USER, %asi
+	wr	%g0, ASI_USER, %asi
 	bz,pt	%ncc, 2f
-	  neg	TMP
+	neg	TMP
 	add	TMP, VIS_BLOCKSIZE, TMP
 
 	! TMP = bytes required to align DST on FP_BLOCK boundary
 	! Using SRC as a tmp here
 	cmp	TMP, 3
 	bleu,pt	%ncc, 1f
-	  sub	CNT,TMP,CNT		! adjust main count
+	sub	CNT,TMP,CNT		! adjust main count
 	sub	TMP, 3, TMP		! adjust for end of loop test
 .co_blkalign:
 	ldub	[REALSRC], SRC		! move 4 bytes per loop iteration
@@ -2157,17 +2160,17 @@ fp_panic_msg:
 	stba	SRC, [DST - 2]%asi
 	ldub	[REALSRC - 1], SRC
 	bgu,pt	%ncc, .co_blkalign
-	  stba	SRC, [DST - 1]%asi
+	stba	SRC, [DST - 1]%asi
 
 	addcc	TMP, 3, TMP		! restore count adjustment
 	bz,pt	%ncc, 2f		! no bytes left?
-	  nop
+	nop
 1:	ldub	[REALSRC], SRC
 	inc	REALSRC
 	inc	DST
 	deccc	TMP
 	bgu	%ncc, 1b
-	  stba	SRC, [DST - 1]%asi
+	stba	SRC, [DST - 1]%asi
 
 2:
 	membar	#StoreLoad
@@ -2880,9 +2883,9 @@ fp_panic_msg:
 	or	%l6, FPUSED_FLAG, %l6
 
 	andcc	DST, VIS_BLOCKSIZE - 1, TMP
-	mov	ASI_USER, %asi
+	wr	%g0, ASI_USER, %asi
 	bz,pt	%ncc, 2f
-	  neg	TMP
+	neg	TMP
 	add	TMP, VIS_BLOCKSIZE, TMP
 
 	! TMP = bytes required to align DST on FP_BLOCK boundary

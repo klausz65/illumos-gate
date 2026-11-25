@@ -27,11 +27,11 @@
  * Use is subject to license terms.
  */
 
-	.file	"getpmsg.s"
+	.file	"getpmsg.S"
 
 /* C library -- getpmsg						*/
 /* int __getpmsg(int fd, struct strbuf *ctlptr,			*/
-/*	       struct strbuf *dataptr, int pri, int *flags)	*/
+/*		 struct strbuf *dataptr, int pri, int *flags)	*/
 
 #include "SYS.h"
 

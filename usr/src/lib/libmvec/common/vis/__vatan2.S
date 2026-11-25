@@ -33,106 +33,106 @@
 	RO_DATA
 	.align	64
 constants:
-	.word	0x3ff921fb,0x54442d18	! pio2
-	.word	0x3c91a626,0x33145c07	! pio2_lo
-	.word	0xbfd55555,0x555554ee	! p1
-	.word	0x3fc99999,0x997a1559	! p2
-	.word	0xbfc24923,0x158dfe02	! p3
-	.word	0x3fbc639d,0x0ed1347b	! p4
-	.word	0xffffffff,0x00000000	! mask
-	.word	0x3fc00000,0x00000000	! twom3
-	.word	0x46d00000,0x00000000	! two110
-	.word	0x3fe921fb,0x54442d18	! pio4
+	.word	0x3ff921fb,0x54442d18	/* pio2 */
+	.word	0x3c91a626,0x33145c07	/* pio2_lo */
+	.word	0xbfd55555,0x555554ee	/* p1 */
+	.word	0x3fc99999,0x997a1559	/* p2 */
+	.word	0xbfc24923,0x158dfe02	/* p3 */
+	.word	0x3fbc639d,0x0ed1347b	/* p4 */
+	.word	0xffffffff,0x00000000	/* mask */
+	.word	0x3fc00000,0x00000000	/* twom3 */
+	.word	0x46d00000,0x00000000	/* two110 */
+	.word	0x3fe921fb,0x54442d18	/* pio4 */
 
-! local storage indices
+/* local storage indices */
 
-#define xscl		STACK_BIAS-0x8
-#define yscl		STACK_BIAS-0x10
-#define twom3		STACK_BIAS-0x18
-#define two110		STACK_BIAS-0x20
-#define pio4		STACK_BIAS-0x28
-#define junk		STACK_BIAS-0x30
-! sizeof temp storage - must be a multiple of 16 for V9
-#define tmps		0x30
+#define	xscl		STACK_BIAS-0x8
+#define	yscl		STACK_BIAS-0x10
+#define	twom3		STACK_BIAS-0x18
+#define	two110		STACK_BIAS-0x20
+#define	pio4		STACK_BIAS-0x28
+#define	junk		STACK_BIAS-0x30
+/* sizeof temp storage - must be a multiple of 16 for V9 */
+#define	tmps		0x30
 
-! register use
+/* register use */
 
-! i0  n
-! i1  y
-! i2  stridey
-! i3  x
-! i4  stridex
-! i5  z
+/* i0  n */
+/* i1  y */
+/* i2  stridey */
+/* i3  x */
+/* i4  stridex */
+/* i5  z */
 
-! l0  k0
-! l1  k1
-! l2  k2
-! l3  hx
-! l4  pz0
-! l5  pz1
-! l6  pz2
-! l7  stridez
+/* l0  k0 */
+/* l1  k1 */
+/* l2  k2 */
+/* l3  hx */
+/* l4  pz0 */
+/* l5  pz1 */
+/* l6  pz2 */
+/* l7  stridez */
 
-! the following are 64-bit registers in both V8+ and V9
+/* the following are 64-bit registers in both V8+ and V9 */
 
-! g1  __vlibm_TBL_atan2
-! g5
+/* g1  __vlibm_TBL_atan2 */
+/* g5 */
 
-! o0  hy
-! o1  0x00004000
-! o2  0x1420
-! o3  0x7fe00000
-! o4  0x03600000
-! o5  0x00100000
-! o7
+/* o0  hy */
+/* o1  0x00004000 */
+/* o2  0x1420 */
+/* o3  0x7fe00000 */
+/* o4  0x03600000 */
+/* o5  0x00100000 */
+/* o7 */
 
-! f0  y0
-! f2  x0
-! f4  t0
-! f6  ah0
-! f8  al0
-! f10 y1
-! f12 x1
-! f14 t1
-! f16 ah1
-! f18 al1
-! f20 y2
-! f22 x2
-! f24 t2
-! f26 ah2
-! f28 al2
-! f30
-! f32
-! f34
-! f36 sx0
-! f38 sx1
-! f40 sx2
-! f42 sy0
-! f44 sy1
-! f46 sy2
+/* f0  y0 */
+/* f2  x0 */
+/* f4  t0 */
+/* f6  ah0 */
+/* f8  al0 */
+/* f10 y1 */
+/* f12 x1 */
+/* f14 t1 */
+/* f16 ah1 */
+/* f18 al1 */
+/* f20 y2 */
+/* f22 x2 */
+/* f24 t2 */
+/* f26 ah2 */
+/* f28 al2 */
+/* f30 */
+/* f32 */
+/* f34 */
+/* f36 sx0 */
+/* f38 sx1 */
+/* f40 sx2 */
+/* f42 sy0 */
+/* f44 sy1 */
+/* f46 sy2 */
 
-#define mask	%f48
-#define signbit	%f50
-#define pio2	%f52
-#define pio2_lo	%f54
-#define p1	%f56
-#define p2	%f58
-#define p3	%f60
-#define p4	%f62
+#define	mask	%f48
+#define	signbit	%f50
+#define	pio2	%f52
+#define	pio2_lo	%f54
+#define	p1	%f56
+#define	p2	%f58
+#define	p3	%f60
+#define	p4	%f62
 
 	ENTRY(__vatan2)
 	save	%sp,-SA(MINFRAME)-tmps,%sp
 	PIC_SETUP(l7)
 	PIC_SET(l7,constants,o0)
 	PIC_SET(l7,__vlibm_TBL_atan2,o1)
-	wr	%g0,0x82,%asi		! set %asi for non-faulting loads
+	wr	%g0,0x82,%asi		/* set %asi for non-faulting loads */
 	mov	%o1, %g1
 #ifdef __sparcv9
 	ldx	[%fp+STACK_BIAS+0xb0],%l7
 #else
 	ld	[%fp+0x5c],%l7
 #endif
-	ldd	[%o0+0x00],pio2		! load/set up constants
+	ldd	[%o0+0x00],pio2		/* load/set up constants */
 	ldd	[%o0+0x08],pio2_lo
 	ldd	[%o0+0x10],p1
 	ldd	[%o0+0x18],p2
@@ -147,39 +147,39 @@ constants:
 	sethi	%hi(0x7fe00000),%o3
 	sethi	%hi(0x03600000),%o4
 	sethi	%hi(0x00100000),%o5
-	ldd	[%o0+0x38],%f0		! copy rarely used constants to stack
+	ldd	[%o0+0x38],%f0		/* copy rarely used constants to stack */
 	ldd	[%o0+0x40],%f2
 	ldd	[%o0+0x48],%f4
 	std	%f0,[%fp+twom3]
 	std	%f2,[%fp+two110]
 	std	%f4,[%fp+pio4]
-	sll	%i2,3,%i2		! scale strides
+	sll	%i2,3,%i2		/* scale strides */
 	sll	%i4,3,%i4
 	sll	%l7,3,%l7
-	fzero	%f20			! loop prologue
+	fzero	%f20			/* loop prologue */
 	fzero	%f22
 	fzero	%f24
 	fzero	%f26
 	fzero	%f46
 	add	%fp,junk,%l6
-	ld	[%i1],%f0		! *y
+	ld	[%i1],%f0		/* *y */
 	ld	[%i1+4],%f1
-	ld	[%i3],%f8		! *x
+	ld	[%i3],%f8		/* *x */
 	ld	[%i3+4],%f9
-	ld	[%i1],%o0		! hy
+	ld	[%i1],%o0		/* hy */
 	ba	.loop
-	ld	[%i3],%l3		! hx
+	ld	[%i3],%l3		/* hx */
 
-! 16-byte aligned
+/* 16-byte aligned */
 	.align	16
 .loop:
 	fabsd	%f0,%f4
 	mov	%i5,%l4
-	add	%i1,%i2,%i1		! y += stridey
+	add	%i1,%i2,%i1		/* y += stridey */
 
 	fabsd	%f8,%f2
-	add	%i3,%i4,%i3		! x += stridex
-	add	%i5,%l7,%i5		! z += stridez
+	add	%i3,%i4,%i3		/* x += stridex */
+	add	%i5,%l7,%i5		/* z += stridez */
 
 	fand	%f0,signbit,%f42
 	sethi	%hi(0x80000000),%g5
@@ -192,11 +192,11 @@ constants:
 
 	fmovd	%f4,%f0
 
-	fmovdg	%fcc0,%f2,%f0		! swap if |y| > |x|
+	fmovdg	%fcc0,%f2,%f0		/* swap if |y| > |x| */
 
 	fmovdg	%fcc0,%f4,%f2
 	mov	%o0,%o7
-	 lda	[%i1]%asi,%f10		! preload next argument
+	 lda	[%i1]%asi,%f10		/* preload next argument */
 
 	  faddd	%f26,%f20,%f26
 	 lda	[%i1+4]%asi,%f11
@@ -206,11 +206,11 @@ constants:
 
 	movg	%fcc0,%o7,%l3
 
-	fbu,pn	%fcc0,.nan0		! if x or y is nan
-! delay slot
+	fbu,pn	%fcc0,.nan0		/* if x or y is nan */
+/* delay slot */
 	 lda	[%i3]%asi,%f18
 
-	sub	%l3,%o0,%l0		! hx - hy
+	sub	%l3,%o0,%l0		/* hx - hy */
 	sub	%l3,%o3,%g5
 	 fabsd	%f10,%f14
 	 lda	[%i3+4]%asi,%f19
@@ -219,20 +219,20 @@ constants:
 	  faddd	%f22,%f26,%f26
 
 	andcc	%g5,%o7,%g0
-	bge,pn	%icc,.big0		! if |x| or |x/y| is big
-! delay slot
+	bge,pn	%icc,.big0		/* if |x| or |x/y| is big */
+/* delay slot */
 	nop
 
 	 fabsd	%f18,%f12
 	cmp	%o0,%o5
-	bl,pn	%icc,.small0		! if |y| is small
-! delay slot
+	bl,pn	%icc,.small0		/* if |y| is small */
+/* delay slot */
 	 lda	[%i1]%asi,%o0
 
-	add	%l0,%o1,%l0		! k
+	add	%l0,%o1,%l0		/* k */
 	addcc	%i0,-1,%i0
 	ble,pn	%icc,.last1
-! delay slot
+/* delay slot */
 	 lda	[%i3]%asi,%l3
 
 .cont1:
@@ -278,7 +278,7 @@ constants:
 
 	  lda	[%i1+4]%asi,%f21
 	 fbu,pn	%fcc1,.nan1
-! delay slot
+/* delay slot */
 	 nop
 
 	  lda	[%i3]%asi,%f28
@@ -293,13 +293,13 @@ constants:
 	  fabsd	%f20,%f24
 	 andcc	%g5,%o7,%g0
 	 bge,pn	%icc,.big1
-! delay slot
+/* delay slot */
 	 nop
 
 	faddd	%f2,%f8,%f8
 	 cmp	%o0,%o5
 	 bl,pn	%icc,.small1
-! delay slot
+/* delay slot */
 	  lda	[%i1]%asi,%o0
 
 	  fabsd	%f28,%f22
@@ -310,7 +310,7 @@ constants:
 	fsubd	%f4,%f30,%f4
 	 srl	%l1,10,%l1
 	 ble,pn	%icc,.last2
-! delay slot
+/* delay slot */
 	  mov	%i5,%l6
 
 .cont2:
@@ -345,13 +345,13 @@ constants:
 	 fmuld	%f16,%f14,%f16
 	  movg	%fcc2,%l3,%o0
 
-	fnegd	pio2_lo,%f8		! al
+	fnegd	pio2_lo,%f8		/* al */
 	 fmuld	%f10,%f14,%f18
 	  movg	%fcc2,%o7,%l3
 
 	fzero	%f0
 	  fbu,pn %fcc2,.nan2
-! delay slot
+/* delay slot */
 	  nop
 
 	fmovdg	%fcc0,signbit,%f0
@@ -365,13 +365,13 @@ constants:
 	 faddd	%f12,%f18,%f18
 	  andcc	%g5,%o7,%g0
 	  bge,pn %icc,.big2
-! delay slot
+/* delay slot */
 	  nop
 
 	fxor	%f36,%f0,%f36
 	  cmp	%o0,%o5
 	  bl,pn	%icc,.small2
-! delay slot
+/* delay slot */
 	  nop
 
 .cont3:
@@ -381,14 +381,14 @@ constants:
 	 fsubd	%f14,%f32,%f14
 	  srl	%l2,10,%l2
 
-	fxor	%f36,pio2_lo,%f30	! al
+	fxor	%f36,pio2_lo,%f30	/* al */
 	  andn	%l2,0x1f,%l2
 
-	fxor	%f36,pio2,%f0		! ah
+	fxor	%f36,pio2,%f0		/* ah */
 	  cmp	%l2,%o2
 	  movg	%icc,%o2,%l2
 
-	fxor	%f42,%f36,%f42		! sy
+	fxor	%f42,%f36,%f42		/* sy */
 
 	faddd	%f8,%f30,%f8
 	ldd	[%l0+0x8],%f30
@@ -454,7 +454,7 @@ constants:
 	fmuld	%f36,%f30,%f36
 	  fxor	%f40,%f20,%f40
 
-	fnegd	pio2,%f6		! ah
+	fnegd	pio2,%f6		/* ah */
 	 fmuld	%f14,p3,%f16
 
 	fmovdg	%fcc0,signbit,%f6
@@ -489,7 +489,7 @@ constants:
 	  ldd	[%l2+0x8],%f34
 
 	faddd	%f6,%f0,%f6
-	lda	[%i1]%asi,%f0		! preload next argument
+	lda	[%i1]%asi,%f0		/* preload next argument */
 
 	 faddd	%f12,%f18,%f12
 	lda	[%i1+4]%asi,%f1
@@ -543,8 +543,6 @@ constants:
 	  fmuld	%f40,%f34,%f40
 	  fmovdg %fcc2,signbit,%f26
 
-! -
-
 	 fxor	%f16,%f44,%f16
 	 st	%f16,[%l5]
 
@@ -554,7 +552,7 @@ constants:
 
 	  faddd	%f22,%f40,%f22
 	bg,pt	%icc,.loop
-! delay slot
+/* delay slot */
 	  ldd	[%l2],%f20
 
 
@@ -572,7 +570,7 @@ constants:
 
 	.align	16
 .last1:
-	fmovd	pio2,%f10		! set up dummy arguments
+	fmovd	pio2,%f10		/* set up dummy arguments */
 	fmovd	pio2,%f18
 	fabsd	%f10,%f14
 	fabsd	%f18,%f12
@@ -580,7 +578,7 @@ constants:
 	or	%o0,%lo(0x3ff921fb),%o0
 	mov	%o0,%l3
 	ba,pt	%icc,.cont1
-! delay slot
+/* delay slot */
 	add	%fp,junk,%i5
 
 
@@ -595,7 +593,7 @@ constants:
 	or	%o0,%lo(0x3ff921fb),%o0
 	mov	%o0,%l3
 	ba,pt	%icc,.cont2
-! delay slot
+/* delay slot */
 	add	%fp,junk,%l6
 
 
@@ -610,7 +608,7 @@ constants:
 	 lda	[%i1]%asi,%o0
 	 lda	[%i3]%asi,%l3
 	ba,pt	%icc,.special0
-! delay slot
+/* delay slot */
 	fmuld	%f0,%f2,%f6
 
 
@@ -620,12 +618,12 @@ constants:
 	 lda	[%i1]%asi,%o0
 	 lda	[%i3]%asi,%l3
 	cmp	%g5,%o5
-	bge,pn	%icc,.return_ah0	! if hx >= 0x7ff00000
-! delay slot
+	bge,pn	%icc,.return_ah0	/* if hx >= 0x7ff00000 */
+/* delay slot */
 	nop
 	cmp	%l0,%o4
-	bge,pn	%icc,1f			! if hx - hy >= 0x03600000
-! delay slot
+	bge,pn	%icc,1f			/* if hx - hy >= 0x03600000 */
+/* delay slot */
 	nop
 	ldd	[%fp+twom3],%f6
 	fmuld	%f0,%f6,%f0
@@ -633,21 +631,21 @@ constants:
 	add	%l0,%o1,%l0
 	addcc	%i0,-1,%i0
 	ble,pn	%icc,.last1
-! delay slot
+/* delay slot */
 	nop
 	ba,pt	%icc,.cont1
-! delay slot
+/* delay slot */
 	nop
 1:
 	fbg,pn	%fcc0,.return_ah0
-! delay slot
+/* delay slot */
 	nop
 	fcmpd	%fcc3,%f8,signbit
 	fbl,pn	%fcc3,.return_ah0
-! delay slot
+/* delay slot */
 	nop
 	ba,pt	%icc,.special0
-! delay slot
+/* delay slot */
 	fdivd	%f0,%f2,%f6
 
 
@@ -656,7 +654,7 @@ constants:
 	 lda	[%i3]%asi,%l3
 	fcmpd	%fcc3,%f0,signbit
 	fbe,pt	%fcc3,.return_ah0
-! delay slot
+/* delay slot */
 	nop
 	ldd	[%fp+two110],%f6
 	fmuld	%f0,%f6,%f0
@@ -669,10 +667,10 @@ constants:
 	add	%l0,%o1,%l0
 	addcc	%i0,-1,%i0
 	ble,pn	%icc,.last1
-! delay slot
+/* delay slot */
 	nop
 	ba,pt	%icc,.cont1
-! delay slot
+/* delay slot */
 	nop
 
 
@@ -688,8 +686,8 @@ constants:
 	faddd	%f6,%f0,%f6
 	sub	%g5,%l0,%o7
 	cmp	%o7,%o5
-	bl,pt	%icc,1f			! if hy < 0x7ff00000
-! delay slot
+	bl,pt	%icc,1f			/* if hy < 0x7ff00000 */
+/* delay slot */
 	nop
 	ldd	[%fp+pio4],%f0
 	faddd	%f6,%f0,%f6
@@ -701,7 +699,7 @@ constants:
 	st	%f7,[%l4+4]
 	addcc	%i0,-1,%i0
 	ble,pn	%icc,.done_from_special0
-! delay slot
+/* delay slot */
 	nop
 	fmovd	%f10,%f0
 	fmovd	%f18,%f8
@@ -726,7 +724,7 @@ constants:
 	 lda	[%i1]%asi,%f10
 	 lda	[%i1+4]%asi,%f11
 	fbu,pn	%fcc0,.nan0_from_special0
-! delay slot
+/* delay slot */
 	 lda	[%i3]%asi,%f18
 	 fabsd	%f10,%f14
 	 lda	[%i3+4]%asi,%f19
@@ -735,20 +733,20 @@ constants:
 	sub	%l0,%o4,%o7
 	andcc	%g5,%o7,%g0
 	bge,pn	%icc,.big0
-! delay slot
+/* delay slot */
 	nop
 	 fabsd	%f18,%f12
 	cmp	%o0,%o5
 	bl,pn	%icc,.small0
-! delay slot
+/* delay slot */
 	 lda	[%i1]%asi,%o0
 	add	%l0,%o1,%l0
 	addcc	%i0,-1,%i0
 	ble,pn	%icc,.last1
-! delay slot
+/* delay slot */
 	 lda	[%i3]%asi,%l3
 	ba,pt	%icc,.cont1
-! delay slot
+/* delay slot */
 	nop
 
 
@@ -768,7 +766,7 @@ constants:
 	 lda	[%i3]%asi,%l3
 	 mov	%i5,%l6
 	ba,pt	%icc,.special1
-! delay slot
+/* delay slot */
 	fmuld	%f10,%f12,%f16
 
 
@@ -783,11 +781,11 @@ constants:
 	 mov	%i5,%l6
 	cmp	%g5,%o5
 	bge,pn	%icc,.return_ah1
-! delay slot
+/* delay slot */
 	nop
 	cmp	%l1,%o4
 	bge,pn	%icc,1f
-! delay slot
+/* delay slot */
 	nop
 	ldd	[%fp+twom3],%f16
 	fmuld	%f10,%f16,%f10
@@ -796,21 +794,21 @@ constants:
 	srl	%l1,10,%l1
 	addcc	%i0,-1,%i0
 	ble,pn	%icc,.last2
-! delay slot
+/* delay slot */
 	nop
 	ba,pt	%icc,.cont2
-! delay slot
+/* delay slot */
 	nop
 1:
 	fbg,pn	%fcc1,.return_ah1
-! delay slot
+/* delay slot */
 	nop
 	fcmpd	%fcc3,%f18,signbit
 	fbl,pn	%fcc3,.return_ah1
-! delay slot
+/* delay slot */
 	nop
 	ba,pt	%icc,.special1
-! delay slot
+/* delay slot */
 	fdivd	%f10,%f12,%f16
 
 
@@ -823,7 +821,7 @@ constants:
 	 mov	%i5,%l6
 	fcmpd	%fcc3,%f10,signbit
 	fbe,pt	%fcc3,.return_ah1
-! delay slot
+/* delay slot */
 	nop
 	ldd	[%fp+two110],%f16
 	fmuld	%f10,%f16,%f10
@@ -837,10 +835,10 @@ constants:
 	srl	%l1,10,%l1
 	addcc	%i0,-1,%i0
 	ble,pn	%icc,.last2
-! delay slot
+/* delay slot */
 	nop
 	ba,pt	%icc,.cont2
-! delay slot
+/* delay slot */
 	nop
 
 
@@ -857,7 +855,7 @@ constants:
 	sub	%g5,%l1,%o7
 	cmp	%o7,%o5
 	bl,pt	%icc,1f
-! delay slot
+/* delay slot */
 	nop
 	ldd	[%fp+pio4],%f10
 	faddd	%f16,%f10,%f16
@@ -869,9 +867,9 @@ constants:
 	st	%f17,[%l5+4]
 	addcc	%i0,-1,%i0
 	bg,pn	%icc,1f
-! delay slot
+/* delay slot */
 	nop
-	fmovd	pio2,%f20		! set up dummy argument
+	fmovd	pio2,%f20		/* set up dummy argument */
 	fmovd	pio2,%f28
 	fabsd	%f20,%f24
 	fabsd	%f28,%f22
@@ -903,7 +901,7 @@ constants:
 	 lda	[%i1]%asi,%f20
 	 lda	[%i1+4]%asi,%f21
 	fbu,pn	%fcc1,.nan1_from_special1
-! delay slot
+/* delay slot */
 	nop
 	 lda	[%i3]%asi,%f28
 	 lda	[%i3+4]%asi,%f29
@@ -913,11 +911,11 @@ constants:
 	sub	%l1,%o4,%o7
 	andcc	%g5,%o7,%g0
 	bge,pn	%icc,.big1_from_special1
-! delay slot
+/* delay slot */
 	nop
 	cmp	%o0,%o5
 	bl,pn	%icc,.small1_from_special1
-! delay slot
+/* delay slot */
 	 lda	[%i1]%asi,%o0
 	 fabsd	%f28,%f22
 	 lda	[%i3]%asi,%l3
@@ -925,10 +923,10 @@ constants:
 	srl	%l1,10,%l1
 	addcc	%i0,-1,%i0
 	ble,pn	%icc,.last2
-! delay slot
+/* delay slot */
 	 mov	%i5,%l6
 	ba,pt	%icc,.cont2
-! delay slot
+/* delay slot */
 	nop
 
 
@@ -942,7 +940,7 @@ constants:
 	fxor	%f36,%f0,%f36
 .nan2_from_special2:
 	ba,pt	%icc,.special2
-! delay slot
+/* delay slot */
 	fmuld	%f20,%f22,%f26
 
 
@@ -952,28 +950,28 @@ constants:
 .big2_from_special2:
 	cmp	%g5,%o5
 	bge,pn	%icc,.return_ah2
-! delay slot
+/* delay slot */
 	nop
 	cmp	%l2,%o4
 	bge,pn	%icc,1f
-! delay slot
+/* delay slot */
 	nop
 	ldd	[%fp+twom3],%f26
 	fmuld	%f20,%f26,%f20
 	fmuld	%f22,%f26,%f22
 	ba,pt	%icc,.cont3
-! delay slot
+/* delay slot */
 	nop
 1:
 	fbg,pn	%fcc2,.return_ah2
-! delay slot
+/* delay slot */
 	nop
 	fcmpd	%fcc3,%f28,signbit
 	fbl,pn	%fcc3,.return_ah2
-! delay slot
+/* delay slot */
 	nop
 	ba,pt	%icc,.special2
-! delay slot
+/* delay slot */
 	fdivd	%f20,%f22,%f26
 
 
@@ -981,7 +979,7 @@ constants:
 .small2:
 	fcmpd	%fcc3,%f20,signbit
 	fbe,pt	%fcc3,.return_ah2
-! delay slot
+/* delay slot */
 	nop
 	ldd	[%fp+two110],%f26
 	fmuld	%f20,%f26,%f20
@@ -992,7 +990,7 @@ constants:
 	ld	[%fp+xscl],%l2
 	sub	%l2,%o7,%l2
 	ba,pt	%icc,.cont3
-! delay slot
+/* delay slot */
 	nop
 
 
@@ -1009,7 +1007,7 @@ constants:
 	sub	%g5,%l2,%o7
 	cmp	%o7,%o5
 	bl,pt	%icc,1f
-! delay slot
+/* delay slot */
 	nop
 	ldd	[%fp+pio4],%f20
 	faddd	%f26,%f20,%f26
@@ -1021,15 +1019,15 @@ constants:
 	st	%f27,[%l6+4]
 	addcc	%i0,-1,%i0
 	bg,pn	%icc,1f
-! delay slot
+/* delay slot */
 	nop
-	fmovd	pio2,%f20		! set up dummy argument
+	fmovd	pio2,%f20		/* set up dummy argument */
 	fmovd	pio2,%f22
 	fzero	%f40
 	fzero	%f46
 	mov	0,%l2
 	ba,pt	%icc,.cont3
-! delay slot
+/* delay slot */
 	add	%fp,junk,%l6
 1:
 	lda	[%i1]%asi,%f20
@@ -1057,21 +1055,21 @@ constants:
 	movg	%fcc2,%l3,%o0
 	movg	%fcc2,%o7,%l3
 	fbu,pn	%fcc2,.nan2_from_special2
-! delay slot
+/* delay slot */
 	nop
 	sub	%l3,%o0,%l2
 	sub	%l3,%o3,%g5
 	sub	%l2,%o4,%o7
 	andcc	%g5,%o7,%g0
 	bge,pn	%icc,.big2_from_special2
-! delay slot
+/* delay slot */
 	nop
 	cmp	%o0,%o5
 	bl,pn	%icc,.small2
-! delay slot
+/* delay slot */
 	nop
 	ba,pt	%icc,.cont3
-! delay slot
+/* delay slot */
 	nop
 
 	SET_SIZE(__vatan2)

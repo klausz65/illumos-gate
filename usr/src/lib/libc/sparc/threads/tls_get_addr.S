@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"tls_get_addr.s"
+	.file	"tls_get_addr.S"
 
 #include "SYS.h"
 #include <../assym.h>
@@ -60,25 +60,27 @@
 #error	"Assumption violated: SIZEOF_TLS_T is not 2 * sizeof (uintptr_t)"
 #endif
 
-#if	defined(__sparcv9)
-#define	PN	,pn %xcc,
-#else
-#define	PN
-#endif
-
 	ENTRY(__tls_get_addr)
 	ldn	[%o0 + TI_MODULEID], %o1
 	ldn	[%g7 + UL_TLSENT], %o2
 	ldn	[%g7 + UL_NTLSENT], %o3
 	cmp	%o1, %o3
-	bgeu PN	1f
+#if defined(__sparcv9)
+	bgeu,pn	%xcc, 1f
+#else
+	bgeu	1f
+#endif
 	slln	%o1, SHIFT, %o1
 #if TLS_DATA != 0
 	add	%o1, TLS_DATA, %o1
 #endif
 	ldn	[%o1 + %o2], %o2
 	cmp	%o2, 0
-	be PN	1f
+#if defined(__sparcv9)
+	be,pn	%xcc, 1f
+#else
+	be	1f
+#endif
 	ldn	[%o0 + TI_TLSOFFSET], %o1
 	retl
 	add	%o1, %o2, %o0

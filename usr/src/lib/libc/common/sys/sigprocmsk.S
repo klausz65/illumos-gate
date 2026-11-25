@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"sigprocmsk.s"
+	.file	"sigprocmsk.S"
 
 /* C library -- sigprocmask					*/
 /* int sigprocmask (int how, sigset_t *set, sigset_t *oset)	*/

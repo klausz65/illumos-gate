@@ -24,13 +24,11 @@
  * Use is subject to license terms.
  */
 
-.ident	"%Z%%M%	%I%	%E% SMI"
-
 /*
  * cerror() for system calls that return 64-bit values.
  */
 
-	.file	"cerror64.s"
+	.file	"cerror64.S"
 
 #include "SYS.h"
 

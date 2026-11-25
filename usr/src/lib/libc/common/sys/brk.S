@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"brk.s"
+	.file	"brk.S"
 
 #include "SYS.h"
 

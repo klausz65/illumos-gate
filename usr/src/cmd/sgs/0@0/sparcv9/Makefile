@@ -29,6 +29,11 @@ include		$(SRC)/cmd/sgs/0@0/Makefile.com
 
 .KEEP_STATE:
 
+pics/crti.o:
+	$(CC) $(ASFLAGS64) $(AS_CPPFLAGS) \
+	-c -o $@ $(CRTSRCS)/crti.S
+	$(POST_PROCESS_O)
+
 install:	all $(ROOTLIBDIR64)/$(DYNLIB)
 
 include		$(SRC)/cmd/sgs/0@0/Makefile.targ

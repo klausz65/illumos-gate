@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"setgroups.s"
+	.file	"setgroups.S"
 
 /* C library -- setgroups					*/
 /* int setgroups(int ngroups, uid_t grouplist[])		*/

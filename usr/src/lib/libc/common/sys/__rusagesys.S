@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"__rusagesys.s"
+	.file	"__rusagesys.S"
 
 /*
  * int __rusagesys(type, struct rusage *)

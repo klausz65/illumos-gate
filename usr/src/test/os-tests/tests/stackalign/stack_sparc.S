@@ -18,7 +18,7 @@
  * Get the stack at entry and call a function with it as an argument.
  */
 
-	.file	"stack_sparc.s"
+	.file	"stack_sparc.S"
 
 #include <sys/asm_linkage.h>
 

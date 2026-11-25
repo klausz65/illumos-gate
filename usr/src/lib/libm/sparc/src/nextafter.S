@@ -39,11 +39,11 @@ _nextafter	= __nextafter
 	.align	8
 .Lconstant:
 two54 	= 0x00
-	.word	0x43500000,0x0		!  2**54
+	.word	0x43500000,0x0		/*  2**54 */
 twom54 	= 0x08
-	.word	0x3c900000,0x0		!  2**-54
+	.word	0x3c900000,0x0		/*  2**-54 */
 tiny	= 0x10
-	.word	0x00100000,0x0		!  tiny
+	.word	0x00100000,0x0		/*  tiny */
 
 ! variable using fp
 x 	= -0x8
@@ -53,62 +53,62 @@ y 	= -0x10
 	save	%sp,-128,%sp
 	PIC_SETUP(l7)
 	std	%i0,[%fp+x]
-	or	%g0,%i0,%o0		! save original arguments
+	or	%g0,%i0,%o0		/* save original arguments */
 	or	%g0,%i1,%o1
 	std	%i2,[%fp+y]
 	or	%g0,%i2,%o2
 	or	%g0,%i3,%o3
-	ldd	[%fp+x],%f2		! x
-	ldd	[%fp+y],%f0		! y
-	fcmpd	%f2,%f0			! x:y
+	ldd	[%fp+x],%f2		/* x */
+	ldd	[%fp+y],%f0		/* y */
+	fcmpd	%f2,%f0			/* x:y */
 	PIC_SET(l7,.Lconstant,l0)
 	sethi	%hi(0x80000000),%l1
 	andn	%i0,%l1,%l4
-	fbe	9f			! next_return
+	fbe	9f			/* next_return */
 	nop
-	fbu,a	9f			! next_return
-	fmuld	%f2,%f0,%f0		! + -> * for Cheetah
-	orcc	%i1,%l4,%g0		! see if x is zero
+	fbu,a	9f			/* next_return */
+	fmuld	%f2,%f0,%f0		/* + -> * for Cheetah */
+	orcc	%i1,%l4,%g0		/* see if x is zero */
 	bne	1f
 	tst	%i0
     ! x is zero, return sign(y)*min
 	and	%i2,%l1,%i0
-	ba	4f			! next_final
+	ba	4f			/* next_final */
 	mov	1,%i1
 1:	bge	2f
 	nop
     ! x is negative
-	fbl	1f			! next_subulp
+	fbl	1f			/* next_subulp */
 	nop
-	fbg	3f			! next_addulp
+	fbg	3f			/* next_addulp */
 	nop
 2:
-	fbl	3f			! next_addulp
+	fbl	3f			/* next_addulp */
 	nop
-1:					! next_subulp
+1:					/* next_subulp */
 	subcc	%i1,1,%i1
-	ba	4f			! next_final
+	ba	4f			/* next_final */
 	subx	%i0,0,%i0
-3:					! next_addulp
+3:					/* next_addulp */
 	addcc	%i1,1,%i1
 	addx	%i0,0,%i0
-4:					! next_final
+4:					/* next_final */
 	sethi	%hi(0x7ff00000),%l3
 	std	%i0,[%fp+x]
 	andcc	%i0,%l3,%i2
-	be,a	1f			! xflow
+	be,a	1f			/* xflow */
 	ldd	[%l0+tiny],%f2
 	cmp	%i2,%l3
-	bne,a	9f			! next_return
+	bne,a	9f			/* next_return */
 	ldd	[%fp+x],%f0
-	call	NAME(_SVID_libm_err)	! overflow
+	call	NAME(_SVID_libm_err)	/* overflow */
 	or	%g0,46,%o4
 	ba	9f
 	nop
-1:					! xflow
+1:					/* xflow */
 	fmuld	%f2,%f2,%f2
 	ldd	[%fp+x],%f0
-9:					! next_return
+9:					/* next_return */
 	ret
 	restore
 

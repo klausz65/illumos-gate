@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"chdir.s"
+	.file	"chdir.S"
 
 /* C library -- chdir						*/
 /* int chdir(char *path)					*/

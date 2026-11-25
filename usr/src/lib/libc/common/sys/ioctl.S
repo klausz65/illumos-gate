@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"ioctl.s"
+	.file	"ioctl.S"
 
 /* C library -- ioctl						*/
 /* int ioctl (int fildes, int request, ... );			*/

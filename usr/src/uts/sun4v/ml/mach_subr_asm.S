@@ -48,6 +48,10 @@
  * that have different CPU %tick rates] is what you want.
  */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 	ENTRY(ultra_gettick)
 	RD_TICK(%o0,%o1,%o2,__LINE__)
 	retl
@@ -166,13 +170,13 @@
 	 * C.B. Liaw of PNP.
 	 *
 	 * This function must match a struct fpras_chkfn and must be
-	 * block aligned.  A zero return means all was well.  These
+	 * block aligned. A zero return means all was well.  These
 	 * instructions are chosen to be sensitive to bit corruptions
 	 * on the fpras rewrite, so if a bit corruption still produces
 	 * a valid instruction we should still get an incorrect result
-	 * here.  This function is never called directly - it is copied
-	 * into per-cpu and per-operation buffers;  it must therefore
-	 * be absolutely position independent.  If an illegal instruction
+	 * here. This function is never called directly - it is copied
+	 * into per-cpu and per-operation buffers; it must therefore
+	 * be absolutely position independent. If an illegal instruction
 	 * is encountered then the trap handler trampolines to the final
 	 * three instructions of this function.
 	 *
@@ -228,27 +232,27 @@
 	 * r[1]		%g1
 	 * r[0]		%g0
 	 *
-	 * For register r[n], register r[31-n] is the complement.  We must
-	 * avoid use of %i6/%i7 and %o6/%o7 as well as %g7.  Clearly we need
+	 * For register r[n], register r[31-n] is the complement. We must
+	 * avoid use of %i6/%i7 and %o6/%o7 as well as %g7. Clearly we need
 	 * to use a local or input register as one half of the pair, which
 	 * requires us to obtain our own register window or take steps
-	 * to preserve any local or input we choose to use.  We choose
+	 * to preserve any local or input we choose to use. We choose
 	 * %o1 as rd for the SETHI, so rd of the ADDCCC must be %l6.
 	 * We'll use %o1 as rs1 and %l6 as rs2 of the ADDCCC, which then
 	 * requires that imm22 be 0b111 10110 1 11111111 01001 or 0x3dbfe9,
-	 * or %hi(0xf6ffa400).  This determines the value of the constant
+	 * or %hi(0xf6ffa400). This determines the value of the constant
 	 * CBV2 below.
 	 *
 	 * The constant CBV1 is chosen such that an initial subcc %g0, CBV1
 	 * will set the carry bit and every addccc thereafter will continue
-	 * to generate a carry.  Other values are possible for CBV1 - this
+	 * to generate a carry. Other values are possible for CBV1 - this
 	 * is just one that works this way.
 	 *
 	 * Finally CBV3 is the expected answer when we perform our repeated
 	 * calculations on CBV1 and CBV2 - it is not otherwise specially
 	 * derived.  If this result is not obtained then a corruption has
 	 * occured during the FPRAS_REWRITE of one of the two blocks of
-	 * 16 instructions.  A corruption could also result in an illegal
+	 * 16 instructions. A corruption could also result in an illegal
 	 * instruction or other unexpected trap - we catch illegal
 	 * instruction traps in the PC range and trampoline to the
 	 * last instructions of the function to return a failure indication.
@@ -269,7 +273,7 @@
 	mov	CBR2, CBO2		! 1, preserve CBR2 of (callers) window
 	mov	FPRAS_OK, %o0		! 2, default return value
 	ba,pt	%icc, 1f		! 3
-	  subcc %g0, CBV1, CBR2		! 4
+	subcc %g0, CBV1, CBR2		! 4
 					! 5 - 16
 	.align	64
 1:	SETHI_CBV2_CBR1			! 1
@@ -311,17 +315,17 @@
 	cmp	CBR1, CBR2		! 3
 	movnz	%icc, FPRAS_BADCALC, %o0! 4, how detected
 	retl				! 5
-	  mov	CBO2, CBR2		! 6, restore borrowed register
+	mov	CBO2, CBR2		! 6, restore borrowed register
 	.skip 4*(13-7+1)		! 7 - 13
 					!
 					! illegal instr'n trap comes here
 					!
 	mov	CBO2, CBR2		! 14, restore borrowed register
 	retl				! 15
-	  mov	FPRAS_BADTRAP, %o0	! 16, how detected
+	mov	FPRAS_BADTRAP, %o0	! 16, how detected
 	SET_SIZE(fpras_chkfn_type1)
 
-	.seg	".data"
+	.section	".data"
 	.global soft_state_message_strings
 
 	.align	SSM_SIZE
@@ -343,4 +347,4 @@ soft_state_message_strings:
 	.skip	SSM_SIZE			/* saved message */
 	.nword	0
 
-	.seg	".text"
+	.section	".text"

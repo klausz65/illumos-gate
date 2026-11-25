@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"getcpuid.s"
+	.file	"getcpuid.S"
 
 /*
  * C library -- getcpuid

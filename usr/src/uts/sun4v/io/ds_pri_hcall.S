@@ -39,7 +39,7 @@
 	 * ret1 return required size of buffer / returned data size
 	 */
 	ENTRY(hv_mach_pri)
-	mov	%o1, %o4		! save datap
+	mov	%o1, %o4		/* save datap */
 	ldx	[%o1], %o1
 	mov	HV_MACH_PRI, %o5
 	ta	FAST_TRAP

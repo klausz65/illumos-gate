@@ -24,6 +24,10 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * General assembly language routines.
  * It is the intent of this file to contain routines that are
@@ -197,9 +201,9 @@
  * two instructions are not split due to i$ misses.
  */
 #define WR_TICKCMPR(cmpr,scr1,scr2,label)	\
-	ba,a	.bb_errata_1.label		;\
+	ba,a	1f				;\
 	.align	64				;\
-.bb_errata_1.label:				;\
+1:						;\
 	wr	cmpr, TICK_COMPARE		;\
 	rd	TICK_COMPARE, %g0
 #else	/* BB_ERRATA_1 */
@@ -265,7 +269,7 @@
 	SET_SIZE(tickcmpr_disable)
 
 #ifdef DEBUG
-	.seg	".text"
+	.section	".text"
 tick_write_panic:
 	.asciz	"tick_write_delta: interrupts already disabled on entry"
 #endif	/* DEBUG */
@@ -516,7 +520,7 @@ tick_write_panic:
 
 
 
-	.seg	".text"
+	.section	".text"
 hrtime_base_panic:
 	.asciz	"hrtime_base stepping back"
 
@@ -625,7 +629,7 @@ hrtime_base_panic:
 
 	SET_SIZE(hres_tick)
 
-	.seg	".text"
+	.section	".text"
 kstat_q_panic_msg:
 	.asciz	"kstat_q_exit: qlen == 0"
 
@@ -743,7 +747,7 @@ QRETURN;								\
 	 * assumes that they all have the same high 22 address bits (so
 	 * there's only one sethi).
 	 */
-	.seg	".data"
+	.section	".data"
 	.global	timedelta, hres_last_tick, hrestime, hrestime_adj
 	.global	hres_lock, nsec_scale, hrtime_base, traptrace_use_stick
 	.global	nsec_shift, adj_shift
@@ -806,7 +810,7 @@ adj_shift:
 1:
 #ifdef	_OPL
 	.word 0x81b01060		! insert "sleep" instruction
-#endif /* _OPL */			! use byte code for now
+#endif /* _OPL */
 	cmp	%o1, %o2
 	GET_NATIVE_TIME(%o2, %o3, %o4)
 	bgeu,pt	%xcc, 1b
@@ -923,7 +927,7 @@ adj_shift:
        SET_SIZE(pil15_interrupt)
 
 #ifdef DEBUG
-	.seg	".text"
+	.section	".text"
 find_cpufreq_panic:
 	.asciz	"find_cpufrequency: interrupts already disabled on entry"
 #endif	/* DEBUG */

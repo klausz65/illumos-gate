@@ -86,6 +86,10 @@ pics/%.o: $(LIBCBASE)/../$(TARGET_ARCH)/fp/%.s
 	$(BUILD.s)
 	$(POST_PROCESS_S_O)
 
+pics/%.o: $(LIBCBASE)/../$(TARGET_ARCH)/fp/%.S
+	$(BUILD.s)
+	$(POST_PROCESS_S_O)
+
 pics/%.o: $(LIBCBASE)/sys/%.c
 	$(COMPILE.c) -o $@ $<
 	$(POST_PROCESS_O)

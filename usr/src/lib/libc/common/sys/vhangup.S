@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"vhangup.s"
+	.file	"vhangup.S"
 
 /* C library -- vhangup						*/
 /* int vhangup()						*/

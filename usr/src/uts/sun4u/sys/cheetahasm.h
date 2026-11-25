@@ -1217,7 +1217,7 @@ extern "C" {
 #define	CH_ERR_TL1_EXIT				\
 	CPU_INDEX(%g2, %g3);			\
 	set	ch_err_tl1_pending, %g3;	\
-	set	-1, %g4;			\
+	mov	-1, %g4;			\
 	stb	%g4, [%g2 + %g3];		\
 	mov	1, %g2;				\
 	sll	%g2, PIL_15, %g2;		\

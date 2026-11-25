@@ -36,6 +36,9 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * (TT 0x40..0x4F, TL>0) Interrupt Level N Handler (N == 1..15)

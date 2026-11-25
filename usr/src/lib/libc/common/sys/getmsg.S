@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"getmsg.s"
+	.file	"getmsg.S"
 
 /* C library -- getmsg						*/
 /* int __getmsg(int fd, struct strbuf *ctlptr,			*/

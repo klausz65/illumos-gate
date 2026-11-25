@@ -42,6 +42,9 @@
 #include <sys/machparam.h>
 #endif /* DEBUG */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+
 /************************************************************************
  *		ATOMIC OPERATIONS
  */

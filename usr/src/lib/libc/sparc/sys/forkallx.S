@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"forkallx.s"
+	.file	"forkallx.S"
 
 #include "SYS.h"
 

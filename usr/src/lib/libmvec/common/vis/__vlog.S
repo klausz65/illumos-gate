@@ -102,8 +102,8 @@ TBL:
 	.word	0x3fe55555,0x555571da
 	.word	0x3fd99999,0x8702be3a
 	.word	0x3fd24af7,0x3f4569b1
-	.word	0x3ea62e42,0xfee00000	! scaled by 2**-20
-	.word	0x3caa39ef,0x35793c76	! scaled by 2**-20
+	.word	0x3ea62e42,0xfee00000	/* scaled by 2**-20 */
+	.word	0x3caa39ef,0x35793c76	/* scaled by 2**-20 */
 	.word	0xffff8000,0x00000000
 	.word	0x43200000
 	.word	0xfff00000
@@ -199,7 +199,7 @@ TBL:
 	PIC_SETUP(l7)
 	PIC_SET(l7,TBL,o0)
 	mov	%o0,%g1
-	wr	%g0,0x82,%asi		! set %asi for non-faulting loads
+	wr	%g0,0x82,%asi		/* set %asi for non-faulting loads */
 	sethi	%hi(0x94000),%l4
 	sethi	%hi(0x000fffff),%l6
 	or	%l6,%lo(0x000fffff),%l6
@@ -215,9 +215,9 @@ TBL:
 	ld	[%g1+oxfff00000],%f28
 	ld	[%g1+oxc0194000],%f31
 	ld	[%g1+ox4000],%f30
-	sll	%i2,3,%i2		! scale strides
+	sll	%i2,3,%i2		/* scale strides */
 	sll	%i4,3,%i4
-	add	%fp,jnk,%o0		! precondition loop
+	add	%fp,jnk,%o0		/* precondition loop */
 	add	%fp,jnk,%o1
 	add	%fp,jnk,%o2
 	fzero	%f2
@@ -237,56 +237,56 @@ TBL:
 	fzero	%f54
 	std	%f54,[%fp+tmp2]
 	sub	%i3,%i4,%i3
-	ld	[%i1],%l0		! ix
-	ld	[%i1],%f0		! u.l[0] = *x
+	ld	[%i1],%l0		/* ix */
+	ld	[%i1],%f0		/* u.l[0] = *x */
 	ba	.loop0
-	ld	[%i1+4],%f1		! u.l[1] = *(1+x)
+	ld	[%i1+4],%f1		/* u.l[1] = *(1+x) */
 
 	.align	16
 ! -- 16 byte aligned
 .loop0:
 	sub	%l0,%l7,%o3
 	sub	%l6,%l0,%o4
-	fpadd32s %f0,%f31,%f4		! n = (ix + 0xc0194000) & 0xfff00000
-	fmuld	%f6,%f2,%f8		! (previous iteration)
+	fpadd32s %f0,%f31,%f4		/* n = (ix + 0xc0194000) & 0xfff00000 */
+	fmuld	%f6,%f2,%f8		/* (previous iteration) */
 
 	andcc	%o3,%o4,%o4
-	bge,pn	%icc,.range0		! ix <= 0x000fffff or >= 0x7ff00000
+	bge,pn	%icc,.range0		/* ix <= 0x000fffff or >= 0x7ff00000 */
 ! delay slot
 	fands	%f4,%f28,%f4
 
-	add	%i1,%i2,%i1		! x += stridex
-	add	%i3,%i4,%i3		! y += stridey
-	fpsub32s %f0,%f4,%f0		! u.l[0] -= n
+	add	%i1,%i2,%i1		/* x += stridex */
+	add	%i3,%i4,%i3		/* y += stridey */
+	fpsub32s %f0,%f4,%f0		/* u.l[0] -= n */
 
 .cont0:
-	lda	[%i1]%asi,%l1		! preload next argument
-	add	%l0,%l4,%l0		! j = ix + 0x94000
-	fpadd32s %f0,%f30,%f2		! v.l[0] = u.l[0] + 0x4000
+	lda	[%i1]%asi,%l1		/* preload next argument */
+	add	%l0,%l4,%l0		/* j = ix + 0x94000 */
+	fpadd32s %f0,%f30,%f2		/* v.l[0] = u.l[0] + 0x4000 */
 
 	lda	[%i1]%asi,%f10
-	srl	%l0,11,%l0		! j = (j >> 11) & 0x1f0
-	fand	%f2,%f50,%f2		! v.l &= 0xffff8000...
+	srl	%l0,11,%l0		/* j = (j >> 11) & 0x1f0 */
+	fand	%f2,%f50,%f2		/* v.l &= 0xffff8000... */
 
 	lda	[%i1+4]%asi,%f11
 	and	%l0,0x1f0,%l0
-	fitod	%f4,%f32		! (double) n
+	fitod	%f4,%f32		/* (double) n */
 
 	add	%l0,8,%l3
-	fsubd	%f0,%f2,%f4		! f = u.d - v.d
+	fsubd	%f0,%f2,%f4		/* f = u.d - v.d */
 
-	faddd	%f0,%f2,%f6		! s = f / (u.d + v.d)
+	faddd	%f0,%f2,%f6		/* s = f / (u.d + v.d) */
 
-	fsubd	%f40,%f2,%f2		! two - v.d
-	fmuld	%f32,%f60,%f34		! h = n * ln2hi + TBL[j]
+	fsubd	%f40,%f2,%f2		/* two - v.d */
+	fmuld	%f32,%f60,%f34		/* h = n * ln2hi + TBL[j] */
 
-	faddd	%f8,%f18,%f8		! y = c + (t + q)
-	fmuld	%f32,%f62,%f32		! t = n * ln2lo + TBL[j+1]
+	faddd	%f8,%f18,%f8		/* y = c + (t + q) */
+	fmuld	%f32,%f62,%f32		/* t = n * ln2lo + TBL[j+1] */
 
 	fdivd	%f4,%f6,%f6
 
-	faddd	%f54,%f24,%f56		! c = h + f
-	fmuld	%f26,%f26,%f22		! z = s * s
+	faddd	%f54,%f24,%f56		/* c = h + f */
+	fmuld	%f26,%f26,%f22		/* z = s * s */
 
 	faddd	%f8,%f36,%f8
 	st	%f8,[%o0]
@@ -295,10 +295,10 @@ TBL:
 	mov	%i3,%o0
 	faddd	%f14,%f38,%f14
 
-	fsubd	%f56,%f54,%f54		! t += f - (c - h)
-	fmuld	%f22,%f58,%f20		! q = ...
+	fsubd	%f56,%f54,%f54		/* t += f - (c - h) */
+	fmuld	%f22,%f58,%f20		/* q = ... */
 
-	fsubd	%f2,%f0,%f2		! (two - v.d) - u.d
+	fsubd	%f2,%f0,%f2		/* (two - v.d) - u.d */
 	ldd	[%g1+%l0],%f36
 
 	faddd	%f42,%f44,%f18
@@ -326,46 +326,46 @@ TBL:
 .loop1:
 	sub	%l1,%l7,%o3
 	sub	%l6,%l1,%o4
-	fpadd32s %f10,%f31,%f14		! n = (ix + 0xc0194000) & 0xfff00000
-	fmuld	%f16,%f12,%f8		! (previous iteration)
+	fpadd32s %f10,%f31,%f14		/* n = (ix + 0xc0194000) & 0xfff00000 */
+	fmuld	%f16,%f12,%f8		/* (previous iteration) */
 
 	andcc	%o3,%o4,%o4
-	bge,pn	%icc,.range1		! ix <= 0x000fffff or >= 0x7ff00000
+	bge,pn	%icc,.range1		/* ix <= 0x000fffff or >= 0x7ff00000 */
 ! delay slot
 	fands	%f14,%f28,%f14
 
-	add	%i1,%i2,%i1		! x += stridex
-	add	%i3,%i4,%i3		! y += stridey
-	fpsub32s %f10,%f14,%f10		! u.l[0] -= n
+	add	%i1,%i2,%i1		/* x += stridex */
+	add	%i3,%i4,%i3		/* y += stridey */
+	fpsub32s %f10,%f14,%f10		/* u.l[0] -= n */
 
 .cont1:
-	lda	[%i1]%asi,%l2		! preload next argument
-	add	%l1,%l4,%l1		! j = ix + 0x94000
-	fpadd32s %f10,%f30,%f12		! v.l[0] = u.l[0] + 0x4000
+	lda	[%i1]%asi,%l2		/* preload next argument */
+	add	%l1,%l4,%l1		/* j = ix + 0x94000 */
+	fpadd32s %f10,%f30,%f12		/* v.l[0] = u.l[0] + 0x4000 */
 
 	lda	[%i1]%asi,%f20
-	srl	%l1,11,%l1		! j = (j >> 11) & 0x1f0
-	fand	%f12,%f50,%f12		! v.l &= 0xffff8000...
+	srl	%l1,11,%l1		/* j = (j >> 11) & 0x1f0 */
+	fand	%f12,%f50,%f12		/* v.l &= 0xffff8000... */
 
 	lda	[%i1+4]%asi,%f21
 	and	%l1,0x1f0,%l1
-	fitod	%f14,%f42		! (double) n
+	fitod	%f14,%f42		/* (double) n */
 
 	add	%l1,8,%l3
-	fsubd	%f10,%f12,%f14		! f = u.d - v.d
+	fsubd	%f10,%f12,%f14		/* f = u.d - v.d */
 
-	faddd	%f10,%f12,%f16		! s = f / (u.d + v.d)
+	faddd	%f10,%f12,%f16		/* s = f / (u.d + v.d) */
 
-	fsubd	%f40,%f12,%f12		! two - v.d
-	fmuld	%f42,%f60,%f44		! h = n * ln2hi + TBL[j]
+	fsubd	%f40,%f12,%f12		/* two - v.d */
+	fmuld	%f42,%f60,%f44		/* h = n * ln2hi + TBL[j] */
 
-	faddd	%f8,%f18,%f8		! y = c + (t + q)
-	fmuld	%f42,%f62,%f42		! t = n * ln2lo + TBL[j+1]
+	faddd	%f8,%f18,%f8		/* y = c + (t + q) */
+	fmuld	%f42,%f62,%f42		/* t = n * ln2lo + TBL[j+1] */
 
 	fdivd	%f14,%f16,%f16
 
-	faddd	%f34,%f4,%f36		! c = h + f
-	fmuld	%f6,%f6,%f2		! z = s * s
+	faddd	%f34,%f4,%f36		/* c = h + f */
+	fmuld	%f6,%f6,%f2		/* z = s * s */
 
 	faddd	%f8,%f46,%f8
 	st	%f8,[%o1]
@@ -374,10 +374,10 @@ TBL:
 	mov	%i3,%o1
 	faddd	%f24,%f38,%f24
 
-	fsubd	%f36,%f34,%f34		! t += f - (c - h)
-	fmuld	%f2,%f58,%f0		! q = ...
+	fsubd	%f36,%f34,%f34		/* t += f - (c - h) */
+	fmuld	%f2,%f58,%f0		/* q = ... */
 
-	fsubd	%f12,%f10,%f12		! (two - v.d) - u.d
+	fsubd	%f12,%f10,%f12		/* (two - v.d) - u.d */
 	ldd	[%g1+%l1],%f46
 
 	faddd	%f52,%f54,%f18
@@ -405,46 +405,46 @@ TBL:
 .loop2:
 	sub	%l2,%l7,%o3
 	sub	%l6,%l2,%o4
-	fpadd32s %f20,%f31,%f24		! n = (ix + 0xc0194000) & 0xfff00000
-	fmuld	%f26,%f22,%f8		! (previous iteration)
+	fpadd32s %f20,%f31,%f24		/* n = (ix + 0xc0194000) & 0xfff00000 */
+	fmuld	%f26,%f22,%f8		/* (previous iteration) */
 
 	andcc	%o3,%o4,%o4
-	bge,pn	%icc,.range2		! ix <= 0x000fffff or >= 0x7ff00000
+	bge,pn	%icc,.range2		/* ix <= 0x000fffff or >= 0x7ff00000 */
 ! delay slot
 	fands	%f24,%f28,%f24
 
-	add	%i1,%i2,%i1		! x += stridex
-	add	%i3,%i4,%i3		! y += stridey
-	fpsub32s %f20,%f24,%f20		! u.l[0] -= n
+	add	%i1,%i2,%i1		/* x += stridex */
+	add	%i3,%i4,%i3		/* y += stridey */
+	fpsub32s %f20,%f24,%f20		/* u.l[0] -= n */
 
 .cont2:
-	lda	[%i1]%asi,%l0		! preload next argument
-	add	%l2,%l4,%l2		! j = ix + 0x94000
-	fpadd32s %f20,%f30,%f22		! v.l[0] = u.l[0] + 0x4000
+	lda	[%i1]%asi,%l0		/* preload next argument */
+	add	%l2,%l4,%l2		/* j = ix + 0x94000 */
+	fpadd32s %f20,%f30,%f22		/* v.l[0] = u.l[0] + 0x4000 */
 
 	lda	[%i1]%asi,%f0
-	srl	%l2,11,%l2		! j = (j >> 11) & 0x1f0
-	fand	%f22,%f50,%f22		! v.l &= 0xffff8000...
+	srl	%l2,11,%l2		/* j = (j >> 11) & 0x1f0 */
+	fand	%f22,%f50,%f22		/* v.l &= 0xffff8000... */
 
 	lda	[%i1+4]%asi,%f1
 	and	%l2,0x1f0,%l2
-	fitod	%f24,%f52		! (double) n
+	fitod	%f24,%f52		/* (double) n */
 
 	add	%l2,8,%l3
-	fsubd	%f20,%f22,%f24		! f = u.d - v.d
+	fsubd	%f20,%f22,%f24		/* f = u.d - v.d */
 
-	faddd	%f20,%f22,%f26		! s = f / (u.d + v.d)
+	faddd	%f20,%f22,%f26		/* s = f / (u.d + v.d) */
 
-	fsubd	%f40,%f22,%f22		! two - v.d
-	fmuld	%f52,%f60,%f54		! h = n * ln2hi + TBL[j]
+	fsubd	%f40,%f22,%f22		/* two - v.d */
+	fmuld	%f52,%f60,%f54		/* h = n * ln2hi + TBL[j] */
 
-	faddd	%f8,%f18,%f8		! y = c + (t + q)
-	fmuld	%f52,%f62,%f52		! t = n * ln2lo + TBL[j+1]
+	faddd	%f8,%f18,%f8		/* y = c + (t + q) */
+	fmuld	%f52,%f62,%f52		/* t = n * ln2lo + TBL[j+1] */
 
 	fdivd	%f24,%f26,%f26
 
-	faddd	%f44,%f14,%f46		! c = h + f
-	fmuld	%f16,%f16,%f12		! z = s * s
+	faddd	%f44,%f14,%f46		/* c = h + f */
+	fmuld	%f16,%f16,%f12		/* z = s * s */
 
 	faddd	%f8,%f56,%f8
 	st	%f8,[%o2]
@@ -453,10 +453,10 @@ TBL:
 	mov	%i3,%o2
 	faddd	%f4,%f38,%f4
 
-	fsubd	%f46,%f44,%f44		! t += f - (c - h)
-	fmuld	%f12,%f58,%f10		! q = ...
+	fsubd	%f46,%f44,%f44		/* t += f - (c - h) */
+	fmuld	%f12,%f58,%f10		/* q = ... */
 
-	fsubd	%f22,%f20,%f22		! (two - v.d) - u.d
+	fsubd	%f22,%f20,%f22		/* (two - v.d) - u.d */
 	ldd	[%g1+%l2],%f56
 
 	faddd	%f32,%f34,%f18
@@ -482,14 +482,14 @@ TBL:
 
 
 ! Once we get to the last element, we loop three more times to finish
-! the computations in progress.  This means we will load past the end
+! the computations in progress. This means we will load past the end
 ! of the argument vector, but since we use non-faulting loads and never
-! use the data, the only potential problem is cache miss.  (Note that
+! use the data, the only potential problem is cache miss. (Note that
 ! when the argument is 2, the only exception that occurs in the compu-
 ! tation is an inexact result in the final addition, and we break out
 ! of the "extra" iterations before then.)
 .endloop2:
-	sethi	%hi(0x40000000),%l0	! "next argument" = two
+	sethi	%hi(0x40000000),%l0	/* "next argument" = two */
 	cmp	%i0,-3
 	bg,a,pt	%icc,.loop0
 ! delay slot
@@ -499,7 +499,7 @@ TBL:
 
 	.align	16
 .endloop0:
-	sethi	%hi(0x40000000),%l1	! "next argument" = two
+	sethi	%hi(0x40000000),%l1	/* "next argument" = two */
 	cmp	%i0,-3
 	bg,a,pt	%icc,.loop1
 ! delay slot
@@ -509,7 +509,7 @@ TBL:
 
 	.align	16
 .endloop1:
-	sethi	%hi(0x40000000),%l2	! "next argument" = two
+	sethi	%hi(0x40000000),%l2	/* "next argument" = two */
 	cmp	%i0,-3
 	bg,a,pt	%icc,.loop2
 ! delay slot
@@ -521,36 +521,36 @@ TBL:
 	.align	16
 .range0:
 	cmp	%l0,%l7
-	bgeu,pn	%icc,2f			! if (unsigned) ix >= 0x7ff00000
+	bgeu,pn	%icc,2f			/* if (unsigned) ix >= 0x7ff00000 */
 ! delay slot
 	ld	[%i1+4],%o5
-	fxtod	%f0,%f0			! scale by 2**1074 w/o trapping
+	fxtod	%f0,%f0			/* scale by 2**1074 w/o trapping */
 	st	%f0,[%fp+tmp0]
-	add	%i1,%i2,%i1		! x += stridex
+	add	%i1,%i2,%i1		/* x += stridex */
 	orcc	%l0,%o5,%g0
-	be,pn	%icc,1f			! if x == 0
+	be,pn	%icc,1f			/* if x == 0 */
 ! delay slot
-	add	%i3,%i4,%i3		! y += stridey
-	fpadd32s %f0,%f31,%f4		! n = (ix + 0xc0194000) & 0xfff00000
+	add	%i3,%i4,%i3		/* y += stridey */
+	fpadd32s %f0,%f31,%f4		/* n = (ix + 0xc0194000) & 0xfff00000 */
 	fands	%f4,%f28,%f4
-	fpsub32s %f0,%f4,%f0		! u.l[0] -= n
+	fpsub32s %f0,%f4,%f0		/* u.l[0] -= n */
 	ld	[%fp+tmp0],%l0
 	ba,pt	%icc,.cont0
 ! delay slot
-	fpsub32s %f4,%f29,%f4		! n -= 0x43200000
+	fpsub32s %f4,%f29,%f4		/* n -= 0x43200000 */
 1:
-	fdivs	%f29,%f1,%f4		! raise div-by-zero
+	fdivs	%f29,%f1,%f4		/* raise div-by-zero */
 	ba,pt	%icc,3f
 ! delay slot
-	st	%f28,[%i3]		! store -inf
+	st	%f28,[%i3]		/* store -inf */
 2:
-	sll	%l0,1,%l0		! lop off sign bit
-	add	%i1,%i2,%i1		! x += stridex
+	sll	%l0,1,%l0		/* lop off sign bit */
+	add	%i1,%i2,%i1		/* x += stridex */
 	orcc	%l0,%o5,%g0
-	be,pn	%icc,1b			! if x == -0
+	be,pn	%icc,1b			/* if x == -0 */
 ! delay slot
-	add	%i3,%i4,%i3		! y += stridey
-	fabsd	%f0,%f4			! *y = (x + |x|) * inf
+	add	%i3,%i4,%i3		/* y += stridey */
+	fabsd	%f0,%f4			/* *y = (x + |x|) * inf */
 	faddd	%f0,%f4,%f0
 	fand	%f28,%f50,%f4
 	fnegd	%f4,%f4
@@ -561,7 +561,7 @@ TBL:
 	ble,pn	%icc,.endloop2
 ! delay slot
 	st	%f1,[%i3+4]
-	ld	[%i1],%l0		! get next argument
+	ld	[%i1],%l0		/* get next argument */
 	ld	[%i1],%f0
 	ba,pt	%icc,.loop0
 ! delay slot
@@ -571,36 +571,36 @@ TBL:
 	.align	16
 .range1:
 	cmp	%l1,%l7
-	bgeu,pn	%icc,2f			! if (unsigned) ix >= 0x7ff00000
+	bgeu,pn	%icc,2f			/* if (unsigned) ix >= 0x7ff00000 */
 ! delay slot
 	ld	[%i1+4],%o5
-	fxtod	%f10,%f10		! scale by 2**1074 w/o trapping
+	fxtod	%f10,%f10		/* scale by 2**1074 w/o trapping */
 	st	%f10,[%fp+tmp1]
-	add	%i1,%i2,%i1		! x += stridex
+	add	%i1,%i2,%i1		/* x += stridex */
 	orcc	%l1,%o5,%g0
-	be,pn	%icc,1f			! if x == 0
+	be,pn	%icc,1f			/* if x == 0 */
 ! delay slot
-	add	%i3,%i4,%i3		! y += stridey
-	fpadd32s %f10,%f31,%f14		! n = (ix + 0xc0194000) & 0xfff00000
+	add	%i3,%i4,%i3		/* y += stridey */
+	fpadd32s %f10,%f31,%f14		/* n = (ix + 0xc0194000) & 0xfff00000 */
 	fands	%f14,%f28,%f14
-	fpsub32s %f10,%f14,%f10		! u.l[0] -= n
+	fpsub32s %f10,%f14,%f10		/* u.l[0] -= n */
 	ld	[%fp+tmp1],%l1
 	ba,pt	%icc,.cont1
 ! delay slot
-	fpsub32s %f14,%f29,%f14		! n -= 0x43200000
+	fpsub32s %f14,%f29,%f14		/* n -= 0x43200000 */
 1:
-	fdivs	%f29,%f11,%f14		! raise div-by-zero
+	fdivs	%f29,%f11,%f14		/* raise div-by-zero */
 	ba,pt	%icc,3f
 ! delay slot
-	st	%f28,[%i3]		! store -inf
+	st	%f28,[%i3]		/* store -inf */
 2:
-	sll	%l1,1,%l1		! lop off sign bit
-	add	%i1,%i2,%i1		! x += stridex
+	sll	%l1,1,%l1		/* lop off sign bit */
+	add	%i1,%i2,%i1		/* x += stridex */
 	orcc	%l1,%o5,%g0
-	be,pn	%icc,1b			! if x == -0
+	be,pn	%icc,1b			/* if x == -0 */
 ! delay slot
-	add	%i3,%i4,%i3		! y += stridey
-	fabsd	%f10,%f14		! *y = (x + |x|) * inf
+	add	%i3,%i4,%i3		/* y += stridey */
+	fabsd	%f10,%f14		/* *y = (x + |x|) * inf */
 	faddd	%f10,%f14,%f10
 	fand	%f28,%f50,%f14
 	fnegd	%f14,%f14
@@ -611,7 +611,7 @@ TBL:
 	ble,pn	%icc,.endloop0
 ! delay slot
 	st	%f11,[%i3+4]
-	ld	[%i1],%l1		! get next argument
+	ld	[%i1],%l1		/* get next argument */
 	ld	[%i1],%f10
 	ba,pt	%icc,.loop1
 ! delay slot
@@ -621,36 +621,36 @@ TBL:
 	.align	16
 .range2:
 	cmp	%l2,%l7
-	bgeu,pn	%icc,2f			! if (unsigned) ix >= 0x7ff00000
+	bgeu,pn	%icc,2f			/* if (unsigned) ix >= 0x7ff00000 */
 ! delay slot
 	ld	[%i1+4],%o5
-	fxtod	%f20,%f20		! scale by 2**1074 w/o trapping
+	fxtod	%f20,%f20		/* scale by 2**1074 w/o trapping */
 	st	%f20,[%fp+tmp2]
-	add	%i1,%i2,%i1		! x += stridex
+	add	%i1,%i2,%i1		/* x += stridex */
 	orcc	%l2,%o5,%g0
-	be,pn	%icc,1f			! if x == 0
+	be,pn	%icc,1f			/* if x == 0 */
 ! delay slot
-	add	%i3,%i4,%i3		! y += stridey
-	fpadd32s %f20,%f31,%f24		! n = (ix + 0xc0194000) & 0xfff00000
+	add	%i3,%i4,%i3		/* y += stridey */
+	fpadd32s %f20,%f31,%f24		/* n = (ix + 0xc0194000) & 0xfff00000 */
 	fands	%f24,%f28,%f24
-	fpsub32s %f20,%f24,%f20		! u.l[0] -= n
+	fpsub32s %f20,%f24,%f20		/* u.l[0] -= n */
 	ld	[%fp+tmp2],%l2
 	ba,pt	%icc,.cont2
 ! delay slot
-	fpsub32s %f24,%f29,%f24		! n -= 0x43200000
+	fpsub32s %f24,%f29,%f24		/* n -= 0x43200000 */
 1:
-	fdivs	%f29,%f21,%f24		! raise div-by-zero
+	fdivs	%f29,%f21,%f24		/* raise div-by-zero */
 	ba,pt	%icc,3f
 ! delay slot
-	st	%f28,[%i3]		! store -inf
+	st	%f28,[%i3]		/* store -inf */
 2:
-	sll	%l2,1,%l2		! lop off sign bit
-	add	%i1,%i2,%i1		! x += stridex
+	sll	%l2,1,%l2		/* lop off sign bit */
+	add	%i1,%i2,%i1		/* x += stridex */
 	orcc	%l2,%o5,%g0
-	be,pn	%icc,1b			! if x == -0
+	be,pn	%icc,1b			/* if x == -0 */
 ! delay slot
-	add	%i3,%i4,%i3		! y += stridey
-	fabsd	%f20,%f24		! *y = (x + |x|) * inf
+	add	%i3,%i4,%i3		/* y += stridey */
+	fabsd	%f20,%f24		/* *y = (x + |x|) * inf */
 	faddd	%f20,%f24,%f20
 	fand	%f28,%f50,%f24
 	fnegd	%f24,%f24
@@ -661,7 +661,7 @@ TBL:
 	ble,pn	%icc,.endloop1
 ! delay slot
 	st	%f21,[%i3+4]
-	ld	[%i1],%l2		! get next argument
+	ld	[%i1],%l2		/* get next argument */
 	ld	[%i1],%f20
 	ba,pt	%icc,.loop2
 ! delay slot

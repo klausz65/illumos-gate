@@ -35,6 +35,9 @@
 #include <sys/vis.h>
 #include <sys/machsig.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+
 	ENTRY(set_trap_table)
 	set	trap_table, %o1
 	rdpr	%tba, %o0
@@ -267,7 +270,7 @@
 
 	ENTRY_NP(_fp_write_pgsr)
 	retl
-	mov	%o0, %gsr
+	wr	%g0, %o0, %gsr
 	SET_SIZE(_fp_write_pgsr)
 
 /*

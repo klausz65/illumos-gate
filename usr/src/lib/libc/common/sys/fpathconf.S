@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"fpathconf.s"
+	.file	"fpathconf.S"
 
 /* C library -- fpathconf					*/
 /* int fpathconf(int fd, int name)				*/

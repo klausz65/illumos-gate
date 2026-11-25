@@ -35,6 +35,10 @@
 #include <sys/clock.h>
 #include <vm/hat_sfmmu.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 	.weak	cpu_feature_init
 	.type	cpu_feature_init, #function
 
@@ -51,7 +55,7 @@
 
 	! allocate a temporary stack to run on while we figure who and
 	! what we are.
-	.seg	".data"
+	.section	".data"
 	.align	8
 etmpstk:
 	.skip	2048

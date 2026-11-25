@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"sysinfo.s"
+	.file	"sysinfo.S"
 
 /* C library -- sysinfo						*/
 /* int sysinfo(cmd, buf, count)					*/

@@ -29,6 +29,10 @@
 #include <sys/asi.h>
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 	ENTRY_NP(dtrace_getipl)
 	retl
 	rdpr	%pil, %o0

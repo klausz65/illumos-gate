@@ -71,6 +71,11 @@ SGSMSGTARG +=	$(SGSMSGSPARC) $(SGSMSGSPARC32) $(SGSMSG32)
 
 .KEEP_STATE:
 
+pics/crti.o:
+	$(CC) $(ASFLAGS) $(AS_CPPFLAGS) \
+	-c -o $@ $(CRTSRCS)/crti.S
+	$(POST_PROCESS_O)
+
 all:		$(RTLD)
 
 install:	all $(ROOTDYNLIB) $(ROOTCOMPATLINKS)

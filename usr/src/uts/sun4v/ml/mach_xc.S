@@ -36,6 +36,9 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * Entered by the software trap (TT=ST_SELFXCALL, TL>0) thru send_self_xcall().

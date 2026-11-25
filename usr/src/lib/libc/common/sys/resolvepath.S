@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"resolvepath.s"
+	.file	"resolvepath.S"
 
 /* C library -- resolvepath					*/
 /* int resolvepath(const char *path, void *buf, int bufsiz)	*/

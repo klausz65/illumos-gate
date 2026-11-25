@@ -49,6 +49,9 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 	.global retire_l2_start
 	.global retire_l2_end
@@ -544,7 +547,7 @@ unretire_l3_end:
 	rd	%asi, %g4
 	wr	%g0, ASI_N, %asi
 	GET_ECACHE_DTAGS(%g1, %g2, %g5, %g6, %g7)
-	wr	%g4, %asi
+	wr	%g4, %g0, %asi
 	UNPARK_SIBLING_CORE(%g3, %g4, %g5)	! can use %g3 again
 
 	retry

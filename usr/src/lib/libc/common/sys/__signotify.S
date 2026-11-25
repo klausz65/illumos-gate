@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"__signotify.s"
+	.file	"__signotify.S"
 
 #include "SYS.h"
 

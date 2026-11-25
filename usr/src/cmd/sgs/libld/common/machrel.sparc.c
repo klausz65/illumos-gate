@@ -1224,8 +1224,16 @@ ld_do_activerelocs(Ofl_desc *ofl)
 		 * relocation addend if needed.
 		 */
 		value += arsp->rel_raddend;
-		if (IS_EXTOFFSET(arsp->rel_rtype))
+		if (arsp->rel_rtype == R_SPARC_OLO10) {
+			/*
+			 * R_SPARC_OLO10:
+			 * ((S + A) & 0x3ff) + O
+			 */
+			value = (value & 0x3ff) +
+			    RELAUX_GET_TYPEDATA(arsp);
+		} else if (IS_EXTOFFSET(arsp->rel_rtype)) {
 			value += RELAUX_GET_TYPEDATA(arsp);
+		}
 
 		/*
 		 * Determine whether the value needs further adjustment. Filter

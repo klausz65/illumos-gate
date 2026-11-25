@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"sync.s"
+	.file	"sync.S"
 
 /* C library -- sync						*/
 /* void sync (void);						*/

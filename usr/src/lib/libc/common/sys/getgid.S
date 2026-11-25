@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"getgid.s"
+	.file	"getgid.S"
 
 /* C library -- getgid						*/
 /* gid_t getgid (void);						*/

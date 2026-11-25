@@ -36,6 +36,9 @@
 
 #include "assym.h"
 
+	/* GNU assembler */ 
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * Pseudo-code to aid in understanding the control flow of the
@@ -478,7 +481,7 @@
 
 
 
-	.seg	".text"
+	.section	".text"
 	.align	4
 
 	ENTRY(kcopy)

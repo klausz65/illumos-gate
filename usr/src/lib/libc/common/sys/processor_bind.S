@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"processor_bind.s"
+	.file	"processor_bind.S"
 
 /*
  * C library -- processor_bind

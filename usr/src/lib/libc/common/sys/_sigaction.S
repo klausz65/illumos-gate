@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_sigaction.s"
+	.file	"_sigaction.S"
 
 /* C library -- sigaction					*/
 /* int sigaction (int sig, struct sigaction *act);		*/

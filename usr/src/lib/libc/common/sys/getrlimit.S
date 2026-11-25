@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"getrlimit.s"
+	.file	"getrlimit.S"
 
 /* C library -- getrlimit					*/
 /* int getrlimit(int resources, struct rlimit *rlp)		*/

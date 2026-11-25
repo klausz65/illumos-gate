@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_getpeername.s"
+	.file	"_so_getpeername.S"
 
 /* C library -- _so_getpeername					*/
 /* int _so_getpeername (int fildes, struct sockaddr *name,	*/

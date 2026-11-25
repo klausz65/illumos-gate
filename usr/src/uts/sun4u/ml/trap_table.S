@@ -51,6 +51,10 @@
 #include <sys/fpu/fpu_simulator.h>
 #include <vm/seg_spt.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * WARNING: If you add a fast trap handler which can be invoked by a
  * non-privileged user, you may have to use the FAST_TRAP_DONE macro
@@ -365,7 +369,7 @@ h_name:					;\
  * only needs it to be four-byte aligned.
  */
 #define	SPILL_32bit_tt1(asi_num, tail)				\
-	mov	asi_num, %asi					;\
+	wr	%g0, asi_num, %asi				;\
 1:	srl	%sp, 0, %sp					;\
 	sta	%l0, [%sp + 0]%asi				;\
 	sta	%l1, [%sp + 4]%asi				;\
@@ -469,7 +473,7 @@ h_name:					;\
  * only needs it to be four-byte aligned.
  */
 #define	FILL_32bit_tt1(asi_num, tail)				\
-	mov	asi_num, %asi					;\
+	wr	%g0, asi_num, %asi				;\
 1:	srl	%sp, 0, %sp					;\
 	TT_TRACE_L(trace_win)					;\
 	lda	[%sp + 0]%asi, %l0				;\
@@ -569,7 +573,7 @@ h_name:					;\
  * pointer is required to be eight-byte aligned.
  */
 #define	SPILL_64bit_tt1(asi_num, tail)				\
-	mov	asi_num, %asi					;\
+	wr	%g0, asi_num, %asi				;\
 2:	stxa	%l0, [%sp + V9BIAS64 + 0]%asi			;\
 	stxa	%l1, [%sp + V9BIAS64 + 8]%asi			;\
 	stxa	%l2, [%sp + V9BIAS64 + 16]%asi			;\
@@ -668,7 +672,7 @@ h_name:					;\
  * pointer is required to be eight-byte aligned.
  */
 #define	FILL_64bit_tt1(asi_num, tail)				\
-	mov	asi_num, %asi					;\
+	wr	%g0, asi_num, %asi				;\
 	TT_TRACE_L(trace_win)					;\
 	ldxa	[%sp + V9BIAS64 + 0]%asi, %l0			;\
 	ldxa	[%sp + V9BIAS64 + 8]%asi, %l1			;\
@@ -3029,7 +3033,7 @@ fast_trap_dummy_call:
 	 * %g2: address of CPU structure				    \
 	 * %g3: address of brand handler (where we will jump to)	    \
 	 */								    \
-	mov	%pc, %g1						   ;\
+	rd	%pc, %g1						   ;\
 	add	%g1, 16, %g1						   ;\
 	jmp	%g3							   ;\
 	nop								   ;\

@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"__clock_timer.s"
+	.file	"__clock_timer.S"
 
 #include "SYS.h"
 

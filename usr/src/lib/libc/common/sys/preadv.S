@@ -13,7 +13,7 @@
  * Copyright (c) 2015, Joyent, Inc.  All rights reserved.
  */
 
-	.file	"preadv.s"
+	.file	"preadv.S"
 
 /* C library -- preadv							*/
 /* ssize_t __preadv(int, const struct iovec *, int, off_t, off_t);	*/

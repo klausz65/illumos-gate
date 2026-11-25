@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-#if !defined(__lint) && defined(__GNUC__)
+#if defined(__GNUC__)
 
 #if defined(_BOOT)
 
@@ -46,7 +46,7 @@ sync_instruction_memory(caddr_t v, size_t len)
 
 #endif /* _BOOT */
 
-#endif /* !__lint && __GNUC__ */
+#endif /* __GNUC__ */
 
 #ifdef __cplusplus
 }

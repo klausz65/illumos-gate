@@ -26,6 +26,4 @@ ISASRCDIR =	.
 
 include ../Makefile.com
 
-ASFLAGS +=	-xarch=v8plus ${AS_PICFLAGS}
-
 install: all

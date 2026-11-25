@@ -29,7 +29,7 @@ include		$(SRC)/lib/Makefile.lib.64
 .KEEP_STATE:
 
 AS_CPPFLAGS +=	-D__sparcv9
-ASFLAGS +=	-xarch=v9b
+sparcv9_XARCH=	-m64 -xarch=sparcvis2
 
 all install:	$(SYMCAP)
 

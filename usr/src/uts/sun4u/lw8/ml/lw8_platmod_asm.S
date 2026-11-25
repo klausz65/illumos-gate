@@ -23,6 +23,9 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+/*
+ * Copyright 2026 Klaus Ziegler
+ */
 
 #include "assym.h"
 
@@ -43,6 +46,11 @@
 #include <sys/fsr.h>
 #include <sys/cheetahregs.h>
 
+/*
+ * NOTE: This file is shared for daktari and cherrystone platforms,
+ * maybe for some others too.
+ */
+
 !
 ! Load the safari address for a specific cpu
 !
@@ -53,7 +61,7 @@
 	wrpr	%o5, 0, %pstate	! clear IE, AM bits
 	ldxa	[%o0]ASI_SAFARI_CONFIG, %o0
 	retl
-	wrpr	%g0, %o4, %pstate	! restore earlier pstate register value
+	wrpr	%g0, %o4, %pstate	/* restore earlier pstate register value */
 	SET_SIZE(lddsafaddr)
 
 !
@@ -66,6 +74,6 @@
 	wrpr	%o5, 0, %pstate	! clear IE, AM bits
 	ldxa	[%o0]ASI_MC_DECODE, %o0
 	retl
-	wrpr	%g0, %o4, %pstate	! restore earlier pstate register value
+	wrpr	%g0, %o4, %pstate	/* restore earlier pstate register value */
 	SET_SIZE(lddmcdecode)
 

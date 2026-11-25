@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"install_utrap.s"
+	.file	"install_utrap.S"
 
 #include <sys/asm_linkage.h>
 

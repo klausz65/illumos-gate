@@ -167,6 +167,9 @@ restore_tlb(struct sun4u_tlb *utp, int cpu_id)
 	} else if (utp == mdinfo.itte) {
 		tfunc = set_itlb_entry;
 		tname = 'i';
+	} else {
+		prom_panic("restore_tlb: invalid TLB array");
+		return;
 	}
 
 	for (tail = utp + CPR_MAX_TLB; utp < tail; utp++) {

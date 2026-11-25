@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"setjmp.s"
+	.file	"setjmp.S"
 
 /*
  * The UCB setjmp(env) is the same as SYSV's sigsetjmp(env, 1)

@@ -78,17 +78,12 @@
  * the next key schedule item to the partially computed next R).
  */
 
-#if defined(lint) || defined(__lint)
-	/* LINTED */
-	/* Nothing to be linted in this file, its pure assembly source */
-#else	/* lint || __lint */
-
 	.register	%g2,#scratch
 	.register	%g3,#scratch
 
 	.file	"encrypt_asm.S"
 
-	.section	".text",#alloc
+	.section	".text"
 	.align	32
 
 !
@@ -2158,7 +2153,7 @@ des_ip_table:
 	.size	des_ip_table,4096
 
 
-	.section	".data",#alloc
+	.section	".data"
 		.align	32
 
 
@@ -3640,5 +3635,3 @@ des_fp_table:
 	.word	-1061109568
 	.type	des_fp_table,#object
 	.size	des_fp_table,1024
-
-#endif	/* lint || __lint */

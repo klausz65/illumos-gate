@@ -52,6 +52,10 @@
 #include <sys/fpu/fpu_simulator.h>
 #include <vm/seg_spt.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * WARNING: If you add a fast trap handler which can be invoked by a
  * non-privileged user, you may have to use the FAST_TRAP_DONE macro
@@ -2860,7 +2864,7 @@ fast_trap_dummy_call:
 	 * %g2: address of CPU structure				    \
 	 * %g3: address of brand handler (where we will jump to)	    \
 	 */								    \
-	mov	%pc, %g1						   ;\
+	rd	%pc, %g1						   ;\
 	add	%g1, 16, %g1						   ;\
 	jmp	%g3							   ;\
 	nop								   ;\

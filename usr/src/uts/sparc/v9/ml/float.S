@@ -32,6 +32,10 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch 
+	.register	%g3, #scratch 
+
 /*
  * Floating point trap handling.
  *

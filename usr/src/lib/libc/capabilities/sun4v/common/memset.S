@@ -23,7 +23,7 @@
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
-	.file	"memset.s"
+	.file	"memset.S"
 
 /*
  * char *memset(sp, c, n)
@@ -103,7 +103,7 @@
 
 	! Now sp1 is double aligned (sp1 is found in %o5)
 .blkalign:
-	mov	ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
+	wr	%g0, ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
 
 	cmp	%o2, 0x40		! check if there are 64 bytes to set
 	blu,pn	%ncc, 5f
@@ -195,7 +195,7 @@
 5:
 	! Set the remaining doubles
 	membar	#Sync
-	mov	ASI_PNF, %asi		! restore %asi to default
+	wr	%g0, ASI_PNF, %asi		! restore %asi to default
 					! ASI_PRIMARY_NOFAULT value
 	subcc	%o3, 8, %o3		! Can we store any doubles?
 	blu,pn	%ncc, .wrchar

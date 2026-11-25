@@ -56,7 +56,7 @@
  * (b) define '.pword' or equivalent, and use it (to mean .word or .xword).
  */
 #define	MODULE(module,namespace)		\
-	.seg	".data";			\
+	.section	".data";		\
 module##_modname:				\
 	.ascii	#namespace;			\
 	.ascii	"/";				\
@@ -106,7 +106,7 @@ module##_modinfo:				\
     STUB_NO_UNLOADABLE(module, fcnname, retfcn, retfcn, MODS_NOUNLOAD|MODS_WEAK)
 
 #define	STUB_DATA(module, fcnname, install_fcn, retfcn, weak)		\
-	.seg	".data";						\
+	.section	".data";					\
 	.align	8;							\
 fcnname##_info:							\
 	.word	0;			/* 0 */				\
@@ -244,7 +244,7 @@ fcnname##_info:							\
 	SET_SIZE(stubs_common_code)
 
 ! this is just a marker for the area of text that contains stubs
-	.seg ".text"
+	.section ".text"
 	.global stubs_base
 stubs_base:
 	nop
@@ -1237,7 +1237,7 @@ stubs_base:
 #endif
 
 ! this is just a marker for the area of text that contains stubs
-	.seg ".text"
+	.section ".text"
 	.global stubs_end
 stubs_end:
 	nop

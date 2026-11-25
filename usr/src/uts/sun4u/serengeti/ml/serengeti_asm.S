@@ -53,7 +53,7 @@
 	wrpr	%o5, 0, %pstate	! clear IE, AM bits
 	ldxa	[%o0]ASI_SAFARI_CONFIG, %o0
 	retl
-	wrpr	%g0, %o4, %pstate	! restore earlier pstate register value
+	wrpr	%g0, %o4, %pstate	/* restore earlier pstate register value */
 	SET_SIZE(lddsafaddr)
 
 !
@@ -66,6 +66,6 @@
 	wrpr	%o5, 0, %pstate	! clear IE, AM bits
 	ldxa	[%o0]ASI_MC_DECODE, %o0
 	retl
-	wrpr	%g0, %o4, %pstate	! restore earlier pstate register value
+	wrpr	%g0, %o4, %pstate	/* restore earlier pstate register value */
 	SET_SIZE(lddmcdecode)
 

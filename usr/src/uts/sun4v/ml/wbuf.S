@@ -36,6 +36,10 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 	/*
 	 * Spill fault handlers
 	 *   sn0 - spill normal tl 0
@@ -103,7 +107,7 @@
 	ENTRY_NP(fault_32bit_sn1)
 	FAULT_WINTRACE(%g5, %g6, %g7, TT_F32_SN1)
 	CPU_PADDR(%g5, %g6)
-	mov	ASI_MEM, %asi
+	wr	%g0, ASI_MEM, %asi
 	ldxa	[%g5 + CPU_MPCB_PA]%asi, %g6
 	ldxa	[%g6 + MPCB_WBUF_PA]%asi, %g5
 	stna	%sp, [%g6 + MPCB_SPBUF]%asi
@@ -159,7 +163,7 @@
 	!
 	! find lwp & increment wbcnt
 	!
-	mov	ASI_MEM, %asi
+	wr	%g0, ASI_MEM, %asi
 	ldxa	[%g5 + CPU_MPCB_PA]%asi, %g6
 	lda	[%g6 + MPCB_WBCNT]%asi, %g5
 	add	%g5, 1, %g7
@@ -239,7 +243,7 @@
 	ENTRY_NP(fault_64bit_sn1)
 	FAULT_WINTRACE(%g5, %g6, %g7, TT_F64_SN1)
 	CPU_PADDR(%g5, %g6)
-	mov	ASI_MEM, %asi
+	wr	%g0, ASI_MEM, %asi
 	ldxa	[%g5 + CPU_MPCB_PA]%asi, %g6
 	ldxa	[%g6 + MPCB_WBUF_PA]%asi, %g5
 	stna	%sp, [%g6 + MPCB_SPBUF]%asi
@@ -262,7 +266,7 @@
 	CPU_PADDR(%g5, %g6)
 	set	CPU_KWBUF_SP, %g6
 	add	%g5, %g6, %g6
-	mov	ASI_MEM, %asi
+	wr	%g0, ASI_MEM, %asi
 	stna	%sp, [%g6]%asi
 	set	CPU_KWBUF, %g6
 	add	%g5, %g6, %g6
@@ -291,7 +295,7 @@
 	CPU_PADDR(%g5, %g6)
 	set	CPU_KWBUF_SP, %g6
 	add	%g5, %g6, %g6
-	mov	ASI_MEM, %asi
+	wr	%g0, ASI_MEM, %asi
 	stna	%sp, [%g6]%asi
 	set	CPU_KWBUF, %g6
 	add	%g5, %g6, %g6
@@ -352,7 +356,7 @@
 	!
 	! find lwp & increment wbcnt
 	!
-	mov	ASI_MEM, %asi
+	wr	%g0, ASI_MEM, %asi
 	ldxa	[%g5 + CPU_MPCB_PA]%asi, %g6
 	lda	[%g6 + MPCB_WBCNT]%asi, %g5
 	add	%g5, 1, %g7

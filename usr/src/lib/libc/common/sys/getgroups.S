@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"getgroups.s"
+	.file	"getgroups.S"
 
 /* C library -- getgroups					*/
 /* int getgroups(int gidsetsize, uid_t grouplist[]);		*/

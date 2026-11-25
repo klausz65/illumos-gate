@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"putmsg.s"
+	.file	"putmsg.S"
 
 /* C library -- putmsg						*/
 /* int __putmsg(int fd, struct const strbuf *ctlptr,		*/

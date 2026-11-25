@@ -112,7 +112,15 @@ $(CRT1): $(COMMON_CRT) $(MACH_CRT)
 	$(COMPILE.s) -o $@ $<
 	$(POST_PROCESS_O)
 
+%.o:	%.S
+	$(COMPILE.s) -o $@ $<
+	$(POST_PROCESS_O)
+
 %.o:	../$(MACH)/%.s
+	$(COMPILE.s) -o $@ $<
+	$(POST_PROCESS_O)
+
+%.o:	../$(MACH)/%.S
 	$(COMPILE.s) -o $@ $<
 	$(POST_PROCESS_O)
 

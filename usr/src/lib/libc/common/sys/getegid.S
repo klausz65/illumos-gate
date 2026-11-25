@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"getegid.s"
+	.file	"getegid.S"
 
 /*
  * C library -- getegid

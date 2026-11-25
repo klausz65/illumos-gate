@@ -38,6 +38,8 @@
 
 #include "assym.h"		/* for FKIOCTL etc. */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
 
 /*
  * Layered driver routines.

@@ -37,6 +37,9 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * Pseudo-code to aid in understanding the control flow of the
@@ -406,7 +409,7 @@
  * Returns errno value on pagefault error, 0 if all ok
  */
 
-	.seg	".text"
+	.section	".text"
 	.align	4
 
 	ENTRY(kcopy)
@@ -2159,7 +2162,7 @@ fp_panic_msg:
 	andn	%i2, 0x3f, %i3		! %i3 count is multiple of block size
 	sub	%i2, %i3, %i2		! Residue bytes in %i2
 
-	mov	ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
+	wr	%g0, ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
 
 	andcc	%i1, 0xf, %o2		! is src quadword aligned
 	bz,pn	%xcc, .blkcpy		! src offset in %o2
@@ -2729,7 +2732,7 @@ loop2:
 	/*
 	 * Copying exactly one page and PAGESIZE is in mutliple of 0x80.
 	 */
-	mov	ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
+	wr	%g0, ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
 	prefetch [%i0+0x0], #one_read
 	prefetch [%i0+0x40], #one_read
 1:
@@ -2959,7 +2962,7 @@ loop2:
 	membar	#Sync
 	stn	%o3, [THREAD_REG + T_LOFAULT]
 
-	mov	ASI_USER, %asi
+	wr	%g0, ASI_USER, %asi
 	cmp	%o2, SHORTCOPY		! make sure there is enough to align
 	ble,pt	%ncc, .co_smallest
 	andcc	%o1, 0x7, %o3		! is dest long word aligned
@@ -3478,7 +3481,7 @@ loop2:
 	! Setting it when already set costs more than checking
 	andcc	%g1, FPRS_FEF, %g1	! test FEF, fprs.du = fprs.dl = 0
 	bz,pt	%ncc, .co_fp_unused
-	mov	ASI_USER, %asi
+	wr	%g0, ASI_USER, %asi
 	BST_FP_TOSTACK(%o3)
 	ba	.co_fp_ready
 .co_fp_unused:
@@ -4753,7 +4756,7 @@ copyout_blalign:
 	andn	%i2, 0x3f, %i3		! %i3 count is multiple of block size
 	sub	%i2, %i3, %i2		! Residue bytes in %i2
 
-	mov	ASI_BLK_INIT_QUAD_LDD_AIUS, %asi
+	wr	%g0, ASI_BLK_INIT_QUAD_LDD_AIUS, %asi
 
 	andcc	%i1, 0xf, %o2		! is src quadword aligned
 	bz,pn	%xcc, .co_blkcpy	! src offset in %o2 (last 4-bits)
@@ -5119,7 +5122,7 @@ copyout_blalign:
 	membar	#Sync
 	stn	%o3, [THREAD_REG + T_LOFAULT]
 
-	mov	ASI_USER, %asi
+	wr	%g0, ASI_USER, %asi
 	cmp	%o2, SHORTCOPY		! make sure there is enough to align
 	ble,pt	%ncc, .ci_smallest
 	andcc	%o1, 0x7, %o3		! is dest long word aligned
@@ -5640,7 +5643,7 @@ copyout_blalign:
 	! Setting it when already set costs more than checking
 	andcc	%g1, FPRS_FEF, %g1	! test FEF, fprs.du = fprs.dl = 0
 	bz,pt	%ncc, .ci_fp_unused
-	mov	ASI_USER, %asi
+	wr	%g0, ASI_USER, %asi
 	BST_FP_TOSTACK(%o3)
 	ba	.ci_fp_ready
 .ci_fp_unused:
@@ -6898,7 +6901,7 @@ copyin_blalign:
 	andn	%i2, 0x3f, %i3		! %i3 count is multiple of block size
 	sub	%i2, %i3, %i2		! Residue bytes in %i2
 
-	mov	ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
+	wr	%g0, ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
 
 	andcc	%i1, 0xf, %o2		! is src quadword aligned
 	bz,pn	%xcc, .ci_blkcpy	! src offset in %o2 (last 4-bits)
@@ -7318,7 +7321,7 @@ copyin_blalign:
 	! ... and length must be a multiple of 64
 	andcc	%i1, 0x3f, %g0
 	bz,pn	%ncc, .pz_doblock
-	mov	ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
+	wr	%g0, ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
 
 1:	! punt, call bzero but notify the caller that bzero was used
 	mov	%i0, %o0

@@ -1316,8 +1316,19 @@ elf_reloc(Rt_map *lmp, uint_t plt, int *in_nfavl, APlist **textrel)
 			/* FALLTHROUGH */
 		default:
 			value += reladd;
-			if (IS_EXTOFFSET(rtype))
+			/*
+			 * R_SPARC_OLO10 uses the low 10 bits of S + A,
+			 * followed by the secondary addend O.
+			 *
+			 * The resulting value occupies a signed 13-bit
+			 * instruction field.
+			 */
+			if (rtype == R_SPARC_OLO10) {
+				value = (value & 0x3ff) +
+				    (Word)ELF_R_TYPE_DATA(rel->r_info);
+			} else if (IS_EXTOFFSET(rtype)) {
 				value += (Word)ELF_R_TYPE_DATA(rel->r_info);
+			}
 
 			/*
 			 * Write the relocation out.  If this relocation is a

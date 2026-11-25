@@ -49,7 +49,6 @@ ALL = cprboot
 include ../../common/Makefile.com
 include $(TOPDIR)/psm/Makefile.psm.64
 CFLAGS64 += -xchip=ultra
-CERRWARN += $(CNOWARN_UNINIT)
 
 .KEEP_STATE:
 

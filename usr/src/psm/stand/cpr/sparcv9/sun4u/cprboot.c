@@ -399,6 +399,7 @@ cb_read_statefile(void)
 	mmask = (MMU_PAGESIZE512K / PROM_MAX_READ) - 1;
 
 	cnt = 0;
+	dst_virt = sfile.buf;
 	dtlb_index = cb_dents - 1;
 	if (volname)
 		(void) cpr_fs_seek(sfile.fd, CPR_SPEC_OFFSET);

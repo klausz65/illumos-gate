@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"llseek.s"
+	.file	"llseek.S"
 
 /*
  * C library -- llseek

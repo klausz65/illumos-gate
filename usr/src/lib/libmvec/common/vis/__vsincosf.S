@@ -50,38 +50,38 @@ constants:
 	.word	0x7f800000,0
 	.word	0x80000000,0
 
-#define S0		0x0
-#define S1		0x08
-#define S2		0x10
-#define one		0x18
-#define mhalf		0x20
-#define C0		0x28
-#define C1		0x30
-#define C2		0x38
-#define invpio2		0x40
-#define round		0x48
-#define pio2_1		0x50
-#define pio2_t		0x58
-#define thresh1		0x60
-#define thresh2		0x68
-#define inf		0x70
-#define signbit		0x78
+#define	S0		0x0
+#define	S1		0x08
+#define	S2		0x10
+#define	one		0x18
+#define	mhalf		0x20
+#define	C0		0x28
+#define	C1		0x30
+#define	C2		0x38
+#define	invpio2		0x40
+#define	round		0x48
+#define	pio2_1		0x50
+#define	pio2_t		0x58
+#define	thresh1		0x60
+#define	thresh2		0x68
+#define	inf		0x70
+#define	signbit		0x78
 
 ! local storage indices
 
-#define xsave		STACK_BIAS-0x8
-#define ssave		STACK_BIAS-0x10
-#define csave		STACK_BIAS-0x18
-#define nsave		STACK_BIAS-0x1c
-#define sxsave		STACK_BIAS-0x20
-#define sssave		STACK_BIAS-0x24
-#define junk		STACK_BIAS-0x28
-#define n3		STACK_BIAS-0x38
-#define n2		STACK_BIAS-0x40
-#define n1		STACK_BIAS-0x48
-#define n0		STACK_BIAS-0x50
+#define	xsave		STACK_BIAS-0x8
+#define	ssave		STACK_BIAS-0x10
+#define	csave		STACK_BIAS-0x18
+#define	nsave		STACK_BIAS-0x1c
+#define	sxsave		STACK_BIAS-0x20
+#define	sssave		STACK_BIAS-0x24
+#define	junk		STACK_BIAS-0x28
+#define	n3		STACK_BIAS-0x38
+#define	n2		STACK_BIAS-0x40
+#define	n1		STACK_BIAS-0x48
+#define	n0		STACK_BIAS-0x50
 ! sizeof temp storage - must be a multiple of 16 for V9
-#define tmps		0x50
+#define	tmps		0x50
 
 ! register use
 
@@ -154,12 +154,12 @@ constants:
 	mov	%o0,%g1
 
 #ifdef __sparcv9
-	stx	%i1,[%fp+xsave]		! save arguments
+	stx	%i1,[%fp+xsave]		/* save arguments */
 	stx	%i3,[%fp+ssave]
 	stx	%i5,[%fp+csave]
 	ldx	[%fp+STACK_BIAS+0xb0],%o5
 #else
-	st	%i1,[%fp+xsave]		! save arguments
+	st	%i1,[%fp+xsave]		/* save arguments */
 	st	%i3,[%fp+ssave]
 	st	%i5,[%fp+csave]
 	ld	[%fp+0x5c],%o5
@@ -168,8 +168,8 @@ constants:
 	st	%i2,[%fp+sxsave]
 	st	%i4,[%fp+sssave]
 	mov	%i5,%o4
-	mov	0,%i5			! biguns = 0
-	ldd	[%g1+S0],%f40		! load constants
+	mov	0,%i5			/* biguns = 0 */
+	ldd	[%g1+S0],%f40		/* load constants */
 	ldd	[%g1+S1],%f42
 	ldd	[%g1+S2],%f44
 	ldd	[%g1+one],%f46
@@ -185,11 +185,11 @@ constants:
 	ldd	[%g1+thresh2],%f18
 	ldd	[%g1+inf],%f38
 	ldd	[%g1+signbit],%f28
-	sll	%i2,2,%i2		! scale strides
+	sll	%i2,2,%i2		/* scale strides */
 	sll	%i4,2,%i4
 	sll	%o5,2,%o5
 	nop
-	fzero	%f10			! loop prologue
+	fzero	%f10			/* loop prologue */
 	add	%fp,junk,%l0
 	fzero	%f20
 	add	%fp,junk,%l4
@@ -210,67 +210,67 @@ constants:
 ! 16-byte aligned
 	.align	16
 .start:
-	ld	[%i1],%f0		! *x
-	add	%i1,%i2,%i1		! x += stridex
+	ld	[%i1],%f0		/* *x */
+	add	%i1,%i2,%i1		/* x += stridex */
 	addcc	%i0,-1,%i0
 	fdtos	%f10,%f10
 
 	st	%f10,[%l0]
-	mov	%i3,%l0			! ps0 = s
-	add	%i3,%i4,%i3		! s += strides
+	mov	%i3,%l0			/* ps0 = s */
+	add	%i3,%i4,%i3		/* s += strides */
 	fdtos	%f20,%f20
 
 	st	%f20,[%l4]
-	mov	%o4,%l4			! pc0 = c
+	mov	%o4,%l4			/* pc0 = c */
 	ble,pn	%icc,.last1
 ! delay slot
-	add	%o4,%o5,%o4		! c += stridec
+	add	%o4,%o5,%o4		/* c += stridec */
 
-	ld	[%i1],%f2		! *x
-	add	%i1,%i2,%i1		! x += stridex
+	ld	[%i1],%f2		/* *x */
+	add	%i1,%i2,%i1		/* x += stridex */
 	addcc	%i0,-1,%i0
 	fdtos	%f12,%f12
 
 	st	%f12,[%l1]
-	mov	%i3,%l1			! ps1 = s
-	add	%i3,%i4,%i3		! s += strides
+	mov	%i3,%l1			/* ps1 = s */
+	add	%i3,%i4,%i3		/* s += strides */
 	fdtos	%f22,%f22
 
 	st	%f22,[%l5]
-	mov	%o4,%l5			! pc1 = c
+	mov	%o4,%l5			/* pc1 = c */
 	ble,pn	%icc,.last2
 ! delay slot
-	add	%o4,%o5,%o4		! c += stridec
+	add	%o4,%o5,%o4		/* c += stridec */
 
-	ld	[%i1],%f4		! *x
-	add	%i1,%i2,%i1		! x += stridex
+	ld	[%i1],%f4		/* *x */
+	add	%i1,%i2,%i1		/* x += stridex */
 	addcc	%i0,-1,%i0
 	fdtos	%f14,%f14
 
 	st	%f14,[%l2]
-	mov	%i3,%l2			! ps2 = s
-	add	%i3,%i4,%i3		! s += strides
+	mov	%i3,%l2			/* ps2 = s */
+	add	%i3,%i4,%i3		/* s += strides */
 	fdtos	%f24,%f24
 
 	st	%f24,[%l6]
-	mov	%o4,%l6			! pc2 = c
+	mov	%o4,%l6			/* pc2 = c */
 	ble,pn	%icc,.last3
 ! delay slot
-	add	%o4,%o5,%o4		! c += stridec
+	add	%o4,%o5,%o4		/* c += stridec */
 
-	ld	[%i1],%f6		! *x
-	add	%i1,%i2,%i1		! x += stridex
+	ld	[%i1],%f6		/* *x */
+	add	%i1,%i2,%i1		/* x += stridex */
 	nop
 	fdtos	%f16,%f16
 
 	st	%f16,[%l3]
-	mov	%i3,%l3			! ps3 = s
-	add	%i3,%i4,%i3		! s += strides
+	mov	%i3,%l3			/* ps3 = s */
+	add	%i3,%i4,%i3		/* s += strides */
 	fdtos	%f26,%f26
 
 	st	%f26,[%l7]
-	mov	%o4,%l7			! pc3 = c
-	add	%o4,%o5,%o4		! c += stridec
+	mov	%o4,%l7			/* pc3 = c */
+	add	%o4,%o5,%o4		/* c += stridec */
 .cont:
 	fabsd	%f0,%f30
 
@@ -290,25 +290,25 @@ constants:
 
 ! 16-byte aligned
 	andcc	%o0,2,%g0
-	bz,pn	%icc,.range0		! branch if > 2^19 pi
+	bz,pn	%icc,.range0		/* branch if > 2^19 pi */
 ! delay slot
 	fcmple32 %f30,%f8,%o0
 
 .check1:
 	andcc	%o1,2,%g0
-	bz,pn	%icc,.range1		! branch if > 2^19 pi
+	bz,pn	%icc,.range1		/* branch if > 2^19 pi */
 ! delay slot
 	fcmple32 %f32,%f8,%o1
 
 .check2:
 	andcc	%o2,2,%g0
-	bz,pn	%icc,.range2		! branch if > 2^19 pi
+	bz,pn	%icc,.range2		/* branch if > 2^19 pi */
 ! delay slot
 	fcmple32 %f34,%f8,%o2
 
 .check3:
 	andcc	%o3,2,%g0
-	bz,pn	%icc,.range3		! branch if > 2^19 pi
+	bz,pn	%icc,.range3		/* branch if > 2^19 pi */
 ! delay slot
 	fcmple32 %f36,%f8,%o3
 
@@ -330,7 +330,7 @@ constants:
 
 	fmuld	%f30,%f54,%f20
 	andcc	%o7,2,%g0
-	bz,pn	%icc,.medium		! branch if any argument is > pi/4
+	bz,pn	%icc,.medium		/* branch if any argument is > pi/4 */
 ! delay slot
 	nop
 
@@ -482,7 +482,7 @@ constants:
 	fsubd	%f2,%f22,%f2
 	fmuld	%f12,%f62,%f32
 	and	%o1,1,%o1
-	movrnz	%o0,%l4,%l0		! if (n & 1) exchange ps and pc
+	movrnz	%o0,%l4,%l0		/* if (n & 1) exchange ps and pc */
 
 	fsubd	%f4,%f24,%f4
 	fmuld	%f14,%f62,%f34
@@ -523,7 +523,7 @@ constants:
 	movrnz	%o3,%g1,%l7
 
 	fmuld	%f30,%f54,%f20
-	fmovrdnz %o0,%f10,%f0		! if (n & 1) x = -x
+	fmovrdnz %o0,%f10,%f0		/* if (n & 1) x = -x */
 
 	fmuld	%f32,%f54,%f22
 	fmovrdnz %o1,%f12,%f2
@@ -638,7 +638,7 @@ constants:
 	fmuld	%f6,%f16,%f16
 	ldd	[%fp+n3],%f36
 
-	fxor	%f10,%f30,%f10		! if (n & 2) negate s, c
+	fxor	%f10,%f30,%f10		/* if (n & 2) negate s, c */
 
 	fxor	%f12,%f32,%f12
 
@@ -679,7 +679,7 @@ constants:
 	fdtos	%f16,%f16
 	st	%f16,[%l3]
 	fdtos	%f26,%f26
-	tst	%i5			! check for huge arguments remaining
+	tst	%i5			/* check for huge arguments remaining */
 	be,pt	%icc,.exit
 ! delay slot
 	st	%f26,[%l7]
@@ -699,9 +699,9 @@ constants:
 	ld	[%fp+nsave],%o0
 	ld	[%fp+sxsave],%o2
 	ld	[%fp+sssave],%o4
-	sra	%o2,0,%o2		! sign-extend for V9
+	sra	%o2,0,%o2		/* sign-extend for V9 */
 	call	__vlibm_vsincos_bigf
-	sra	%o4,0,%o4		! delay slot
+	sra	%o4,0,%o4		/* delay slot */
 
 .exit:
 	ret
@@ -743,9 +743,9 @@ constants:
 .range0:
 	fcmpgt32 %f38,%f30,%o0
 	andcc	%o0,2,%g0
-	bnz,a,pt %icc,1f		! branch if finite
+	bnz,a,pt %icc,1f		/* branch if finite */
 ! delay slot, squashed if branch not taken
-	mov	1,%i5			! set biguns
+	mov	1,%i5			/* set biguns */
 	fzeros	%f1
 	fmuls	%f0,%f1,%f0
 	st	%f0,[%l0]
@@ -771,7 +771,7 @@ constants:
 ! delay slot
 	fcmple32 %f30,%f8,%o0
 1:
-	fzero	%f0			! set up dummy argument
+	fzero	%f0			/* set up dummy argument */
 	add	%fp,junk,%l0
 	add	%fp,junk,%l4
 	mov	2,%o0
@@ -784,9 +784,9 @@ constants:
 .range1:
 	fcmpgt32 %f38,%f32,%o1
 	andcc	%o1,2,%g0
-	bnz,a,pt %icc,1f		! branch if finite
+	bnz,a,pt %icc,1f		/* branch if finite */
 ! delay slot, squashed if branch not taken
-	mov	1,%i5			! set biguns
+	mov	1,%i5			/* set biguns */
 	fzeros	%f3
 	fmuls	%f2,%f3,%f2
 	st	%f2,[%l1]
@@ -812,7 +812,7 @@ constants:
 ! delay slot
 	fcmple32 %f32,%f8,%o1
 1:
-	fzero	%f2			! set up dummy argument
+	fzero	%f2			/* set up dummy argument */
 	add	%fp,junk,%l1
 	add	%fp,junk,%l5
 	mov	2,%o1
@@ -825,9 +825,9 @@ constants:
 .range2:
 	fcmpgt32 %f38,%f34,%o2
 	andcc	%o2,2,%g0
-	bnz,a,pt %icc,1f		! branch if finite
+	bnz,a,pt %icc,1f		/* branch if finite */
 ! delay slot, squashed if branch not taken
-	mov	1,%i5			! set biguns
+	mov	1,%i5			/* set biguns */
 	fzeros	%f5
 	fmuls	%f4,%f5,%f4
 	st	%f4,[%l2]
@@ -853,7 +853,7 @@ constants:
 ! delay slot
 	fcmple32 %f34,%f8,%o2
 1:
-	fzero	%f4			! set up dummy argument
+	fzero	%f4			/* set up dummy argument */
 	add	%fp,junk,%l2
 	add	%fp,junk,%l6
 	mov	2,%o2
@@ -866,9 +866,9 @@ constants:
 .range3:
 	fcmpgt32 %f38,%f36,%o3
 	andcc	%o3,2,%g0
-	bnz,a,pt %icc,1f		! branch if finite
+	bnz,a,pt %icc,1f		/* branch if finite */
 ! delay slot, squashed if branch not taken
-	mov	1,%i5			! set biguns
+	mov	1,%i5			/* set biguns */
 	fzeros	%f7
 	fmuls	%f6,%f7,%f6
 	st	%f6,[%l3]
@@ -894,7 +894,7 @@ constants:
 ! delay slot
 	fcmple32 %f36,%f8,%o3
 1:
-	fzero	%f6			! set up dummy argument
+	fzero	%f6			/* set up dummy argument */
 	add	%fp,junk,%l3
 	add	%fp,junk,%l7
 	mov	2,%o3

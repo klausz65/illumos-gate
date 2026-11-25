@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"pwrite.s"
+	.file	"pwrite.S"
 
 #include "SYS.h"
 

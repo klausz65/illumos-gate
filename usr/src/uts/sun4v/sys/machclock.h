@@ -52,15 +52,18 @@ extern "C" {
  * they will not be preempted can use the RD_TICK_NO_SUSPEND_CHECK
  * which does not check for native_tick_offset changing.
  */
+#define	MC_LABEL2(prefix, line)	prefix##line
+#define	MC_LABEL(prefix, line)	MC_LABEL2(prefix, line)
+
 #define	RD_STICK(out, scr1, scr2, label)			\
-.rd_stick.label:						\
+MC_LABEL(.rd_stick_, label):					\
 	sethi	%hi(native_stick_offset), scr1;			\
 	ldx	[scr1 + %lo(native_stick_offset)], scr2;	\
 	rd	STICK, out;					\
 	ldx	[scr1 + %lo(native_stick_offset)], scr1;	\
 	sub	scr1, scr2, scr2;				\
 /* CSTYLED */							\
-	brnz,pn	scr2, .rd_stick.label;				\
+	brnz,pn	scr2, MC_LABEL(.rd_stick_, label);		\
 	sllx	out, 1, out;					\
 	srlx	out, 1, out;					\
 	add	out, scr1, out
@@ -101,14 +104,14 @@ extern u_longlong_t gettick(void);
 
 
 #define	RD_TICK(out, scr1, scr2, label)				\
-.rd_tick.label:							\
+MC_LABEL(.rd_tick_, label):					\
 	sethi	%hi(native_tick_offset), scr1;			\
 	ldx	[scr1 + %lo(native_tick_offset)], scr2;		\
 	rd	%tick, out;					\
 	ldx	[scr1 + %lo(native_tick_offset)], scr1;		\
 	sub	scr1, scr2, scr2;				\
 /* CSTYLED */							\
-	brnz,pn	scr2, .rd_tick.label;				\
+	brnz,pn	scr2, MC_LABEL(.rd_tick_, label);		\
 	sllx	out, 1, out;					\
 	srlx	out, 1, out;					\
 	add	out, scr1, out
@@ -165,14 +168,14 @@ extern u_longlong_t gettick(void);
 	add	out, scr1, out;
 
 #define	RD_TICKCMPR(out, scr1, scr2, label)			\
-.rd_stickcmpr.label: 						\
+MC_LABEL(.rd_stickcmpr_, label):				\
 	sethi	%hi(native_stick_offset), scr1;			\
 	ldx	[scr1 + %lo(native_stick_offset)], scr2;	\
 	rd	STICK_COMPARE, out;				\
 	ldx	[scr1 + %lo(native_stick_offset)], scr1;	\
 	sub	scr1, scr2, scr2;				\
 /* CSTYLED */							\
-	brnz,pn	scr2, .rd_stickcmpr.label;			\
+	brnz,pn	scr2, MC_LABEL(.rd_stickcmpr_, label);		\
 	add	out, scr1, out
 
 #define	WR_TICKCMPR(in, scr1, scr2, label)			\

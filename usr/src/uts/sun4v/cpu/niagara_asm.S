@@ -42,7 +42,7 @@
 	 * hv_niagara_getperf(uint64_t perfreg, uint64_t *datap)
 	 */
 	ENTRY(hv_niagara_getperf)
-	mov	%o1, %o4			! save datap
+	mov	%o1, %o4			/* save datap */
 	mov	HV_NIAGARA_GETPERF, %o5
 	ta	FAST_TRAP
 	brz,a	%o0, 1f
@@ -82,7 +82,7 @@
 
 	wr	%g0, ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
 	set	TSBTAG_INVALID, %o2
-	sllx	%o2, 32, %o2		! INV bit in upper 32 bits of the tag
+	sllx	%o2, 32, %o2		/* INV bit in upper 32 bits of the tag */
 1:
 	stxa	%o2, [%o0+0x0]%asi
 	stxa	%o2, [%o0+0x40]%asi
@@ -119,7 +119,7 @@
 	 * hv_niagara_mmustat_conf(uint64_t buf, uint64_t *prev_buf)
 	 */
 	ENTRY(hv_niagara_mmustat_conf)
-	mov	%o1, %o4			! save prev_buf
+	mov	%o1, %o4			/* save prev_buf */
 	mov	HV_NIAGARA_MMUSTAT_CONF, %o5
 	ta	FAST_TRAP
 	retl
@@ -130,7 +130,7 @@
 	 * hv_niagara_mmustat_info(uint64_t *buf)
 	 */
 	ENTRY(hv_niagara_mmustat_info)
-	mov	%o0, %o4			! save buf
+	mov	%o0, %o4			/* save buf */
 	mov	HV_NIAGARA_MMUSTAT_INFO, %o5
 	ta	FAST_TRAP
 	retl

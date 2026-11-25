@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_nfssys.s"
+	.file	"_nfssys.S"
 
 /* C library -- nfssys						*/
 /* int nfssys(int opcode, int arg)				*/

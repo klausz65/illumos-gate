@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"close.s"
+	.file	"close.S"
 
 /* C library -- close					*/
 /* int __close(int fildes)				*/

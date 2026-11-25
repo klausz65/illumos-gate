@@ -50,6 +50,10 @@
 #include <sys/cheetahregs.h>
 #include <sys/cheetahasm.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * Invalidating the E$ tags is only needed on Cheetah following
  * the manual displacement flush.  The internal flush ASI used by

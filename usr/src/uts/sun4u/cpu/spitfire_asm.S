@@ -44,6 +44,10 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */ 
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /* BEGIN CSTYLED */
 #define	DCACHE_FLUSHPAGE(arg1, arg2, tmp1, tmp2, tmp3)			\
 	ldxa	[%g0]ASI_LSU, tmp1					;\
@@ -409,7 +413,7 @@ lbl##1:                                                       ;\
 	  wrpr	%g0, %o5, %pstate		/* enable interrupts */
 	SET_SIZE(vtag_flushpage)
 
-        .seg    ".text"
+        .section    ".text"
 .flushallmsg:
         .asciz  "sfmmu_asm: unimplemented flush operation"
 
@@ -537,12 +541,12 @@ lbl##1:                                                       ;\
  *		the tag created from the pfnum. If the tags match we flush
  *		the line.
  */
-	.seg	".data"
+	.section	".data"
 	.align	8
 	.global	dflush_type
 dflush_type:
 	.word	FLUSHPAGE_TYPE
-	.seg	".text"
+	.section	".text"
 
 	ENTRY(vac_flushpage)
 	/*
@@ -610,7 +614,7 @@ _dispatch_status_busy:
  *	%o0 - function or inumber to call
  *	%o1, %o2 - arguments (2 uint64_t's)
  */
-	.seg "text"
+	.section "text"
 
 	ENTRY(init_mondo)
 #ifdef DEBUG

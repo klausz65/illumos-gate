@@ -25,12 +25,10 @@
 
 /*	Copyright (c) 1989 by Sun Microsystems, Inc.		*/
 
-.ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.8	*/
-
 /* C library -- uname						*/
 /* int uname (struct utsname *name);				*/
 
-	.file	"uname.s"
+	.file	"uname.S"
 
 #include <sys/asm_linkage.h>
 

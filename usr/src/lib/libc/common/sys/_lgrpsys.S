@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_lgrpsys.s"
+	.file	"_lgrpsys.S"
 
 #include "SYS.h"
 

@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"alarm.s"
+	.file	"alarm.S"
 
 /* C library -- alarm						*/
 /* unsigned alarm(unsigned seconds)				*/

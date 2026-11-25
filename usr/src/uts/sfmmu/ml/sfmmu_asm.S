@@ -48,6 +48,10 @@
 #include <sys/clock.h>
 #include <sys/trapstat.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 #ifdef TRAPTRACE
 #include <sys/traptrace.h>
 
@@ -461,7 +465,7 @@ label##2:
 	or	tmp, dest, dest		/* contents of patched value */
 
 
-	.seg	".data"
+	.section	".data"
 	.global	sfmmu_panic1
 sfmmu_panic1:
 	.asciz	"sfmmu_asm: interrupts already disabled"
@@ -1400,7 +1404,7 @@ do_patch:
 	mov	ASI_N, %o3
 	ld	[%o4 + %lo(ktsb_phys)], %o4
 	movrnz	%o4, ASI_MEM, %o3
-	mov	%o3, %asi
+	wr	%g0, %o3, %asi
 #endif /* !sun4v */
 	mov	%o0, %g1			! %g1 = vaddr
 
@@ -1432,7 +1436,7 @@ do_patch:
 	mov	ASI_N, %o3
 	ld	[%o4 + %lo(ktsb_phys)], %o4
 	movrnz	%o4, ASI_MEM, %o3
-	mov	%o3, %asi
+	wr	%g0, %o3, %asi
 #endif /* !sun4v */
 	mov	%o0, %g1			! %g1 = vaddr
 
@@ -1555,13 +1559,13 @@ label:
 #endif	/* KPM_TLBMISS_STATS_GATHER */
 
 #ifdef	PTL1_PANIC_DEBUG
-	.seg	".data"
+	.section	".data"
 	.global	test_ptl1_panic
 test_ptl1_panic:
 	.word	0
 	.align	8
 
-	.seg	".text"
+	.section	".text"
 	.align	4
 #endif	/* PTL1_PANIC_DEBUG */
 
@@ -1843,7 +1847,7 @@ test_ptl1_panic:
  * ismhit:   label where to jump to if an ism dtlb miss
  * exitlabel:label where to jump if hat is busy due to hat_unshare.
  */
-#define ISM_CHECK(tagacc, tsbmiss, ismseg, ismhat, tmp1, tmp2, tmp3 \
+#define ISM_CHECK(tagacc, tsbmiss, ismseg, ismhat, tmp1, tmp2, tmp3, \
 	label, ismhit)							\
 	ldx	[tsbmiss + TSBMISS_ISMBLKPA], tmp1 /* tmp1 = &ismblk */	;\
 	brlz,pt  tmp1, label##3		/* exit if -1 */	;\
@@ -2723,6 +2727,7 @@ dktsb4m_kpmcheck:
 	 * probe 2ND_TSB (4M index)
 	 * probe 1ST_TSB (8K index)
 	 * probe 3RD_TSB (8K index)
+	 */
 
 	/*
 	 * Shared Context 4TH TSB 4M-256 pages
@@ -3243,7 +3248,7 @@ tsb_user8k:
 
 #ifndef UTSB_PHYS
 	mov	ASI_N, %g7	! user TSBs accessed by VA
-	mov	%g7, %asi
+	wr	%g0, %g7, %asi
 #endif /* !UTSB_PHYS */
 
 	TSB_UPDATE_TL(%g1, %g3, %g2, %g4, %g7, %g6, locked_tsb_l3)
@@ -3286,7 +3291,7 @@ tsb_user4m:
 
 #ifndef UTSB_PHYS
 	mov	ASI_N, %g7	! user TSBs accessed by VA
-	mov	%g7, %asi
+	wr	%g0, %g7, %asi
 #endif /* UTSB_PHYS */
 
         TSB_UPDATE_TL(%g1, %g3, %g2, %g4, %g7, %g6, locked_tsb_l4)
@@ -3343,7 +3348,7 @@ tsb_user_pn_synth:
 	GET_4M_PFN_OFF(%g3, %g6, %g5, %g7, 1)	/* make 4M pfn offset */
 
 	mov	ASI_N, %g7	/* user TSBs always accessed by VA */
-	mov	%g7, %asi
+	wr	%g0, %g7, %asi
 	TSB_UPDATE_TL_PN(%g1, %g5, %g2, %g4, %g7, %g3, locked_tsb_l5) /* update TSB */
 5:
         DTLB_STUFF(%g5, %g1, %g2, %g3, %g4)
@@ -3359,7 +3364,7 @@ tsb_user_itlb_synth:
 	  or	%g5, %g3, %g5			/* add 4M bits to TTE */
 
 	mov	ASI_N, %g7	/* user TSBs always accessed by VA */
-	mov	%g7, %asi
+	wr	%g0, %g7, %asi
 	TSB_UPDATE_TL_PN(%g1, %g5, %g2, %g4, %g7, %g3, locked_tsb_l6) /* update TSB */
 7:
 	SET_TTE4M_PN(%g5, %g7)			/* add TTE4M pagesize to TTE */
@@ -3388,7 +3393,7 @@ tsb_kernel:
 #ifndef sun4v
 tsb_kernel_patch_asi:
 	or	%g0, RUNTIME_PATCH, %g6
-	mov	%g6, %asi	! XXX avoid writing to %asi !!
+	wr	%g0, %g6, %asi	! XXX avoid writing to %asi !!
 #endif
 	TSB_UPDATE_TL(%g1, %g3, %g2, %g4, %g7, %g6, locked_tsb_l7)
 3:
@@ -4064,7 +4069,7 @@ label##_ok:
 	 * if (mseg_pa == NULL) sfmmu_kpm_exception
 	 * g2=pfn
 	 */
-	mov	ASI_MEM, %asi
+	wr	%g0, ASI_MEM, %asi
 	PAGE_NUM2MEMSEG_NOLOCK_PA(%g2, %g3, %g6, %g4, %g5, %g7, kpmtsbmp2m)
 	cmp	%g3, MSEG_NULLPTR_PA
 	be,pn	%xcc, sfmmu_kpm_exception	/* if mseg not found */
@@ -4176,7 +4181,7 @@ label##_ok:
 	mov	ASI_N, %g1
 	andcc	%g7, KPMTSBM_TSBPHYS_FLAG, %g0
 	movnz	%icc, ASI_MEM, %g1
-	mov	%g1, %asi
+	wr	%g0, %g1, %asi
 #endif
 
 	/*
@@ -4324,7 +4329,7 @@ locked_tsb_l1:
 	 * g2=pfn g6=per-CPU kpm tsbmiss area
 	 * g4 g5 g7 for scratch use.
 	 */
-	mov	ASI_MEM, %asi
+	wr	%g0, ASI_MEM, %asi
 	PAGE_NUM2MEMSEG_NOLOCK_PA(%g2, %g3, %g6, %g4, %g5, %g7, kpmtsbmsp2m)
 	cmp	%g3, MSEG_NULLPTR_PA
 	be,pn	%xcc, sfmmu_kpm_exception	/* if mseg not found */
@@ -4420,7 +4425,7 @@ locked_tsb_l1:
 	mov	ASI_N, %g1
 	andcc	%g7, KPMTSBM_TSBPHYS_FLAG, %g0
 	movnz	%icc, ASI_MEM, %g1
-	mov	%g1, %asi
+	wr	%g0, %g1, %asi
 #endif
 
 	/*
@@ -4470,7 +4475,7 @@ locked_tsb_l2:
 #error - KPMTSBM_SHIFT does not correspond to size of kpmtsbm struct
 #endif
 
-	.seg	".data"
+	.section	".data"
 sfmmu_kpm_tsbmtl_panic:
 	.ascii	"sfmmu_kpm_tsbmtl: interrupts disabled"
 	.byte	0
@@ -4478,7 +4483,7 @@ sfmmu_kpm_stsbmtl_panic:
 	.ascii	"sfmmu_kpm_stsbmtl: interrupts disabled"
 	.byte	0
 	.align	4
-	.seg	".text"
+	.section	".text"
 
 	/*
 	 * Enable/disable tsbmiss handling at trap level for a kpm (large) page.
@@ -4642,7 +4647,7 @@ sfmmu_dslow_patch_ktsb4m_szcode:
 /*
  * Per-CPU tsbmiss areas to avoid cache misses in TSB miss handlers.
  */
-	.seg	".data"
+	.section	".data"
 	.align	64
 	.global tsbmiss_area
 tsbmiss_area:

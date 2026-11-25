@@ -38,6 +38,10 @@
 #include <sys/vtrace.h>
 #include <vm/hat_sfmmu.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * resume(kthread_id_t)
  *

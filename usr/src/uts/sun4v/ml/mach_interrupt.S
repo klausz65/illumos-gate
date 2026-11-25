@@ -42,6 +42,9 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * (TT 0x7c, TL>0) CPU Mondo Queue Handler
@@ -322,13 +325,13 @@ sfmmu_shctx_cpu_mondo_patch:
 	/* Never Reached */
 	SET_SIZE(dev_mondo)
 
-	.seg	".data"
+	.section	".data"
 	.global	cpu_mondo_inval
 	.align	8
 cpu_mondo_inval:
 	.skip	8
 
-	.seg	".text"
+	.section	".text"
 
 
 /*
@@ -359,7 +362,7 @@ cpu_mondo_inval:
 	add	%g4, %g7, %g7			! %g7=PA of ER in kernel buf
 
 	ldxa	[%g7]ASI_MEM, %g5		! %g5=first 8 byte of ER buf
-	cmp	0, %g5
+	tst	%g5
 	bne,pn	%xcc, 1f			! first 8 byte is not 0
 	nop
 
@@ -482,7 +485,7 @@ cpu_mondo_inval:
 	add	%g4, %g7, %g7			! %g7 = PA of ER in kernel buf
 
 	ldxa	[%g7]ASI_MEM, %g5		! %g5 = first 8 byte of ER buf
-	cmp	0, %g5
+	tst	%g5
 	bne,pn	%xcc, 1f			! first 8 byte is not 0
 	nop
 

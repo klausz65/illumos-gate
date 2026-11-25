@@ -175,6 +175,10 @@ static char slash_moddir_suffix_slash[] = MODDIR_SUFFIX "/";
 #define	slash_moddir_suffix_slash	""
 #endif
 
+#if defined(__sparc)
+extern int get_weakish_int(int *);
+#endif
+
 #define	_moddebug	get_weakish_int(&moddebug)
 #define	_modrootloaded	get_weakish_int(&modrootloaded)
 #define	_swaploaded	get_weakish_int(&swaploaded)
@@ -313,6 +317,7 @@ static kobj_stat_t kobj_stat;
 
 #define	MINALIGN	8	/* at least a double-word */
 
+#if !defined(__sparc)
 int
 get_weakish_int(int *ip)
 {
@@ -320,6 +325,7 @@ get_weakish_int(int *ip)
 		return (0);
 	return (ip == NULL ? 0 : *ip);
 }
+#endif
 
 static void *
 get_weakish_pointer(void **ptrp)

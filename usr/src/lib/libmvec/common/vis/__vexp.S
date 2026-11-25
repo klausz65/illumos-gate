@@ -42,7 +42,7 @@
  *	had to be removed for CHEETAH to avoid the fdtox of a very large
  *	number, which would trap to kernel (2^52).
  *
- * Let 	x = (k + j/256)ln2 + r
+ * Let	x = (k + j/256)ln2 + r
  * then	exp(x) = exp(ln2^(k+j/256)) * exp(r)
  *	       = 2^k * 2^(j/256) * exp(r)
  * where r is polynomial approximation
@@ -580,15 +580,15 @@ constants:
 	.word	0x01000000,0x00000000
 	.word	0x7f000000,0x00000000
 	.word	0x80000000,0x00000000
-	.word	0x43f00000,0x00000000 ! scaling 2^12 two96
+	.word	0x43f00000,0x00000000 /* scaling 2^12 two96 */
 	.word	0xfff00000,0x00000000
 	.word	0x3ff00000,0x00000000
 	.word	0x3fdfffff,0xfffffff6
 	.word	0x3fc55555,0x721a1d14
 	.word	0x3fa55555,0x6e0896af
-	.word	0x41371547,0x652b82fe ! scaling 2^12 invln2_256
-	.word	0x3ea62e42,0xfee00000 ! scaling 2^(-12) ln2_256h
-	.word	0x3caa39ef,0x35793c76 ! scaling 2^(-12) ln2_256l
+	.word	0x41371547,0x652b82fe /* scaling 2^12 invln2_256 */
+	.word	0x3ea62e42,0xfee00000 /* scaling 2^(-12) ln2_256h */
+	.word	0x3caa39ef,0x35793c76 /* scaling 2^(-12) ln2_256l */
 
 	! base set w/o scaling
 	! .word	0x43300000,0x00000000 ! scaling  two96
@@ -701,7 +701,7 @@ constants:
 	PIC_SET(l7,constants,o3)
 	PIC_SET(l7,TBL,o0)
 	mov	%o0,%g1
-	wr	%g0,0x82,%asi		! set %asi for non-faulting loads
+	wr	%g0,0x82,%asi		/* set %asi for non-faulting loads */
 
 	sethi	%hi(0x80000000),%i5
 	sethi	%hi(0x3e300000),%l6
@@ -724,63 +724,63 @@ constants:
 	ldd	[%o3+invln2_256],INVLN2_256
 	ldd	[%o3+ln2_256h],LN2_256H
 	ldd	[%o3+ln2_256l],LN2_256L
-	sll	%i2,3,%i2		! scale strides
+	sll	%i2,3,%i2		/* scale strides */
 	sll	%i4,3,%i4
-	add	%fp,jnk,%l3		! precondition loop
+	add	%fp,jnk,%l3		/* precondition loop */
 	add	%fp,jnk,%l4
 	add	%fp,jnk,%l5
-	ld	[%i1],%l0		! hx = *x
+	ld	[%i1],%l0		/* hx = *x */
 	ld	[%i1],%f0
 	ld	[%i1+4],%f1
-	andn	%l0,%i5,%l0		! hx &= ~0x80000000
+	andn	%l0,%i5,%l0		/* hx &= ~0x80000000 */
 	ba	.loop0
-	add	%i1,%i2,%i1		! x += stridex
+	add	%i1,%i2,%i1		/* x += stridex */
 
 	.align	16
 ! -- 16 byte aligned
 .loop0:
-	lda	[%i1]%asi,%l1		! preload next argument
+	lda	[%i1]%asi,%l1		/* preload next argument */
 	sub	%l0,%l6,%o3
 	sub	%l7,%l0,%o4
-	fand	%f0,SIGNBIT,%f2		! get sign bit
+	fand	%f0,SIGNBIT,%f2		/* get sign bit */
 
 	lda	[%i1]%asi,%f10
 	orcc	%o3,%o4,%g0
-	mov	%i3,%o0			! py0 = y
-	bl,pn	%icc,.range0		! if hx < 0x3e300000 or > 0x40862e41
+	mov	%i3,%o0			/* py0 = y */
+	bl,pn	%icc,.range0		/* if hx < 0x3e300000 or > 0x40862e41 */
 
 ! delay slot
 	lda	[%i1+4]%asi,%f11
 	addcc	%i0,-1,%i0
-	add	%i3,%i4,%i3		! y += stridey
+	add	%i3,%i4,%i3		/* y += stridey */
 	ble,pn	%icc,.endloop1
 
 ! delay slot
 	andn	%l1,%i5,%l1
-	add	%i1,%i2,%i1		! x += stridex
-	for	%f2,TWO96,%f2		! used to strip least sig bits
-	fmuld	%f0,INVLN2_256,%f4	! x/ (ln2/256)  , creating k
+	add	%i1,%i2,%i1		/* x += stridex */
+	for	%f2,TWO96,%f2		/* used to strip least sig bits */
+	fmuld	%f0,INVLN2_256,%f4	/* x/ (ln2/256)  , creating k */
 
 .loop1:
-	lda	[%i1]%asi,%l2		! preload next argument
+	lda	[%i1]%asi,%l2		/* preload next argument */
 	sub	%l1,%l6,%o3
 	sub	%l7,%l1,%o4
 	fand	%f10,SIGNBIT,%f12
 
 	lda	[%i1]%asi,%f20
 	orcc	%o3,%o4,%g0
-	mov	%i3,%o1			! py1 = y
-	bl,pn	%icc,.range1		! if hx < 0x3e300000 or > 0x40862e41
+	mov	%i3,%o1			/* py1 = y */
+	bl,pn	%icc,.range1		/* if hx < 0x3e300000 or > 0x40862e41 */
 
 ! delay slot
 	lda	[%i1+4]%asi,%f21
 	addcc	%i0,-1,%i0
-	add	%i3,%i4,%i3		! y += stridey
+	add	%i3,%i4,%i3		/* y += stridey */
 	ble,pn	%icc,.endloop2
 
 ! delay slot
 	andn	%l2,%i5,%l2
-	add	%i1,%i2,%i1		! x += stridex
+	add	%i1,%i2,%i1		/* x += stridex */
 	for	%f12,TWO96,%f12
 	fmuld	%f10,INVLN2_256,%f14
 
@@ -788,35 +788,35 @@ constants:
 	sub	%l2,%l6,%o3
 	sub	%l7,%l2,%o4
 	fand	%f20,SIGNBIT,%f22
-	fmuld	%f20,INVLN2_256,%f24		! okay to put this here; for alignment
+	fmuld	%f20,INVLN2_256,%f24	/* okay to put this here; for alignment */
 
 	orcc	%o3,%o4,%g0
-	bl,pn	%icc,.range2		! if hx < 0x3e300000 or > 0x40862e41
+	bl,pn	%icc,.range2		/* if hx < 0x3e300000 or > 0x40862e41 */
 ! delay slot
 	for	%f22,TWO96,%f22
-	faddd	%f4,%f2,%f4		! creating k+j/256, sra to zero bits
+	faddd	%f4,%f2,%f4		/* creating k+j/256, sra to zero bits */
 
 .cont:
 	faddd	%f14,%f12,%f14
-	mov	%i3,%o2			! py2 = y
+	mov	%i3,%o2			/* py2 = y */
 
 	faddd	%f24,%f22,%f24
-	add	%i3,%i4,%i3		! y += stridey
+	add	%i3,%i4,%i3		/* y += stridey */
 
 	! BUBBLE USIII
 
-	fsubd	%f4,%f2,%f8		! creating k+j/256: sll
-	st	%f6,[%l3]		! store previous loop x0
+	fsubd	%f4,%f2,%f8		/* creating k+j/256: sll */
+	st	%f6,[%l3]		/* store previous loop x0 */
 
 	fsubd	%f14,%f12,%f18
-	st	%f7,[%l3+4]		! store previous loop x0
+	st	%f7,[%l3+4]		/* store previous loop x0 */
 
 	fsubd	%f24,%f22,%f28
 	st	%f16,[%l4]
 
 	! BUBBLE USIII
 
-	fmuld	%f8,LN2_256H,%f2	! closest LN2_256 to x
+	fmuld	%f8,LN2_256H,%f2	/* closest LN2_256 to x */
 	st	%f17,[%l4+4]
 
 	fmuld	%f18,LN2_256H,%f12
@@ -827,8 +827,8 @@ constants:
 
 	! BUBBLE USIII
 
-	fsubd	%f0,%f2,%f0		! r = x - p*LN2_256H
-	fmuld	%f8,LN2_256L,%f4	! closest LN2_256 to x , added prec
+	fsubd	%f0,%f2,%f0		/* r = x - p*LN2_256H */
+	fmuld	%f8,LN2_256L,%f4	/* closest LN2_256 to x , added prec */
 
 	fsubd	%f10,%f12,%f10
 	fmuld	%f18,LN2_256L,%f14
@@ -838,7 +838,7 @@ constants:
 
 	! BUBBLE USIII
 
-	fsubd	%f0,%f4,%f0		! r -= p*LN2_256L
+	fsubd	%f0,%f4,%f0		/* r -= p*LN2_256L */
 
 	fsubd	%f10,%f14,%f10
 
@@ -852,52 +852,52 @@ constants:
 	!
 	! let               SLi        Ri           SRi		be accumulators
 
-	fmuld	%f0,B3,%f2	! SR1 = r1 * B3
-	fdtoi	%f8,%f8				! convert k+j/256 to int
-	st      %f8,[%fp+m0]			! store k, to shift return/use
+	fmuld	%f0,B3,%f2	/* SR1 = r1 * B3 */
+	fdtoi	%f8,%f8		/* convert k+j/256 to int */
+	st	%f8,[%fp+m0]	/* store k, to shift return/use */
 
-	fmuld	%f10,B3,%f12	! SR2 = r2 * B3
-	fdtoi	%f18,%f18			! convert k+j/256 to int
-	st      %f18,[%fp+m1]			! store k, to shift return/use
+	fmuld	%f10,B3,%f12	/* SR2 = r2 * B3 */
+	fdtoi	%f18,%f18	/* convert k+j/256 to int */
+	st	%f18,[%fp+m1]	/* store k, to shift return/use */
 
-	fmuld	%f20,B3,%f22	! SR3 = r3 * B3
-	fdtoi	%f28,%f28			! convert k+j/256 to int
-	st      %f28,[%fp+m2]			! store k, to shift return/use
+	fmuld	%f20,B3,%f22	/* SR3 = r3 * B3 */
+	fdtoi	%f28,%f28	/* convert k+j/256 to int */
+	st	%f28,[%fp+m2]	/* store k, to shift return/use */
 
-	fmuld	%f0,%f0,%f4	! R1 = r1 * r1
+	fmuld	%f0,%f0,%f4	/* R1 = r1 * r1 */
 
-	fmuld	%f10,%f10,%f14	! R2 = r2 * r2
-	faddd	%f2,B2,%f2	! SR1 += B2
+	fmuld	%f10,%f10,%f14	/* R2 = r2 * r2 */
+	faddd	%f2,B2,%f2	/* SR1 += B2 */
 
-	fmuld	%f20,%f20,%f24	! R3 = r3 * r3
-	faddd	%f12,B2,%f12	! SR2 += B2
+	fmuld	%f20,%f20,%f24	/* R3 = r3 * r3 */
+	faddd	%f12,B2,%f12	/* SR2 += B2 */
 
-	faddd	%f22,B2,%f22	! SR3 += B2
-	fmuld	%f0,B1,%f6	! SL1 = r1 * B1
+	faddd	%f22,B2,%f22	/* SR3 += B2 */
+	fmuld	%f0,B1,%f6	/* SL1 = r1 * B1 */
 
-	fmuld	%f10,B1,%f32	! SL2 = r2 * B1
+	fmuld	%f10,B1,%f32	/* SL2 = r2 * B1 */
 	fand	%f8,NEGINF,%f8
 	! best here for RAW BYPASS
-	ld	[%fp+m0],%l0			! get nonshifted k into intreg
+	ld	[%fp+m0],%l0	/* get nonshifted k into intreg */
 
-	fmuld	%f20,B1,%f34	! SL3 = r3 * B1
+	fmuld	%f20,B1,%f34	/* SL3 = r3 * B1 */
 	fand	%f18,NEGINF,%f18
-	ld	[%fp+m1],%l1			! get nonshifted k into intreg
+	ld	[%fp+m1],%l1	/* get nonshifted k into intreg */
 
-	fmuld	%f4,%f2,%f4	! R1 = R1 * SR1
+	fmuld	%f4,%f2,%f4	/* R1 = R1 * SR1 */
 	fand	%f28,NEGINF,%f28
-	ld	[%fp+m2],%l2			! get nonshifted k into intreg
+	ld	[%fp+m2],%l2	/* get nonshifted k into intreg */
 
-	fmuld	%f14,%f12,%f14	! R2 = R2 * SR2
-	faddd	%f6,ONE,%f6	! SL1 += 1
+	fmuld	%f14,%f12,%f14	/* R2 = R2 * SR2 */
+	faddd	%f6,ONE,%f6	/* SL1 += 1 */
 
-	fmuld	%f24,%f22,%f24	! R3 = R3 * SR3
-	faddd	%f32,ONE,%f32	! SL2 += 1
-	sra	%l0,8,%l3			! shift k tobe offset 256-8byte
+	fmuld	%f24,%f22,%f24	/* R3 = R3 * SR3 */
+	faddd	%f32,ONE,%f32	/* SL2 += 1 */
+	sra	%l0,8,%l3	/* shift k tobe offset 256-8byte */
 
-	faddd	%f34,ONE,%f34	! SL3 += 1
-	sra	%l1,8,%l4			! shift k tobe offset 256-8byte
-	sra	%l2,8,%l5			! shift k tobe offset 256-8byte
+	faddd	%f34,ONE,%f34	/* SL3 += 1 */
+	sra	%l1,8,%l4	/* shift k tobe offset 256-8byte */
+	sra	%l2,8,%l5	/* shift k tobe offset 256-8byte */
 
 	! BUBBLE in USIII
 	and	%l3,0xff0,%l3
@@ -905,36 +905,36 @@ constants:
 
 
 
-	faddd	%f6,%f4,%f6	! R1 = SL1 + R1
-	ldd     [%g1+%l3],%f4			! tbl[j]
-	add     %l3,8,%l3			! inc j
+	faddd	%f6,%f4,%f6	/* R1 = SL1 + R1 */
+	ldd	[%g1+%l3],%f4	/* tbl[j] */
+	add	%l3,8,%l3	/* inc j */
 	and	%l5,0xff0,%l5
 
 
-	faddd	%f32,%f14,%f32	! R2 = SL2 + R2
-	ldd     [%g1+%l4],%f14			! tbl[j]
-	add     %l4,8,%l4			! inc j
+	faddd	%f32,%f14,%f32	/* R2 = SL2 + R2 */
+	ldd	[%g1+%l4],%f14	/* tbl[j] */
+	add	%l4,8,%l4	/* inc j */
 	sra	%l0,20,%o3
 
-	faddd	%f34,%f24,%f34	! R3 = SL3 + R3
-	ldd     [%g1+%l5],%f24			! tbl[j]
-	add     %l5,8,%l5			! inc j
+	faddd	%f34,%f24,%f34	/* R3 = SL3 + R3 */
+	ldd	[%g1+%l5],%f24	/* tbl[j] */
+	add	%l5,8,%l5	/* inc j */
 	sra	%l1,20,%l1
 
 	! BUBBLE in USIII
-	ldd     [%g1+%l4],%f16		! tbl[j+1]
-	add     %o3,1021,%o3		! inc j
+	ldd	[%g1+%l4],%f16	/* tbl[j+1] */
+	add	%o3,1021,%o3	/* inc j */
 
-	fmuld	%f0,%f6,%f0	! p1 = r1 * R1
-	ldd     [%g1+%l3],%f6           ! tbl[j+1]
-	add     %l1,1021,%l1		! inc j
+	fmuld	%f0,%f6,%f0	/* p1 = r1 * R1 */
+	ldd	[%g1+%l3],%f6	/* tbl[j+1] */
+	add	%l1,1021,%l1	/* inc j */
 	sra	%l2,20,%l2
 
-	fmuld	%f10,%f32,%f10	! p2 = r2 * R2
-	ldd     [%g1+%l5],%f26		! tbl[j+1]
-	add     %l2,1021,%l2		! inc j
+	fmuld	%f10,%f32,%f10	/* p2 = r2 * R2 */
+	ldd	[%g1+%l5],%f26	/* tbl[j+1] */
+	add	%l2,1021,%l2	/* inc j */
 
-	fmuld	%f20,%f34,%f20	! p3 = r3 * R3
+	fmuld	%f20,%f34,%f20	/* p3 = r3 * R3 */
 
 
 
@@ -942,7 +942,7 @@ constants:
 
 !!!!!!!!!!!!!!!!!!! poly-reorder - ends here
 
-	fmuld	%f0,%f4,%f0		! start exp(x) = exp(r) * tbl[j]
+	fmuld	%f0,%f4,%f0	/* start exp(x) = exp(r) * tbl[j] */
 	mov	%o0,%l3
 
 	fmuld	%f10,%f14,%f10
@@ -951,8 +951,8 @@ constants:
 	fmuld	%f20,%f24,%f20
 	mov	%o2,%l5
 
-	faddd	%f0,%f6,%f6		! cont exp(x) : apply tbl[j] high bits
-	lda	[%i1]%asi,%l0		! preload next argument
+	faddd	%f0,%f6,%f6	/* cont exp(x) : apply tbl[j] high bits */
+	lda	[%i1]%asi,%l0	/* preload next argument */
 
 	faddd	%f10,%f16,%f16
 	lda	[%i1]%asi,%f0
@@ -960,8 +960,8 @@ constants:
 	faddd	%f20,%f26,%f26
 	lda	[%i1+4]%asi,%f1
 
-	faddd	%f6,%f4,%f6		! cont exp(x) : apply tbl[j+1] low bits
-	add	%i1,%i2,%i1		! x += stridex
+	faddd	%f6,%f4,%f6	/* cont exp(x) : apply tbl[j+1] low bits */
+	add	%i1,%i2,%i1	/* x += stridex */
 
 	faddd	%f16,%f14,%f16
 	andn	%l0,%i5,%l0
@@ -973,7 +973,7 @@ constants:
 ! delay slot
 	faddd	%f26,%f24,%f26
 
-	fpadd32	%f6,%f8,%f6		! done exp(x) : apply 2^k
+	fpadd32	%f6,%f8,%f6	/* done exp(x) : apply 2^k */
 	fpadd32	%f16,%f18,%f16
 
 
@@ -1030,7 +1030,7 @@ constants:
 	fsubd	%f10,%f14,%f10
 	fmuld	%f10,B3,%f12
 	fdtoi	%f18,%f18
-	st      %f18,[%fp+m1]
+	st	%f18,[%fp+m1]
 	fmuld	%f10,%f10,%f14
 	faddd	%f12,B2,%f12
 	fmuld	%f10,B1,%f32
@@ -1041,10 +1041,10 @@ constants:
 	sra	%l1,8,%o4
 	and	%o4,0xff0,%o4
 	faddd	%f32,%f14,%f32
-	ldd     [%g1+%o4],%f14
-	add     %o4,8,%o4
+	ldd	[%g1+%o4],%f14
+	add	%o4,8,%o4
 	sra	%l1,20,%l1
-	ldd     [%g1+%o4],%f30
+	ldd	[%g1+%o4],%f30
 	addcc	%l1,1021,%l1
 	fmuld	%f10,%f32,%f10
 	fmuld	%f10,%f14,%f10
@@ -1081,10 +1081,10 @@ constants:
 	sra	%l0,8,%o4
 	and	%o4,0xff0,%o4
 	faddd	%f32,%f4,%f32
-	ldd     [%g1+%o4],%f4
-	add     %o4,8,%o4
+	ldd	[%g1+%o4],%f4
+	add	%o4,8,%o4
 	sra	%l0,20,%o3
-	ldd     [%g1+%o4],%f30
+	ldd	[%g1+%o4],%f30
 	addcc	%o3,1021,%o3
 	fmuld	%f0,%f32,%f0
 	fmuld	%f0,%f4,%f0
@@ -1112,27 +1112,27 @@ constants:
 
 .range0:
 	cmp	%l0,%l6
-	bl,a,pt	%icc,3f			! if x is tiny
+	bl,a,pt	%icc,3f			/* if x is tiny */
 ! delay slot, annulled if branch not taken
 	faddd	%f0,ONE,%f4
 
 	cmp	%l0,%o5
-	bg,pt	%icc,1f			! if x is huge, inf, nan
+	bg,pt	%icc,1f			/* if x is huge, inf, nan */
 ! delay slot
 	nop
 
 	fcmpd	%fcc0,%f0,THRESH
-	fbg,a,pt %fcc0,3f		! if x is huge and positive
+	fbg,a,pt %fcc0,3f		/* if x is huge and positive */
 ! delay slot, annulled if branch not taken
 	fmuld	HUGE,HUGE,%f4
 
 ! x is near the extremes but within range; return to the loop
 	addcc	%i0,-1,%i0
-	add	%i3,%i4,%i3		! y += stridey
+	add	%i3,%i4,%i3		/* y += stridey */
 	ble,pn	%icc,.endloop1
 ! delay slot
 	andn	%l1,%i5,%l1
-	add	%i1,%i2,%i1		! x += stridex
+	add	%i1,%i2,%i1		/* x += stridex */
 	for	%f2,TWO96,%f2
 	ba,pt	%icc,.loop1
 ! delay slot
@@ -1140,29 +1140,29 @@ constants:
 
 1:
 	cmp	%l0,%o7
-	bl,pn	%icc,2f			! if x is finite
+	bl,pn	%icc,2f			/* if x is finite */
 ! delay slot
 	nop
 	fzero	%f4
 	fcmpd	%fcc0,%f0,NEGINF
 	fmovdne	%fcc0,%f0,%f4
 	ba,pt	%icc,3f
-	fmuld	%f4,%f4,%f4		! x*x or zero*zero
+	fmuld	%f4,%f4,%f4		/* x*x or zero*zero */
 2:
 	fmovd	HUGE,%f4
 	fcmpd	%fcc0,%f0,ONE
 	fmovdl	%fcc0,TINY,%f4
-	fmuld	%f4,%f4,%f4		! huge*huge or tiny*tiny
+	fmuld	%f4,%f4,%f4		/* huge*huge or tiny*tiny */
 3:
 	st	%f4,[%o0]
 	andn	%l1,%i5,%l0
-	add	%i1,%i2,%i1		! x += stridex
+	add	%i1,%i2,%i1		/* x += stridex */
 	fmovd	%f10,%f0
 	st	%f5,[%o0+4]
 	addcc	%i0,-1,%i0
 	bg,pt	%icc,.loop0
 ! delay slot
-	add	%i3,%i4,%i3		! y += stridey
+	add	%i3,%i4,%i3		/* y += stridey */
 	ba,pt	%icc,.endloop0
 ! delay slot
 	nop
@@ -1170,27 +1170,27 @@ constants:
 
 .range1:
 	cmp	%l1,%l6
-	bl,a,pt	%icc,3f			! if x is tiny
+	bl,a,pt	%icc,3f			/* if x is tiny */
 ! delay slot, annulled if branch not taken
 	faddd	%f10,ONE,%f14
 
 	cmp	%l1,%o5
-	bg,pt	%icc,1f			! if x is huge, inf, nan
+	bg,pt	%icc,1f			/* if x is huge, inf, nan */
 ! delay slot
 	nop
 
 	fcmpd	%fcc0,%f10,THRESH
-	fbg,a,pt %fcc0,3f		! if x is huge and positive
+	fbg,a,pt %fcc0,3f		/* if x is huge and positive */
 ! delay slot, annulled if branch not taken
 	fmuld	HUGE,HUGE,%f14
 
 ! x is near the extremes but within range; return to the loop
 	addcc	%i0,-1,%i0
-	add	%i3,%i4,%i3		! y += stridey
+	add	%i3,%i4,%i3		/* y += stridey */
 	ble,pn	%icc,.endloop2
 ! delay slot
 	andn	%l2,%i5,%l2
-	add	%i1,%i2,%i1		! x += stridex
+	add	%i1,%i2,%i1		/* x += stridex */
 	for	%f12,TWO96,%f12
 	ba,pt	%icc,.loop2
 ! delay slot
@@ -1198,29 +1198,29 @@ constants:
 
 1:
 	cmp	%l1,%o7
-	bl,pn	%icc,2f			! if x is finite
+	bl,pn	%icc,2f			/* if x is finite */
 ! delay slot
 	nop
 	fzero	%f14
 	fcmpd	%fcc0,%f10,NEGINF
 	fmovdne	%fcc0,%f10,%f14
 	ba,pt	%icc,3f
-	fmuld	%f14,%f14,%f14		! x*x or zero*zero
+	fmuld	%f14,%f14,%f14		/* x*x or zero*zero */
 2:
 	fmovd	HUGE,%f14
 	fcmpd	%fcc0,%f10,ONE
 	fmovdl	%fcc0,TINY,%f14
-	fmuld	%f14,%f14,%f14		! huge*huge or tiny*tiny
+	fmuld	%f14,%f14,%f14		/* huge*huge or tiny*tiny */
 3:
 	st	%f14,[%o1]
 	andn	%l2,%i5,%l1
-	add	%i1,%i2,%i1		! x += stridex
+	add	%i1,%i2,%i1		/* x += stridex */
 	fmovd	%f20,%f10
 	st	%f15,[%o1+4]
 	addcc	%i0,-1,%i0
 	bg,pt	%icc,.loop1
 ! delay slot
-	add	%i3,%i4,%i3		! y += stridey
+	add	%i3,%i4,%i3		/* y += stridey */
 	ba,pt	%icc,.endloop1
 ! delay slot
 	nop
@@ -1228,17 +1228,17 @@ constants:
 
 .range2:
 	cmp	%l2,%l6
-	bl,a,pt	%icc,3f			! if x is tiny
+	bl,a,pt	%icc,3f			/* if x is tiny */
 ! delay slot, annulled if branch not taken
 	faddd	%f20,ONE,%f24
 
 	cmp	%l2,%o5
-	bg,pt	%icc,1f			! if x is huge, inf, nan
+	bg,pt	%icc,1f			/* if x is huge, inf, nan */
 ! delay slot
 	nop
 
 	fcmpd	%fcc0,%f20,THRESH
-	fbg,a,pt %fcc0,3f		! if x is huge and positive
+	fbg,a,pt %fcc0,3f		/* if x is huge and positive */
 ! delay slot, annulled if branch not taken
 	fmuld	HUGE,HUGE,%f24
 
@@ -1249,31 +1249,31 @@ constants:
 
 1:
 	cmp	%l2,%o7
-	bl,pn	%icc,2f			! if x is finite
+	bl,pn	%icc,2f			/* if x is finite */
 ! delay slot
 	nop
 	fzero	%f24
 	fcmpd	%fcc0,%f20,NEGINF
 	fmovdne	%fcc0,%f20,%f24
 	ba,pt	%icc,3f
-	fmuld	%f24,%f24,%f24		! x*x or zero*zero
+	fmuld	%f24,%f24,%f24		/* x*x or zero*zero */
 2:
 	fmovd	HUGE,%f24
 	fcmpd	%fcc0,%f20,ONE
 	fmovdl	%fcc0,TINY,%f24
-	fmuld	%f24,%f24,%f24		! huge*huge or tiny*tiny
+	fmuld	%f24,%f24,%f24		/* huge*huge or tiny*tiny */
 3:
 	st	%f24,[%i3]
 	st	%f25,[%i3+4]
-	lda	[%i1]%asi,%l2		! preload next argument
+	lda	[%i1]%asi,%l2		/* preload next argument */
 	lda	[%i1]%asi,%f20
 	lda	[%i1+4]%asi,%f21
 	andn	%l2,%i5,%l2
-	add	%i1,%i2,%i1		! x += stridex
+	add	%i1,%i2,%i1		/* x += stridex */
 	addcc	%i0,-1,%i0
 	bg,pt	%icc,.loop2
 ! delay slot
-	add	%i3,%i4,%i3		! y += stridey
+	add	%i3,%i4,%i3		/* y += stridey */
 	ba,pt	%icc,.endloop2
 ! delay slot
 	nop

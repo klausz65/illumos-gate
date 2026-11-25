@@ -23,7 +23,7 @@
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
-	.file	"memcpy.s"
+	.file	"memcpy.S"
 
 /*
  * memcpy(s1, s2, len)
@@ -350,12 +350,12 @@
 
 .mv_aligned_on_64:
 	prefetch [%o1 + (3 * BLOCK_SIZE)], #one_read
-	mov	%asi,%o4		! save %asi
+	rd	%asi,%o4		! save %asi
 	! Determine source alignment
 	! to correct 8 byte offset
 	andcc	%o1, 0x20, %o3
 	brnz,pn	%o3, .mv_align_1
-	mov	ASI_BLK_P, %asi		! setup %asi for block load/store
+	wr	%g0, ASI_BLK_P, %asi		! setup %asi for block load/store
 	andcc	%o1, 0x10, %o3
 	brnz,pn	%o3, .mv_align_01
 	nop
@@ -1244,12 +1244,12 @@
 	stx	%o4, [%o0-8]
 .aligned_to_64:
 	prefetch [%o1 + (3 * BLOCK_SIZE)], #one_read
-	mov	%asi,%o4		! save %asi
+	rd	%asi,%o4		! save %asi
 	! Determine source alignment
 	! to correct 8 byte offset
 	andcc	%o1, 0x20, %o3
 	brnz,pn	%o3, .align_1
-	mov	ASI_BLK_P, %asi		! setup %asi for block load/store
+	wr	%g0, ASI_BLK_P, %asi		! setup %asi for block load/store
 	andcc	%o1, 0x10, %o3
 	brnz,pn	%o3, .align_01
 	nop
@@ -1671,7 +1671,7 @@
 	! END OF align_000
 
 .remain_stuff:
-	mov	%o4, %asi		! restore %asi
+	wr	%o4, %g0, %asi		! restore %asi
 	brnz	%g5, .medlong
 	membar	#Sync
 	ba	.medlong
@@ -2316,7 +2316,7 @@
 .chksrc:
 	andn	%i2, 0x3f, %i3		! %i3 count is multiple of block size
 	sub	%i2, %i3, %i2		! Residue bytes in %i2
-	mov	ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
+	wr	%g0, ASI_BLK_INIT_ST_QUAD_LDD_P, %asi
 	andcc	%i1, 0xf, %l1		! is src quadword aligned
 	bz,pn	%ncc, .blkcpy		! src offset in %l1
 	nop
@@ -2479,7 +2479,7 @@ loop2:
 .blkdone:
 	membar	#Sync
 
-	mov	ASI_PNF, %asi		! restore %asi to default
+	wr	%g0, ASI_PNF, %asi		! restore %asi to default
 					! ASI_PRIMARY_NOFAULT value
 	tst	%i2
 	bz,pt	%ncc, .blkexit

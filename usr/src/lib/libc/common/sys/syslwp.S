@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"syslwp.s"
+	.file	"syslwp.S"
 
 #include "SYS.h"
 

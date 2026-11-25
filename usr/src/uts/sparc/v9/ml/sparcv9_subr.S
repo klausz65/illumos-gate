@@ -49,7 +49,11 @@
 
 #include "assym.h"
 
-	.seg	".text"
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
+	.section	".text"
 	.align	4
 
 /*
@@ -1143,7 +1147,7 @@ vpanic_common:
 	SET_SIZE(dtrace_vpanic)
 
 	ENTRY(get_subcc_ccr)
-	wr	%g0, %ccr	! clear condition codes
+	wr	%g0, %g0, %ccr	! clear condition codes
 	subcc	%o0, %o1, %g0
 	retl
 	rd	%ccr, %o0	! return condition codes

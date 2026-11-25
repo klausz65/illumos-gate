@@ -25,8 +25,6 @@
 
 /*	Copyright (c) 1989 by Sun Microsystems, Inc.		*/
 
-.ident	"%Z%%M%	%I%	%E% SMI"	/* SVr4.0 1.10	*/
-
 	.file	"sparc_data.s"
 
 	.global	errno

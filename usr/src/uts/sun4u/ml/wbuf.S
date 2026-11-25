@@ -35,6 +35,11 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
+
 	/*
 	 * Spill fault handlers
 	 *   sn0 - spill normal tl 0

@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"munmap.s"
+	.file	"munmap.S"
 
 /*
  * C library -- munmap

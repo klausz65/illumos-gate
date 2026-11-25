@@ -37,6 +37,9 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+
 /*
  * Pseudo-code to aid in understanding the control flow of the
  * bcopy/copyin/copyout routines.
@@ -731,7 +734,7 @@ label2:
  * Returns errno value on pagefault error, 0 if all ok
  */
 
-	.seg	".text"
+	.section	".text"
 	.align	4
 
 	ENTRY(kcopy)
@@ -2199,7 +2202,7 @@ fp_panic_msg:
 	or	%l6, FPUSED_FLAG, %l6
 
 	andcc	DST, VIS_BLOCKSIZE - 1, TMP
-	mov	ASI_USER, %asi
+	wr	%g0, ASI_USER, %asi
 	bz,pt	%ncc, 2f
 	  neg	TMP
 	add	TMP, VIS_BLOCKSIZE, TMP
@@ -2954,7 +2957,7 @@ fp_panic_msg:
 	or	%l6, FPUSED_FLAG, %l6
 
 	andcc	DST, VIS_BLOCKSIZE - 1, TMP
-	mov	ASI_USER, %asi
+	wr	%g0, ASI_USER, %asi
 	bz,pt	%ncc, 2f
 	  neg	TMP
 	add	TMP, VIS_BLOCKSIZE, TMP

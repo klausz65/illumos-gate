@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"priocntlset.s"
+	.file	"priocntlset.S"
 
 /* C library -- priocntlset					*/
 /* long priocntlset(procset_t psp, int cmd, int arg)		*/

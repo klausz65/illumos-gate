@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_portfs.s"
+	.file	"_portfs.S"
 
 /*
  * C library implementation -- _portfs()

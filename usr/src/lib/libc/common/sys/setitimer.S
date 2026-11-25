@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"setitimer.s"
+	.file	"setitimer.S"
 
 /* C library -- setitimer					*/
 /* int setitimer (int, const struct itimerval *, struct itimerval *);	*/

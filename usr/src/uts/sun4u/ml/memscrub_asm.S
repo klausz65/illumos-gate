@@ -43,7 +43,7 @@
 	! void	memscrub_read(caddr_t src, u_int blks)
 	!
 
-	.seg ".text"
+	.section ".text"
 	.align	4
 
 	ENTRY(memscrub_read)

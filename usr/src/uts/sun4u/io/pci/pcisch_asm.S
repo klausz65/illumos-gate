@@ -32,7 +32,7 @@
 
 #define	VIS_BLOCKSIZE	64
 
-	.seg    ".data"
+	.section    ".data"
 	.align  VIS_BLOCKSIZE
 	.type   sync_buf, #object
 sync_buf:

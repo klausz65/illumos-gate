@@ -27,4 +27,6 @@
 include ../Makefile.com
 include ../../Makefile.lib.64
 
+$(COMMON_CRT) $(VALUES) := CFLAGS64 += $(C_BIGPICFLAGS64)
+
 install:	$(ROOTOBJECTS64) $(ROOTCOMPATLINKS64)

@@ -32,7 +32,7 @@
 
 	ENTRY(ultra_setpcr)
 	retl
-	wr	%o0, %pcr
+	wr	%g0, %o0, %pcr
 	SET_SIZE(ultra_setpcr)
 
 	ENTRY(ultra_getpcr)
@@ -45,13 +45,13 @@
 	ba	1f
 	nop
 	.align	16
-1:	wr	%o0, %pic
+1:	wr	%g0, %o0, %pic
 	rd	%pic, %g0
 	retl
 	nop
 #else
 	retl
-	wr	%o0, %pic
+	wr	%g0, %o0, %pic
 #endif	/* BB_ERRATA_1 */
 	SET_SIZE(ultra_setpic)
 

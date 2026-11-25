@@ -24,9 +24,13 @@
  * Use is subject to license terms.
  */
 
-	.file	"atomic.s"
+	.file	"atomic.S"
 
 #include <sys/asm_linkage.h>
+
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * ATOMIC_BO_ENABLE_SHIFT can be selectively defined by processors
@@ -54,8 +58,8 @@
 #ifdef ATOMIC_BO_ENABLE_SHIFT
 
 #if !defined(lint)
-	.weak   cpu_atomic_delay
-	.type   cpu_atomic_delay, #function
+	.weak	cpu_atomic_delay
+	.type	cpu_atomic_delay, #function
 #endif  /* lint */
 
 /*
@@ -79,7 +83,7 @@ label##0:								; \
 	brz,pn	tmp1, label##1					; \
 	mov	%o7, tmp2						; \
 	jmpl	tmp1, %o7	/* call CPU specific delay routine */	; \
-	  nop			/* delay slot : do nothing */		; \
+	nop			/* delay slot : do nothing */		; \
 	mov	tmp2, %o7	/* restore callee's return address */	; \
 label##1:
 
@@ -93,17 +97,17 @@ label##1:
  * ATOMIC_BO_ENABLE_SHIFT w.r.t. the number of online cpus to
  * obtain the actual final limit to use.
  */
-#define ATOMIC_BACKOFF_CPU(val, limit, ncpu, cas_cnt, label)		\
-	brnz,pt	ncpu, label##0					; \
-	  inc	cas_cnt							; \
-	sethi	%hi(ncpus_online), ncpu					; \
-	ld	[ncpu + %lo(ncpus_online)], ncpu			; \
-label##0:								; \
-	cmp	cas_cnt, ncpu						; \
-	blu,pt	%xcc, label##1					; \
-	  sllx	ncpu, ATOMIC_BO_ENABLE_SHIFT, limit			; \
-	mov	%g0, cas_cnt						; \
-	mov	1, val							; \
+#define ATOMIC_BACKOFF_CPU(val, limit, ncpu, cas_cnt, label)	\
+	brnz,pt	ncpu, label##0 ;				\
+	inc	cas_cnt ;					\
+	sethi	%hi(ncpus_online), ncpu ;			\
+	ld	[ncpu + %lo(ncpus_online)], ncpu ;		\
+label##0: ;							\
+	cmp	cas_cnt, ncpu ;					\
+	blu,pt	%xcc, label##1 ;				\
+	sllx	ncpu, ATOMIC_BO_ENABLE_SHIFT, limit ; 		\
+	mov	%g0, cas_cnt ;					\
+	mov	1, val ;					\
 label##1:
 #endif	/* ATOMIC_BO_ENABLE_SHIFT */
 
@@ -117,7 +121,7 @@ label##1:
 #define	DELAY_SPIN(label, tmp1, tmp2)	\
 label##0:
 
-#define ATOMIC_BACKOFF_CPU(val, limit, ncpu, cas_cnt, label)  \
+#define ATOMIC_BACKOFF_CPU(val, limit, ncpu, cas_cnt, label) \
 	set	1 << ATOMIC_BO_ENABLE_SHIFT, limit
 #endif	/* ATOMIC_BO_ENABLE_SHIFT */
 #endif	/* _KERNEL */
@@ -145,13 +149,13 @@ label##0:
 	ATOMIC_BACKOFF_CPU(val, limit, ncpu, cas_cnt, label##_0)	; \
 	cmp	val, limit						; \
 	blu,a,pt %xcc, label##_1					; \
-	  mov	val, limit						; \
+	mov	val, limit						; \
 label##_1:								; \
 	mov	limit, val						; \
 	DELAY_SPIN(label##_2, %g2, %g3)				; \
 	deccc	limit							; \
 	bgu,pn	%xcc, label##_20 /* branch to middle of DELAY_SPIN */	; \
-	  nop								; \
+	nop								; \
 	ba	retlabel						; \
 	sllx	val, 1, val
 
@@ -175,7 +179,7 @@ label##_1:								; \
 	ALTENTRY(atomic_inc_uchar)
 	ALTENTRY(atomic_inc_uchar_nv)
 	ba	add_8
-	  add	%g0, 1, %o1
+	add	%g0, 1, %o1
 	SET_SIZE(atomic_inc_uchar_nv)
 	SET_SIZE(atomic_inc_uchar)
 	SET_SIZE(atomic_inc_8_nv)
@@ -192,7 +196,7 @@ label##_1:								; \
 	ALTENTRY(atomic_dec_uchar)
 	ALTENTRY(atomic_dec_uchar_nv)
 	ba	add_8
-	  sub	%g0, 1, %o1
+	sub	%g0, 1, %o1
 	SET_SIZE(atomic_dec_uchar_nv)
 	SET_SIZE(atomic_dec_uchar)
 	SET_SIZE(atomic_dec_8_nv)
@@ -209,28 +213,28 @@ label##_1:								; \
 	ALTENTRY(atomic_add_char)
 	ALTENTRY(atomic_add_char_nv)
 add_8:
-	and	%o0, 0x3, %o4		! %o4 = byte offset, left-to-right
-	xor	%o4, 0x3, %g1		! %g1 = byte offset, right-to-left
-	sll	%g1, 3, %g1		! %g1 = bit offset, right-to-left
-	set	0xff, %o3		! %o3 = mask
-	sll	%o3, %g1, %o3		! %o3 = shifted to bit offset
-	sll	%o1, %g1, %o1		! %o1 = shifted to bit offset
-	and	%o1, %o3, %o1		! %o1 = single byte value
-	andn	%o0, 0x3, %o0		! %o0 = word address
-	ld	[%o0], %o2		! read old value
+	and	%o0, 0x3, %o4		/* %o4 = byte offset, left-to-right */
+	xor	%o4, 0x3, %g1		/* %g1 = byte offset, right-to-left */
+	sll	%g1, 3, %g1		/* %g1 = bit offset, right-to-left */
+	set	0xff, %o3		/* %o3 = mask */
+	sll	%o3, %g1, %o3		/* %o3 = shifted to bit offset */
+	sll	%o1, %g1, %o1		/* %o1 = shifted to bit offset */
+	and	%o1, %o3, %o1		/* %o1 = single byte value */
+	andn	%o0, 0x3, %o0		/* %o0 = word address */
+	ld	[%o0], %o2		/* read old value */
 1:
-	add	%o2, %o1, %o5		! add value to the old value
-	and	%o5, %o3, %o5		! clear other bits
-	andn	%o2, %o3, %o4		! clear target bits
-	or	%o4, %o5, %o5		! insert the new value
+	add	%o2, %o1, %o5		/* add value to the old value */
+	and	%o5, %o3, %o5		/* clear other bits */
+	andn	%o2, %o3, %o4		/* clear target bits */
+	or	%o4, %o5, %o5		/* insert the new value */
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		/* %o2 = old value */
 	add	%o2, %o1, %o5
 	and	%o5, %o3, %o5
 	retl
-	srl	%o5, %g1, %o0		! %o0 = new value
+	srl	%o5, %g1, %o0		/* %o0 = new value */
 	SET_SIZE(atomic_add_char_nv)
 	SET_SIZE(atomic_add_char)
 	SET_SIZE(atomic_add_8_nv)
@@ -247,7 +251,7 @@ add_8:
 	ALTENTRY(atomic_inc_ushort)
 	ALTENTRY(atomic_inc_ushort_nv)
 	ba	add_16
-	  add	%g0, 1, %o1
+	add	%g0, 1, %o1
 	SET_SIZE(atomic_inc_ushort_nv)
 	SET_SIZE(atomic_inc_ushort)
 	SET_SIZE(atomic_inc_16_nv)
@@ -264,7 +268,7 @@ add_8:
 	ALTENTRY(atomic_dec_ushort)
 	ALTENTRY(atomic_dec_ushort_nv)
 	ba	add_16
-	  sub	%g0, 1, %o1
+	sub	%g0, 1, %o1
 	SET_SIZE(atomic_dec_ushort_nv)
 	SET_SIZE(atomic_dec_ushort)
 	SET_SIZE(atomic_dec_16_nv)
@@ -281,30 +285,30 @@ add_8:
 	ALTENTRY(atomic_add_short)
 	ALTENTRY(atomic_add_short_nv)
 add_16:
-	and	%o0, 0x2, %o4		! %o4 = byte offset, left-to-right
-	xor	%o4, 0x2, %g1		! %g1 = byte offset, right-to-left
-	sll	%o4, 3, %o4		! %o4 = bit offset, left-to-right
-	sll	%g1, 3, %g1		! %g1 = bit offset, right-to-left
-	sethi	%hi(0xffff0000), %o3	! %o3 = mask
-	srl	%o3, %o4, %o3		! %o3 = shifted to bit offset
-	sll	%o1, %g1, %o1		! %o1 = shifted to bit offset
-	and	%o1, %o3, %o1		! %o1 = single short value
-	andn	%o0, 0x2, %o0		! %o0 = word address
+	and	%o0, 0x2, %o4		/* %o4 = byte offset, left-to-right */
+	xor	%o4, 0x2, %g1		/* %g1 = byte offset, right-to-left */
+	sll	%o4, 3, %o4		/* %o4 = bit offset, left-to-right */
+	sll	%g1, 3, %g1		/* %g1 = bit offset, right-to-left */
+	sethi	%hi(0xffff0000), %o3	/* %o3 = mask */
+	srl	%o3, %o4, %o3		/* %o3 = shifted to bit offset */
+	sll	%o1, %g1, %o1		/* %o1 = shifted to bit offset */
+	and	%o1, %o3, %o1		/* %o1 = single short value */
+	andn	%o0, 0x2, %o0		/* %o0 = word address */
 	! if low-order bit is 1, we will properly get an alignment fault here
-	ld	[%o0], %o2		! read old value
+	ld	[%o0], %o2		/* read old value */
 1:
-	add	%o1, %o2, %o5		! add value to the old value
-	and	%o5, %o3, %o5		! clear other bits
-	andn	%o2, %o3, %o4		! clear target bits
-	or	%o4, %o5, %o5		! insert the new value
+	add	%o1, %o2, %o5		/* add value to the old value */
+	and	%o5, %o3, %o5		/* clear other bits */
+	andn	%o2, %o3, %o4		/* clear target bits */
+	or	%o4, %o5, %o5		/* insert the new value */
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		/* %o2 = old value */
 	add	%o1, %o2, %o5
 	and	%o5, %o3, %o5
 	retl
-	srl	%o5, %g1, %o0		! %o0 = new value
+	srl	%o5, %g1, %o0		/* %o0 = new value */
 	SET_SIZE(atomic_add_short_nv)
 	SET_SIZE(atomic_add_short)
 	SET_SIZE(atomic_add_16_nv)
@@ -321,7 +325,7 @@ add_16:
 	ALTENTRY(atomic_inc_uint)
 	ALTENTRY(atomic_inc_uint_nv)
 	ba	add_32
-	  add	%g0, 1, %o1
+	add	%g0, 1, %o1
 	SET_SIZE(atomic_inc_uint_nv)
 	SET_SIZE(atomic_inc_uint)
 	SET_SIZE(atomic_inc_32_nv)
@@ -338,7 +342,7 @@ add_16:
 	ALTENTRY(atomic_dec_uint)
 	ALTENTRY(atomic_dec_uint_nv)
 	ba	add_32
-	  sub	%g0, 1, %o1
+	sub	%g0, 1, %o1
 	SET_SIZE(atomic_dec_uint_nv)
 	SET_SIZE(atomic_dec_uint)
 	SET_SIZE(atomic_dec_32_nv)
@@ -363,9 +367,9 @@ add_32:
 	cas	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%icc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
-	add	%o2, %o1, %o0		! return new value
+	add	%o2, %o1, %o0		/* return new value */
 2:
 	ATOMIC_BACKOFF_BACKOFF(%o4, %o5, %g4, %g5, add32, 0b)
 	SET_SIZE(atomic_add_int_nv)
@@ -384,7 +388,7 @@ add_32:
 	ALTENTRY(atomic_inc_ulong)
 	ALTENTRY(atomic_inc_ulong_nv)
 	ba	add_64
-	  add	%g0, 1, %o1
+	add	%g0, 1, %o1
 	SET_SIZE(atomic_inc_ulong_nv)
 	SET_SIZE(atomic_inc_ulong)
 	SET_SIZE(atomic_inc_64_nv)
@@ -401,7 +405,7 @@ add_32:
 	ALTENTRY(atomic_dec_ulong)
 	ALTENTRY(atomic_dec_ulong_nv)
 	ba	add_64
-	  sub	%g0, 1, %o1
+	sub	%g0, 1, %o1
 	SET_SIZE(atomic_dec_ulong_nv)
 	SET_SIZE(atomic_dec_ulong)
 	SET_SIZE(atomic_dec_64_nv)
@@ -428,9 +432,9 @@ add_64:
 	casx	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%xcc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
-	add	%o2, %o1, %o0		! return new value
+	add	%o2, %o1, %o0		/* return new value */
 2:
 	ATOMIC_BACKOFF_BACKOFF(%o4, %o5, %g4, %g5, add64, 0b)
 	SET_SIZE(atomic_add_long_nv)
@@ -450,25 +454,25 @@ add_64:
 	ALTENTRY(atomic_or_8_nv)
 	ALTENTRY(atomic_or_uchar)
 	ALTENTRY(atomic_or_uchar_nv)
-	and	%o0, 0x3, %o4		! %o4 = byte offset, left-to-right
-	xor	%o4, 0x3, %g1		! %g1 = byte offset, right-to-left
-	sll	%g1, 3, %g1		! %g1 = bit offset, right-to-left
-	set	0xff, %o3		! %o3 = mask
-	sll	%o3, %g1, %o3		! %o3 = shifted to bit offset
-	sll	%o1, %g1, %o1		! %o1 = shifted to bit offset
-	and	%o1, %o3, %o1		! %o1 = single byte value
-	andn	%o0, 0x3, %o0		! %o0 = word address
-	ld	[%o0], %o2		! read old value
+	and	%o0, 0x3, %o4		/* %o4 = byte offset, left-to-right */
+	xor	%o4, 0x3, %g1		/* %g1 = byte offset, right-to-left */
+	sll	%g1, 3, %g1		/* %g1 = bit offset, right-to-left */
+	set	0xff, %o3		/* %o3 = mask */
+	sll	%o3, %g1, %o3		/* %o3 = shifted to bit offset */
+	sll	%o1, %g1, %o1		/* %o1 = shifted to bit offset */
+	and	%o1, %o3, %o1		/* %o1 = single byte value */
+	andn	%o0, 0x3, %o0		/* %o0 = word address */
+	ld	[%o0], %o2		/* read old value */
 1:
-	or	%o2, %o1, %o5		! or in the new value
+	or	%o2, %o1, %o5		/* or in the new value */
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		/* %o2 = old value */
 	or	%o2, %o1, %o5
 	and	%o5, %o3, %o5
 	retl
-	srl	%o5, %g1, %o0		! %o0 = new value
+	srl	%o5, %g1, %o0		/* %o0 = new value */
 	SET_SIZE(atomic_or_uchar_nv)
 	SET_SIZE(atomic_or_uchar)
 	SET_SIZE(atomic_or_8_nv)
@@ -484,27 +488,27 @@ add_64:
 	ALTENTRY(atomic_or_16_nv)
 	ALTENTRY(atomic_or_ushort)
 	ALTENTRY(atomic_or_ushort_nv)
-	and	%o0, 0x2, %o4		! %o4 = byte offset, left-to-right
-	xor	%o4, 0x2, %g1		! %g1 = byte offset, right-to-left
-	sll	%o4, 3, %o4		! %o4 = bit offset, left-to-right
-	sll	%g1, 3, %g1		! %g1 = bit offset, right-to-left
-	sethi	%hi(0xffff0000), %o3	! %o3 = mask
-	srl	%o3, %o4, %o3		! %o3 = shifted to bit offset
-	sll	%o1, %g1, %o1		! %o1 = shifted to bit offset
-	and	%o1, %o3, %o1		! %o1 = single short value
-	andn	%o0, 0x2, %o0		! %o0 = word address
+	and	%o0, 0x2, %o4		/* %o4 = byte offset, left-to-right */
+	xor	%o4, 0x2, %g1		/* %g1 = byte offset, right-to-left */
+	sll	%o4, 3, %o4		/* %o4 = bit offset, left-to-right */
+	sll	%g1, 3, %g1		/* %g1 = bit offset, right-to-left */
+	sethi	%hi(0xffff0000), %o3	/* %o3 = mask */
+	srl	%o3, %o4, %o3		/* %o3 = shifted to bit offset */
+	sll	%o1, %g1, %o1		/* %o1 = shifted to bit offset */
+	and	%o1, %o3, %o1		/* %o1 = single short value */
+	andn	%o0, 0x2, %o0		/* %o0 = word address */
 	! if low-order bit is 1, we will properly get an alignment fault here
-	ld	[%o0], %o2		! read old value
+	ld	[%o0], %o2		/* read old value */
 1:
-	or	%o2, %o1, %o5		! or in the new value
+	or	%o2, %o1, %o5		/* or in the new value */
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
-	or	%o2, %o1, %o5		! or in the new value
+	mov	%o5, %o2		/* %o2 = old value */
+	or	%o2, %o1, %o5		/* or in the new value */
 	and	%o5, %o3, %o5
 	retl
-	srl	%o5, %g1, %o0		! %o0 = new value
+	srl	%o5, %g1, %o0		/* %o0 = new value */
 	SET_SIZE(atomic_or_ushort_nv)
 	SET_SIZE(atomic_or_ushort)
 	SET_SIZE(atomic_or_16_nv)
@@ -528,9 +532,9 @@ add_64:
 	cas	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%icc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
-	or	%o2, %o1, %o0		! return new value
+	or	%o2, %o1, %o0		/* return new value */
 2:
 	ATOMIC_BACKOFF_BACKOFF(%o4, %o5, %g4, %g5, or32, 0b)
 	SET_SIZE(atomic_or_uint_nv)
@@ -556,9 +560,9 @@ add_64:
 	casx	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%xcc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
-	or	%o2, %o1, %o0		! return new value
+	or	%o2, %o1, %o0		/* return new value */
 2:
 	ATOMIC_BACKOFF_BACKOFF(%o4, %o5, %g4, %g5, or64, 0b)
 	SET_SIZE(atomic_or_ulong_nv)
@@ -576,25 +580,25 @@ add_64:
 	ALTENTRY(atomic_and_8_nv)
 	ALTENTRY(atomic_and_uchar)
 	ALTENTRY(atomic_and_uchar_nv)
-	and	%o0, 0x3, %o4		! %o4 = byte offset, left-to-right
-	xor	%o4, 0x3, %g1		! %g1 = byte offset, right-to-left
-	sll	%g1, 3, %g1		! %g1 = bit offset, right-to-left
-	set	0xff, %o3		! %o3 = mask
-	sll	%o3, %g1, %o3		! %o3 = shifted to bit offset
-	sll	%o1, %g1, %o1		! %o1 = shifted to bit offset
-	orn	%o1, %o3, %o1		! all ones in other bytes
-	andn	%o0, 0x3, %o0		! %o0 = word address
-	ld	[%o0], %o2		! read old value
+	and	%o0, 0x3, %o4		/* %o4 = byte offset, left-to-right */
+	xor	%o4, 0x3, %g1		/* %g1 = byte offset, right-to-left */
+	sll	%g1, 3, %g1		/* %g1 = bit offset, right-to-left */
+	set	0xff, %o3		/* %o3 = mask */
+	sll	%o3, %g1, %o3		/* %o3 = shifted to bit offset */
+	sll	%o1, %g1, %o1		/* %o1 = shifted to bit offset */
+	orn	%o1, %o3, %o1		/* all ones in other bytes */
+	andn	%o0, 0x3, %o0		/* %o0 = word address */
+	ld	[%o0], %o2		/* read old value */
 1:
-	and	%o2, %o1, %o5		! and in the new value
+	and	%o2, %o1, %o5		/* and in the new value */
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		/* %o2 = old value */
 	and	%o2, %o1, %o5
 	and	%o5, %o3, %o5
 	retl
-	srl	%o5, %g1, %o0		! %o0 = new value
+	srl	%o5, %g1, %o0		/* %o0 = new value */
 	SET_SIZE(atomic_and_uchar_nv)
 	SET_SIZE(atomic_and_uchar)
 	SET_SIZE(atomic_and_8_nv)
@@ -610,27 +614,27 @@ add_64:
 	ALTENTRY(atomic_and_16_nv)
 	ALTENTRY(atomic_and_ushort)
 	ALTENTRY(atomic_and_ushort_nv)
-	and	%o0, 0x2, %o4		! %o4 = byte offset, left-to-right
-	xor	%o4, 0x2, %g1		! %g1 = byte offset, right-to-left
-	sll	%o4, 3, %o4		! %o4 = bit offset, left-to-right
-	sll	%g1, 3, %g1		! %g1 = bit offset, right-to-left
-	sethi	%hi(0xffff0000), %o3	! %o3 = mask
-	srl	%o3, %o4, %o3		! %o3 = shifted to bit offset
-	sll	%o1, %g1, %o1		! %o1 = shifted to bit offset
-	orn	%o1, %o3, %o1		! all ones in the other half
-	andn	%o0, 0x2, %o0		! %o0 = word address
+	and	%o0, 0x2, %o4		/* %o4 = byte offset, left-to-right */
+	xor	%o4, 0x2, %g1		/* %g1 = byte offset, right-to-left */
+	sll	%o4, 3, %o4		/* %o4 = bit offset, left-to-right */
+	sll	%g1, 3, %g1		/* %g1 = bit offset, right-to-left */
+	sethi	%hi(0xffff0000), %o3	/* %o3 = mask */
+	srl	%o3, %o4, %o3		/* %o3 = shifted to bit offset */
+	sll	%o1, %g1, %o1		/* %o1 = shifted to bit offset */
+	orn	%o1, %o3, %o1		/* all ones in the other half */
+	andn	%o0, 0x2, %o0		/* %o0 = word address */
 	! if low-order bit is 1, we will properly get an alignment fault here
-	ld	[%o0], %o2		! read old value
+	ld	[%o0], %o2		/* read old value */
 1:
-	and	%o2, %o1, %o5		! and in the new value
+	and	%o2, %o1, %o5		/* and in the new value */
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		/* %o2 = old value */
 	and	%o2, %o1, %o5
 	and	%o5, %o3, %o5
 	retl
-	srl	%o5, %g1, %o0		! %o0 = new value
+	srl	%o5, %g1, %o0		/* %o0 = new value */
 	SET_SIZE(atomic_and_ushort_nv)
 	SET_SIZE(atomic_and_ushort)
 	SET_SIZE(atomic_and_16_nv)
@@ -654,9 +658,9 @@ add_64:
 	cas	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%icc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
-	and	%o2, %o1, %o0		! return new value
+	and	%o2, %o1, %o0		/* return new value */
 2:
 	ATOMIC_BACKOFF_BACKOFF(%o4, %o5, %g4, %g5, and32, 0b)
 	SET_SIZE(atomic_and_uint_nv)
@@ -682,9 +686,9 @@ add_64:
 	casx	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%xcc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
-	and	%o2, %o1, %o0		! return new value
+	and	%o2, %o1, %o0		/* return new value */
 2:
 	ATOMIC_BACKOFF_BACKOFF(%o4, %o5, %g4, %g5, and64, 0b)
 	SET_SIZE(atomic_and_ulong_nv)
@@ -694,63 +698,64 @@ add_64:
 
 	ENTRY(atomic_cas_8)
 	ALTENTRY(atomic_cas_uchar)
-	and	%o0, 0x3, %o4		! %o4 = byte offset, left-to-right
-	xor	%o4, 0x3, %g1		! %g1 = byte offset, right-to-left
-	sll	%g1, 3, %g1		! %g1 = bit offset, right-to-left
-	set	0xff, %o3		! %o3 = mask
-	sll	%o3, %g1, %o3		! %o3 = shifted to bit offset
-	sll	%o1, %g1, %o1		! %o1 = shifted to bit offset
-	and	%o1, %o3, %o1		! %o1 = single byte value
-	sll	%o2, %g1, %o2		! %o2 = shifted to bit offset
-	and	%o2, %o3, %o2		! %o2 = single byte value
-	andn	%o0, 0x3, %o0		! %o0 = word address
-	ld	[%o0], %o4		! read old value
+	and	%o0, 0x3, %o4		/* %o4 = byte offset, left-to-right */
+	xor	%o4, 0x3, %g1		/* %g1 = byte offset, right-to-left */
+	sll	%g1, 3, %g1		/* %g1 = bit offset, right-to-left */
+	set	0xff, %o3		/* %o3 = mask */
+	sll	%o3, %g1, %o3		/* %o3 = shifted to bit offset */
+	sll	%o1, %g1, %o1		/* %o1 = shifted to bit offset */
+	and	%o1, %o3, %o1		/* %o1 = single byte value */
+	sll	%o2, %g1, %o2		/* %o2 = shifted to bit offset */
+	and	%o2, %o3, %o2		/* %o2 = single byte value */
+	andn	%o0, 0x3, %o0		/* %o0 = word address */
+	ld	[%o0], %o4		/* read old value */
 1:
-	andn	%o4, %o3, %o4		! clear target bits
-	or	%o4, %o2, %o5		! insert the new value
-	or	%o4, %o1, %o4		! insert the comparison value
+	andn	%o4, %o3, %o4		/* clear target bits */
+	or	%o4, %o2, %o5		/* insert the new value */
+	or	%o4, %o1, %o4		/* insert the comparison value */
 	cas	[%o0], %o4, %o5
-	cmp	%o4, %o5		! did we succeed?
+	cmp	%o4, %o5		/* did we succeed? */
 	be,pt	%icc, 2f
-	  and	%o5, %o3, %o4		! isolate the old value
-	cmp	%o1, %o4		! should we have succeeded?
-	be,a,pt	%icc, 1b		! yes, try again
-	  mov	%o5, %o4		! %o4 = old value
+	and	%o5, %o3, %o4		/* isolate the old value */
+	cmp	%o1, %o4		/* should we have succeeded? */
+	be,a,pt	%icc, 1b		/* yes, try again */
+	mov	%o5, %o4		/* %o4 = old value */
 2:
 	retl
-	srl	%o4, %g1, %o0		! %o0 = old value
+	srl	%o4, %g1, %o0		/* %o0 = old value */
+	sra	%o0, 0, %o0		/* enforce full 64-bit sign-extension */
 	SET_SIZE(atomic_cas_uchar)
 	SET_SIZE(atomic_cas_8)
 
 	ENTRY(atomic_cas_16)
 	ALTENTRY(atomic_cas_ushort)
-	and	%o0, 0x2, %o4		! %o4 = byte offset, left-to-right
-	xor	%o4, 0x2, %g1		! %g1 = byte offset, right-to-left
-	sll	%o4, 3, %o4		! %o4 = bit offset, left-to-right
-	sll	%g1, 3, %g1		! %g1 = bit offset, right-to-left
-	sethi	%hi(0xffff0000), %o3	! %o3 = mask
-	srl	%o3, %o4, %o3		! %o3 = shifted to bit offset
-	sll	%o1, %g1, %o1		! %o1 = shifted to bit offset
-	and	%o1, %o3, %o1		! %o1 = single short value
-	sll	%o2, %g1, %o2		! %o2 = shifted to bit offset
-	and	%o2, %o3, %o2		! %o2 = single short value
-	andn	%o0, 0x2, %o0		! %o0 = word address
+	and	%o0, 0x2, %o4		/* %o4 = byte offset, left-to-right */
+	xor	%o4, 0x2, %g1		/* %g1 = byte offset, right-to-left */
+	sll	%o4, 3, %o4		/* %o4 = bit offset, left-to-right */
+	sll	%g1, 3, %g1		/* %g1 = bit offset, right-to-left */
+	sethi	%hi(0xffff0000), %o3	/* %o3 = mask */
+	srl	%o3, %o4, %o3		/* %o3 = shifted to bit offset */
+	sll	%o1, %g1, %o1		/* %o1 = shifted to bit offset */
+	and	%o1, %o3, %o1		/* %o1 = single short value */
+	sll	%o2, %g1, %o2		/* %o2 = shifted to bit offset */
+	and	%o2, %o3, %o2		/* %o2 = single short value */
+	andn	%o0, 0x2, %o0		/* %o0 = word address */
 	! if low-order bit is 1, we will properly get an alignment fault here
-	ld	[%o0], %o4		! read old value
+	ld	[%o0], %o4		/* read old value */
 1:
-	andn	%o4, %o3, %o4		! clear target bits
-	or	%o4, %o2, %o5		! insert the new value
-	or	%o4, %o1, %o4		! insert the comparison value
+	andn	%o4, %o3, %o4		/* clear target bits */
+	or	%o4, %o2, %o5		/* insert the new value */
+	or	%o4, %o1, %o4		/* insert the comparison value */
 	cas	[%o0], %o4, %o5
-	cmp	%o4, %o5		! did we succeed?
+	cmp	%o4, %o5		/* did we succeed? */
 	be,pt	%icc, 2f
-	  and	%o5, %o3, %o4		! isolate the old value
-	cmp	%o1, %o4		! should we have succeeded?
-	be,a,pt	%icc, 1b		! yes, try again
-	  mov	%o5, %o4		! %o4 = old value
+	and	%o5, %o3, %o4		/* isolate the old value */
+	cmp	%o1, %o4		/* should we have succeeded? */
+	be,a,pt	%icc, 1b		/* yes, try again */
+	  mov	%o5, %o4		/* %o4 = old value */
 2:
 	retl
-	srl	%o4, %g1, %o0		! %o0 = old value
+	srl	%o4, %g1, %o0		/* %o0 = old value */
 	SET_SIZE(atomic_cas_ushort)
 	SET_SIZE(atomic_cas_16)
 
@@ -774,51 +779,51 @@ add_64:
 
 	ENTRY(atomic_swap_8)
 	ALTENTRY(atomic_swap_uchar)
-	and	%o0, 0x3, %o4		! %o4 = byte offset, left-to-right
-	xor	%o4, 0x3, %g1		! %g1 = byte offset, right-to-left
-	sll	%g1, 3, %g1		! %g1 = bit offset, right-to-left
-	set	0xff, %o3		! %o3 = mask
-	sll	%o3, %g1, %o3		! %o3 = shifted to bit offset
-	sll	%o1, %g1, %o1		! %o1 = shifted to bit offset
-	and	%o1, %o3, %o1		! %o1 = single byte value
-	andn	%o0, 0x3, %o0		! %o0 = word address
-	ld	[%o0], %o2		! read old value
+	and	%o0, 0x3, %o4		/* %o4 = byte offset, left-to-right */
+	xor	%o4, 0x3, %g1		/* %g1 = byte offset, right-to-left */
+	sll	%g1, 3, %g1		/* %g1 = bit offset, right-to-left */
+	set	0xff, %o3		/* %o3 = mask */
+	sll	%o3, %g1, %o3		/* %o3 = shifted to bit offset */
+	sll	%o1, %g1, %o1		/* %o1 = shifted to bit offset */
+	and	%o1, %o3, %o1		/* %o1 = single byte value */
+	andn	%o0, 0x3, %o0		/* %o0 = word address */
+	ld	[%o0], %o2		/* read old value */
 1:
-	andn	%o2, %o3, %o5		! clear target bits
-	or	%o5, %o1, %o5		! insert the new value
+	andn	%o2, %o3, %o5		/* clear target bits */
+	or	%o5, %o1, %o5		/* insert the new value */
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		/* %o2 = old value */
 	and	%o5, %o3, %o5
 	retl
-	srl	%o5, %g1, %o0		! %o0 = old value
+	srl	%o5, %g1, %o0		/* %o0 = old value */
 	SET_SIZE(atomic_swap_uchar)
 	SET_SIZE(atomic_swap_8)
 
 	ENTRY(atomic_swap_16)
 	ALTENTRY(atomic_swap_ushort)
-	and	%o0, 0x2, %o4		! %o4 = byte offset, left-to-right
-	xor	%o4, 0x2, %g1		! %g1 = byte offset, right-to-left
-	sll	%o4, 3, %o4		! %o4 = bit offset, left-to-right
-	sll	%g1, 3, %g1		! %g1 = bit offset, right-to-left
-	sethi	%hi(0xffff0000), %o3	! %o3 = mask
-	srl	%o3, %o4, %o3		! %o3 = shifted to bit offset
-	sll	%o1, %g1, %o1		! %o1 = shifted to bit offset
-	and	%o1, %o3, %o1		! %o1 = single short value
-	andn	%o0, 0x2, %o0		! %o0 = word address
+	and	%o0, 0x2, %o4		/* %o4 = byte offset, left-to-right */
+	xor	%o4, 0x2, %g1		/* %g1 = byte offset, right-to-left */
+	sll	%o4, 3, %o4		/* %o4 = bit offset, left-to-right */
+	sll	%g1, 3, %g1		/* %g1 = bit offset, right-to-left */
+	sethi	%hi(0xffff0000), %o3	/* %o3 = mask */
+	srl	%o3, %o4, %o3		/* %o3 = shifted to bit offset */
+	sll	%o1, %g1, %o1		/* %o1 = shifted to bit offset */
+	and	%o1, %o3, %o1		/* %o1 = single short value */
+	andn	%o0, 0x2, %o0		/* %o0 = word address */
 	! if low-order bit is 1, we will properly get an alignment fault here
-	ld	[%o0], %o2		! read old value
+	ld	[%o0], %o2		/* read old value */
 1:
-	andn	%o2, %o3, %o5		! clear target bits
-	or	%o5, %o1, %o5		! insert the new value
+	andn	%o2, %o3, %o5		/* clear target bits */
+	or	%o5, %o1, %o5		/* insert the new value */
 	cas	[%o0], %o2, %o5
 	cmp	%o2, %o5
 	bne,a,pn %icc, 1b
-	  mov	%o5, %o2		! %o2 = old value
+	mov	%o5, %o2		/* %o2 = old value */
 	and	%o5, %o3, %o5
 	retl
-	srl	%o5, %g1, %o0		! %o0 = old value
+	srl	%o5, %g1, %o0		/* %o0 = old value */
 	SET_SIZE(atomic_swap_ushort)
 	SET_SIZE(atomic_swap_16)
 
@@ -832,7 +837,7 @@ add_64:
 	cas	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%icc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
 	mov	%o3, %o0
 2:
@@ -851,7 +856,7 @@ add_64:
 	casx	[%o0], %o2, %o3
 	cmp	%o2, %o3
 	ATOMIC_BACKOFF_BRANCH(%xcc, 2f, 1b)
-	  mov	%o3, %o2
+	mov	%o3, %o2
 	retl
 	mov	%o3, %o0
 2:
@@ -867,14 +872,14 @@ add_64:
 0:
 	ldn	[%o0], %o2
 1:
-	andcc	%o2, %o3, %g0		! test if the bit is set
-	bnz,a,pn %ncc, 2f		! if so, then fail out
-	  mov	-1, %o0
-	or	%o2, %o3, %o4		! set the bit, and try to commit it
+	andcc	%o2, %o3, %g0		/* test if the bit is set */
+	bnz,a,pn %ncc, 2f		/* if so, then fail out */
+	mov	-1, %o0
+	or	%o2, %o3, %o4		/* set the bit, and try to commit it */
 	casn	[%o0], %o2, %o4
 	cmp	%o2, %o4
 	ATOMIC_BACKOFF_BRANCH(%ncc, 5f, 1b)
-	  mov	%o4, %o2
+	mov	%o4, %o2
 	mov	%g0, %o0
 2:
 	retl
@@ -890,14 +895,14 @@ add_64:
 0:
 	ldn	[%o0], %o2
 1:
-	andncc	%o3, %o2, %g0		! test if the bit is clear
-	bnz,a,pn %ncc, 2f		! if so, then fail out
-	  mov	-1, %o0
-	andn	%o2, %o3, %o4		! clear the bit, and try to commit it
-	casn	[%o0], %o2, %o4
+	andncc	%o3, %o2, %g0		/* test if the bit is clear */
+	bnz,a,pn %xcc, 2f		/* if so, then fail out */
+	mov	-1, %o0
+	andn	%o2, %o3, %o4		/* clear the bit, and try to commit it */
+	casx	[%o0], %o2, %o4
 	cmp	%o2, %o4
-	ATOMIC_BACKOFF_BRANCH(%ncc, 5f, 1b)
-	  mov	%o4, %o2
+	ATOMIC_BACKOFF_BRANCH(%xcc, 5f, 1b)
+	mov	%o4, %o2
 	mov	%g0, %o0
 2:
 	retl
@@ -910,7 +915,7 @@ add_64:
 
 	/*
 	 * Spitfires and Blackbirds have a problem with membars in the
-	 * delay slot (SF_ERRATA_51).  For safety's sake, we assume
+	 * delay slot (SF_ERRATA_51). For safety's sake, we assume
 	 * that the whole world needs the workaround.
 	 */
 	ENTRY(membar_enter)

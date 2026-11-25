@@ -24,7 +24,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"door.s"
+	.file	"door.S"
 
 #include "SYS.h"
 #include <sys/door.h>

@@ -37,6 +37,10 @@
 #include <sys/clock.h>
 #include <sys/fpras.h>
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /*
  * This isn't the routine you're looking for.
  *
@@ -310,7 +314,7 @@
 	std	%g0, [%sp + ARGPUSH + STACK_BIAS]
 	fzero	%f0
 	fzero	%f2
-	ldd	[%sp + ARGPUSH + STACK_BIAS], %fsr
+	ldx	[%sp + ARGPUSH + STACK_BIAS], %fsr
 	faddd	%f0, %f2, %f4
 	fmuld	%f0, %f2, %f6
 	faddd	%f0, %f2, %f8

@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"__uadmin.s"
+	.file	"__uadmin.S"
 
 #include "SYS.h"
 

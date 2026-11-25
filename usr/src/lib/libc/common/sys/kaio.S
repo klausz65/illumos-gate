@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"kaio.s"
+	.file	"kaio.S"
 
 /* C library -- kaio						*/
 /* intptr_t _kaio (); */

@@ -23,6 +23,7 @@
 # Use is subject to license terms.
 #
 # Copyright 2019 Peter Tribble.
+# Copyright 2026 Klaus Ziegler.
 #
 
 SYSOBJS=		\
@@ -32,12 +33,7 @@ SYSOBJS=		\
 include ../Makefile.com
 
 DYNFLAGS += $(DYNFLAGS32)
-BUILD.s=	$(AS) $(ASFLAGS) $< -o $@
-
-# sparc-specific rule
-pics/%.o: sys/%.s
-	$(BUILD.s)
-	$(POST_PROCESS_S_O)
+ARCH	= -m32 -xarch=sparcvis
 
 .KEEP_STATE:
 

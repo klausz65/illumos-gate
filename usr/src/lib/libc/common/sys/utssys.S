@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"utssys.s"
+	.file	"utssys.S"
 
 /* C library -- utssys						*/
 /* error = utssys(cbuf, mv, type, outbufp)			*/

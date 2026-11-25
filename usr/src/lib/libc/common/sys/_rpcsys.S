@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_rpcsys.s"
+	.file	"_rpcsys.S"
 
 /* rpcsys						*/
 /* int rpcsys(int opcode, int arg)				*/

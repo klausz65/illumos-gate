@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"times.s"
+	.file	"times.S"
 
 /* C library -- times						*/
 /* long times (struct tms *buffer);				*/

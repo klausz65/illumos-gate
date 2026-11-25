@@ -22,6 +22,9 @@
 /*
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ *
+ * Copyright 2020 Joyent, Inc.
+ * Copyright 2025 Oxide Computer Company
  */
 
 /*
@@ -111,13 +114,14 @@ do_relocate(struct module *mp, char *reltbl, int nreloc, int relocsize,
 	long off, roff;
 	uintptr_t reladdr, rend;
 	uint_t rtype;
+	Sxword typedata;
 	Elf64_Sxword addend;
 	Addr value, destination;
-	Sym *symref;
-	int symnum;
+	Sym *symref = NULL;
 	int err = 0;
 
 	reladdr = (uintptr_t)reltbl;
+	int symnum;
 	rend = reladdr + nreloc * relocsize;
 
 #ifdef	KOBJ_DEBUG
@@ -152,31 +156,35 @@ do_relocate(struct module *mp, char *reltbl, int nreloc, int relocsize,
 	symnum = -1;
 	/* loop through relocations */
 	while (reladdr < rend) {
-
 		symnum++;
-		rtype = ELF_R_TYPE(((Rela *)reladdr)->r_info);
+		rtype = ELF64_R_TYPE_ID(((Rela *)reladdr)->r_info);
+		typedata = (Sxword)ELF64_R_TYPE_DATA(
+		    ((Rela *)reladdr)->r_info);
+		if (typedata & 0x800000)
+		    typedata -= 0x1000000;
 		roff = off = ((Rela *)reladdr)->r_offset;
 		stndx = ELF_R_SYM(((Rela *)reladdr)->r_info);
 		if (stndx >= mp->nsyms) {
-			_kobj_printf(ops,
-			    "do_relocate: bad strndx %d\n", symnum);
+			_kobj_printf(ops, "do_relocate: bad strndx %d\n",
+			    symnum);
 			return (-1);
 		}
-		if ((rtype > R_SPARC_NUM) || IS_TLS_INS(rtype)) {
+		if ((rtype >= R_SPARC_NUM) || IS_TLS_INS(rtype)) {
 			_kobj_printf(ops, "krtld: invalid relocation type %d",
 			    rtype);
 			_kobj_printf(ops, " at 0x%llx:", (u_longlong_t)off);
 			_kobj_printf(ops, " file=%s\n", mp->filename);
-			err = 1;
-			continue;
+			return (-1);
 		}
+
+
 		addend = (long)(((Rela *)reladdr)->r_addend);
 		reladdr += relocsize;
 
 
 #ifdef	KOBJ_DEBUG
 		if (kobj_debug & D_RELOCATIONS) {
-			Sym *symp;
+			Sym *	symp;
 			symp = (Sym *)
 			    (mp->symtbl+(stndx * mp->symhdr->sh_entsize));
 			_kobj_printf(ops, "krtld:\t%s",
@@ -242,13 +250,31 @@ do_relocate(struct module *mp, char *reltbl, int nreloc, int relocsize,
 					 */
 					value = symref->st_value;
 				} /* end else symbol found */
-			}
+			} /* end global or weak */
 		} /* end not R_SPARC_RELATIVE */
 
 		value += addend;
-		if (IS_EXTOFFSET(rtype)) {
-			value +=
-			    (Word) ELF_R_TYPE_DATA(((Rela *)reladdr)->r_info);
+
+		if (rtype == R_SPARC_OLO10) {
+			/*
+			 * R_SPARC_OLO10:
+			 *	((S + A) & 0x3ff) + O
+			 * O is stored in the 24-bit type-dependent field of r_info.
+			 */
+			Sxword olo10;
+
+			olo10 = (Sxword)(value & 0x3ff) + typedata;
+			if (olo10 < -4096 || olo10 > 4095) {
+			    _kobj_printf(ops,
+				"krtld: R_SPARC_OLO10 overflow: "
+				"%s at 0x%llx\n", mp->filename,
+				(u_longlong_t)off);
+			    err = 1;
+			    continue;
+			}
+			value = (Addr)olo10;
+		} else if (IS_EXTOFFSET(rtype)) {
+		    value += typedata;
 		}
 
 		/*
@@ -273,8 +299,8 @@ do_relocate(struct module *mp, char *reltbl, int nreloc, int relocsize,
 		    (const char *)mp->strings + symref->st_name,
 		    mp->filename) == 0)
 			err = 1;
-	} /* end of while loop */
 
+	} /* end of while loop */
 	if (err)
 		return (-1);
 
@@ -305,8 +331,9 @@ do_relocations(struct module *mp)
 			return (-1);
 		}
 		if (rshp->sh_info >= mp->shnum) {
-			_kobj_printf(ops, "do_relocations: %s ", mp->filename);
-			_kobj_printf(ops, " sh_info out of range %d\n", shn);
+			_kobj_printf(ops, "do_relocations: %s sh_info ",
+			    mp->filename);
+			_kobj_printf(ops, "out of range %d\n", shn);
 			goto bad;
 		}
 		nreloc = rshp->sh_size / rshp->sh_entsize;
@@ -324,7 +351,7 @@ do_relocations(struct module *mp)
 		if (kobj_debug & D_RELOCATIONS) {
 			_kobj_printf(ops, "krtld: relocating: file=%s ",
 			    mp->filename);
-			_kobj_printf(ops, " section=%d\n", shn);
+			_kobj_printf(ops, "section=%d\n", shn);
 		}
 #endif
 		if (do_relocate(mp, (char *)rshp->sh_addr, nreloc,

@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_shutdown.s"
+	.file	"_so_shutdown.S"
 
 /* C library -- _so_shutdown					*/
 /* int _so_shutdown (int fildes, int how, int vers);		*/

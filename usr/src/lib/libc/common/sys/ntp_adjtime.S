@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"ntp_adjtime.s"
+	.file	"ntp_adjtime.S"
 
 /* C library -- ntp_adjtime					*/
 /* int ntp_adjtime (struct timex *);				*/

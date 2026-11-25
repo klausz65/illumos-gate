@@ -163,35 +163,35 @@
 	.word	0x3ff0a7c1, 0x819e90d8, 0x3ff0bdba, 0x3692d514
 	.word	0x3ff0d3c2, 0x2b8f71f1, 0x3ff0e9d9, 0x6b2a23d9
 
-	.word	0x7149f2ca, 0x0da24260	! 1.0e30f, 1.0e-30f
-	.word	0x3ecebfbe, 0x9d182250	! KA2 = 3.66556671660783833261e-06
-	.word	0x3f662e43, 0xe2528362	! KA1 = 2.70760782821392980564e-03
-	.word	0x40771547, 0x652b82fe	! K256ONLN2 = 369.3299304675746271
-	.word	0x42aeac4f, 0x42b17218	! THRESHOLD = 87.3365402f
-					! THRESHOLDL = 88.7228394f
+	.word	0x7149f2ca, 0x0da24260	/* 1.0e30f, 1.0e-30f */
+	.word	0x3ecebfbe, 0x9d182250	/* KA2 = 3.66556671660783833261e-06 */
+	.word	0x3f662e43, 0xe2528362	/* KA1 = 2.70760782821392980564e-03 */
+	.word	0x40771547, 0x652b82fe	/* K256ONLN2 = 369.3299304675746271 */
+	.word	0x42aeac4f, 0x42b17218	/* THRESHOLD = 87.3365402f */
+					/* THRESHOLDL = 88.7228394f */
 ! local storage indices
 
-#define tmp0		STACK_BIAS-32
-#define tmp1		STACK_BIAS-28
-#define tmp2		STACK_BIAS-24
-#define tmp3		STACK_BIAS-20
-#define tmp4		STACK_BIAS-16
-#define tmp5		STACK_BIAS-12
-#define tmp6		STACK_BIAS-8
-#define tmp7		STACK_BIAS-4
+#define	tmp0		STACK_BIAS-32
+#define	tmp1		STACK_BIAS-28
+#define	tmp2		STACK_BIAS-24
+#define	tmp3		STACK_BIAS-20
+#define	tmp4		STACK_BIAS-16
+#define	tmp5		STACK_BIAS-12
+#define	tmp6		STACK_BIAS-8
+#define	tmp7		STACK_BIAS-4
 
 ! sizeof temp storage - must be a multiple of 16 for V9
-#define tmps 		0x20
+#define	tmps		0x20
 
-#define I5_THRESHOLD	%i5
-#define G1_CONST_TBL	%g5
-#define G5_CONST	%g1
+#define	I5_THRESHOLD	%i5
+#define	G1_CONST_TBL	%g5
+#define	G5_CONST	%g1
 
-#define F62_K256ONLN2	%f62
-#define F60_KA2		%f60
-#define F58_KA1		%f58
+#define	F62_K256ONLN2	%f62
+#define	F60_KA2		%f60
+#define	F58_KA1		%f58
 
-#define THRESHOLDL	%f0
+#define	THRESHOLDL	%f0
 
 ! register use
 ! i0  n
@@ -294,7 +294,7 @@
 	PIC_SETUP(l7)
 	PIC_SET(l7,.CONST_TBL,g5)
 
-	wr	%g0,0x82,%asi		! set %asi for non-faulting loads
+	wr	%g0,0x82,%asi		/* set %asi for non-faulting loads */
 	wr	%g0,0x60,%gsr
 
 	sll	%i2,2,%i2
@@ -315,325 +315,325 @@
 .main_loop_preload:
 
 ! preload 8 elements and get absolute values
-	ld	[%i1],%l0		! (0) Xi = ((int*)px)[0]
+	ld	[%i1],%l0		/* (0) Xi = ((int*)px)[0] */
 	fzeros	%f5
-	ld	[%i1],%f16		! (0) X = px[0]
+	ld	[%i1],%f16		/* (0) X = px[0] */
 	fzeros	%f7
-	add	%i1,%i2,%o5		! px += stridex
-	ld	[%o5],%l1		! (1) Xi = ((int*)px)[0]
-	and	%l0,G5_CONST,%l0	! (0) ax = Xi & 0x7fffffff
+	add	%i1,%i2,%o5		/* px += stridex */
+	ld	[%o5],%l1		/* (1) Xi = ((int*)px)[0] */
+	and	%l0,G5_CONST,%l0	/* (0) ax = Xi & 0x7fffffff */
 	fzeros	%f9
-	ld	[%o5],%f2		! (1) X = px[0]
+	ld	[%o5],%f2		/* (1) X = px[0] */
 	fzeros	%f11
-	add	%o5,%i2,%i1		! px += stridex
-	ld	[%i1],%l2		! (2) Xi = ((int*)px)[0]
-	and	%l1,G5_CONST,%l1	! (1) ax = Xi & 0x7fffffff
+	add	%o5,%i2,%i1		/* px += stridex */
+	ld	[%i1],%l2		/* (2) Xi = ((int*)px)[0] */
+	and	%l1,G5_CONST,%l1	/* (1) ax = Xi & 0x7fffffff */
 	fzeros	%f13
-	ld	[%i1],%f4		! (2) X = px[0]
+	ld	[%i1],%f4		/* (2) X = px[0] */
 	fzeros	%f15
-	add	%i1,%i2,%o5		! px += stridex
-	ld	[%o5],%l3		! (3) Xi = ((int*)px)[0]
-	and	%l2,G5_CONST,%l2	! (2) ax = Xi & 0x7fffffff
+	add	%i1,%i2,%o5		/* px += stridex */
+	ld	[%o5],%l3		/* (3) Xi = ((int*)px)[0] */
+	and	%l2,G5_CONST,%l2	/* (2) ax = Xi & 0x7fffffff */
 	fzeros	%f17
-	ld	[%o5],%f6		! (3) X = px[0]
-	add	%o5,%i2,%o0		! px += stridex
-	ld	[%o0],%l4		! (4) Xi = ((int*)px)[0]
-	and	%l3,G5_CONST,%l3	! (3) ax = Xi & 0x7fffffff
-	add	%o0,%i2,%o1		! px += stridex
-	ld	[%o1],%l5		! (5) Xi = ((int*)px)[0]
-	add	%o1,%i2,%o2		! px += stridex
-	ld	[%o2],%l6		! (6) Xi = ((int*)px)[0]
-	and	%l4,G5_CONST,%l4	! (4) ax = Xi & 0x7fffffff
-	add	%o2,%i2,%o3		! px += stridex
-	ld	[%o3],%l7		! (7) Xi = ((int*)px)[0]
-	add	%o3,%i2,%i1		! px += stridex
-	and	%l5,G5_CONST,%l5	! (5) ax = Xi & 0x7fffffff
-	and	%l6,G5_CONST,%l6	! (6) ax = Xi & 0x7fffffff
+	ld	[%o5],%f6		/* (3) X = px[0] */
+	add	%o5,%i2,%o0		/* px += stridex */
+	ld	[%o0],%l4		/* (4) Xi = ((int*)px)[0] */
+	and	%l3,G5_CONST,%l3	/* (3) ax = Xi & 0x7fffffff */
+	add	%o0,%i2,%o1		/* px += stridex */
+	ld	[%o1],%l5		/* (5) Xi = ((int*)px)[0] */
+	add	%o1,%i2,%o2		/* px += stridex */
+	ld	[%o2],%l6		/* (6) Xi = ((int*)px)[0] */
+	and	%l4,G5_CONST,%l4	/* (4) ax = Xi & 0x7fffffff */
+	add	%o2,%i2,%o3		/* px += stridex */
+	ld	[%o3],%l7		/* (7) Xi = ((int*)px)[0] */
+	add	%o3,%i2,%i1		/* px += stridex */
+	and	%l5,G5_CONST,%l5	/* (5) ax = Xi & 0x7fffffff */
+	and	%l6,G5_CONST,%l6	/* (6) ax = Xi & 0x7fffffff */
 	ba	.main_loop
-	and	%l7,G5_CONST,%l7	! (7) ax = Xi & 0x7fffffff
+	and	%l7,G5_CONST,%l7	/* (7) ax = Xi & 0x7fffffff */
 
 	.align	16
 .main_loop:
 	cmp	%l0,I5_THRESHOLD
-	bg,pn	%icc,.spec0		! (0) if (ax > THRESHOLD)
-	lda	[%o0]%asi,%f8		! (4) X = px[0]
-	fstod	%f16,%f40		! (0) y = (double) X
+	bg,pn	%icc,.spec0		/* (0) if (ax > THRESHOLD) */
+	lda	[%o0]%asi,%f8		/* (4) X = px[0] */
+	fstod	%f16,%f40		/* (0) y = (double) X */
 .spec0_cont:
 	cmp	%l1,I5_THRESHOLD
-	bg,pn	%icc,.spec1		! (1) if (ax > THRESHOLD)
-	lda	[%o1]%asi,%f10		! (5) X = px[0]
-	fstod	%f2,%f42		! (1) y = (double) X
+	bg,pn	%icc,.spec1		/* (1) if (ax > THRESHOLD) */
+	lda	[%o1]%asi,%f10		/* (5) X = px[0] */
+	fstod	%f2,%f42		/* (1) y = (double) X */
 .spec1_cont:
 	cmp	%l2,I5_THRESHOLD
-	bg,pn	%icc,.spec2		! (2) if (ax > THRESHOLD)
-	lda	[%o2]%asi,%f12		! (6) X = px[0]
-	fstod	%f4,%f44		! (2) y = (double) X
+	bg,pn	%icc,.spec2		/* (2) if (ax > THRESHOLD) */
+	lda	[%o2]%asi,%f12		/* (6) X = px[0] */
+	fstod	%f4,%f44		/* (2) y = (double) X */
 .spec2_cont:
 	cmp	%l3,I5_THRESHOLD
-	bg,pn	%icc,.spec3		! (3) if (ax > THRESHOLD)
-	lda	[%o3]%asi,%f14		! (7) X = px[0]
-	fstod	%f6,%f46		! (3) y = (double) X
+	bg,pn	%icc,.spec3		/* (3) if (ax > THRESHOLD) */
+	lda	[%o3]%asi,%f14		/* (7) X = px[0] */
+	fstod	%f6,%f46		/* (3) y = (double) X */
 .spec3_cont:
 	cmp	%l4,I5_THRESHOLD
-	bg,pn	%icc,.spec4		! (4) if (ax > THRESHOLD)
-	fmuld	F62_K256ONLN2,%f40,%f40	! (0) y *= K256ONLN2
-	fstod	%f8,%f48		! (4) y = (double) X
+	bg,pn	%icc,.spec4		/* (4) if (ax > THRESHOLD) */
+	fmuld	F62_K256ONLN2,%f40,%f40	/* (0) y *= K256ONLN2 */
+	fstod	%f8,%f48		/* (4) y = (double) X */
 .spec4_cont:
 	cmp	%l5,I5_THRESHOLD
-	bg,pn	%icc,.spec5		! (5) if (ax > THRESHOLD)
-	fmuld	F62_K256ONLN2,%f42,%f42	! (1) y *= K256ONLN2
-	fstod	%f10,%f50		! (5) y = (double) X
+	bg,pn	%icc,.spec5		/* (5) if (ax > THRESHOLD) */
+	fmuld	F62_K256ONLN2,%f42,%f42	/* (1) y *= K256ONLN2 */
+	fstod	%f10,%f50		/* (5) y = (double) X */
 .spec5_cont:
 	cmp	%l6,I5_THRESHOLD
-	bg,pn	%icc,.spec6		! (6) if (ax > THRESHOLD)
-	fmuld	F62_K256ONLN2,%f44,%f44	! (2) y *= K256ONLN2
-	fstod	%f12,%f52		! (6) y = (double) X
+	bg,pn	%icc,.spec6		/* (6) if (ax > THRESHOLD) */
+	fmuld	F62_K256ONLN2,%f44,%f44	/* (2) y *= K256ONLN2 */
+	fstod	%f12,%f52		/* (6) y = (double) X */
 .spec6_cont:
 	cmp	%l7,I5_THRESHOLD
-	bg,pn	%icc,.spec7		! (7) if (ax > THRESHOLD)
-	fmuld	F62_K256ONLN2,%f46,%f46	! (3) y *= K256ONLN2
-	fstod	%f14,%f54		! (7) y = (double) X
+	bg,pn	%icc,.spec7		/* (7) if (ax > THRESHOLD) */
+	fmuld	F62_K256ONLN2,%f46,%f46	/* (3) y *= K256ONLN2 */
+	fstod	%f14,%f54		/* (7) y = (double) X */
 .spec7_cont:
-	fdtoi	%f40,%f16		! (0) k = (int) y
+	fdtoi	%f40,%f16		/* (0) k = (int) y */
 	st	%f16,[%fp+tmp0]
-	fmuld	F62_K256ONLN2,%f48,%f48	! (4) y *= K256ONLN2
+	fmuld	F62_K256ONLN2,%f48,%f48	/* (4) y *= K256ONLN2 */
 
-	fdtoi	%f42,%f2		! (1) k = (int) y
+	fdtoi	%f42,%f2		/* (1) k = (int) y */
 	st	%f2,[%fp+tmp1]
-	fmuld	F62_K256ONLN2,%f50,%f50	! (5) y *= K256ONLN2
+	fmuld	F62_K256ONLN2,%f50,%f50	/* (5) y *= K256ONLN2 */
 
-	fdtoi	%f44,%f4		! (2) k = (int) y
+	fdtoi	%f44,%f4		/* (2) k = (int) y */
 	st	%f4,[%fp+tmp2]
-	fmuld	F62_K256ONLN2,%f52,%f52	! (6) y *= K256ONLN2
+	fmuld	F62_K256ONLN2,%f52,%f52	/* (6) y *= K256ONLN2 */
 
-	fdtoi	%f46,%f6		! (3) k = (int) y
+	fdtoi	%f46,%f6		/* (3) k = (int) y */
 	st	%f6,[%fp+tmp3]
-	fmuld	F62_K256ONLN2,%f54,%f54	! (7) y *= K256ONLN2
+	fmuld	F62_K256ONLN2,%f54,%f54	/* (7) y *= K256ONLN2 */
 
-	fdtoi	%f48,%f8		! (4) k = (int) y
+	fdtoi	%f48,%f8		/* (4) k = (int) y */
 	st	%f8,[%fp+tmp4]
 
-	fdtoi	%f50,%f10		! (5) k = (int) y
+	fdtoi	%f50,%f10		/* (5) k = (int) y */
 	st	%f10,[%fp+tmp5]
 
-	fitod	%f16,%f34		! (0) dtmp = (double) k
-	fpackfix	%f16,%f16	! (0) ((float*)&drez)[0] = vis_fpackfix(drez)
+	fitod	%f16,%f34		/* (0) dtmp = (double) k */
+	fpackfix	%f16,%f16	/* (0) ((float*)&drez)[0] = vis_fpackfix(drez) */
 	nop
 	nop
 
-	fdtoi	%f52,%f12		! (6) k = (int) y
+	fdtoi	%f52,%f12		/* (6) k = (int) y */
 	st	%f12,[%fp+tmp6]
 
-	fdtoi	%f54,%f14		! (7) k = (int) y
+	fdtoi	%f54,%f14		/* (7) k = (int) y */
 	st	%f14,[%fp+tmp7]
 
-	lda	[%i1]%asi,%l0		! (8) Xi = ((int*)px)[0]
-	add	%i1,%i2,%o5		! px += stridex
-	fitod	%f2,%f18		! (1) dtmp = (double) k
-	fpackfix	%f2,%f2		! (1) ((float*)&drez)[0] = vis_fpackfix(drez)
+	lda	[%i1]%asi,%l0		/* (8) Xi = ((int*)px)[0] */
+	add	%i1,%i2,%o5		/* px += stridex */
+	fitod	%f2,%f18		/* (1) dtmp = (double) k */
+	fpackfix	%f2,%f2		/* (1) ((float*)&drez)[0] = vis_fpackfix(drez) */
 
-	lda	[%o5]%asi,%l1		! (9) Xi = ((int*)px)[0]
-	add	%o5,%i2,%i1		! px += stridex
-	fitod	%f4,%f20		! (2) dtmp = (double) k
-	fpackfix	%f4,%f4		! (2) ((float*)&drez)[0] = vis_fpackfix(drez)
+	lda	[%o5]%asi,%l1		/* (9) Xi = ((int*)px)[0] */
+	add	%o5,%i2,%i1		/* px += stridex */
+	fitod	%f4,%f20		/* (2) dtmp = (double) k */
+	fpackfix	%f4,%f4		/* (2) ((float*)&drez)[0] = vis_fpackfix(drez) */
 
-	lda	[%i1]%asi,%l2		! (10) Xi = ((int*)px)[0]
-	add	%i1,%i2,%o5		! px += stridex
-	fitod	%f6,%f22		! (3) dtmp = (double) k
-	fpackfix	%f6,%f6		! (3) ((float*)&drez)[0] = vis_fpackfix(drez)
+	lda	[%i1]%asi,%l2		/* (10) Xi = ((int*)px)[0] */
+	add	%i1,%i2,%o5		/* px += stridex */
+	fitod	%f6,%f22		/* (3) dtmp = (double) k */
+	fpackfix	%f6,%f6		/* (3) ((float*)&drez)[0] = vis_fpackfix(drez) */
 
-	lda	[%o5]%asi,%l3		! (11) Xi = ((int*)px)[0]
-	add	%o5,%i2,%i1		! px += stridex
-	fitod	%f8,%f24		! (4) dtmp = (double) k
-	fpackfix	%f8,%f8		! (4) ((float*)&drez)[0] = vis_fpackfix(drez)
+	lda	[%o5]%asi,%l3		/* (11) Xi = ((int*)px)[0] */
+	add	%o5,%i2,%i1		/* px += stridex */
+	fitod	%f8,%f24		/* (4) dtmp = (double) k */
+	fpackfix	%f8,%f8		/* (4) ((float*)&drez)[0] = vis_fpackfix(drez) */
 
-	fitod	%f10,%f26		! (5) dtmp = (double) k
-	fpackfix	%f10,%f10	! (5) ((float*)&drez)[0] = vis_fpackfix(drez)
+	fitod	%f10,%f26		/* (5) dtmp = (double) k */
+	fpackfix	%f10,%f10	/* (5) ((float*)&drez)[0] = vis_fpackfix(drez) */
 
-	fitod	%f12,%f28		! (6) dtmp = (double) k
-	fpackfix	%f12,%f12	! (6) ((float*)&drez)[0] = vis_fpackfix(drez)
+	fitod	%f12,%f28		/* (6) dtmp = (double) k */
+	fpackfix	%f12,%f12	/* (6) ((float*)&drez)[0] = vis_fpackfix(drez) */
 
-	fitod	%f14,%f30		! (7) dtmp = (double) k
-	fpackfix	%f14,%f14	! (7) ((float*)&drez)[0] = vis_fpackfix(drez)
+	fitod	%f14,%f30		/* (7) dtmp = (double) k */
+	fpackfix	%f14,%f14	/* (7) ((float*)&drez)[0] = vis_fpackfix(drez) */
 
-	ld	[%fp+tmp0],%o0		! (0) load k
-	and	%l0,G5_CONST,%l0	! (8) ax = Xi & 0x7fffffff
-	fsubd	%f40,%f34,%f40		! (0) y -= dtmp
+	ld	[%fp+tmp0],%o0		/* (0) load k */
+	and	%l0,G5_CONST,%l0	/* (8) ax = Xi & 0x7fffffff */
+	fsubd	%f40,%f34,%f40		/* (0) y -= dtmp */
 
-	ld	[%fp+tmp1],%o1		! (1) load k
-	and	%l1,G5_CONST,%l1	! (9) ax = Xi & 0x7fffffff
-	fsubd	%f42,%f18,%f42		! (1) y -= dtmp
+	ld	[%fp+tmp1],%o1		/* (1) load k */
+	and	%l1,G5_CONST,%l1	/* (9) ax = Xi & 0x7fffffff */
+	fsubd	%f42,%f18,%f42		/* (1) y -= dtmp */
 
-	ld	[%fp+tmp2],%o2		! (2) load k
-	and	%l2,G5_CONST,%l2	! (10) ax = Xi & 0x7fffffff
-	and	%o0,255,%o0		! (0) k &= 255
-	fsubd	%f44,%f20,%f44		! (2) y -= dtmp
+	ld	[%fp+tmp2],%o2		/* (2) load k */
+	and	%l2,G5_CONST,%l2	/* (10) ax = Xi & 0x7fffffff */
+	and	%o0,255,%o0		/* (0) k &= 255 */
+	fsubd	%f44,%f20,%f44		/* (2) y -= dtmp */
 
-	ld	[%fp+tmp3],%o3		! (3) load k
-	and	%o1,255,%o1		! (1) k &= 255
-	fsubd	%f46,%f22,%f46		! (3) y -= dtmp
+	ld	[%fp+tmp3],%o3		/* (3) load k */
+	and	%o1,255,%o1		/* (1) k &= 255 */
+	fsubd	%f46,%f22,%f46		/* (3) y -= dtmp */
 
-	sll	%o0,3,%o0		! (0) k <<= 3
-	sll	%o1,3,%o1		! (1) k <<= 3
-	fmuld	F60_KA2,%f40,%f34	! (0) dtmp = y * KA2
-	fsubd	%f48,%f24,%f48		! (4) y -= dtmp
+	sll	%o0,3,%o0		/* (0) k <<= 3 */
+	sll	%o1,3,%o1		/* (1) k <<= 3 */
+	fmuld	F60_KA2,%f40,%f34	/* (0) dtmp = y * KA2 */
+	fsubd	%f48,%f24,%f48		/* (4) y -= dtmp */
 
-	and	%l3,G5_CONST,%l3	! (11) ax = Xi & 0x7fffffff
-	and	%o2,255,%o2		! (2) k &= 255
-	fmuld	F60_KA2,%f42,%f18	! (1) dtmp = y * KA2
-	fsubd	%f50,%f26,%f50		! (5) y -= dtmp
+	and	%l3,G5_CONST,%l3	/* (11) ax = Xi & 0x7fffffff */
+	and	%o2,255,%o2		/* (2) k &= 255 */
+	fmuld	F60_KA2,%f42,%f18	/* (1) dtmp = y * KA2 */
+	fsubd	%f50,%f26,%f50		/* (5) y -= dtmp */
 
-	sll	%o2,3,%o2		! (2) k <<= 3
-	fmuld	F60_KA2,%f44,%f20	! (2) dtmp = y * KA2
-	fsubd	%f52,%f28,%f52		! (6) y -= dtmp
+	sll	%o2,3,%o2		/* (2) k <<= 3 */
+	fmuld	F60_KA2,%f44,%f20	/* (2) dtmp = y * KA2 */
+	fsubd	%f52,%f28,%f52		/* (6) y -= dtmp */
 
-	ld	[%fp+tmp4],%o4		! (4) load k
-	and	%o3,255,%o3		! (3) k &= 255
-	fmuld	F60_KA2,%f46,%f22	! (3) dtmp = y * KA2
-	fsubd	%f54,%f30,%f54		! (7) y -= dtmp
+	ld	[%fp+tmp4],%o4		/* (4) load k */
+	and	%o3,255,%o3		/* (3) k &= 255 */
+	fmuld	F60_KA2,%f46,%f22	/* (3) dtmp = y * KA2 */
+	fsubd	%f54,%f30,%f54		/* (7) y -= dtmp */
 
-	ld	[%fp+tmp5],%o5		! (5) load k
-	sll	%o3,3,%o3		! (3) k <<= 3
-	fmuld	F60_KA2,%f48,%f24	! (4) dtmp = y * KA2
-	faddd	F58_KA1,%f34,%f34	! (0) dtmp += KA1
+	ld	[%fp+tmp5],%o5		/* (5) load k */
+	sll	%o3,3,%o3		/* (3) k <<= 3 */
+	fmuld	F60_KA2,%f48,%f24	/* (4) dtmp = y * KA2 */
+	faddd	F58_KA1,%f34,%f34	/* (0) dtmp += KA1 */
 
-	ld	[%fp+tmp6],%o7		! (6) load k
-	and	%o4,255,%o4		! (4) k &= 255
-	fmuld	F60_KA2,%f50,%f26	! (5) dtmp = y * KA2
-	faddd	F58_KA1,%f18,%f18	! (1) dtmp += KA1
+	ld	[%fp+tmp6],%o7		/* (6) load k */
+	and	%o4,255,%o4		/* (4) k &= 255 */
+	fmuld	F60_KA2,%f50,%f26	/* (5) dtmp = y * KA2 */
+	faddd	F58_KA1,%f18,%f18	/* (1) dtmp += KA1 */
 
-	ld	[%fp+tmp7],%l4		! (7) load k
-	and	%o5,255,%o5		! (5) k &= 255
-	fmuld	F60_KA2,%f52,%f28	! (6) dtmp = y * KA2
-	faddd	F58_KA1,%f20,%f20	! (2) dtmp += KA1
+	ld	[%fp+tmp7],%l4		/* (7) load k */
+	and	%o5,255,%o5		/* (5) k &= 255 */
+	fmuld	F60_KA2,%f52,%f28	/* (6) dtmp = y * KA2 */
+	faddd	F58_KA1,%f20,%f20	/* (2) dtmp += KA1 */
 
-	sll	%o5,3,%o5		! (5) k <<= 3
-	fmuld	F60_KA2,%f54,%f30	! (7) dtmp = y * KA2
-	faddd	F58_KA1,%f22,%f22	! (3) dtmp += KA1
+	sll	%o5,3,%o5		/* (5) k <<= 3 */
+	fmuld	F60_KA2,%f54,%f30	/* (7) dtmp = y * KA2 */
+	faddd	F58_KA1,%f22,%f22	/* (3) dtmp += KA1 */
 
-	fmuld	%f34,%f40,%f40		! (0) y *= dtmp
-	ldd	[G1_CONST_TBL+%o0],%f34	! (0) dtmp = ((double*)(CONST_TBL + k))[0]
-	and	%l4,255,%l4		! (7) k &= 255
-	faddd	F58_KA1,%f24,%f24	! (4) dtmp += KA1
+	fmuld	%f34,%f40,%f40		/* (0) y *= dtmp */
+	ldd	[G1_CONST_TBL+%o0],%f34	/* (0) dtmp = ((double*)(CONST_TBL + k))[0] */
+	and	%l4,255,%l4		/* (7) k &= 255 */
+	faddd	F58_KA1,%f24,%f24	/* (4) dtmp += KA1 */
 
-	fmuld	%f18,%f42,%f42		! (1) y *= dtmp
-	ldd	[G1_CONST_TBL+%o1],%f18	! (1) dtmp = ((double*)(CONST_TBL + k))[0]
-	sll	%l4,3,%l4		! (7) k <<= 3
-	faddd	F58_KA1,%f26,%f26	! (5) dtmp += KA1
+	fmuld	%f18,%f42,%f42		/* (1) y *= dtmp */
+	ldd	[G1_CONST_TBL+%o1],%f18	/* (1) dtmp = ((double*)(CONST_TBL + k))[0] */
+	sll	%l4,3,%l4		/* (7) k <<= 3 */
+	faddd	F58_KA1,%f26,%f26	/* (5) dtmp += KA1 */
 
-	fmuld	%f20,%f44,%f44		! (2) y *= dtmp
-	ldd	[G1_CONST_TBL+%o2],%f20	! (2) dtmp = ((double*)(CONST_TBL + k))[0]
-	faddd	F58_KA1,%f28,%f28	! (6) dtmp += KA1
+	fmuld	%f20,%f44,%f44		/* (2) y *= dtmp */
+	ldd	[G1_CONST_TBL+%o2],%f20	/* (2) dtmp = ((double*)(CONST_TBL + k))[0] */
+	faddd	F58_KA1,%f28,%f28	/* (6) dtmp += KA1 */
 
-	fmuld	%f22,%f46,%f46		! (3) y *= dtmp
-	ldd	[G1_CONST_TBL+%o3],%f22	! (3) dtmp = ((double*)(CONST_TBL + k))[0]
-	sll	%o4,3,%o4		! (4) k <<= 3
-	faddd	F58_KA1,%f30,%f30	! (7) dtmp += KA1
+	fmuld	%f22,%f46,%f46		/* (3) y *= dtmp */
+	ldd	[G1_CONST_TBL+%o3],%f22	/* (3) dtmp = ((double*)(CONST_TBL + k))[0] */
+	sll	%o4,3,%o4		/* (4) k <<= 3 */
+	faddd	F58_KA1,%f30,%f30	/* (7) dtmp += KA1 */
 
-	fmuld	%f24,%f48,%f48		! (4) y *= dtmp
-	ldd	[G1_CONST_TBL+%o4],%f24	! (4) dtmp = ((double*)(CONST_TBL + k))[0]
-	and	%o7,255,%o7		! (6) k &= 255
-	fpadd32 %f16,%f34,%f34		! (0) drez = vis_fpadd32(drez,dtmp)
+	fmuld	%f24,%f48,%f48		/* (4) y *= dtmp */
+	ldd	[G1_CONST_TBL+%o4],%f24	/* (4) dtmp = ((double*)(CONST_TBL + k))[0] */
+	and	%o7,255,%o7		/* (6) k &= 255 */
+	fpadd32 %f16,%f34,%f34		/* (0) drez = vis_fpadd32(drez,dtmp) */
 
-	fmuld	%f26,%f50,%f50		! (5) y *= dtmp
-	ldd	[G1_CONST_TBL+%o5],%f26	! (5) dtmp = ((double*)(CONST_TBL + k))[0]
-	sll	%o7,3,%o7		! (6) k <<= 3
-	fpadd32 %f2,%f18,%f18		! (1) drez = vis_fpadd32(drez,dtmp)
+	fmuld	%f26,%f50,%f50		/* (5) y *= dtmp */
+	ldd	[G1_CONST_TBL+%o5],%f26	/* (5) dtmp = ((double*)(CONST_TBL + k))[0] */
+	sll	%o7,3,%o7		/* (6) k <<= 3 */
+	fpadd32 %f2,%f18,%f18		/* (1) drez = vis_fpadd32(drez,dtmp) */
 
-	fmuld	%f28,%f52,%f52		! (6) y *= dtmp
-	ldd	[G1_CONST_TBL+%o7],%f28	! (6) dtmp = ((double*)(CONST_TBL + k))[0]
+	fmuld	%f28,%f52,%f52		/* (6) y *= dtmp */
+	ldd	[G1_CONST_TBL+%o7],%f28	/* (6) dtmp = ((double*)(CONST_TBL + k))[0] */
 	sll	%i2,2,%o0
-	fpadd32 %f4,%f20,%f20		! (2) drez = vis_fpadd32(drez,dtmp)
+	fpadd32 %f4,%f20,%f20		/* (2) drez = vis_fpadd32(drez,dtmp) */
 
-	fmuld	%f30,%f54,%f54		! (7) y *= dtmp
-	ldd	[G1_CONST_TBL+%l4],%f30	! (7) dtmp = ((double*)(CONST_TBL + k))[0]
+	fmuld	%f30,%f54,%f54		/* (7) y *= dtmp */
+	ldd	[G1_CONST_TBL+%l4],%f30	/* (7) dtmp = ((double*)(CONST_TBL + k))[0] */
 	sub	%i1,%o0,%o0
-	fpadd32 %f6,%f22,%f22		! (3) drez = vis_fpadd32(drez,dtmp)
+	fpadd32 %f6,%f22,%f22		/* (3) drez = vis_fpadd32(drez,dtmp) */
 
-	lda	[%i1]%asi,%l4		! (12) Xi = ((int*)px)[0]
-	add	%i1,%i2,%o1		! px += stridex
-	fpadd32 %f8,%f24,%f24		! (4) drez = vis_fpadd32(drez,dtmp)
-	fmuld	%f34,%f40,%f40		! (0) y *= drez
+	lda	[%i1]%asi,%l4		/* (12) Xi = ((int*)px)[0] */
+	add	%i1,%i2,%o1		/* px += stridex */
+	fpadd32 %f8,%f24,%f24		/* (4) drez = vis_fpadd32(drez,dtmp) */
+	fmuld	%f34,%f40,%f40		/* (0) y *= drez */
 
-	lda	[%o1]%asi,%l5		! (13) Xi = ((int*)px)[0]
-	add	%o1,%i2,%o2		! px += stridex
-	fpadd32 %f10,%f26,%f26		! (5)  drez = vis_fpadd32(drez,dtmp)
-	fmuld	%f18,%f42,%f42		! (1)  y *= drez
+	lda	[%o1]%asi,%l5		/* (13) Xi = ((int*)px)[0] */
+	add	%o1,%i2,%o2		/* px += stridex */
+	fpadd32 %f10,%f26,%f26		/* (5)  drez = vis_fpadd32(drez,dtmp) */
+	fmuld	%f18,%f42,%f42		/* (1)  y *= drez */
 
-	lda	[%o2]%asi,%l6		! (14) Xi = ((int*)px)[0]
-	add	%o2,%i2,%o3		! px += stridex
-	fpadd32 %f12,%f28,%f28		! (6)  drez = vis_fpadd32(drez,dtmp)
-	fmuld	%f20,%f44,%f44		! (2)  y *= drez
+	lda	[%o2]%asi,%l6		/* (14) Xi = ((int*)px)[0] */
+	add	%o2,%i2,%o3		/* px += stridex */
+	fpadd32 %f12,%f28,%f28		/* (6)  drez = vis_fpadd32(drez,dtmp) */
+	fmuld	%f20,%f44,%f44		/* (2)  y *= drez */
 
-	lda	[%o3]%asi,%l7		! (15) Xi = ((int*)px)[0]
-	add	%o3,%i2,%i1		! px += stridex
-	fpadd32 %f14,%f30,%f30		! (7)  drez = vis_fpadd32(drez,dtmp)
-	fmuld	%f22,%f46,%f46		! (3)  y *= drez
+	lda	[%o3]%asi,%l7		/* (15) Xi = ((int*)px)[0] */
+	add	%o3,%i2,%i1		/* px += stridex */
+	fpadd32 %f14,%f30,%f30		/* (7)  drez = vis_fpadd32(drez,dtmp) */
+	fmuld	%f22,%f46,%f46		/* (3)  y *= drez */
 
-	lda	[%o0]%asi,%f16		! (8)  X = px[0]
+	lda	[%o0]%asi,%f16		/* (8)  X = px[0] */
 	add	%o0,%i2,%o5
-	fmuld	%f24,%f48,%f48		! (4)  y *= drez
-	faddd	%f34,%f40,%f40		! (0)  y += drez
+	fmuld	%f24,%f48,%f48		/* (4)  y *= drez */
+	faddd	%f34,%f40,%f40		/* (0)  y += drez */
 
-	lda	[%o5]%asi,%f2		! (9)  X = px[0]
+	lda	[%o5]%asi,%f2		/* (9)  X = px[0] */
 	add	%o5,%i2,%o0
-	fmuld	%f26,%f50,%f50		! (5)  y *= drez
-	faddd	%f18,%f42,%f42		! (1)  y += drez
+	fmuld	%f26,%f50,%f50		/* (5)  y *= drez */
+	faddd	%f18,%f42,%f42		/* (1)  y += drez */
 
-	lda	[%o0]%asi,%f4		! (10) X = px[0]
+	lda	[%o0]%asi,%f4		/* (10) X = px[0] */
 	add	%o0,%i2,%o5
-	fmuld	%f28,%f52,%f52		! (6)  y *= drez
-	faddd	%f20,%f44,%f44		! (2)  y += drez
+	fmuld	%f28,%f52,%f52		/* (6)  y *= drez */
+	faddd	%f20,%f44,%f44		/* (2)  y += drez */
 
-	lda	[%o5]%asi,%f6		! (11) X = px[0]
+	lda	[%o5]%asi,%f6		/* (11) X = px[0] */
 	add	%o5,%i2,%o0
-	fmuld	%f30,%f54,%f54		! (7)  y *= drez
-	faddd	%f22,%f46,%f46		! (3)  y += drez
+	fmuld	%f30,%f54,%f54		/* (7)  y *= drez */
+	faddd	%f22,%f46,%f46		/* (3)  y += drez */
 
-	and	%l4,G5_CONST,%l4	! (12) ax = Xi & 0x7fffffff
-	faddd	%f24,%f48,%f48		! (4)  y += drez
+	and	%l4,G5_CONST,%l4	/* (12) ax = Xi & 0x7fffffff */
+	faddd	%f24,%f48,%f48		/* (4)  y += drez */
 
-	and	%l5,G5_CONST,%l5	! (13) ax = Xi & 0x7fffffff
-	faddd	%f26,%f50,%f50		! (5)  y += drez
+	and	%l5,G5_CONST,%l5	/* (13) ax = Xi & 0x7fffffff */
+	faddd	%f26,%f50,%f50		/* (5)  y += drez */
 
-	and	%l6,G5_CONST,%l6	! (14) ax = Xi & 0x7fffffff
-	faddd	%f28,%f52,%f52		! (6)  y += drez
+	and	%l6,G5_CONST,%l6	/* (14) ax = Xi & 0x7fffffff */
+	faddd	%f28,%f52,%f52		/* (6)  y += drez */
 
-	and	%l7,G5_CONST,%l7	! (15) ax = Xi & 0x7fffffff
-	faddd	%f30,%f54,%f54		! (7)  y += drez
+	and	%l7,G5_CONST,%l7	/* (15) ax = Xi & 0x7fffffff */
+	faddd	%f30,%f54,%f54		/* (7)  y += drez */
 
-	fdtos	%f40,%f26		! (0) (float) y
+	fdtos	%f40,%f26		/* (0) (float) y */
 	st	%f26,[%i3]
-	add	%i3,%i4,%o4		! py += stridey
+	add	%i3,%i4,%o4		/* py += stridey */
 
-	fdtos	%f42,%f18		! (1) (float) y
+	fdtos	%f42,%f18		/* (1) (float) y */
 	st	%f18,[%o4]
-	add	%o4,%i4,%i3		! py += stridey
+	add	%o4,%i4,%i3		/* py += stridey */
 
-	fdtos	%f44,%f20		! (2) (float) y
+	fdtos	%f44,%f20		/* (2) (float) y */
 	st	%f20,[%i3]
-	add	%i3,%i4,%o4		! py += stridey
+	add	%i3,%i4,%o4		/* py += stridey */
 
-	fdtos	%f46,%f22		! (3) (float) y
+	fdtos	%f46,%f22		/* (3) (float) y */
 	st	%f22,[%o4]
-	add	%o4,%i4,%i3		! py += stridey
+	add	%o4,%i4,%i3		/* py += stridey */
 
-	fdtos	%f48,%f24		! (4) (float) y
+	fdtos	%f48,%f24		/* (4) (float) y */
 	st	%f24,[%i3]
 	subcc	%i0,8,%i0
-	add	%i3,%i4,%o4		! py += stridey
+	add	%i3,%i4,%o4		/* py += stridey */
 
-	fdtos	%f50,%f26		! (5) (float) y
+	fdtos	%f50,%f26		/* (5) (float) y */
 	st	%f26,[%o4]
-	add	%o4,%i4,%o5		! py += stridey
+	add	%o4,%i4,%o5		/* py += stridey */
 	add	%i4,%i4,%o7
 
-	fdtos	%f52,%f28		! (6) (float) y
+	fdtos	%f52,%f28		/* (6) (float) y */
 	st	%f28,[%o5]
-	add	%o5,%i4,%o4		! py += stridey
-	add	%o5,%o7,%i3		! py += stridey
+	add	%o5,%i4,%o4		/* py += stridey */
+	add	%o5,%o7,%i3		/* py += stridey */
 
-	fdtos	%f54,%f30		! (7) (float) y
+	fdtos	%f54,%f30		/* (7) (float) y */
 	st	%f30,[%o4]
 	bpos,pt	%icc,.main_loop
 	nop
@@ -713,9 +713,9 @@
 .tail_spec_out_of_range:
 	fcmpes	%fcc0,%f2,%f3
 	fcmpes	%fcc1,%f2,THRESHOLDL
-	fbl,pn	%fcc0,1f		! if ( X < 0.0f )
+	fbl,pn	%fcc0,1f		/* if ( X < 0.0f ) */
 	nop
-	fbl,pt	%fcc1,.tail_spec_cont	! if ( X < THRESHOLDL )
+	fbl,pt	%fcc1,.tail_spec_cont	/* if ( X < THRESHOLDL ) */
 	nop
 1:
 	srl	%l0,29,%l0
@@ -765,10 +765,10 @@
 .spec0_out_of_range:
 	fcmpes	%fcc0,%f16,%f3
 	fcmpes	%fcc1,%f16,THRESHOLDL
-	fbl,a,pn	%fcc0,1f		! if ( X < 0.0f )
-	fstod	%f16,%f40			! (0) y = (double) X
-	fbl,a,pt	%fcc1,.spec0_cont	! if ( X < THRESHOLDL )
-	fstod	%f16,%f40			! (0) y = (double) X
+	fbl,a,pn	%fcc0,1f		/* if ( X < 0.0f ) */
+	fstod	%f16,%f40			/* (0) y = (double) X */
+	fbl,a,pt	%fcc1,.spec0_cont	/* if ( X < THRESHOLDL ) */
+	fstod	%f16,%f40			/* (0) y = (double) X */
 1:
 	sub	%i1,%o4,%o4
 	ld	[%o4],%l0
@@ -813,10 +813,10 @@
 	nop
 	fcmpes	%fcc0,%f2,%f3
 	fcmpes	%fcc1,%f2,THRESHOLDL
-	fbl,a,pn	%fcc0,1f		! if ( X < 0.0f )
-	fstod	%f2,%f42			! (1) y = (double) X
-	fbl,a,pt	%fcc1,.spec1_cont	! if ( X < THRESHOLDL )
-	fstod	%f2,%f42			! (1) y = (double) X
+	fbl,a,pn	%fcc0,1f		/* if ( X < 0.0f ) */
+	fstod	%f2,%f42			/* (1) y = (double) X */
+	fbl,a,pt	%fcc1,.spec1_cont	/* if ( X < THRESHOLDL ) */
+	fstod	%f2,%f42			/* (1) y = (double) X */
 1:
 	fmuld	F62_K256ONLN2,%f40,%f40
 	fdtoi	%f40,%f16
@@ -909,10 +909,10 @@
 	nop
 	fcmpes	%fcc0,%f4,%f3
 	fcmpes	%fcc1,%f4,THRESHOLDL
-	fbl,a,pn	%fcc0,1f		! if ( X < 0.0f )
-	fstod	%f4,%f44			! (2) y = (double) X
-	fbl,a,pt	%fcc1,.spec2_cont	! if ( X < THRESHOLDL )
-	fstod	%f4,%f44			! (2) y = (double) X
+	fbl,a,pn	%fcc0,1f		/* if ( X < 0.0f ) */
+	fstod	%f4,%f44			/* (2) y = (double) X */
+	fbl,a,pt	%fcc1,.spec2_cont	/* if ( X < THRESHOLDL ) */
+	fstod	%f4,%f44			/* (2) y = (double) X */
 1:
 	fmuld	F62_K256ONLN2,%f40,%f40
 
@@ -1052,10 +1052,10 @@
 	nop
 	fcmpes	%fcc0,%f6,%f3
 	fcmpes	%fcc1,%f6,THRESHOLDL
-	fbl,a,pn	%fcc0,1f		! if ( X < 0.0f )
-	fstod	%f6,%f46			! (3) y = (double) X
-	fbl,a,pt	%fcc1,.spec3_cont	! if ( X < THRESHOLDL )
-	fstod	%f6,%f46			! (3) y = (double) X
+	fbl,a,pn	%fcc0,1f		/* if ( X < 0.0f ) */
+	fstod	%f6,%f46			/* (3) y = (double) X */
+	fbl,a,pt	%fcc1,.spec3_cont	/* if ( X < THRESHOLDL ) */
+	fstod	%f6,%f46			/* (3) y = (double) X */
 1:
 	fmuld	F62_K256ONLN2,%f40,%f40
 
@@ -1225,10 +1225,10 @@
 	nop
 	fcmpes	%fcc0,%f8,%f3
 	fcmpes	%fcc1,%f8,THRESHOLDL
-	fbl,a,pn	%fcc0,1f		! if ( X < 0.0f )
-	fstod	%f8,%f48			! (4) y = (double) X
-	fbl,a,pt	%fcc1,.spec4_cont	! if ( X < THRESHOLDL )
-	fstod	%f8,%f48			! (4) y = (double) X
+	fbl,a,pn	%fcc0,1f		/* if ( X < 0.0f ) */
+	fstod	%f8,%f48			/* (4) y = (double) X */
+	fbl,a,pt	%fcc1,.spec4_cont	/* if ( X < THRESHOLDL ) */
+	fstod	%f8,%f48			/* (4) y = (double) X */
 1:
 	fmuld	F62_K256ONLN2,%f42,%f42
 
@@ -1427,10 +1427,10 @@
 	nop
 	fcmpes	%fcc0,%f10,%f3
 	fcmpes	%fcc1,%f10,THRESHOLDL
-	fbl,a,pn	%fcc0,1f		! if ( X < 0.0f )
-	fstod	%f10,%f50			! (5) y = (double) X
-	fbl,a,pt	%fcc1,.spec5_cont	! if ( X < THRESHOLDL )
-	fstod	%f10,%f50			! (5) y = (double) X
+	fbl,a,pn	%fcc0,1f		/* if ( X < 0.0f ) */
+	fstod	%f10,%f50			/* (5) y = (double) X */
+	fbl,a,pt	%fcc1,.spec5_cont	/* if ( X < THRESHOLDL ) */
+	fstod	%f10,%f50			/* (5) y = (double) X */
 1:
 	fmuld	F62_K256ONLN2,%f44,%f44
 
@@ -1644,10 +1644,10 @@
 	nop
 	fcmpes	%fcc0,%f12,%f3
 	fcmpes	%fcc1,%f12,THRESHOLDL
-	fbl,a,pn	%fcc0,1f		! if ( X < 0.0f )
-	fstod	%f12,%f52			! (6) y = (double) X
-	fbl,a,pt	%fcc1,.spec6_cont	! if ( X < THRESHOLDL )
-	fstod	%f12,%f52			! (6) y = (double) X
+	fbl,a,pn	%fcc0,1f		/* if ( X < 0.0f ) */
+	fstod	%f12,%f52			/* (6) y = (double) X */
+	fbl,a,pt	%fcc1,.spec6_cont	/* if ( X < THRESHOLDL ) */
+	fstod	%f12,%f52			/* (6) y = (double) X */
 1:
 	fmuld	F62_K256ONLN2,%f46,%f46
 
@@ -1885,10 +1885,10 @@
 	nop
 	fcmpes	%fcc0,%f14,%f3
 	fcmpes	%fcc1,%f14,THRESHOLDL
-	fbl,a,pn	%fcc0,1f		! if ( X < 0.0f )
-	fstod	%f14,%f54			! (7) y = (double) X
-	fbl,a,pt	%fcc1,.spec7_cont	! if ( X < THRESHOLDL )
-	fstod	%f14,%f54			! (7) y = (double) X
+	fbl,a,pn	%fcc0,1f		/* if ( X < 0.0f ) */
+	fstod	%f14,%f54			/* (7) y = (double) X */
+	fbl,a,pt	%fcc1,.spec7_cont	/* if ( X < THRESHOLDL ) */
+	fstod	%f14,%f54			/* (7) y = (double) X */
 1:
 	fdtoi	%f40,%f16
 	st	%f16,[%fp+tmp0]

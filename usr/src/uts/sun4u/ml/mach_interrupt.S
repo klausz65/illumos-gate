@@ -36,6 +36,10 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 
 vec_uiii_irdr_tab:
         .byte   UIII_IRDR_0, UIII_IRDR_1, UIII_IRDR_2, UIII_IRDR_3

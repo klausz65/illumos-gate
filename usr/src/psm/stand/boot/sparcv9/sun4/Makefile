@@ -41,8 +41,8 @@ PROMVERS =	ieee1275
 ASFLAGS +=	$(sparcv9_XARCH)
 
 ARCH_C_SRC =	sun4u_memlist.c sun4x_standalloc.c sun4dep.c
-ARCH_S_SRC =	sparcv9_subr.s
-SRT0_S =	sun4u_srt0.s
+ARCH_S_SRC =	sparcv9_subr.S
+SRT0_S =	sun4u_srt0.S
 INLINES =
 
 LDFLAGS +=	-L$(TOPDIR)/psm/stand/lib/promif/$(TARG_MACH)/$(PROMVERS)/common

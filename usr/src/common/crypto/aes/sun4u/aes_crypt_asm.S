@@ -55,27 +55,12 @@
 
 #include <sys/stack.h>
 
-#if defined(lint) || defined(__lint)
+	.section	".text", #alloc, #execinstr
+	.file		"aes_crypt_asm.S"
 
-#include <sys/types.h>
-/* ARGSUSED */
-void aes_encrypt_impl(const uint32_t rk[], int Nr, const uint32_t pt[4],
-	uint32_t ct[4]) {
-}
-/* ARGSUSED */
-void aes_decrypt_impl(const uint32_t rk[], int Nr, const uint32_t ct[4],
-	uint32_t pt[4]) {
-}
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
-#else	/* lint || __lint */
-
-	.section	".text",#alloc,#execinstr
-	.file	"aes_crypt_asm.s"
-
-	.register	%g2,#scratch
-	.register	%g3,#scratch
-
-	.section	".text",#alloc
 	.align	8192
 
 !
@@ -2478,7 +2463,7 @@ aes_const:
 !
 ! OFFSET    SOURCE LINE	LABEL	INSTRUCTION
 
-        .global aes_encrypt_impl
+	.global aes_encrypt_impl
 	aes_encrypt_impl:
 
 #ifdef __sparcv9
@@ -2999,8 +2984,8 @@ aes_const:
 !
 ! OFFSET    SOURCE LINE	LABEL	INSTRUCTION
 
-        .global aes_decrypt_impl
-        aes_decrypt_impl:
+	.global aes_decrypt_impl
+	aes_decrypt_impl:
 
 #ifdef __sparcv9
 
@@ -3510,7 +3495,7 @@ aes_const:
 	.size	aes_decrypt_impl,(.-aes_decrypt_impl)
 
 
-	.section	".text",#alloc
+	.section	".text"
 	.align	8
 !
 ! CONSTANT POOL
@@ -5866,12 +5851,10 @@ rcon:
 	.size	rcon,40
 
 ! Begin Disassembling Stabs
-	.xstabs	".stab.index","Xa ; O ; P ; V=3.1 ; R=WorkShop Compilers 5.0 99/02/25 C 5.0 patch 107289-01",60,0,0,0	! (/tmp/acompAAA5jaWsZ:1)
+	.xstabs	".stab.index","Xa ; O ; P ; V=3.1 ; R=WorkShop Compilers 5.0 99/02/25 C 5.0 patch 107289-01",60,0,0,0
 ! End Disassembling Stabs
 
 ! Begin Disassembling Ident
-	.ident	"cg: WorkShop Compilers 5.0 99/04/15 Compiler Common 5.0 Patch 107357-02"	! (NO SOURCE LINE)
-	.ident	"acomp: WorkShop Compilers 5.0 99/02/25 C 5.0 patch 107289-01"	! (/tmp/acompAAA5jaWsZ:4675)
+	.ident	"cg: WorkShop Compilers 5.0 99/04/15 Compiler Common 5.0 Patch 107357-02"
+	.ident	"acomp: WorkShop Compilers 5.0 99/02/25 C 5.0 patch 107289-01"
 ! End Disassembling Ident
-
-#endif	/* lint || __lint */

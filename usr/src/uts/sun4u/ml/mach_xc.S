@@ -34,6 +34,9 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 /*
  * Entered by the software trap (TT=ST_SELFXCALL, TL>0) thru send_self_xcall().
@@ -55,9 +58,9 @@
 	! prepare their return PC and nPC now
 	!
 	rdpr	%tnpc, %g1
-	wrpr	%g1, %tpc			!  PC <- TNPC[TL]
- 	add	%g1, 4, %g1
-	wrpr	%g1, %tnpc			! nPC <- TNPC[TL] + 4
+	wrpr	%g1, %tpc			/*  PC <- TNPC[TL] */
+	add	%g1, 4, %g1
+	wrpr	%g1, %tnpc			/* nPC <- TNPC[TL] + 4 */
 
 #ifdef TRAPTRACE
 	TRACE_PTR(%g4, %g6)
@@ -67,14 +70,14 @@
 	stha	%g6, [%g4 + TRAP_ENT_TL]%asi
 	rdpr	%tt, %g6
 	stha	%g6, [%g4 + TRAP_ENT_TT]%asi
-	stna	%o3, [%g4 + TRAP_ENT_TR]%asi ! pc of the TL>0 handler
+	stna	%o3, [%g4 + TRAP_ENT_TR]%asi	/* pc of the TL>0 handler */
 	rdpr	%tpc, %g6
 	stna	%g6, [%g4 + TRAP_ENT_TPC]%asi
 	rdpr	%tstate, %g6
 	stxa	%g6, [%g4 + TRAP_ENT_TSTATE]%asi
 	stna	%sp, [%g4 + TRAP_ENT_SP]%asi
-	stna	%o1, [%g4 + TRAP_ENT_F1]%asi ! arg 1
-	stna	%o2, [%g4 + TRAP_ENT_F2]%asi ! arg 2
+	stna	%o1, [%g4 + TRAP_ENT_F1]%asi	/* arg 1 */
+	stna	%o2, [%g4 + TRAP_ENT_F2]%asi	/* arg 2 */
 	stna	%g0, [%g4 + TRAP_ENT_F3]%asi
 	stna	%g0, [%g4 + TRAP_ENT_F4]%asi
 	TRACE_NEXT(%g4, %g6, %g3)
@@ -83,7 +86,7 @@
 	! Load the arguments for the fast trap handler.
 	!
 	mov	%o1, %g1
-	jmp	%o3				! call the fast trap handler
+	jmp	%o3				/* call the fast trap handler */
 	mov	%o2, %g2
 	/* Not Reached */
 	SET_SIZE(self_xcall)

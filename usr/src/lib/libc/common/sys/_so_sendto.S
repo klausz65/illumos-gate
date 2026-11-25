@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"_so_sendto.s"
+	.file	"_so_sendto.S"
 
 /* C library -- __so_sendto					*/
 /*

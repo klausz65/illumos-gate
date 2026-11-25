@@ -24,15 +24,7 @@
  * Use is subject to license terms.
  */
 
-#if defined(lint)
-
-typedef long *jmp_buf_ptr;
-
-#else	/* lint */
-
 #include <sys/asm_linkage.h>
-
-#endif	/* lint */
 
 /*
  * _setjmp(buf_ptr)
@@ -52,34 +44,23 @@ typedef long *jmp_buf_ptr;
  *		+----------------+
  */
 
-#if defined(lint)
-
-/* ARGSUSED */
-int
-_setjmp(jmp_buf_ptr buf_ptr)
-{ return (0); }
-
-#else	/* lint */
-
-	PCVAL	=	0	! offsets in buf structure
+	PCVAL	=	0	/* offsets in buf structure */
 	SPVAL	=	4
 	SIGMASK	=	8
 	SIGSTACK =	12
 
-	SS_SP	   =	0	! offset in sigstack structure
+	SS_SP	   =	0	/* offset in sigstack structure */
 	SS_ONSTACK =	4
 
 	ENTRY(_setjmp)
-	st	%o7, [%o0 + PCVAL] 	! return pc
-	st	%sp, [%o0 + SPVAL] 	! save caller's sp
-	clr	[%o0 + SIGMASK]		! clear the remainder of the jmp_buf
+	st	%o7, [%o0 + PCVAL]	/* return pc */
+	st	%sp, [%o0 + SPVAL]	/* save caller's sp */
+	clr	[%o0 + SIGMASK]		/* clear the remainder of the jmp_buf */
 	clr	[%o0 + SIGSTACK + SS_SP]
 	clr	[%o0 + SIGSTACK + SS_ONSTACK]
 	retl
 	clr	%o0
 	SET_SIZE(_setjmp)
-
-#endif	/* lint */
 
 /*
  * _longjmp(buf_ptr, val)
@@ -92,17 +73,6 @@ _setjmp(jmp_buf_ptr buf_ptr)
  * Then, we set fp from the saved fp and make ourselves a stack frame.
  */
 
-#if defined(lint)
-
-/* ARGSUSED */
-void
-_longjmp(jmp_buf_ptr buf_ptr, int val)
-{
-	return;
-}
-
-#else	/* lint */
-
 	ENTRY(_longjmp)
 	save	%sp, -WINDOWSIZE, %sp
 	!
@@ -112,20 +82,18 @@ _longjmp(jmp_buf_ptr buf_ptr, int val)
 	ld	[%g7], %g7
 	sub	%g7, 2, %g6
 1:
-	deccc	%g6			! all windows done?
+	deccc	%g6			/* all windows done? */
 	bnz	1b
 	save	%sp, -WINDOWSIZE, %sp
 	sub	%g7, 2, %g6
 2:
-	deccc	%g6			! all windows done?
+	deccc	%g6			/* all windows done? */
 	bnz	2b
-	restore				! delay slot, increment CWP
+	restore				/* delay slot, increment CWP */
 
-	ld	[%i0 + SPVAL], %fp	! build new stack frame
-	sub	%fp, -SA(MINFRAME), %sp	! establish new save area
-	ld	[%i0 + PCVAL], %i7	! get new return pc
+	ld	[%i0 + SPVAL], %fp	/* build new stack frame */
+	sub	%fp, -SA(MINFRAME), %sp	/* establish new save area */
+	ld	[%i0 + PCVAL], %i7	/* get new return pc */
 	ret
-	restore	%i1, 0, %o0		! return (val)
+	restore	%i1, 0, %o0		/* return (val) */
 	SET_SIZE(_longjmp)
-
-#endif	/* lint */

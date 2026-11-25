@@ -408,8 +408,8 @@ LDSTACKPROTECT= $(STACKPROTECT_LD_$(STACKPROTECT))
 #
 # compiler '-xarch' flag. This is here to centralize it and make it
 # overridable for testing.
-sparc_XARCH=	-m32
-sparcv9_XARCH=	-m64
+sparc_XARCH=	-m32 -xarch=sparcvis
+sparcv9_XARCH=	-m64 -xarch=sparcvis
 i386_XARCH=	-m32
 amd64_XARCH=	-m64 -Ui386 -U__i386
 

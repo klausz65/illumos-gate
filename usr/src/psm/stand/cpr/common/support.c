@@ -42,7 +42,7 @@ static int cpr_show_props = 0;
 int
 cpr_read_cprinfo(int fd, char *file_path, char *fs_path)
 {
-	struct cprconfig cf;
+	static struct cprconfig cf;
 
 	if (cpr_fs_read(fd, (char *)&cf, sizeof (cf)) != sizeof (cf) ||
 	    cf.cf_magic != CPR_CONFIG_MAGIC)

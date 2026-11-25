@@ -50,6 +50,10 @@
 #include <sys/traptrace.h>
 #endif /* TRAPTRACE */
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
+
 /* BEGIN CSTYLED */
 
 #if defined(JALAPENO) && defined(JALAPENO_ERRATA_85)
@@ -909,7 +913,7 @@ ecache_flush_line_2:
 
 #define	VIS_BLOCKSIZE	64
 
-	.seg    ".data"
+	.section    ".data"
 	.align  VIS_BLOCKSIZE
 	.type   sync_buf, #object
 sync_buf:

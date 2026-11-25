@@ -231,10 +231,10 @@
  */
 
 #define DDI_REP_GET(n,s)			\
-	cmp	DDI_DEV_NO_AUTOINCR, %o4;	\
+	cmp	%o4, DDI_DEV_NO_AUTOINCR;	\
 	mov	%g0, %o4;			\
 	brz,pn	%o3, 1f;			\
-	movnz	%xcc, n, %o4;			\
+	movne	%xcc, n, %o4;			\
 2:						\
 	dec	%o3;				\
 	ld##s	[%o2], %g4;			\
@@ -324,10 +324,10 @@
  * making the increment operation a non-operation.
  */
 #define DDI_REP_PUT(n,s)			\
-	cmp	DDI_DEV_NO_AUTOINCR, %o4;	\
+	cmp	%o4, DDI_DEV_NO_AUTOINCR;	\
 	mov	%g0, %o4;			\
 	brz,pn	%o3, 1f;			\
-	movnz	%xcc, n, %o4;			\
+	movne	%xcc, n, %o4;			\
 2:						\
 	dec	%o3;				\
 	ld##s	[%o1], %g4;			\
@@ -568,7 +568,7 @@ done:
  * do_peek or do_poke to return DDI_FAILURE, instead of longjmp'ing back to
  * on_trap.  In the case of a peek, we may also need to re-enable interrupts.
  */
-	.seg	".data"
+	.section	".data"
 .peek_panic:
 	.asciz	"peek_fault: missing or invalid on_trap_data"
 .poke_panic:
@@ -664,7 +664,7 @@ done:
  *
  */
 
-	.seg	".data"
+	.section	".data"
 .acc_panic:
 	.asciz	"DDI access: missing or invalid on_trap_data"
 

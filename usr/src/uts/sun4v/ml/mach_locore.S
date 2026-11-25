@@ -41,6 +41,9 @@
 
 #include "assym.h"
 
+	/* GNU assembler */
+	.register	%g2, #scratch
+	.register	%g3, #scratch
 
 !
 ! REGOFF must add up to allow double word access to r_tstate.
@@ -60,7 +63,7 @@
  * the fact that it is small enough to share pages with others).
  */
 
-	.seg	".data"
+	.section	".data"
 	.global	panicbuf
 
 PROM	= 0xFFE00000			! address of prom virtual area
@@ -156,7 +159,7 @@ trap_freeze_pc:
 #endif	/* TRAPTRACE */
 
 	.align 4
-	.seg	".text"
+	.section	".text"
 
 #ifdef	NOPROM
 	.global availmem
@@ -168,7 +171,7 @@ availmem:
 _local_p1275cis:
 	.nword	0
 
-	.seg	".data"
+	.section	".data"
 
 	.global nwindows, nwin_minus_one, winmask
 nwindows:
@@ -637,55 +640,55 @@ have_win:
  * It is used to fill windows in user_rtt to avoid going above TL 2.
  */
 /* TODO: Use the faster FILL based on FILL_32bit_asi/FILL_64bit_asi */
-#define	FILL_32bit_rtt(asi_num)				\
-	mov	asi_num, %asi					;\
-	rdpr	%cwp, %g1					;\
-	dec	%g1						;\
-	wrpr	%g1, %cwp					;\
-	srl	%sp, 0, %sp					;\
-	lda	[%sp + 0]%asi, %l0				;\
-	lda	[%sp + 4]%asi, %l1				;\
-	lda	[%sp + 8]%asi, %l2				;\
-	lda	[%sp + 12]%asi, %l3				;\
-	lda	[%sp + 16]%asi, %l4				;\
-	lda	[%sp + 20]%asi, %l5				;\
-	lda	[%sp + 24]%asi, %l6				;\
-	lda	[%sp + 28]%asi, %l7				;\
-	lda	[%sp + 32]%asi, %i0				;\
-	lda	[%sp + 36]%asi, %i1				;\
-	lda	[%sp + 40]%asi, %i2				;\
-	lda	[%sp + 44]%asi, %i3				;\
-	lda	[%sp + 48]%asi, %i4				;\
-	lda	[%sp + 52]%asi, %i5				;\
-	lda	[%sp + 56]%asi, %i6				;\
-	lda	[%sp + 60]%asi, %i7				;\
-	restored						;\
-	add	%g1, 1, %g1					;\
+#define	FILL_32bit_rtt(asi_num)			\
+	wr	%g0, asi_num, %asi		;\
+	rdpr	%cwp, %g1			;\
+	dec	%g1				;\
+	wrpr	%g1, %cwp			;\
+	srl	%sp, 0, %sp			;\
+	lda	[%sp + 0]%asi, %l0		;\
+	lda	[%sp + 4]%asi, %l1		;\
+	lda	[%sp + 8]%asi, %l2		;\
+	lda	[%sp + 12]%asi, %l3		;\
+	lda	[%sp + 16]%asi, %l4		;\
+	lda	[%sp + 20]%asi, %l5		;\
+	lda	[%sp + 24]%asi, %l6		;\
+	lda	[%sp + 28]%asi, %l7		;\
+	lda	[%sp + 32]%asi, %i0		;\
+	lda	[%sp + 36]%asi, %i1		;\
+	lda	[%sp + 40]%asi, %i2		;\
+	lda	[%sp + 44]%asi, %i3		;\
+	lda	[%sp + 48]%asi, %i4		;\
+	lda	[%sp + 52]%asi, %i5		;\
+	lda	[%sp + 56]%asi, %i6		;\
+	lda	[%sp + 60]%asi, %i7		;\
+	restored				;\
+	add	%g1, 1, %g1			;\
 	wrpr	%g1, %cwp
 
-#define	FILL_64bit_rtt(asi_num)				\
-	mov	asi_num, %asi					;\
-	rdpr	%cwp, %g1					;\
-	sub	%g1, 1, %g1					;\
-	wrpr	%g1, %cwp					;\
-	ldxa	[%sp + V9BIAS64 + 0]%asi, %l0			;\
-	ldxa	[%sp + V9BIAS64 + 8]%asi, %l1			;\
-	ldxa	[%sp + V9BIAS64 + 16]%asi, %l2			;\
-	ldxa	[%sp + V9BIAS64 + 24]%asi, %l3			;\
-	ldxa	[%sp + V9BIAS64 + 32]%asi, %l4			;\
-	ldxa	[%sp + V9BIAS64 + 40]%asi, %l5			;\
-	ldxa	[%sp + V9BIAS64 + 48]%asi, %l6			;\
-	ldxa	[%sp + V9BIAS64 + 56]%asi, %l7			;\
-	ldxa	[%sp + V9BIAS64 + 64]%asi, %i0			;\
-	ldxa	[%sp + V9BIAS64 + 72]%asi, %i1			;\
-	ldxa	[%sp + V9BIAS64 + 80]%asi, %i2			;\
-	ldxa	[%sp + V9BIAS64 + 88]%asi, %i3			;\
-	ldxa	[%sp + V9BIAS64 + 96]%asi, %i4			;\
-	ldxa	[%sp + V9BIAS64 + 104]%asi, %i5			;\
-	ldxa	[%sp + V9BIAS64 + 112]%asi, %i6			;\
-	ldxa	[%sp + V9BIAS64 + 120]%asi, %i7			;\
-	restored						;\
-	add	%g1, 1, %g1					;\
+#define	FILL_64bit_rtt(asi_num)			\
+	wr	%g0, asi_num, %asi		;\
+	rdpr	%cwp, %g1			;\
+	sub	%g1, 1, %g1			;\
+	wrpr	%g1, %cwp			;\
+	ldxa	[%sp + V9BIAS64 + 0]%asi, %l0	;\
+	ldxa	[%sp + V9BIAS64 + 8]%asi, %l1	;\
+	ldxa	[%sp + V9BIAS64 + 16]%asi, %l2	;\
+	ldxa	[%sp + V9BIAS64 + 24]%asi, %l3	;\
+	ldxa	[%sp + V9BIAS64 + 32]%asi, %l4	;\
+	ldxa	[%sp + V9BIAS64 + 40]%asi, %l5	;\
+	ldxa	[%sp + V9BIAS64 + 48]%asi, %l6	;\
+	ldxa	[%sp + V9BIAS64 + 56]%asi, %l7	;\
+	ldxa	[%sp + V9BIAS64 + 64]%asi, %i0	;\
+	ldxa	[%sp + V9BIAS64 + 72]%asi, %i1	;\
+	ldxa	[%sp + V9BIAS64 + 80]%asi, %i2	;\
+	ldxa	[%sp + V9BIAS64 + 88]%asi, %i3	;\
+	ldxa	[%sp + V9BIAS64 + 96]%asi, %i4	;\
+	ldxa	[%sp + V9BIAS64 + 104]%asi, %i5	;\
+	ldxa	[%sp + V9BIAS64 + 112]%asi, %i6	;\
+	ldxa	[%sp + V9BIAS64 + 120]%asi, %i7	;\
+	restored				;\
+	add	%g1, 1, %g1			;\
 	wrpr	%g1, %cwp
 
 	ENTRY_NP(utl0)
@@ -1014,7 +1017,7 @@ common_rtt:
 	SET_SIZE(ktl0)
 
 #ifdef DEBUG
-	.seg	".data"
+	.section	".data"
 	.align	4
 
 	.global bad_g4_called
@@ -1024,7 +1027,7 @@ bad_g4_called:
 sys_trap_wrong_pil:
 	.asciz	"sys_trap: %g4(%d) is lower than %pil(%d)"
 	.align	4
-	.seg	".text"
+	.section	".text"
 
 	ENTRY_NP(bad_g4)
 	mov	%o1, %o0
@@ -1521,7 +1524,7 @@ ptl1_recurse_trap:
 	restore	%o0, %g0, %o0			! delay; result in %o0
 	SET_SIZE(client_handler)
 
-	.seg	".text"
+	.section	".text"
 bad_hcall_error:
 	.asciz	"hypervisor call 0x%x returned an unexpected error %d"
 

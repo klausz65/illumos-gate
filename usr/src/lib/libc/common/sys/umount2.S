@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"umount2.s"
+	.file	"umount2.S"
 
 /* C library -- umount2						*/
 /* int umount2 (const char *file, int flag);			*/

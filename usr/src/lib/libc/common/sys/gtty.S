@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"gtty.s"
+	.file	"gtty.S"
 
 /* C library -- gtty						*/
 /* int gtty (int fildes, int arg);				*/

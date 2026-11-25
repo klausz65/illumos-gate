@@ -75,6 +75,6 @@
 	rdpr	%pil, %g4
 	cmp	%g4, XCALL_PIL
 	ba,pt	%xcc, sys_trap
-	  movl	%xcc, XCALL_PIL, %g4
+	movl	%xcc, XCALL_PIL, %g4
 	SET_SIZE(idle_stop_xcall)
 

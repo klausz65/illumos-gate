@@ -25,7 +25,7 @@
 
 #include "SYS.h"
 
-	.file   "pipe2.s"
+	.file   "pipe2.S"
 
 	SYSCALL2(pipe2,pipe);
 	RET

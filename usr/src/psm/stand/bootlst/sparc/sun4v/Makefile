@@ -47,7 +47,7 @@ BOOTLSTOBJ = srt0.o
 
 ALL = bootlst
 
-%.o: $(SPARCDIR)/%.s
+%.o: $(SPARCDIR)/%.S
 	$(COMPILE.s) -o $@ $<
 
 %.ln: $(SPARCDIR)/%.s

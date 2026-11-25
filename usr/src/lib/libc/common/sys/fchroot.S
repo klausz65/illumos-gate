@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"fchroot.s"
+	.file	"fchroot.S"
 
 /* C library -- fchroot						*/
 /* int fchroot(const int fd)					*/

@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"getppid.s"
+	.file	"getppid.S"
 
 /*
  * C library -- getppid

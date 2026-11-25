@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"sigaltstk.s"
+	.file	"sigaltstk.S"
 
 /* C library -- sigaltstack					*/
 /* int sigaltstack (stack_t *ss, stack_t *oss);			*/

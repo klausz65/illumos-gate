@@ -23,7 +23,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"processor_info.s"
+	.file	"processor_info.S"
 
 /*
  * C library -- processor_info

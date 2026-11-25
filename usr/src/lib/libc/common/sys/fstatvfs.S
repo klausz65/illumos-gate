@@ -27,7 +27,7 @@
  * Use is subject to license terms.
  */
 
-	.file	"fstatvfs.s"
+	.file	"fstatvfs.S"
 
 /* C library -- fstatvfs					*/
 /* int fstatvfs(int fildes, struct statvfs *buf)		*/

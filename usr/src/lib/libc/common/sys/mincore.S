@@ -27,7 +27,7 @@
 /*	Copyright (c) 1988 AT&T	*/
 /*	  All Rights Reserved	*/
 
-	.file	"mincore.s"
+	.file	"mincore.S"
 
 /* C library -- mincore						*/
 /* int mincore(caddr_t addr, size_t len, char *vec)		*/
