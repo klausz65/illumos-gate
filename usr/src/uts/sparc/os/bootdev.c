@@ -102,7 +102,7 @@ i_promname_to_devname(char *prom_name, char *ret_buf)
 static int
 i_devi_to_promname(dev_info_t *dip, char *prom_path, dev_info_t **alt_dipp)
 {
-	dev_info_t *pdip, *cdip, *idip;
+	dev_info_t *pdip, *cdip = NULL, *idip;
 	char *unit_address, *nodename;
 	major_t major;
 	int depth, old_depth = 0;

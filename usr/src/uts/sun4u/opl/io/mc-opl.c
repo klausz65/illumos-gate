@@ -933,7 +933,7 @@ mc_ereport_post(mc_aflt_t *mc_aflt)
 	char sid[MAXPATHLEN];
 	nv_alloc_t *nva = NULL;
 	nvlist_t *ereport, *detector, *resource;
-	errorq_elem_t *eqep;
+	errorq_elem_t *eqep = NULL;
 	int nflts;
 	mc_flt_stat_t *flt_stat;
 	int i, n;
@@ -1404,7 +1404,7 @@ mc_clear_rewrite(mc_opl_t *mcp, int bank)
 again:
 	bankp->mcb_rewrite_count = 0;
 
-	while (retry = mc_retry_info_get(&bankp->mcb_retry_pending)) {
+	while ((retry = mc_retry_info_get(&bankp->mcb_retry_pending)) != NULL) {
 		rew_addr = retry->ri_addr;
 		mc_retry_info_put(&bankp->mcb_retry_freelist, retry);
 		if (do_rewrite(mcp, bank, rew_addr, 1) == 0)
@@ -2036,7 +2036,7 @@ mc_error_handler(mc_opl_t *mcp, int bank, mc_rsaddr_info_t *rsaddr)
 {
 	mc_aflt_t mc_aflt;
 	mc_flt_stat_t flt_stat, mi_flt_stat;
-	int mi_valid;
+	int mi_valid = 0;
 
 	bzero(&mc_aflt, sizeof (mc_aflt_t));
 	bzero(&flt_stat, sizeof (mc_flt_stat_t));
@@ -2634,14 +2634,16 @@ mc_board_add(mc_opl_t *mcp)
 		return (DDI_FAILURE);
 	}
 	/* get the physical board number for a given logical board number */
-	mcp->mc_phys_board_num = mc_opl_get_physical_board(mcp->mc_board_num);
+	ret = mc_opl_get_physical_board(mcp->mc_board_num);
 
-	if (mcp->mc_phys_board_num < 0) {
+	if (ret < 0) {
 		if (len > 0)
 			kmem_free(macaddr, len);
 		cmn_err(CE_WARN, "Unable to obtain the physical board number");
 		return (DDI_FAILURE);
 	}
+
+	mcp->mc_phys_board_num = (uint32_t)ret;
 
 	mutex_init(&mcp->mc_lock, NULL, MUTEX_DRIVER, NULL);
 
@@ -4035,7 +4037,7 @@ mc_ioctl_debug(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 
 	MC_LOG("mc_ioctl(cmd = %x, flags = %x)\n", cmd, flags);
 
-	if (arg != NULL) {
+	if (arg != 0) {
 		if (ddi_copyin((const void *)arg, (void *)&pa,
 		    sizeof (uint64_t), 0) < 0) {
 			rv = EFAULT;

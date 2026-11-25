@@ -220,12 +220,12 @@ int
 pxtool_pcicfg_access(px_t *px_p, pcitool_reg_t *prg_p,
     uint64_t *data_p, boolean_t is_write)
 {
-	pci_cfg_data_t data;
+	volatile pci_cfg_data_t data;
 	on_trap_data_t otd;
 	dev_info_t *dip = px_p->px_dip;
 	px_pec_t *pec_p = px_p->px_pec_p;
 	size_t size = PCITOOL_ACC_ATTR_SIZE(prg_p->acc_attr);
-	int rval = 0;
+	volatile int rval = 0;
 	pci_cfgacc_req_t req;
 
 	if ((size <= 0) || (size > 8)) {

@@ -131,7 +131,7 @@ px_msi_alloc(px_t *px_p, dev_info_t *rdip, int type, int inum, int msi_count,
     int flag, int *actual_msi_count_p)
 {
 	px_msi_state_t	*msi_state_p = &px_p->px_ib_p->ib_msi_state;
-	int		first, count, i, n;
+	int		first =0, count =0, i, n;
 
 	DBG(DBG_A_MSIX, px_p->px_dip, "px_msi_alloc: rdip %s:%d "
 	    "type 0x%x inum 0x%x msi_count 0x%x\n", ddi_driver_name(rdip),

@@ -162,8 +162,8 @@ _init(void)
 {
 	int e;
 
-	if (e = ddi_soft_state_init(&statep, sizeof (struct mem_cache_softc),
-	    MAX_MEM_CACHE_INSTANCES)) {
+	if ((e = ddi_soft_state_init(&statep, sizeof (struct mem_cache_softc),
+	    MAX_MEM_CACHE_INSTANCES)) != 0) {
 		return (e);
 	}
 

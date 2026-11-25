@@ -723,6 +723,8 @@ bge_param_locked(mac_prop_id_t pr_num)
 		case MAC_PROP_AUTONEG:
 		case MAC_PROP_FLOWCTRL:
 			return (B_TRUE);
+		default:
+			break;
 	}
 	return (B_FALSE);
 }
@@ -1069,6 +1071,8 @@ bge_m_propinfo(void *barg, const char *pr_name, mac_prop_id_t pr_num,
 
 	case MAC_PROP_PRIVATE:
 		bge_priv_propinfo(pr_name, prh);
+		break;
+	default:
 		break;
 	}
 
@@ -2025,6 +2029,8 @@ bge_m_ioctl(void *arg, queue_t *wq, mblk_t *mp)
 	case IOC_RESTART_ACK:
 		if (bge_reprogram(bgep) == IOC_INVAL)
 			status = IOC_INVAL;
+		break;
+	default:
 		break;
 	}
 
@@ -3568,7 +3574,6 @@ bge_read_bc_ver(bge_t *bgep)
 static void
 bge_read_fw_ver(bge_t *bgep)
 {
-	uint32_t val;
 	uint32_t magic;
 
 	*bgep->fw_version = 0;

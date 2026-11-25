@@ -428,8 +428,8 @@ sbbc_mbox_create(sbbc_softstate_t *softsp)
 	 * read the header at offset 0
 	 * check magic/version etc
 	 */
-	if (rc = iosram_read(SBBC_MAILBOX_KEY, 0, (caddr_t)&header,
-	    sizeof (struct sbbc_mbox_header))) {
+	if ((rc = iosram_read(SBBC_MAILBOX_KEY, 0, (caddr_t)&header,
+	    sizeof (struct sbbc_mbox_header))) != 0) {
 
 		return (rc);
 	}
@@ -1160,7 +1160,7 @@ sbbc_mbox_send_msg(sbbc_msg_t *msg, int flags, uint_t msg_id,
 	/*
 	 * read the mailbox header
 	 */
-	if (rc = mbox_read_header(SBBC_OUTBOX, &header))
+	if ((rc = mbox_read_header(SBBC_OUTBOX, &header)) != 0)
 		return (rc);
 
 	/*
@@ -1226,8 +1226,8 @@ sbbc_mbox_send_msg(sbbc_msg_t *msg, int flags, uint_t msg_id,
 				}
 
 				/* Read updated header from IOSRAM */
-				if (tmprc = mbox_read_header(SBBC_OUTBOX,
-				    &header)) {
+				if ((tmprc = mbox_read_header(SBBC_OUTBOX,
+				    &header)) != 0) {
 
 					return (tmprc);
 				}
@@ -1297,7 +1297,7 @@ sbbc_mbox_recv_msg()
 	/*
 	 * read the mailbox header
 	 */
-	if (rc = mbox_read_header(SBBC_INBOX, &header))
+	if ((rc = mbox_read_header(SBBC_INBOX, &header)) != 0)
 		return (rc);
 
 	/*
@@ -1314,7 +1314,7 @@ sbbc_mbox_recv_msg()
 	/*
 	 * read the fragment header for this message
 	 */
-	if (rc = mbox_read_frag(&header, &frag)) {
+	if ((rc = mbox_read_frag(&header, &frag)) != 0) {
 
 		return (rc);
 	}
@@ -2027,8 +2027,8 @@ mbox_read_header(uint32_t mailbox, struct sbbc_mbox_header *header)
 	 */
 	hd = (struct sbbc_mbox_header *)0;
 
-	if (rc = iosram_read(SBBC_MAILBOX_KEY, 0, (caddr_t)header,
-	    sizeof (struct sbbc_mbox_header)))
+	if ((rc = iosram_read(SBBC_MAILBOX_KEY, 0, (caddr_t)header,
+	    sizeof (struct sbbc_mbox_header))) != 0)
 		return (rc);
 
 	/*
@@ -2101,7 +2101,7 @@ mbox_update_header(uint32_t mailbox, struct sbbc_mbox_header *header)
 		break;
 	default:
 		cmn_err(CE_PANIC, "Invalid Mbox header type\n");
-		break;
+		return;
 
 	}
 
@@ -2162,7 +2162,8 @@ mbox_read_frag(struct sbbc_mbox_header *header,
 		bytes = header->mailboxes[SBBC_INBOX].mbox_len -
 			header->mailboxes[SBBC_INBOX].mbox_consumer;
 
-		if (rc = iosram_read(SBBC_MAILBOX_KEY, sram_src, dst, bytes)) {
+		if ((rc = iosram_read(SBBC_MAILBOX_KEY, sram_src, dst,
+			bytes)) != 0) {
 			return (rc);
 		}
 
@@ -2172,13 +2173,13 @@ mbox_read_frag(struct sbbc_mbox_header *header,
 			sizeof (struct sbbc_fragment)) %
 			header->mailboxes[SBBC_INBOX].mbox_len;
 
-		if (rc = iosram_read(SBBC_MAILBOX_KEY, sram_src,
-			dst, bytes)) {
+		if ((rc = iosram_read(SBBC_MAILBOX_KEY, sram_src,
+			dst, bytes)) != 0) {
 			return (rc);
 		}
 	} else {
-		if (rc = iosram_read(SBBC_MAILBOX_KEY, sram_src, (caddr_t)frag,
-			sizeof (struct sbbc_fragment))) {
+		if ((rc = iosram_read(SBBC_MAILBOX_KEY, sram_src, (caddr_t)frag,
+			sizeof (struct sbbc_fragment))) != 0) {
 			return (rc);
 		}
 	}
@@ -2295,6 +2296,9 @@ dp_get_cores(uint16_t cpuid)
 			impl = cpunodes[MAKE_CPUID(bd, ii)].implementation;
 			break;
 		}
+
+	if (ii == nc)
+		return (1);
 
 	if (IS_JAGUAR(impl) || IS_PANTHER(impl))
 		return (2);

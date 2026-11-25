@@ -147,13 +147,13 @@ _init(void)
 	/*
 	 * Initialize per instance bus soft state pointer.
 	 */
-	if (e = ddi_soft_state_init(&per_upa64s_state,
-	    sizeof (upa64s_devstate_t), 2))
+	if ((e = ddi_soft_state_init(&per_upa64s_state,
+	    sizeof (upa64s_devstate_t), 2)) != 0)
 		return (e);
 	/*
 	 * Install the module.
 	 */
-	if (e = mod_install(&modlinkage))
+	if ((e = mod_install(&modlinkage)) != 0)
 		ddi_soft_state_fini(&per_upa64s_state);
 	return (e);
 }
@@ -202,7 +202,7 @@ upa64s_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 {
 	upa64s_devstate_t *upa64s_p;	/* per upa64s state pointer */
 	ddi_device_acc_attr_t attr;
-	int instance;
+	int instance = ddi_get_instance(dip);
 	char *pmc[] = { "NAME=Framebuffer Power", "0=Off", "1=On", NULL };
 
 	switch (cmd) {
@@ -210,7 +210,6 @@ upa64s_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 		/*
 		 * Allocate and get the per instance soft state structure.
 		 */
-		instance = ddi_get_instance(dip);
 		if (alloc_upa64s_soft_state(instance) != DDI_SUCCESS) {
 			cmn_err(CE_WARN, "%s%d: can't allocate upa64s state",
 			    ddi_get_name(dip), instance);
@@ -358,6 +357,9 @@ upa64s_detach(dev_info_t *dip, ddi_detach_cmd_t cmd)
 		save_state(upa64s_p);
 		upa64s_p->saved_power_level = upa64s_p->power_level;
 		return (DDI_SUCCESS);
+
+	default:
+		break;
 	}
 
 	return (DDI_FAILURE);
@@ -670,9 +672,6 @@ upa64s_remove_intr_impl(dev_info_t *dip, dev_info_t *rdip,
 	upa64s_devstate_t *upa64s_p =
 	    get_upa64s_soft_state(ddi_get_instance(dip));
 	int upaport;
-#ifndef lint
-	volatile uint64_t tmp;
-#endif
 
 	/*
 	 * Make sure the mondo is valid.
@@ -695,10 +694,10 @@ upa64s_remove_intr_impl(dev_info_t *dip, dev_info_t *rdip,
 	i_ddi_rem_ivintr(hdlp);
 
 	ddi_put64(upa64s_p->imr_ah[upaport], upa64s_p->imr[upaport], 0);
-#ifndef lint
+
 	/* Flush store buffers */
-	tmp = ddi_get64(upa64s_p->imr_ah[upaport], upa64s_p->imr[upaport]);
-#endif
+	(void) ddi_get64(upa64s_p->imr_ah[upaport],
+	    upa64s_p->imr[upaport]);
 
 	upa64s_p->ino_state[upaport] = INO_FREE;
 	return (DDI_SUCCESS);
@@ -821,6 +820,9 @@ upa64s_ctlops(dev_info_t *dip, dev_info_t *rdip,
 		    ddi_get_name(rdip), ddi_get_instance(rdip));
 		*((uint_t *)result) = get_nreg_set(rdip);
 		return (DDI_SUCCESS);
+
+	default:
+		break;
 	}
 
 	/*
@@ -891,18 +893,13 @@ save_state(upa64s_devstate_t *upa64s_p)
 static void
 restore_state(upa64s_devstate_t *upa64s_p)
 {
-#ifndef lint
-	volatile uint64_t tmp;
-#endif
 	ddi_put64(upa64s_p->imr_ah[0], upa64s_p->imr[0],
 	    upa64s_p->imr_data[0]);
 	ddi_put64(upa64s_p->imr_ah[1], upa64s_p->imr[1],
 	    upa64s_p->imr_data[1]);
-#ifndef lint
 	/* Flush the store buffer */
-	tmp = ddi_get64(upa64s_p->imr_ah[0], upa64s_p->imr[0]);
-	tmp = ddi_get64(upa64s_p->imr_ah[1], upa64s_p->imr[1]);
-#endif
+	(void) ddi_get64(upa64s_p->imr_ah[0], upa64s_p->imr[0]);
+	(void) ddi_get64(upa64s_p->imr_ah[1], upa64s_p->imr[1]);
 }
 
 

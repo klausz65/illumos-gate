@@ -1161,7 +1161,7 @@ ac_get_memory_status(struct ac_soft_state *softsp, enum ac_bank_id id)
 	int	proplen;
 	uint64_t memdec = (id == Bank0) ?
 	    *(softsp->ac_memdecode0) : *(softsp->ac_memdecode1);
-	uint_t		grp_size;
+	uint_t		grp_size = 0;
 
 	softsp->bank[id].busy = 0;
 	softsp->bank[id].status_change = ddi_get_time();
@@ -1244,6 +1244,7 @@ ac_get_memory_status(struct ac_soft_state *softsp, enum ac_bank_id id)
 			uint64_t	base_pa;
 
 			ASSERT((*softsp->ac_memctl & AC_CSR_REFEN) != 0);
+			ASSERT(GRP_SIZE_IS_SET(memdec));
 			/* register existence in the memloc database */
 			base_pa = GRP_REALBASE(memdec);
 			fhc_add_memloc(softsp->board, base_pa, grp_size);

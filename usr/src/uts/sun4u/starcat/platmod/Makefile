@@ -61,7 +61,6 @@ ALL_TARGET	= $(PLATLIB)
 INSTALL_TARGET	= $(BINARY) $(ROOTMODULE)
 
 CFLAGS += $(CCVERBOSE)
-CERRWARN += -_gcc=-Wno-unused-variable
 
 #
 #	Default build targets.

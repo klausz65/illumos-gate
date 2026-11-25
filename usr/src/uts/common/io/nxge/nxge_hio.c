@@ -1629,6 +1629,10 @@ nxge_hio_share_query(mac_share_handle_t shandle, mac_ring_type_t type,
 		rh = nxge->tx_ring_handles;
 		offset = nxge->pt_config.hw_config.tdc.start;
 		break;
+	default:
+		if (n_rings != NULL)
+			*n_rings = 0;
+		return;
 	}
 
 	/*
@@ -1891,6 +1895,8 @@ nxge_hio_vr_share(
 		cmn_err(CE_WARN,
 		    "Shares not supported on function(%d) at this time.\n",
 		    nxge->function_num);
+		MUTEX_EXIT(&nhd->lock);
+		return (NULL);
 	}
 
 	for (region = first; region < limit; region++) {
@@ -1970,7 +1976,7 @@ nxge_hio_addres(nxge_hio_vr_t *vr, mac_ring_type_t type, uint64_t *map)
 	int		max_dcs;
 
 	ASSERT(vr != NULL);
-	ASSERT(vr->nxge != NULL);
+	ASSERT(vr->nxge != 0);
 	nxge = (nxge_t *)vr->nxge;
 
 	NXGE_DEBUG_MSG((nxge, HIO_CTL, "==> nxge_hio_addres"));

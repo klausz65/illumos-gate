@@ -195,7 +195,7 @@ pcmu_add_intr(dev_info_t *dip, dev_info_t *rdip, ddi_intr_handle_impl_t *hdlp)
 	ih_p = pcmu_ib_alloc_ih(rdip, hdlp->ih_inum,
 	    hdlp->ih_cb_func, hdlp->ih_cb_arg1, hdlp->ih_cb_arg2);
 
-	if (ino_p = pcmu_ib_locate_ino(pib_p, ino)) {	/* sharing ino */
+	if ((ino_p = pcmu_ib_locate_ino(pib_p, ino)) != NULL) {	/* sharing ino */
 		uint32_t intr_index = hdlp->ih_inum;
 		if (pcmu_ib_ino_locate_intr(ino_p, rdip, intr_index)) {
 			PCMU_DBG1(PCMU_DBG_A_INTX, dip,
@@ -252,7 +252,7 @@ pcmu_add_intr(dev_info_t *dip, dev_info_t *rdip, ddi_intr_handle_impl_t *hdlp)
 	*ino_p->pino_map_reg;
 ino_done:
 	mutex_exit(&pib_p->pib_ino_lst_mutex);
-done:
+
 	PCMU_DBG2(PCMU_DBG_A_INTX, dip, "done! Interrupt 0x%x pil=%x\n",
 	    hdlp->ih_vector, hdlp->ih_pri);
 	return (DDI_SUCCESS);

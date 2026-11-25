@@ -46,7 +46,8 @@ typedef enum { PCI_PBM_OBJ, PCI_ECC_OBJ, PCI_CB_OBJ } pci_obj_t;
 typedef enum { PCI_OBJ_INTR_ADD, PCI_OBJ_INTR_REMOVE } pci_obj_op_t;
 
 #define	PCI_ATTACH_RETCODE(obj, op, err) \
-	((err) ? (obj) << 8 | (op) << 4 | (err) & 0xf : DDI_SUCCESS)
+	((err) ? (((obj) << 8) | ((op) << 4) | ((err) & 0xf)) : \
+		DDI_SUCCESS)
 
 #define	PCI_OTHER_SIDE(side) ((side) ^ 1)
 

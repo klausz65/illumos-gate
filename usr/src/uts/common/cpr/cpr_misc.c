@@ -184,7 +184,8 @@ cpr_get_config(void)
 		return (0);
 
 	fmt = "cannot %s config file \"%s\", error %d\n";
-	if (err = vn_open(config_path, UIO_SYSSPACE, FREAD, 0, &vp, 0, 0)) {
+	if ((err = vn_open(config_path, UIO_SYSSPACE, FREAD, 0,
+			&vp, 0, 0)) != 0) {
 		cpr_err(CE_CONT, fmt, "open", config_path, err);
 		return (err);
 	}
@@ -432,7 +433,7 @@ cpr_check_spec_statefile(void)
 {
 	int err;
 
-	if (err = cpr_get_config())
+	if ((err = cpr_get_config()) != 0)
 		return (err);
 	ASSERT(cprconfig.cf_type == CFT_SPEC ||
 	    cprconfig.cf_type == CFT_ZVOL);
@@ -474,11 +475,11 @@ cpr_alloc_statefile(int alloc_retry)
 
 		if (path == NULL)
 			return (ENXIO);
-		else if (rc = cpr_verify_statefile_path())
+		else if ((rc = cpr_verify_statefile_path()) != 0)
 			return (rc);
 
-		if (rc = vn_open(path, UIO_SYSSPACE,
-		    FCREAT|FWRITE, 0600, &C_VP, CRCREAT, 0)) {
+		if ((rc = vn_open(path, UIO_SYSSPACE,
+		    FCREAT|FWRITE, 0600, &C_VP, CRCREAT, 0)) != 0) {
 			cpr_err(CE_WARN, "cannot open statefile %s", path);
 			return (rc);
 		}
@@ -493,7 +494,7 @@ cpr_alloc_statefile(int alloc_retry)
 		return (EACCES);
 	}
 
-	if (rc = cpr_statefile_ok(C_VP, alloc_retry))
+	if ((rc = cpr_statefile_ok(C_VP, alloc_retry)) != 0)
 		return (rc);
 
 	if (C_VP->v_type != VBLK) {
@@ -506,7 +507,7 @@ cpr_alloc_statefile(int alloc_retry)
 		 * Validate disk blocks allocation for the state file.
 		 * Ask the file system prepare itself for the dump operation.
 		 */
-		if (rc = VOP_DUMPCTL(C_VP, DUMP_ALLOC, NULL, NULL)) {
+		if ((rc = VOP_DUMPCTL(C_VP, DUMP_ALLOC, NULL, NULL)) != 0) {
 			cpr_err(CE_CONT, "Error allocating "
 			    "blocks for cpr statefile.");
 			return (rc);
@@ -565,9 +566,9 @@ cpr_grow_statefile(vnode_t *vp, u_longlong_t newsize)
 	error = 0;
 	cpr_pagecopy[0] = '1';
 	for (; offset < newsize; offset += ip->i_fs->fs_bsize) {
-		if (error = vn_rdwr(UIO_WRITE, vp, (caddr_t)cpr_pagecopy,
+		if ((error = vn_rdwr(UIO_WRITE, vp, (caddr_t)cpr_pagecopy,
 		    ip->i_fs->fs_bsize, (offset_t)offset, UIO_SYSSPACE, 0,
-		    (rlim64_t)MAXOFF_T, CRED(), &resid)) {
+		    (rlim64_t)MAXOFF_T, CRED(), &resid)) != 0) {
 			if (error == ENOSPC) {
 				cpr_err(CE_WARN, "error %d while reserving "
 				    "disk space for statefile %s\n"
@@ -607,15 +608,14 @@ cpr_statefile_ok(vnode_t *vp, int alloc_retry)
 	 * number of pages short for swapping.
 	 */
 	STAT->cs_nosw_pages = k_anoninfo.ani_mem_resv;
-	if (STAT->cs_nosw_pages < 0)
-		STAT->cs_nosw_pages = 0;
 
 	str = "cpr_statefile_ok:";
 
 	CPR_DEBUG(CPR_DEBUG9, "Phys swap: max=%lu resv=%lu\n",
 	    k_anoninfo.ani_max, k_anoninfo.ani_phys_resv);
 	CPR_DEBUG(CPR_DEBUG9, "Mem swap: max=%ld resv=%lu\n",
-	    MAX(availrmem - swapfs_minfree, 0),
+	    (availrmem > swapfs_minfree) ?
+	    (availrmem - swapfs_minfree) : 0,
 	    k_anoninfo.ani_mem_resv);
 	CPR_DEBUG(CPR_DEBUG9, "Total available swap: %ld\n",
 	    CURRENT_TOTAL_AVAILABLE_SWAP);
@@ -751,7 +751,7 @@ cpr_open_deffile(int mode, vnode_t **vpp)
 {
 	int error;
 
-	if (error = cpr_open(cpr_default_path, mode, vpp))
+	if ((error = cpr_open(cpr_default_path, mode, vpp)) != 0)
 		cpr_err(CE_CONT, "cannot open \"%s\", error %d\n",
 		    cpr_default_path, error);
 	return (error);
@@ -768,15 +768,15 @@ int
 cpr_write_deffile(cdef_t *cdef)
 {
 	struct vnode *vp;
-	char *str;
+	char *str = NULL;
 	int rc;
 
-	if (rc = cpr_open_deffile(FCREAT|FWRITE, &vp))
+	if ((rc = cpr_open_deffile(FCREAT|FWRITE, &vp)) != 0)
 		return (rc);
 
-	if (rc = cpr_rdwr(UIO_WRITE, vp, cdef, sizeof (*cdef)))
+	if ((rc = cpr_rdwr(UIO_WRITE, vp, cdef, sizeof (*cdef))) != 0)
 		str = "write";
-	else if (rc = VOP_FSYNC(vp, FSYNC, CRED(), NULL))
+	else if ((rc = VOP_FSYNC(vp, FSYNC, CRED(), NULL)) != 0)
 		str = "fsync";
 	(void) VOP_CLOSE(vp, FWRITE, 1, (offset_t)0, CRED(), NULL);
 	VN_RELE(vp);
@@ -1002,6 +1002,8 @@ cpr_p_online(cpu_t *cp, int state)
 	case CPU_CPR_OFFLINE:
 		rc = cpu_offline(cp, CPU_FORCED);
 		break;
+	default:
+		return (EINVAL);
 	}
 	if (rc) {
 		cpr_err(CE_WARN, "Failed to change processor %d to "

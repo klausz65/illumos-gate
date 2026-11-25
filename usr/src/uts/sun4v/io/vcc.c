@@ -90,7 +90,6 @@ static int	i_vcc_config_port(vcc_t *vccp, uint_t portno, uint64_t ldc_id);
 static int	i_vcc_reset_events(vcc_t *vccp);
 static int	i_vcc_cons_tbl(vcc_t *vccp, uint_t num_ports,
 			caddr_t buf, int mode);
-static int	i_vcc_del_cons_ok(vcc_t *vccp, caddr_t buf, int mode);
 static int	i_vcc_close_port(vcc_port_t *vport);
 static int	i_vcc_write_ldc(vcc_port_t *vport, vcc_msg_t *buf);
 static int	i_vcc_read_ldc(vcc_port_t *vport, char *data_buf, size_t *sz);
@@ -832,7 +831,7 @@ i_vcc_delete_port(vcc_t *vccp, vcc_port_t *vport)
 {
 
 	char	name[MAXPATHLEN];
-	int	rv;
+	int	rv = 0;
 
 
 	ASSERT(mutex_owned(&vport->lock));
@@ -2217,7 +2216,7 @@ i_vcc_md_remove_port(md_t *mdp, mde_cookie_t mdep, vcc_t *vccp)
 		return (MDEG_FAILURE);
 	}
 
-	if ((portno >= VCC_MAX_PORTS) || (portno < 0)) {
+	if (portno >= VCC_MAX_PORTS) {
 		cmn_err(CE_CONT, "i_vcc_md_remove_port@%ld invalid port no\n",
 		    portno);
 		return (MDEG_FAILURE);

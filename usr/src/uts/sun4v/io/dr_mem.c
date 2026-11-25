@@ -893,7 +893,7 @@ dr_mem_configure(dr_mem_blk_t *mbp, int *status)
 		DR_DBG_MEM("invalid mblk 0x%lx.0x%lx\n", addr, size);
 		*status = DR_MEM_STAT_UNCONFIGURED;
 		rv = DR_MEM_RES_EINVAL;
-	} else if (rv = dr_mem_find(mbp)) {
+	} else if ((rv = dr_mem_find(mbp)) != 0) {
 		DR_DBG_MEM("failed to find mblk 0x%lx.0x%lx (%d)\n",
 		    addr, size, rv);
 		if (rv == EINVAL) {
@@ -928,7 +928,7 @@ dr_mem_unconfigure(dr_mem_blk_t *mbp, int *status)
 		    mbp->addr, mbp->size);
 		*status = DR_MEM_STAT_CONFIGURED;
 		rv = DR_MEM_RES_EINVAL;
-	} else if (rv = mem_del(btop(mbp->addr), btop(mbp->size))) {
+	} else if ((rv = mem_del(btop(mbp->addr), btop(mbp->size))) != 0) {
 		*status = DR_MEM_STAT_CONFIGURED;
 	} else {
 		*status = DR_MEM_STAT_UNCONFIGURED;
@@ -1117,7 +1117,7 @@ mem_add(pfn_t base, pgcnt_t npgs)
 	DR_DBG_MEM("%s: kphysm_add(0x%lx, 0x%lx) = %d", __func__, base, npgs,
 	    rv);
 	if (rv == KPHYSM_OK) {
-		if (rc = kcage_range_add(base, npgs, KCAGE_DOWN))
+		if ((rc = kcage_range_add(base, npgs, KCAGE_DOWN)) != 0)
 			cmn_err(CE_WARN, "kcage_range_add() = %d", rc);
 	}
 	rv = cvt_err(rv);
@@ -1168,7 +1168,7 @@ mem_del(pfn_t base, pgcnt_t npgs)
 		rv  = KPHYSM_ENONRELOC;
 		goto done;
 	}
-	if (rv = kcage_range_delete(base, npgs)) {
+	if ((rv = kcage_range_delete(base, npgs)) != 0) {
 		switch (rv) {
 		case EBUSY:
 			rv = DR_MEM_RES_ENOTVIABLE;
@@ -1255,8 +1255,8 @@ done:
 		 * Add back the spans to the kcage growth list.
 		 */
 		for (ml = d_ml; ml; ml = ml->ml_next)
-			if (err = kcage_range_add(btop(ml->ml_address),
-			    btop(ml->ml_size), KCAGE_DOWN))
+			if ((err = kcage_range_add(btop(ml->ml_address),
+			    btop(ml->ml_size), KCAGE_DOWN)) != 0)
 				cmn_err(CE_WARN, "kcage_range_add() = %d", err);
 	}
 	memlist_free_list(d_ml);

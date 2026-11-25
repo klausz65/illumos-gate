@@ -137,8 +137,8 @@ _init(void)
 {
 	int e;
 
-	if (e = ddi_soft_state_init(&statep, sizeof (struct pic_softc),
-	    MAX_PIC_INSTANCES)) {
+	if ((e = ddi_soft_state_init(&statep, sizeof (struct pic_softc),
+	    MAX_PIC_INSTANCES)) != 0) {
 		return (e);
 	}
 

@@ -160,9 +160,6 @@ void
 sync_stream_buf(struct sbus_soft_state *softsp, ioaddr_t addr, uint_t npages,
 	int *sync_flag, uint64_t phys_sync_flag)
 {
-#ifndef lint
-	volatile uint64_t tmp;
-#endif
 
 	int cntr = 0;
 
@@ -235,14 +232,11 @@ sync_stream_buf(struct sbus_soft_state *softsp, ioaddr_t addr, uint_t npages,
 	/* Ask the hardware to flag when the flush is complete */
 	*softsp->str_buf_sync_reg = phys_sync_flag;
 
-#ifndef lint
 	/*
 	 * Due to the sun4u memory models, this noncached load will sync the
 	 * order of all prior loads and stores regardless of cacheability.
 	 * No membar_stst() is needed after zeroing the flush sync flag.
 	 */
-	tmp = *softsp->sbus_ctrl_reg;
-#endif
 
 	/*
 	 * Begin spinning on the hardware sync register.  We'll spin for

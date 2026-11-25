@@ -382,7 +382,7 @@ seeprom_io(dev_t dev, struct uio *uiop, int rw)
 	int	bytes_to_rw;
 	int	err = 0;
 	int	current_xfer_len;
-	int	actual_data_xfer;
+	int	actual_data_xfer = 0;
 	i2c_transfer_t *i2ctp = NULL;
 
 	unitp = (struct seepromunit *)

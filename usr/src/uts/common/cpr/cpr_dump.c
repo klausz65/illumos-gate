@@ -302,7 +302,7 @@ cpr_write_bitmap(vnode_t *vp)
 	int err;
 
 	dp = CPR->c_bmda;
-	if (err = cpr_write(vp, (caddr_t)dp, cpr_nbitmaps * sizeof (*dp)))
+	if ((err = cpr_write(vp, (caddr_t)dp, cpr_nbitmaps * sizeof (*dp))) != 0)
 		return (err);
 
 	/*
@@ -317,7 +317,7 @@ cpr_write_bitmap(vnode_t *vp)
 			tail = &cpr_pagecopy[bytes];
 			for (dst = cpr_pagecopy; dst < tail; dst++)
 				*dst = *rmap++ | *vmap++;
-			if (err = cpr_write(vp, cpr_pagecopy, bytes))
+			if ((err = cpr_write(vp, cpr_pagecopy, bytes)) != 0)
 				break;
 		}
 	}
@@ -413,7 +413,7 @@ cpr_dump(vnode_t *vp)
 
 	if (cpr_buf == NULL) {
 		ASSERT(cpr_pagedata == NULL);
-		if (error = cpr_alloc_bufs())
+		if ((error = cpr_alloc_bufs()) != 0)
 			return (error);
 	}
 	/* point to top of internal buffer */
@@ -425,16 +425,16 @@ cpr_dump(vnode_t *vp)
 
 	/* allocate bitmaps */
 	if (CPR->c_bmda == NULL) {
-		if (error = i_cpr_alloc_bitmaps()) {
+		if ((error = i_cpr_alloc_bitmaps()) != 0) {
 			cpr_err(CE_WARN, "cannot allocate bitmaps");
 			return (error);
 		}
 	}
 
-	if (error = i_cpr_prom_pages(CPR_PROM_SAVE))
+	if ((error = i_cpr_prom_pages(CPR_PROM_SAVE)) != 0)
 		return (error);
 
-	if (error = i_cpr_dump_setup(vp))
+	if ((error = i_cpr_dump_setup(vp)) != 0)
 		return (error);
 
 	/*
@@ -457,7 +457,7 @@ cpr_dump(vnode_t *vp)
 	 * much memory left at this stage, the sensitive pages will be
 	 * compressed before they are saved into the storage area.
 	 */
-	if (error = i_cpr_save_sensitive_kpages()) {
+	if ((error = i_cpr_save_sensitive_kpages()) != 0) {
 		CPR_DEBUG(CPR_DEBUG7,
 		    "cpr_dump: save_sensitive_kpages failed!\n");
 		return (error);
@@ -468,34 +468,34 @@ cpr_dump(vnode_t *vp)
 	 * bitmaps, cpr_buf), kas is stable, and now we can accurately
 	 * count regular and sensitive kpages.
 	 */
-	if (error = cpr_write_header(vp)) {
+	if ((error = cpr_write_header(vp)) != 0) {
 		CPR_DEBUG(CPR_DEBUG7,
 		    "cpr_dump: cpr_write_header() failed!\n");
 		return (error);
 	}
 
-	if (error = i_cpr_write_machdep(vp))
+	if ((error = i_cpr_write_machdep(vp)) != 0)
 		return (error);
 
-	if (error = i_cpr_blockzero(cpr_buf, &cpr_wptr, NULL, NULL))
+	if ((error = i_cpr_blockzero(cpr_buf, &cpr_wptr, NULL, NULL)) != 0)
 		return (error);
 
-	if (error = cpr_write_bitmap(vp))
+	if ((error = cpr_write_bitmap(vp)) != 0)
 		return (error);
 
-	if (error = cpr_write_statefile(vp)) {
+	if ((error = cpr_write_statefile(vp)) != 0) {
 		CPR_DEBUG(CPR_DEBUG7,
 		    "cpr_dump: cpr_write_statefile() failed!\n");
 		return (error);
 	}
 
-	if (error = cpr_write_terminator(vp))
+	if ((error = cpr_write_terminator(vp)) != 0)
 		return (error);
 
-	if (error = cpr_flush_write(vp))
+	if ((error = cpr_flush_write(vp)) != 0)
 		return (error);
 
-	if (error = i_cpr_blockzero(cpr_buf, &cpr_wptr, &cpr_file_bn, vp))
+	if ((error = i_cpr_blockzero(cpr_buf, &cpr_wptr, &cpr_file_bn, vp)) != 0)
 		return (error);
 #endif
 
@@ -675,7 +675,7 @@ cpr_count_seg_pages(int mapflag, bitfunc_t bitfunc)
 
 	pages = 0;
 	for (segp = AS_SEGFIRST(&kas); segp; segp = AS_SEGNEXT(&kas, segp)) {
-		if (ste = cpr_sparse_seg_check(segp)) {
+		if ((ste = cpr_sparse_seg_check(segp)) != NULL) {
 			pages += (ste->st_fcn)(mapflag, bitfunc, segp);
 		} else {
 			pages += cpr_count_pages(segp->s_base,
@@ -810,7 +810,7 @@ cpr_count_upages(int mapflag, bitfunc_t bitfunc)
 
 	do {
 		if (pp->p_vnode == NULL || PP_ISKAS(pp) ||
-		    PP_ISFREE(pp) && PP_ISAGED(pp))
+		    (PP_ISFREE(pp) && PP_ISAGED(pp)))
 			continue;
 
 		pfn = page_pptonum(pp);

@@ -4535,6 +4535,8 @@ nxge_param_locked(mac_prop_id_t pr_num)
 		case MAC_PROP_AUTONEG:
 		case MAC_PROP_FLOWCTRL:
 			return (B_TRUE);
+		default:
+			break;
 	}
 	return (B_FALSE);
 }
@@ -4819,6 +4821,8 @@ nxge_m_propinfo(void *barg, const char *pr_name, mac_prop_id_t pr_num,
 
 	case MAC_PROP_PRIVATE:
 		nxge_priv_propinfo(pr_name, prh);
+		break;
+	default:
 		break;
 	}
 

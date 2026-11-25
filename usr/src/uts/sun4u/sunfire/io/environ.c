@@ -334,7 +334,6 @@ environ_detach(dev_info_t *devi, ddi_detach_cmd_t cmd)
 static int
 environ_init(struct environ_soft_state *softsp)
 {
-	uchar_t tmp;
 
 	/*
 	 * If this environment node is on a CPU-less system board, i.e.,
@@ -370,14 +369,10 @@ environ_init(struct environ_soft_state *softsp)
 	 * read. This is a feature of the ADC hardware. After a power cycle
 	 * it does not contains valid data until a read occurs.
 	 */
-	tmp = *(softsp->temp_reg);
+	(void) *(volatile uchar_t *)softsp->temp_reg;
 
 	/* Wait 30 usec for ADC hardware to stabilize. */
 	DELAY(30);
-
-#ifdef lint
-	tmp = tmp;
-#endif
 
 	/*
 	 * Now add this soft state structure to the front of the linked list

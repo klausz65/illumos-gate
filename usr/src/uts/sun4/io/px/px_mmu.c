@@ -331,17 +331,3 @@ static int px_mmu_tsb_sizes[] = {
 	0x8		/* 256K */
 };
 #endif
-
-static char *px_mmu_errsts[] = {
-	"Protection Error", "Invalid Error", "Timeout", "ECC Error(UE)"
-};
-
-/*ARGSUSED*/
-static int
-px_log_mmu_err(px_t *px_p)
-{
-	/*
-	 * Place holder, the correct eror bits need tobe logged.
-	 */
-	return (0);
-}

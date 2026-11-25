@@ -2297,7 +2297,6 @@ sbd_init_mem_devlists(sbd_board_t *sbp)
 	if (sbdphw_get_base_physaddr(hdp, mc_dip, &mc_pa)) {
 		/* TODO: log complaint about dnode */
 
-pretend_no_mem:
 		/*
 		 * We are here because sbdphw_get_base_physaddr() failed.
 		 * Although it is very unlikely to happen, it did.  Lucky us.
@@ -4281,7 +4280,7 @@ sbd_status(sbd_handle_t *hp)
 
 #ifdef _MULTI_DATAMODEL
 	int			sz32;
-	sbd_stat32_t		*dstat32p;
+	sbd_stat32_t		*dstat32p = NULL;
 #endif /* _MULTI_DATAMODEL */
 
 	static fn_t	f = "sbd_status";

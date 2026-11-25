@@ -456,13 +456,18 @@ res_map_parse(
 	slots = (uint8_t)(res_map & 0xff);
 
 	/* Count the number of bits in the bitmap. */
-	for (slot = 0, count = 0, mask = 1; slot < 8; slot++) {
-		if (slots & mask)
+	for (slot = 0, count = 0, mask = 1, first = -1;
+		slot < 8; slot++) {
+		if (slots & mask) {
+			if (first == -1)
+				first = slot;
 			count++;
-		if (count == 1)
-			first = slot;
+		}
 		mask <<= 1;
 	}
+
+	if (first == -1)
+		return;
 
 	hardware = &nxge->pt_config.hw_config;
 	group = (type == NXGE_TRANSMIT_GROUP) ?
@@ -913,7 +918,6 @@ nxge_check_guest_state(
 		    drv_usectohz(1000 * NXGE_GUEST_TIMER));
 	}
 
-nxge_check_guest_state_exit:
 	MUTEX_EXIT(nxge->genlock);
 	NXGE_DEBUG_MSG((nxge, SYSERR_CTL, "<== nxge_check_guest_state"));
 }

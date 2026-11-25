@@ -1865,7 +1865,7 @@ again:
 			mutex_exit(zs->zs_excl_hi);
 		} else {
 			mutex_exit(zs->zs_excl_hi);
-			if (tmp = getq(WR(q)))
+			if ((tmp = getq(WR(q))) != NULL)
 				goto again;
 		}
 	} else {

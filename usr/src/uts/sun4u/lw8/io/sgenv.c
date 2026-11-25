@@ -2274,7 +2274,6 @@ sgenv_update_env_kstat_size(kstat_t *ksp)
 		ksp->ks_data_size += vol_sensor_count[i] *
 		    sizeof (env_sensor_t);
 	}
-	ASSERT(ksp->ks_data_size >= 0);
 }
 
 

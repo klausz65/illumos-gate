@@ -536,7 +536,7 @@ static mblk_t	*man_alloc_ubreq_dreq();
 /*
  * Executed outside perimeter (us man_lock for synchronization).
  */
-static void	man_bclose(man_adest_t *);
+static void	man_bclose(man_adest_t *, boolean_t);
 static void	man_bswitch(man_adest_t *, man_work_t *);
 static int	man_plumb(man_dest_t *);
 static void	man_unplumb(man_dest_t *);
@@ -1072,7 +1072,7 @@ man_get_our_etheraddr(eaddr_t *eap)
 	int	status = 0;
 
 	if (man_is_on_domain) {
-		if (status = man_get_iosram(&manc))
+		if ((status = man_get_iosram(&manc)) != 0)
 			return (status);
 		ether_copy(&manc.manc_dom_eaddr, eap);
 	} else {
@@ -1888,7 +1888,6 @@ man_start_lower(man_dest_t *mdp, mblk_t *mp, queue_t *flow_wq, int caller)
 	status = 1;
 
 	if (mdp->md_state == MAN_DSTATE_NOTPRESENT) {
-nodest:
 		cmn_err(CE_WARN,
 		    "man_start_lower: no dest for mdp(0x%p), caller(%d)!",
 		    (void *)mdp, caller);
@@ -2033,7 +2032,6 @@ man_ioctl(register queue_t *wq, register mblk_t *mp)
 		miocnak(wq, mp, 0, EINVAL);
 		break;
 	}
-exit:
 	MAN_DBG((MAN_SWITCH | MAN_PATH | MAN_DLPI), ("man_ioctl: exit\n"));
 
 }
@@ -2406,7 +2404,7 @@ man_uwsrv(queue_t *wq)
 
 	manp = msp->ms_manp;
 
-	while (mp = getq(wq)) {
+	while ((mp = getq(wq)) != NULL) {
 
 		switch (DB_TYPE(mp)) {
 		/*
@@ -2746,7 +2744,7 @@ man_init_dests(man_t *manp, manstr_t *msp)
 	for (i = 0; i < MAN_MAX_DESTS; i++) {
 
 		mdp[i].md_muxid = -1;	/* muxid 0 is valid */
-		mutex_init(&mdp->md_lock, NULL, MUTEX_DRIVER, NULL);
+		mutex_init(&mdp[i].md_lock, NULL, MUTEX_DRIVER, NULL);
 
 		mpg = man_find_pg_by_id(manp->man_pg, i);
 
@@ -3099,7 +3097,7 @@ man_dl_release(mblk_t **mplist, mblk_t *mp)
 		tmp->b_next = tmp->b_prev = NULL;
 	} else {
 		for (tmp = tmp->b_next; tmp != NULL; tmp = tmp->b_next) {
-			if (matched = man_match_proto(mp, tmp))
+			if ((matched = man_match_proto(mp, tmp)) != 0)
 				break;
 			tmpp = tmp;
 		}
@@ -3684,7 +3682,7 @@ man_lwsrv(queue_t *wq)
 	}
 	mdp->md_dmp_tail = NULL;
 
-	while (mp = getq(wq)) {
+	while ((mp = getq(wq)) != NULL) {
 		if (man_start_lower(mdp, mp, NULL, MAN_LOWER)) {
 			/*
 			 * Put it back on queue, making sure to avoid
@@ -3817,7 +3815,7 @@ man_lrsrv(queue_t *rq)
 			goto exit;
 	}
 
-	while (mp = getq(rq)) {
+	while ((mp = getq(rq)) != NULL) {
 
 
 	/*
@@ -4242,7 +4240,7 @@ man_do_dr_switch(man_work_t *wp)
 		 * be cv_signal'd.
 		 */
 		wp->mw_type = MAN_WORK_SWITCH;
-		if (status = man_pg_cmd(&mpath, wp))
+		if ((status = man_pg_cmd(&mpath, wp)) != 0)
 			goto exit;
 
 	} else {
@@ -4293,7 +4291,7 @@ man_do_dr_attach(man_work_t *wp)
 		goto exit;
 	}
 
-	if (status = man_get_iosram(&manc)) {
+	if ((status = man_get_iosram(&manc)) != 0) {
 		goto exit;
 	}
 	/*
@@ -4375,7 +4373,7 @@ man_do_dr_detach(man_work_t *wp)
 	 */
 	bzero((char *)&mpath, sizeof (mi_path_t));
 
-	if (status = man_get_iosram(&manc)) {
+	if ((status = man_get_iosram(&manc)) != 0) {
 		goto exit;
 	}
 
@@ -4860,7 +4858,7 @@ man_alloc_physreq_mp(eaddr_t *man_eap)
 
 exit:
 	MAN_DBG(MAN_DLPI, ("man_alloc_physreq: physaddr %s\n",
-	    ether_sprintf(eap)));
+	    ether_sprintf(man_eap)));
 
 	return (mp);
 }
@@ -5770,7 +5768,8 @@ man_bwork()
 
 		case MAN_WORK_CLOSE:
 		case MAN_WORK_CLOSE_STREAM:
-			man_bclose(&wp->mw_arg);
+			man_bclose(&wp->mw_arg,
+				wp->mw_type == MAN_WORK_CLOSE_STREAM);
 			break;
 
 		case MAN_WORK_SWITCH:
@@ -5941,7 +5940,7 @@ man_close_ctl()
  *	- Called holding no locks.
  */
 static void
-man_bclose(man_adest_t *adp)
+man_bclose(man_adest_t *adp, boolean_t destroy_locks)
 {
 	int		i;
 	man_dest_t	*mdp;
@@ -5953,9 +5952,10 @@ man_bclose(man_adest_t *adp)
 
 		if (mdp->md_muxid != -1)
 			man_unplumb(mdp);
+		if (destroy_locks)
+			mutex_destroy(&mdp->md_lock);
 	}
 
-	mutex_destroy(&mdp->md_lock);
 	man_kfree(adp->a_mdp, sizeof (man_dest_t) * adp->a_ndests);
 	adp->a_mdp = NULL;
 }
@@ -6260,13 +6260,6 @@ man_pg_cmd(mi_path_t *mip, man_work_t *waiter_wp)
 {
 	int		status = 0;
 	man_t		*manp;
-
-	if (mip->mip_ndevs < 0) {
-		status = EINVAL;
-		cmn_err(CE_WARN, "man_pg_cmd: EINVAL: mip_ndevs %d",
-		    mip->mip_ndevs);
-		goto exit;
-	}
 
 	ASSERT(MUTEX_HELD(&man_lock));
 	manp = ddi_get_soft_state(man_softstate, mip->mip_man_ppa);
@@ -6711,7 +6704,7 @@ exit:
 static int
 man_pg_create(man_pg_t **mplpp, man_pg_t **mpgp, mi_path_t *mip)
 {
-	man_pg_t	*mpg;
+	man_pg_t	*mpg = NULL;
 	man_pg_t	*tpg;
 	int		status = 0;
 
@@ -7357,7 +7350,7 @@ man_get_hostinfo(queue_t *wq, mblk_t *mp, caddr_t cp, cred_t *cr)
 	if (!man_is_on_domain)
 		return (0);
 
-	if (status = man_get_iosram(&manc)) {
+	if ((status = man_get_iosram(&manc)) != 0) {
 		return (status);
 	}
 
@@ -8106,10 +8099,8 @@ static void
 man_print_man(man_t *manp)
 {
 	char	buf[512];
-	char	prbuf[512];
 
 	buf[0] = '\0';
-	prbuf[0] = '\0';
 
 	if (manp == NULL)
 		return;

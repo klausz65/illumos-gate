@@ -311,8 +311,8 @@ _init(void)
 {
 	int    e;
 
-	if (e = ddi_soft_state_init(&statep,
-				sizeof (struct tsalarm_softc), 1)) {
+	if ((e = ddi_soft_state_init(&statep,
+			sizeof (struct tsalarm_softc), 1)) != 0) {
 		return (e);
 	}
 
@@ -895,7 +895,7 @@ static int
 tsal_pcp_send_recv(tsalarm_softc_t *sc, tsal_pcp_msg_t *req_msg,
     tsal_pcp_msg_t *resp_msg, uint32_t timeout)
 {
-	void		*datap;
+	void		*datap = NULL;
 	void		*resp_msg_data = NULL;
 	uint32_t	status;
 	uint16_t	cksum = 0;

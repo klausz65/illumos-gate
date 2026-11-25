@@ -184,6 +184,8 @@ des_setkey(u_char userkey[8], struct deskeydata *kd, unsigned int dir)
 		case DECRYPT:
 			c = &kd->keyval[15 - i];
 			break;
+		default:
+			return;
 		}
 		c->long0 = 0;
 		c->long1 = 0;

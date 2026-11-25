@@ -104,7 +104,7 @@ px_open(dev_t *devp, int flags, int otyp, cred_t *credp)
 		break;
 	default:
 		/* To handle devctl and hotplug related ioctls */
-		if (rval = pcie_open(px_p->px_dip, devp, flags, otyp, credp)) {
+		if ((rval = pcie_open(px_p->px_dip, devp, flags, otyp, credp)) != 0) {
 			mutex_exit(&px_p->px_mutex);
 			return (rval);
 		}
@@ -154,7 +154,7 @@ px_close(dev_t dev, int flags, int otyp, cred_t *credp)
 		break;
 	default:
 		/* To handle devctl and hotplug related ioctls */
-		if (rval = pcie_close(px_p->px_dip, dev, flags, otyp, credp)) {
+		if ((rval = pcie_close(px_p->px_dip, dev, flags, otyp, credp)) != 0) {
 			mutex_exit(&px_p->px_mutex);
 			return (rval);
 		}

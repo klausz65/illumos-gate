@@ -872,6 +872,9 @@ des_init_keysched(uint8_t *cipherKey, des_strength_t strength, void *ks)
 		keysize = DES3_KEYSIZE;
 		encryption_ks = ((keysched3_t *)ks)->ksch_encrypt;
 		decryption_ks = ((keysched3_t *)ks)->ksch_decrypt;
+		break;
+	default:
+		return;
 	}
 
 	/*
@@ -958,6 +961,9 @@ des_alloc_keysched(size_t *keysched_size, des_strength_t strength, int kmflag)
 	case DES2:
 	case DES3:
 		size = sizeof (keysched3_t);
+		break;
+	default:
+		return (NULL);
 	}
 
 #ifdef	_KERNEL

@@ -435,7 +435,6 @@ static char physdev_propname[] = "vsw-phys-dev";
 static char smode_propname[] = "vsw-switch-mode";
 static char macaddr_propname[] = "local-mac-address";
 static char remaddr_propname[] = "remote-mac-address";
-static char ldcids_propname[] = "ldc-ids";
 static char chan_propname[] = "channel-endpoint";
 static char id_propname[] = "id";
 static char reg_propname[] = "reg";

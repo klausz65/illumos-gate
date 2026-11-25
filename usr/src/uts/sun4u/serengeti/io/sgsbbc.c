@@ -93,7 +93,6 @@ static void	softsp_init(sbbc_softstate_t *, dev_info_t *);
 static void	sbbc_chosen_init(sbbc_softstate_t *);
 static void	sbbc_add_instance(sbbc_softstate_t *);
 static void	sbbc_remove_instance(sbbc_softstate_t *);
-static int	sbbc_find_dip(dev_info_t *, void *);
 static void	sbbc_unmap_regs(sbbc_softstate_t *);
 
 /*
@@ -285,7 +284,7 @@ sbbc_attach(dev_info_t *devi, ddi_attach_cmd_t cmd)
 		(void) sprintf(name, "sbbc%d", instance);
 
 		if (ddi_create_minor_node(devi, name, S_IFCHR, instance,
-		    NULL, NULL) == DDI_FAILURE) {
+		    NULL, 0) == DDI_FAILURE) {
 			mutex_destroy(&softsp->sbbc_lock);
 			ddi_remove_minor_node(devi, NULL);
 			ddi_soft_state_free(sbbcp, instance);
@@ -448,35 +447,6 @@ softsp_init(sbbc_softstate_t *softsp, dev_info_t *devi)
 
 	softsp->suspended = FALSE;
 	softsp->chosen = FALSE;
-}
-
-static int
-sbbc_find_dip(dev_info_t *dip, void *arg)
-{
-	char		*node_name;
-	sbbc_find_dip_t	*dip_struct = (sbbc_find_dip_t *)arg;
-	char		status[OBP_MAXPROPNAME];
-
-	/*
-	 * Need to find a node named "bootbus-controller" that is neither
-	 * disabled nor failed.  If a node is not ok, there will be an
-	 * OBP status property.  Therefore, we will look for a node
-	 * without the status property.
-	 */
-	node_name = ddi_node_name(dip);
-	if (strcmp(node_name, "bootbus-controller") == 0 && DDI_CF2(dip) &&
-	    (prom_getprop(ddi_get_nodeid(dip),
-	    "status", (caddr_t)status) == -1) &&
-	    (prom_getprop(ddi_get_nodeid(ddi_get_parent(dip)),
-	    "status", (caddr_t)status) == -1)) {
-
-		if (dip != dip_struct->cur_dip) {
-			dip_struct->new_dip = (void *)dip;
-			return (DDI_WALK_TERMINATE);
-		}
-	}
-
-	return (DDI_WALK_CONTINUE);
 }
 
 /*
@@ -886,7 +856,6 @@ sbbc_map_regs(sbbc_softstate_t *softsp)
 	softsp->port_int_regs =  (uint32_t *)((char *)softsp->sbbc_regs +
 	    SBBC_PCI_INT_STATUS);
 
-map_regs_exit:
 	return (DDI_SUCCESS);
 }
 

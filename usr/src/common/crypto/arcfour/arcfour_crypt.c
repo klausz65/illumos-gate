@@ -134,7 +134,7 @@ arcfour_crypt(ARCFour_key *key, uchar_t *in, uchar_t *out, size_t len)
 	if (index > 0) {
 		i = key->i;
 		j = key->j;
-		for (index = 8 - (uint64_t)(uintptr_t)in & 0x7;
+		for (index = (8 - (uint64_t)(uintptr_t)in) & 0x7;
 		    (index-- > 0) && len > 0;
 		    len--, in++, out++) {
 			++i;

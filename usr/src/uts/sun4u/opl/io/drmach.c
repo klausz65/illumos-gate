@@ -3126,7 +3126,7 @@ drmach_copy_rename_prog__relocatable(drmach_copy_rename_program_t *prog,
 	extern void		membar_sync_il();
 	extern void		flush_instr_mem_il(void*);
 	extern void		flush_windows_il(void);
-	uint64_t		copy_start;
+	uint64_t		copy_start = 0;
 
 	/*
 	 * flush_windows is moved here to make sure all

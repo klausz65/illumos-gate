@@ -167,7 +167,7 @@ man_path_discovery(void)
 
 	MAN_DBG(MAN_CONFIG, ("man_path_discovery:"));
 
-	if (status = man_get_iosram(&manc)) {
+	if ((status = man_get_iosram(&manc)) != 0) {
 		goto exit;
 	}
 

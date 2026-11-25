@@ -1642,8 +1642,8 @@ vlds_recvq_put_data(vlds_svc_info_t *dpsp, void *buf, size_t buflen)
 		 * or several little messages.
 		 */
 		if ((dpsp->state == VLDS_RECV_OVERFLOW) ||
-		    ((dpsp->recv_cnt != 0) &&
-		    ((dpsp->recv_size + buflen) > vlds_recvq_maxsize) ||
+		    (((dpsp->recv_cnt != 0) &&
+		    ((dpsp->recv_size + buflen) > vlds_recvq_maxsize)) ||
 		    ((dpsp->recv_cnt + 1) > vlds_recvq_maxmsg))) {
 			DS_DBG_RCVQ(CE_NOTE, "%s: user data queue overflow",
 			    __func__);

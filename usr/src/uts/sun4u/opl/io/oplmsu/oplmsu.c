@@ -750,7 +750,7 @@ oplmsu_uwsrv(queue_t *uwq)
 	rw_enter(&oplmsu_uinst->lock, RW_READER);
 
 	/* Handle high priority message */
-	while (mp = oplmsu_wcmn_high_getq(uwq)) {
+	while ((mp = oplmsu_wcmn_high_getq(uwq)) != NULL) {
 		if (mp->b_datap->db_type == M_FLUSH) {
 			oplmsu_wcmn_flush_hndl(uwq, mp, RW_READER);
 			continue;
@@ -765,7 +765,7 @@ oplmsu_uwsrv(queue_t *uwq)
 	rw_exit(&oplmsu_uinst->lock);
 
 	/* Handle normal priority message */
-	while (mp = getq(uwq)) {
+	while ((mp = getq(uwq)) != NULL) {
 		rval = SUCCESS;
 		switch (mp->b_datap->db_type) {
 		case M_IOCTL :
@@ -828,7 +828,7 @@ oplmsu_lwsrv(queue_t *lwq)
 	lpath_t		*lpath;
 
 	rw_enter(&oplmsu_uinst->lock, RW_READER);
-	while (mp = getq(lwq)) {
+	while ((mp = getq(lwq)) != NULL) {
 		if (mp->b_datap->db_type >= QPCTL) {
 			rw_exit(&oplmsu_uinst->lock);
 			OPLMSU_TRACE(WR(lwq), mp, MSU_TRC_LO);
@@ -918,7 +918,7 @@ oplmsu_lrsrv(queue_t *lrq)
 	}
 
 	/* Handle normal priority message */
-	while (mp = getq(lrq)) {
+	while ((mp = getq(lrq)) != NULL) {
 		if (mp->b_datap->db_type >= QPCTL) {
 			cmn_err(CE_WARN, "oplmsu: lr-srv: "
 			    "Invalid db_type => %x", mp->b_datap->db_type);
@@ -1025,7 +1025,7 @@ oplmsu_ursrv(queue_t *urq)
 	int	res_chk = 0;
 
 	rw_enter(&oplmsu_uinst->lock, RW_READER);
-	while (mp = getq(urq)) {
+	while ((mp = getq(urq)) != NULL) {
 		if (mp->b_datap->db_type >= QPCTL) {
 			if ((mp->b_datap->db_type == M_IOCACK) ||
 			    (mp->b_datap->db_type == M_IOCNAK)) {

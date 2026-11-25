@@ -93,7 +93,7 @@ cpr_get_bool_prop(char *name, int *result)
 	pnode_t node;
 	int len, err;
 
-	if (err = cpr_get_options_node(&node))
+	if ((err = cpr_get_options_node(&node)) != 0)
 		return (err);
 	len = prom_getproplen(node, name);
 	if (len < 0 || len >= sizeof (value))
@@ -116,7 +116,7 @@ cpr_update_nvram(cprop_t *props)
 	pnode_t node;
 	int len, rc;
 
-	if (rc = cpr_get_options_node(&node))
+	if ((rc = cpr_get_options_node(&node)) != 0)
 		return (rc);
 
 	if (cpr_show_props)
@@ -220,7 +220,7 @@ cpr_prop_setup(void)
 	 * the value of diag-switch?.  when "false", set boot-device
 	 * and boot-file; when "true", set diag-device and diag-file
 	 */
-	if (err = cpr_get_bool_prop("diag-switch?", &ds_ival))
+	if ((err = cpr_get_bool_prop("diag-switch?", &ds_ival)) != 0)
 		return (err);
 	else if (ds_ival == 0) {
 		dev_idx  = CPR_BD_IDX;
@@ -264,7 +264,7 @@ cpr_default_setup(int alloc)
 		return (0);
 	}
 
-	if (err = cpr_get_options_node(&node))
+	if ((err = cpr_get_options_node(&node)) != 0)
 		return (err);
 
 	/*

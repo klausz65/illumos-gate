@@ -591,7 +591,7 @@ sghsc_register_slots(sghsc_t *sghsc, int board_type)
 				    sghsc->sghsc_instance,
 				    sghsc->sghsc_num_slots,
 				    sghsc->sghsc_node_id, sghsc->sghsc_board);
-				break;
+				return (DDI_FAILURE);
 			}
 			break;
 		case WCI_CPCI_BOARD:

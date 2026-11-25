@@ -687,8 +687,8 @@ int
 bge_m_stat(void *arg, uint_t stat, uint64_t *val)
 {
 	bge_t *bgep = arg;
-	bge_statistics_t *bstp;
-	bge_statistics_reg_t *pstats;
+	bge_statistics_t *bstp = NULL;
+	bge_statistics_reg_t *pstats = NULL;
 
 	if (bgep->bge_chip_state != BGE_CHIP_RUNNING) {
 		return (EINVAL);

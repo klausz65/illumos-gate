@@ -285,9 +285,9 @@ pci_intr_setup(pci_t *pci_p)
 
 	if (pci_p->pci_common_p->pci_common_refcnt == 0) {
 		cb_p->cb_no_of_inos = intr_cnt;
-		if (ret = cb_register_intr(pci_p))
+		if ((ret = cb_register_intr(pci_p)) != 0)
 			goto teardown;
-		if (ret = ecc_register_intr(pci_p))
+		if ((ret = ecc_register_intr(pci_p)) != 0)
 			goto teardown;
 
 		intr_dist_add(cb_intr_dist, cb_p);
@@ -297,7 +297,7 @@ pci_intr_setup(pci_t *pci_p)
 
 	if (CHIP_TYPE(pci_p) != PCI_CHIP_SCHIZO)
 		pbm_p->pbm_sync_ino = pci_p->pci_inos[CBNINTR_PBM];
-	if (ret = pbm_register_intr(pbm_p)) {
+	if ((ret = pbm_register_intr(pbm_p)) != 0) {
 		if (pci_p->pci_common_p->pci_common_refcnt == 0)
 			intr_dist_rem(cb_intr_dist, cb_p);
 		goto teardown;
@@ -1340,8 +1340,10 @@ pci_pbm_setup(pbm_t *pbm_p)
 	 */
 	pbm_p->pbm_panic_cb_id = callb_add(pci_pbm_panic_callb,
 	    (void *)pbm_p, CB_CL_PANIC, "pci_panic");
-	pbm_p->pbm_debug_cb_id = callb_add(pci_pbm_panic_callb,
+#ifdef	DEBUG
+	pbm_p->pbm_debug_cb_id = callb_add(pci_pbm_debug_callb,
 	    (void *)pbm_p, CB_CL_ENTER_DEBUGGER, "pci_debug_enter");
+#endif
 
 	if (CHIP_TYPE(pci_p) != PCI_CHIP_SCHIZO)
 		goto non_schizo;
@@ -1836,7 +1838,7 @@ pci_ecc_classify(uint64_t err, ecc_errstate_t *ecc_err_p)
 	struct async_flt *ecc_p = &ecc_err_p->ecc_aflt;
 	uint64_t region, afar = ecc_p->flt_addr;
 	int i, j, ret = 0;
-	int flag, fatal = 0;
+	int flag = ACC_HANDLE, fatal = 0;
 	pci_common_t *cmn_p = ecc_err_p->ecc_ii_p.ecc_p->ecc_pci_cmn_p;
 	pci_t *pci_p = cmn_p->pci_p[0];
 
@@ -2783,6 +2785,9 @@ pci_format_ecc_addr(dev_info_t *dip, uint64_t *afar, ecc_region_t region)
 			break;
 		}
 	}
+
+	if (ecc_format_tbl[i].ecc_region == 0)
+		return;
 
 	if (swap) {
 		pci_p = cmn_p->pci_p[PCI_OTHER_SIDE(pci_p->pci_side)];

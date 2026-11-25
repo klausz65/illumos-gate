@@ -62,8 +62,6 @@ static int	panel_getinfo(dev_info_t *, ddi_info_cmd_t, void *,  void **);
 static int	panel_attach(dev_info_t *, ddi_attach_cmd_t);
 static int	panel_detach(dev_info_t *, ddi_detach_cmd_t);
 static uint_t	panel_intr(caddr_t);
-static int	panel_open(dev_t *, int, int, cred_t *);
-static int	panel_close(dev_t, int, int, cred_t *);
 
 static char	*panel_name = "oplpanel";
 int		panel_enable = 1;	/* enable or disable */

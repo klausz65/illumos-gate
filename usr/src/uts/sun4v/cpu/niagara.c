@@ -330,7 +330,7 @@ vis1_partial_support(struct regs *rp, k_siginfo_t *siginfo, uint_t *fault)
 	default:
 		siginfo->si_signo = SIGILL;
 		op3 = (instr >> 19) & 0x3F;
-		if ((IS_FLOAT(instr) && (op3 == IOP_V8_STQFA) ||
+		if (((IS_FLOAT(instr) && (op3 == IOP_V8_STQFA)) ||
 		    (op3 == IOP_V8_STDFA)))
 			siginfo->si_code = ILL_ILLADR;
 		else

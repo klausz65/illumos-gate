@@ -488,7 +488,6 @@ max1617_open(dev_t *devp, int flags, int otyp, cred_t *credp)
 		}
 	}
 
-done:
 	mutex_exit(&unitp->max1617_mutex);
 
 	return (err);

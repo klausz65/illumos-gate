@@ -165,7 +165,7 @@ vsw_create_tx_dring(vsw_ldc_t *ldcp)
 		    "failed", ldcp->ldc_id);
 		goto fail;
 	}
-	ASSERT(dp->dring_handle != NULL);
+	ASSERT(dp->dring_handle != 0);
 
 	/*
 	 * Get the base address of the public section of the ring.

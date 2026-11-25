@@ -588,7 +588,7 @@ opl_pcbe_cpuref(void)
 static char *
 opl_pcbe_list_events(uint_t picnum)
 {
-	ASSERT(picnum >= 0 && picnum < cpc_ncounters);
+	ASSERT(picnum < cpc_ncounters);
 
 	return (pic_events[picnum]);
 }
@@ -674,7 +674,7 @@ opl_pcbe_configure(uint_t picnum, char *event, uint64_t preset, uint32_t flags,
 		return (0);
 	}
 
-	if (picnum < 0 || picnum >= CPC_SPARC64_VI_NPIC)
+	if (picnum >= CPC_SPARC64_VI_NPIC)
 		return (CPC_INVALID_PICNUM);
 
 	if (nattrs != 0)

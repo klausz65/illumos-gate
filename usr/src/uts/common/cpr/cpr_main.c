@@ -260,8 +260,8 @@ cpr_log_status(int enable, int *svstat, vnode_t *vp)
 	 * when disabling, first get and save logging status (0 or 1)
 	 */
 	if (enable == 0) {
-		if (error = VOP_IOCTL(vp, _FIOISLOG,
-		    (uintptr_t)&status, FKIOCTL, CRED(), NULL, NULL)) {
+		if ((error = VOP_IOCTL(vp, _FIOISLOG,
+		    (uintptr_t)&status, FKIOCTL, CRED(), NULL, NULL)) != 0) {
 			mntpt = vfs_getmntpoint(vp->v_vfsp);
 			prom_printf("%s: \"%s\", cant get logging "
 			    "status, error %d\n", str, refstr_value(mntpt),
@@ -336,7 +336,7 @@ cpr_ufs_logging(int enable)
 	if (cpr_reusable_mode)
 		return (0);
 
-	if (error = cpr_open_deffile(FREAD, &vp))
+	if ((error = cpr_open_deffile(FREAD, &vp)) != 0 )
 		return (error);
 	vfsp = vp->v_vfsp;
 	if (!cpr_is_ufs(vfsp)) {
@@ -352,8 +352,8 @@ cpr_ufs_logging(int enable)
 	fname = cpr_build_statefile_path();
 	if (fname == NULL)
 		return (ENOENT);
-	if (error = vn_open(fname, UIO_SYSSPACE, FCREAT|FWRITE,
-	    0600, &vp, CRCREAT, 0)) {
+	if ((error = vn_open(fname, UIO_SYSSPACE, FCREAT|FWRITE,
+	    0600, &vp, CRCREAT, 0)) != 0) {
 		prom_printf("cpr_ufs_logging: cant open/create \"%s\", "
 		    "error %d\n", fname, error);
 		return (error);
@@ -469,7 +469,7 @@ cpr_suspend(int sleeptype)
 		 * We need to validate default file before fs
 		 * functionality is disabled.
 		 */
-		if (rc = cpr_validate_definfo(0))
+		if ((rc = cpr_validate_definfo(0)) != 0)
 			return (rc);
 	}
 	i_cpr_save_machdep_info();
@@ -485,7 +485,7 @@ cpr_suspend(int sleeptype)
 #if defined(__sparc)
 	ASSERT(sleeptype == CPR_TODISK);
 	cpr_set_substate(C_ST_MP_OFFLINE);
-	if (rc = cpr_mp_offline())
+	if ((rc = cpr_mp_offline()) != 0)
 		return (rc);
 #endif
 	/*
@@ -513,7 +513,7 @@ cpr_suspend(int sleeptype)
 	CPR_STAT_EVENT_START("  stop users");
 	cpr_set_substate(C_ST_STOP_USER_THREADS);
 	PMD(PMD_SX, ("cpr_suspend: stop user threads\n"))
-	if (rc = cpr_stop_user_threads())
+	if ((rc = cpr_stop_user_threads()) != 0)
 		return (rc);
 	CPR_STAT_EVENT_END("  stop users");
 	CPR_DEBUG(CPR_DEBUG1, "done\n");
@@ -557,7 +557,7 @@ cpr_suspend(int sleeptype)
 	 * threads can do the work.
 	 */
 	cpr_set_substate(C_ST_DISABLE_UFS_LOGGING);
-	if (rc = cpr_ufs_logging(0))
+	if ((rc = cpr_ufs_logging(0)) != 0)
 		return (rc);
 
 	/*
@@ -580,7 +580,7 @@ alloc_statefile:
 
 	CPR_STAT_EVENT_START("  alloc statefile");
 	cpr_set_substate(C_ST_STATEF_ALLOC);
-	if (rc = cpr_alloc_statefile(sf_realloc)) {
+	if ((rc = cpr_alloc_statefile(sf_realloc)) != 0) {
 		if (sf_realloc)
 			errp("realloc failed\n");
 		return (rc);
@@ -635,7 +635,7 @@ alloc_statefile:
 	 */
 	cpr_set_substate(C_ST_STOP_KERNEL_THREADS);
 	PMD(PMD_SX, ("cpr_suspend: stopping kernel threads\n"))
-	if (skt_rc = cpr_stop_kernel_threads())
+	if ((skt_rc = cpr_stop_kernel_threads()) != 0)
 		return (skt_rc);
 
 	PMD(PMD_SX, ("cpr_suspend: POST KERNEL callback\n"))
@@ -732,7 +732,7 @@ alloc_statefile:
 	 */
 	if (cpr_reusable_mode) {
 		cpr_set_substate(C_ST_SETPROPS_1);
-		if (nverr = cpr_set_properties(1))
+		if ((nverr = cpr_set_properties(1)) != 0)
 			return (nverr);
 	}
 
@@ -745,7 +745,7 @@ alloc_statefile:
 	 */
 	if (rc && cpr_reusable_mode) {
 		cpr_set_substate(C_ST_SETPROPS_0);
-		if (nverr = cpr_set_properties(0))
+		if ((nverr = cpr_set_properties(0)) != 0)
 			return (nverr);
 	}
 

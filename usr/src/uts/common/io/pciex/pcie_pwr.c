@@ -301,7 +301,7 @@ pcie_bus_power(dev_info_t *dip, void *impl_arg, pm_bus_power_op_t op,
 		break;
 
 	default:
-		break;
+		return (pm_busop_bus_power(dip, impl_arg, op, arg, result));
 
 	}
 

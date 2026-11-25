@@ -385,11 +385,6 @@ vsw_setup_layer2(vsw_t *vswp)
 
 	mutex_exit(&vswp->mac_lock);
 	return (0);
-
-exit_error:
-	vsw_mac_close(vswp);
-	mutex_exit(&vswp->mac_lock);
-	return (EIO);
 }
 
 static int
@@ -1507,6 +1502,10 @@ vsw_frame_lookup_vid(void *arg, int caller, struct ether_header *ehp,
 		 */
 		vswp = (vsw_t *)arg;
 		*vidp = vswp->pvid;
+		break;
+	default:
+		*vidp = 0;
+		ASSERT(0);
 		break;
 	}
 

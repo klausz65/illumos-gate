@@ -867,6 +867,9 @@ sbbc_ctlops(dev_info_t *dip, dev_info_t *rdip, ddi_ctl_enum_t op,
 		*((uint_t *)result) = i / sizeof (sbbc_child_regspec_t);
 		kmem_free(child_rp, i);
 		return (DDI_SUCCESS);
+
+	default:
+		break;
 	}
 
 	/*

@@ -688,7 +688,7 @@ sysctrl_suspend(sysc_cfga_pkt_t *pkt)
 	 */
 	DEBUGP(errp("stopping kernel daemons..."));
 	suspend_state = SYSC_STATE_DAEMON;
-	if (rc = sysctrl_stop_kernel_threads(pkt)) {
+	if ((rc = sysctrl_stop_kernel_threads(pkt)) != 0) {
 		sysctrl_resume(pkt);
 		return (rc);
 	}
@@ -714,7 +714,7 @@ sysctrl_suspend(sysc_cfga_pkt_t *pkt)
 	 */
 	DEBUGP(errp("suspending drivers..."));
 	suspend_state = SYSC_STATE_DRIVER;
-	if (rc = sysctrl_suspend_devices(ddi_root_node(), pkt)) {
+	if ((rc = sysctrl_suspend_devices(ddi_root_node(), pkt)) != 0) {
 		sysctrl_resume(pkt);
 		return (rc);
 	}

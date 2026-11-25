@@ -483,7 +483,7 @@ oplmsu_search_standby(void)
 void
 oplmsu_search_min_stop_path(void)
 {
-	upath_t	*upath, *min_upath;
+	upath_t	*upath, *min_upath = NULL;
 	lpath_t	*lpath;
 	int	min_no = UNDEFINED;
 	int	active_flag = 0;
@@ -515,7 +515,7 @@ oplmsu_search_min_stop_path(void)
 		upath = upath->u_next;
 	}
 
-	if (active_flag == 0) {
+	if ((active_flag == 0) && (min_upath != NULL)) {
 		lpath = min_upath->lpath;
 		mutex_enter(&oplmsu_uinst->l_lock);
 		lpath->src_upath = NULL;
@@ -1394,7 +1394,7 @@ oplmsu_wcmn_high_qenable(queue_t *q, krw_t rw)
 	}
 
 	/* Handle high priority message */
-	while (mp = oplmsu_wcmn_high_getq(WR(q))) {
+	while ((mp = oplmsu_wcmn_high_getq(WR(q))) != NULL) {
 		if (mp->b_datap->db_type & M_FLUSH) {
 			oplmsu_wcmn_flush_hndl(q, mp, rw);
 			continue;

@@ -1177,6 +1177,9 @@ select_bank(int bank)
 	case 2:
 		banksel = RTC_DIV2;
 		break;
+	default:
+		cmn_err(CE_PANIC, "select_bank: invalid bank %d", bank);
+		return;
 	}
 	rega |= banksel;
 	DS1287_DATA_REG = rega;

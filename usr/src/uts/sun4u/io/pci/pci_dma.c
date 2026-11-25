@@ -107,7 +107,7 @@ pci_dma_sync_flag_wait(ddi_dma_impl_t *mp, sc_t *sc_p, uint32_t onstack)
 	stack_buf[0] |= PCI_SYNC_FLAG_LOCKED;
 	mutex_enter(&sc_p->sc_sync_mutex);
 start:
-	ASSERT(!(sync_flag_pa & PCI_SYNC_FLAG_SIZE - 1));
+	ASSERT(!(sync_flag_pa & (PCI_SYNC_FLAG_SIZE - 1)));
 	stdphys(sync_flag_pa, 0);	/* reset sync flag to 0 */
 					/* membar  #LoadStore|#StoreStore */
 	stdphysio(sync_reg_pa, sync_flag_pa);
@@ -1030,7 +1030,8 @@ pci_dvma_map(ddi_dma_impl_t *mp, ddi_dma_req_t *dmareq, iommu_t *iommu_p)
 	/* allocate DVMA context */
 	if ((npages >= pci_context_minpages) && PCI_DMA_USECTX(mp)) {
 		dvma_context_t ctx;
-		if (ctx = pci_iommu_get_dvma_context(iommu_p, dvma_pg_index)) {
+		if ((ctx = pci_iommu_get_dvma_context(iommu_p,
+			dvma_pg_index)) != 0) {
 			tte |= IOMMU_CTX2TTE(ctx);
 			mp->dmai_flags |= DMAI_FLAGS_CONTEXT;
 		}
@@ -1088,7 +1089,7 @@ pci_dma_sync_unmap(dev_info_t *dip, dev_info_t *rdip, ddi_dma_impl_t *mp)
 		dvma_addr_t dvma_pg = IOMMU_BTOP(mp->dmai_mapping);
 
 		SYNC_BUF_PA(mp) = IOMMU_PAGE_TTEPA(iommu_p, dvma_pg);
-		ASSERT(!(SYNC_BUF_PA(mp) & PCI_SYNC_FLAG_SIZE - 1));
+		ASSERT(!(SYNC_BUF_PA(mp) & (PCI_SYNC_FLAG_SIZE - 1)));
 	}
 
 	if (pci_dvma_sync_before_unmap) {
@@ -1383,8 +1384,8 @@ pci_dma_physwin(pci_t *pci_p, ddi_dma_req_t *dmareq, ddi_dma_impl_t *mp)
 
 		DEBUG3(DBG_BYPASS, mp->dmai_rdip, "newwin pfn[%x-%x] %x cks\n",
 		    win_pfn0_index, i - 1, cookie_no);
-		if (ret = pci_dma_newwin(dmareq, mp, cookie_no,
-		    win_pfn0_index, i - 1, win_pp, count_max, bypass))
+		if ((ret = pci_dma_newwin(dmareq, mp, cookie_no,
+		    win_pfn0_index, i - 1, win_pp, count_max, bypass)) != 0)
 			goto err;
 
 		win_pp = &(*win_pp)->win_next;	/* win_pp = *(win_pp) */
@@ -1399,8 +1400,8 @@ pci_dma_physwin(pci_t *pci_p, ddi_dma_req_t *dmareq, ddi_dma_impl_t *mp)
 	cookie_no++;
 	DEBUG3(DBG_BYPASS, mp->dmai_rdip, "newwin pfn[%x-%x] %x cks\n",
 	    win_pfn0_index, i - 1, cookie_no);
-	if (ret = pci_dma_newwin(dmareq, mp, cookie_no, win_pfn0_index,
-	    i - 1, win_pp, count_max, bypass))
+	if ((ret = pci_dma_newwin(dmareq, mp, cookie_no, win_pfn0_index,
+	    i - 1, win_pp, count_max, bypass)) != 0)
 		goto err;
 	win_no++;
 	pci_dma_adjust(dmareq, mp, mp->dmai_winlst);

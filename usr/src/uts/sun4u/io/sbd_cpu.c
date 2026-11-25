@@ -717,7 +717,7 @@ sbd_pre_detach_cpu(sbd_handle_t *hp, sbd_devlist_t *devlist, int devnum)
 		if (cpu_is_offline(cpu)) {
 			int	e;
 
-			if (e = cpu_poweroff(cpu)) {
+			if ((e = cpu_poweroff(cpu)) != 0) {
 				cmn_err(CE_WARN,
 				    "%s: failed to power-off cpu %d "
 				    "(errno %d)",

@@ -385,7 +385,7 @@ cpr(int fcn, void *mdep)
 	/*
 	 * acquire cpr serial lock and init cpr state structure.
 	 */
-	if (rc = cpr_init(fcn))
+	if ((rc = cpr_init(fcn)) != 0)
 		return (rc);
 
 #if defined(__sparc)
@@ -402,7 +402,7 @@ cpr(int fcn, void *mdep)
 	 * down from the resume side, otherwise we are still in suspend.
 	 */
 	cpr_err(CE_CONT, "System is being suspended");
-	if (rc = cpr_main(cpr_sleeptype)) {
+	if ((rc = cpr_main(cpr_sleeptype)) != 0) {
 		CPR->c_flags |= C_ERROR;
 		PMD(PMD_SX, ("cpr: Suspend operation failed.\n"))
 		cpr_err(CE_NOTE, "Suspend operation failed.");

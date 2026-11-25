@@ -120,8 +120,8 @@ _init(void)
 {
 	int    e;
 
-	if (e = ddi_soft_state_init(&statep,
-				sizeof (struct tsalarm_softc), 1)) {
+	if ((e = ddi_soft_state_init(&statep,
+			sizeof (struct tsalarm_softc), 1)) != 0) {
 		return (e);
 	}
 

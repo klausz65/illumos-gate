@@ -730,8 +730,11 @@ load_platform_drivers(void)
 	 * Now is a good time to activate hardware watchdog (if one exists).
 	 */
 	mutex_enter(&tod_lock);
-	if (watchdog_enable)
+	if (watchdog_enable) {
 		ret = tod_ops.tod_set_watchdog_timer(watchdog_timeout_seconds);
+	} else {
+		ret = 0;
+	}
 	mutex_exit(&tod_lock);
 	if (ret != 0)
 		printf("Hardware watchdog enabled\n");

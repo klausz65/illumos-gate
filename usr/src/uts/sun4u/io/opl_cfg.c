@@ -1380,7 +1380,7 @@ opl_register_fetch(dev_info_t *ap, fco_handle_t rp, fc_ci_t *cp)
 	size_t			len;
 	caddr_t			virt;
 	int			error = 0;
-	uint64_t		v;
+	uint64_t		v = 0;
 	uint64_t		x;
 	uint32_t		l;
 	uint16_t		w;
@@ -1401,10 +1401,20 @@ opl_register_fetch(dev_info_t *ap, fco_handle_t rp, fc_ci_t *cp)
 	 * character of the name which is "rx@", "rl@", "rb@" or "rw@"
 	 */
 	switch (*(service + 1)) {
-	case 'x':	len = sizeof (x); break;
-	case 'l':	len = sizeof (l); break;
-	case 'w':	len = sizeof (w); break;
-	case 'b':	len = sizeof (b); break;
+	case 'x':
+		len = sizeof (x);
+		break;
+	case 'l':
+		len = sizeof (l);
+		break;
+	case 'w':
+		len = sizeof (w);
+		break;
+	case 'b':	
+		len = sizeof (b);
+		break;
+	default:
+		return (fc_priv_error(cp, "invalid register access size"));
 	}
 
 	/*
@@ -1497,10 +1507,10 @@ opl_register_store(dev_info_t *ap, fco_handle_t rp, fc_ci_t *cp)
 	size_t			len;
 	caddr_t			virt;
 	uint64_t		v;
-	uint64_t		x;
-	uint32_t		l;
-	uint16_t		w;
-	uint8_t			b;
+	uint64_t		x = 0;
+	uint32_t		l = 0;
+	uint16_t		w = 0;
+	uint8_t			b = 0;
 	char			*service = fc_cell2ptr(cp->svc_name);
 	struct fc_resource	*resp;
 	int			error = 0;
@@ -1535,6 +1545,8 @@ opl_register_store(dev_info_t *ap, fco_handle_t rp, fc_ci_t *cp)
 		b = fc_cell2uint8_t(fc_arg(cp, 1));
 		v = b;
 		break;
+	default:
+		return (fc_priv_error(cp, "invalid register access size"));
 	}
 
 	FC_DEBUG3(1, CE_CONT, "register_store (%s) %llx %llx\n",

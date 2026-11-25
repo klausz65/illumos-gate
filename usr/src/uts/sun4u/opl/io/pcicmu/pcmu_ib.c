@@ -739,9 +739,10 @@ pcmu_ib_update_intr_state(pcmu_t *pcmu_p, dev_info_t *rdip,
 		return (ret);
 	}
 
-	if (ino_p = pcmu_ib_locate_ino(pib_p, PCMU_IB_MONDO_TO_INO(mondo))) {
-		if (ih_p = pcmu_ib_ino_locate_intr(ino_p,
-		    rdip, hdlp->ih_inum)) {
+	if ((ino_p = pcmu_ib_locate_ino(pib_p,
+		PCMU_IB_MONDO_TO_INO(mondo))) != NULL) {
+		if ((ih_p = pcmu_ib_ino_locate_intr(ino_p,
+		    rdip, hdlp->ih_inum)) != NULL) {
 			ih_p->ih_intr_state = new_intr_state;
 			ret = DDI_SUCCESS;
 		}

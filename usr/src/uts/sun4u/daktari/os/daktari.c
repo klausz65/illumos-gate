@@ -256,33 +256,6 @@ plat_cpu_poweroff(struct cpu *cp)
 	return (ENOTSUP);
 }
 
-/*
- * Given a pfn, return the board and beginning/end of the page's
- * memory controller's address range.
- */
-static int
-plat_discover_slice(pfn_t pfn, pfn_t *first, pfn_t *last)
-{
-	int bd, cpu, bank;
-
-	for (bd = 0; bd < DAK_SBD_SLOTS; bd++) {
-		for (cpu = 0; cpu < DAK_CPUS_PER_BOARD; cpu++) {
-			for (bank = 0; bank < DAK_BANKS_PER_MC; bank++) {
-				uint64_t *slice = slice_table[bd][cpu][bank];
-				uint64_t base = btop(slice[SLICE_PA]);
-				uint64_t len = btop(slice[SLICE_SPAN]);
-				if (len && pfn >= base && pfn < (base + len)) {
-					*first = base;
-					*last = base + len - 1;
-					return (bd);
-				}
-			}
-		}
-	}
-	panic("plat_discover_slice: no slice for pfn 0x%lx\n", pfn);
-	/* NOTREACHED */
-}
-
 /*ARGSUSED*/
 void
 plat_freelist_process(int mnode)

@@ -135,7 +135,7 @@ _init(void)
 {
 	int e;
 
-	if (e = ddi_soft_state_init(&statep, sizeof (struct gpio_softc), 1)) {
+	if ((e = ddi_soft_state_init(&statep, sizeof (struct gpio_softc), 1)) != 0) {
 		return (e);
 	}
 	if ((e = mod_install(&modlinkage)) != 0) {

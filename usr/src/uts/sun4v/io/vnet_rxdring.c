@@ -45,6 +45,10 @@
 #include <sys/vio_util.h>
 #include <sys/vnet_gen.h>
 
+static struct ether_addr etherbroadcastaddr = {
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+};
+
 /*
  * This file contains the implementation of RxDringData transfer mode of VIO
  * Protocol in vnet. The functions in this file are invoked from vnet_gen.c
@@ -582,18 +586,18 @@ vgen_dringsend_shm(void *arg, mblk_t *mp)
 	size_t				mblksz;
 	caddr_t				dst;
 	mblk_t				*bp;
-	size_t				size;
+	volatile size_t			size;
 	uint32_t			buf_offset;
 	on_trap_data_t			otd;
 	int				rv = 0;
-	boolean_t			is_bcast = B_FALSE;
+	volatile boolean_t		is_bcast = B_FALSE;
 	boolean_t			is_mcast = B_FALSE;
 	vgen_ldc_t			*ldcp = (vgen_ldc_t *)arg;
 	vgen_t				*vgenp = LDC_TO_VGEN(ldcp);
 	vgen_stats_t			*statsp = &ldcp->stats;
 	vgen_hparams_t			*lp = &ldcp->local_hparams;
-	boolean_t			resched_peer = B_FALSE;
-	boolean_t			tx_update = B_FALSE;
+	volatile boolean_t		resched_peer = B_FALSE;
+	volatile boolean_t		tx_update = B_FALSE;
 
 	/* Drop the packet if ldc is not up or handshake is not done */
 	if (ldcp->ldc_status != LDC_UP) {

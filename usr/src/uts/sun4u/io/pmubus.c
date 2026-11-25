@@ -223,14 +223,13 @@ static int
 pmubus_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 {
 	pmubus_devstate_t *pmubusp;	/* per pmubus state pointer */
-	int32_t instance;
+	int32_t instance = ddi_get_instance(dip);
 
 	switch (cmd) {
 	case DDI_ATTACH:
 		/*
 		 * Allocate soft state for this instance.
 		 */
-		instance = ddi_get_instance(dip);
 		if (ddi_soft_state_zalloc(per_pmubus_state, instance) !=
 		    DDI_SUCCESS) {
 			cmn_err(CE_WARN, "pmubus_attach: Can't allocate soft "
@@ -281,6 +280,12 @@ pmubus_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 
 	case DDI_RESUME:
 		return (DDI_SUCCESS);
+
+	case DDI_PM_RESUME:
+		return (DDI_SUCCESS);
+
+	default:
+		return (DDI_FAILURE);
 	}
 
 fail_map_regs:

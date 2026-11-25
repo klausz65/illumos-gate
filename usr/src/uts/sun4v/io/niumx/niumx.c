@@ -736,7 +736,7 @@ niumx_dma_bindhdl(dev_info_t *dip, dev_info_t *rdip,
 	    NIUMX_NAMEINST(rdip), mp, dmareq);
 
 	/* first check dma type */
-	mp->dmai_rflags = dmareq->dmar_flags & DMP_DDIFLAGS | DMP_NOSYNC;
+	mp->dmai_rflags = (dmareq->dmar_flags & DMP_DDIFLAGS) | DMP_NOSYNC;
 	switch (dobj_p->dmao_type) {
 	case DMA_OTYP_VADDR: {
 		caddr_t vaddr = dobj_p->dmao_obj.virt_obj.v_addr;
@@ -1048,7 +1048,7 @@ int
 niumx_add_intr(dev_info_t *dip, dev_info_t *rdip,
     ddi_intr_handle_impl_t *hdlp)
 {
-	niumx_ih_t	*ih_p;
+	niumx_ih_t	*ih_p = NULL;
 	int		ret = DDI_SUCCESS;
 	uint64_t	hvret;
 	niusysino_t	sysino;
@@ -1124,7 +1124,7 @@ niumx_add_intr(dev_info_t *dip, dev_info_t *rdip,
 	}
 done:
 	DBG(NIUMX_DBG_A_INTX, dip, "done, ret = %d, ih_p 0x%p, hdlp 0x%p\n",
-	    ih_p, hdlp, ret);
+	    ret, ih_p, hdlp);
 	return (ret);
 }
 

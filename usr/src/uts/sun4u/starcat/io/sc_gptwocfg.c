@@ -268,6 +268,9 @@ sc_get_common_pcd(uint_t expander, uint_t prd_slot)
 			default:
 				cmn_err(CE_WARN, "sc_gptwocfg: invalid "
 				    "prd_slot=%d\n", prd_slot);
+				kmem_free(pcd, sizeof (spcd_t));
+				kmem_free(gdcd, sizeof (gdcd_t));
+				return (NULL);
 			}
 			pcd->spcd_cpuid[i] = (i << 2) | portid;
 		}
@@ -624,6 +627,10 @@ sc_configure(uint_t board, int create_nodes)
 			 */
 			agent_id = sc_get_agent_id(
 			    pcd, expander, slot, prd_slot);
+			if (agent_id == (uint_t)-1) {
+				sc_free_common_pcd(pcd);
+				continue;
+			}
 
 			pcd->memory_layout = get_memlayout(agent_id, &size);
 			pcd->memory_layout_size = size;
@@ -1167,6 +1174,7 @@ sc_get_agent_id(spcd_t *pcd, uint_t expander, uint_t slot, uint_t prd_slot)
 		cmn_err(CE_WARN, "sc_gptwocfg: Invalid Safari Port "
 		    "Type 0x%x Slot 0x%x\n",
 		    pcd->spcd_ptype, prd_slot);
+		return ((uint_t)-1);
 	} /* switch */
 
 	agent_id |= (expander << 5);

@@ -165,7 +165,7 @@ struct pcicmu {
 	PCMU_AP_MINOR_NUM_TO_INSTANCE(getminor(dev))))
 
 #define	PCMU_ATTACH_RETCODE(obj, op, err) \
-	((err) ? (obj) << 8 | (op) << 4 | (err) & 0xf : DDI_SUCCESS)
+	((err) ? (((obj) << 8) | ((op) << 4) | ((err) & 0xf)) : DDI_SUCCESS)
 
 
 /*

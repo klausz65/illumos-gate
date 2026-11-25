@@ -1747,7 +1747,7 @@ vd_slice_fake_rdwr(vd_t *vd, int slice, int operation, caddr_t *datap,
 {
 	struct dk_label *label;
 	caddr_t data;
-	size_t blk, length, csize;
+	size_t blk, length, csize = 0;
 	size_t ablk, asize, aoff, alen;
 	ssize_t n;
 	int sec, status;
@@ -6371,7 +6371,7 @@ vd_backend_check_size(vd_t *vd)
 	size_t old_size, new_size;
 	struct dk_minfo minfo;
 	vattr_t vattr;
-	int rval, rv, media, nshift = 0;
+	int rval, rv, media = vd->vdisk_media, nshift = 0;
 	uint32_t n;
 
 	if (vd->file) {

@@ -185,7 +185,7 @@ vsw_create_rx_dring(vsw_ldc_t *ldcp)
 		goto fail;
 	}
 
-	ASSERT(dp->dring_handle != NULL);
+	ASSERT(dp->dring_handle != 0);
 
 	/* Get the addr of descriptor ring */
 	if ((ldc_mem_dring_info(dp->dring_handle, &minfo)) != 0) {
@@ -867,7 +867,7 @@ vsw_dringsend_shm(vsw_ldc_t *ldcp, mblk_t *mp)
 	vio_dring_msg_t			msg;
 	vio_dring_msg_t			*msgp = &msg;
 	int				rv = 0;
-	boolean_t			resched_peer = B_FALSE;
+	volatile boolean_t		resched_peer = B_FALSE;
 	boolean_t			is_bcast = B_FALSE;
 	boolean_t			is_mcast = B_FALSE;
 	vgen_stats_t			*statsp = &ldcp->ldc_stats;

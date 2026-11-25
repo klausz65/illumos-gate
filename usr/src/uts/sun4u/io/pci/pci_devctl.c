@@ -121,7 +121,7 @@ pci_open(dev_t *devp, int flags, int otyp, cred_t *credp)
 	}
 
 	if (pci_p->hotplug_capable == B_TRUE) {
-		if (rval = pcihp_ops->cb_open(devp, flags, otyp, credp)) {
+		if ((rval = pcihp_ops->cb_open(devp, flags, otyp, credp)) != 0) {
 			pci_p->pci_soft_state = orig_pci_soft_state;
 			mutex_exit(&pci_p->pci_mutex);
 			return (rval);
@@ -152,7 +152,7 @@ pci_close(dev_t dev, int flags, int otyp, cred_t *credp)
 	mutex_enter(&pci_p->pci_mutex);
 
 	if (pci_p->hotplug_capable == B_TRUE)
-		if (rval = pcihp_ops->cb_close(dev, flags, otyp, credp)) {
+		if ((rval = pcihp_ops->cb_close(dev, flags, otyp, credp)) != 0) {
 			mutex_exit(&pci_p->pci_mutex);
 			return (rval);
 		}

@@ -224,7 +224,7 @@ typedef struct ver_sup {
 
 /* bounds check rx index */
 #define	CHECK_DESC_INDEX(dp, i)	\
-		(((i) >= 0) && ((i) < (dp)->num_descriptors))
+		((uint64_t)(i) < (dp)->num_descriptors)
 
 #define	CHECK_RXI	CHECK_DESC_INDEX
 #define	CHECK_TXI	CHECK_DESC_INDEX
@@ -473,7 +473,7 @@ typedef struct vsw_conn_evt {
 /*
  * Ethernet broadcast address definition.
  */
-static	struct	ether_addr	etherbroadcastaddr = {
+static	struct	ether_addr etherbroadcastaddr __attribute__((unused)) = {
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
 

@@ -2324,7 +2324,7 @@ force_reset:
 				rx_head = (rx_head + LDC_PACKET_SIZE) %
 				    (ldcp->rx_q_entries << LDC_PACKET_SHIFT);
 
-				if (rv = i_ldc_set_rx_head(ldcp, rx_head))
+				if ((rv = i_ldc_set_rx_head(ldcp, rx_head)) != 0)
 					break;
 
 				continue;
@@ -2438,7 +2438,7 @@ force_reset:
 
 		/* process data ACKs */
 		if ((msg->type & LDC_DATA) && (msg->stype & LDC_ACK)) {
-			if (rv = i_ldc_process_data_ACK(ldcp, msg)) {
+			if ((rv = i_ldc_process_data_ACK(ldcp, msg)) != 0) {
 				*notify_client = B_TRUE;
 				*notify_event = LDC_EVT_RESET;
 				break;
@@ -2463,7 +2463,7 @@ force_reset:
 		}
 
 		/* move the head one position */
-		if (rv = i_ldc_set_rx_head(ldcp, rx_head)) {
+		if ((rv = i_ldc_set_rx_head(ldcp, rx_head)) != 0) {
 			*notify_client = B_TRUE;
 			*notify_event = LDC_EVT_RESET;
 			break;
@@ -2539,7 +2539,7 @@ i_ldc_rx_ackpeek(ldc_chan_t *ldcp, uint64_t rx_head, uint64_t rx_tail)
 		msg = (ldc_msg_t *)(ldcp->rx_q_va + ldcp->rx_ack_head);
 
 		if ((msg->type & LDC_DATA) && (msg->stype & LDC_ACK)) {
-			if (rv = i_ldc_process_data_ACK(ldcp, msg))
+			if ((rv = i_ldc_process_data_ACK(ldcp, msg)) != 0)
 				break;
 			msg->stype &= ~LDC_ACK;
 		}
@@ -4028,7 +4028,7 @@ i_ldc_read_packet(ldc_chan_t *ldcp, caddr_t target_bufp, size_t *sizep)
 			 * both ctrl+data
 			 */
 			if (msg->type & LDC_CTRL) {
-				if (rv = i_ldc_ctrlmsg(ldcp, msg)) {
+				if ((rv = i_ldc_ctrlmsg(ldcp, msg)) != 0) {
 					if (rv == EAGAIN)
 						continue;
 					rv = i_ldc_set_rx_head(ldcp, rx_tail);
@@ -4040,7 +4040,7 @@ i_ldc_read_packet(ldc_chan_t *ldcp, caddr_t target_bufp, size_t *sizep)
 
 			/* process data ACKs */
 			if ((msg->type & LDC_DATA) && (msg->stype & LDC_ACK)) {
-				if (rv = i_ldc_process_data_ACK(ldcp, msg)) {
+				if ((rv = i_ldc_process_data_ACK(ldcp, msg)) != 0 ) {
 					*sizep = 0;
 					bytes_read = 0;
 					break;
@@ -4101,8 +4101,8 @@ i_ldc_read_packet(ldc_chan_t *ldcp, caddr_t target_bufp, size_t *sizep)
 					curr_head =
 					    (curr_head + LDC_PACKET_SIZE)
 					    & q_size_mask;
-					if (rv = ldcp->readq_set_head(ldcp,
-					    curr_head))
+					if ((rv = ldcp->readq_set_head(ldcp,
+					    curr_head)) != 0)
 						break;
 
 					continue;
@@ -4125,8 +4125,8 @@ i_ldc_read_packet(ldc_chan_t *ldcp, caddr_t target_bufp, size_t *sizep)
 					target = target_bufp;
 					first_fragment = msg->seqid;
 
-					if (rv = ldcp->readq_set_head(ldcp,
-					    curr_head))
+					if ((rv = ldcp->readq_set_head(ldcp,
+					    curr_head)) != 0)
 						break;
 				}
 			}
@@ -4152,7 +4152,7 @@ i_ldc_read_packet(ldc_chan_t *ldcp, caddr_t target_bufp, size_t *sizep)
 				bytes_read = 0;
 
 				/* throw away everything received so far */
-				if (rv = ldcp->readq_set_head(ldcp, curr_head))
+				if ((rv = ldcp->readq_set_head(ldcp, curr_head)) != 0)
 					break;
 
 				/* continue reading remaining pkts */
@@ -4176,7 +4176,7 @@ i_ldc_read_packet(ldc_chan_t *ldcp, caddr_t target_bufp, size_t *sizep)
 			 */
 
 			/* set the queue head */
-			if (rv = ldcp->readq_set_head(ldcp, curr_head))
+			if ((rv = ldcp->readq_set_head(ldcp, curr_head)) != 0)
 				bytes_read = 0;
 
 			*sizep = bytes_read;
@@ -4189,7 +4189,7 @@ i_ldc_read_packet(ldc_chan_t *ldcp, caddr_t target_bufp, size_t *sizep)
 		    ((msg->type & LDC_DATA) && (msg->stype & LDC_ACK))) {
 
 			/* set the queue head */
-			if (rv = ldcp->readq_set_head(ldcp, curr_head)) {
+			if ((rv = ldcp->readq_set_head(ldcp, curr_head)) != 0) {
 				bytes_read = 0;
 				break;
 			}
@@ -4532,6 +4532,9 @@ i_ldc_write_packet(ldc_chan_t *ldcp, caddr_t buf, size_t *size)
 	curr_seqid = ldcp->last_msg_snt;
 	start = tx_tail;
 
+	if (*size == 0)
+		return (0);
+
 	while (*size > bytes_written) {
 
 		ldcmsg = (ldc_msg_t *)(ldcp->tx_q_va + tx_tail);
@@ -4563,6 +4566,8 @@ i_ldc_write_packet(ldc_chan_t *ldcp, caddr_t buf, size_t *size)
 	}
 
 	/* Set the start and stop bits */
+	ldcmsg = (ldc_msg_t *)(ldcp->tx_q_va +
+		((tx_tail - LDC_PACKET_SIZE) & txq_size_mask));
 	ldcmsg->env |= LDC_FRAG_STOP;
 	ldcmsg = (ldc_msg_t *)(ldcp->tx_q_va + start);
 	ldcmsg->env |= LDC_FRAG_START;

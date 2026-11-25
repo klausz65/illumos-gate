@@ -1013,7 +1013,7 @@ extern "C" {
 
 #define	RULE_DEST_MAC_2(ring)	(RULE_MATCH_MASK(ring) | \
 				    RECV_RULE_CTL_HEADER_FRAME | \
-				    ETHERHEADER_DEST_OFFSET + 4)
+				    (ETHERHEADER_DEST_OFFSET + 4))
 
 #define	RULE_LOCAL_IP(ring)	(RULE_MATCH(ring) | RECV_RULE_CTL_HEADER_IP | \
 				    IPHEADER_DIP_OFFSET)

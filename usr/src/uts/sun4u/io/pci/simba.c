@@ -467,6 +467,9 @@ simba_attach(dev_info_t *devi, ddi_attach_cmd_t cmd)
 		    ddi_get_soft_state(simba_state, ddi_get_instance(devi));
 		simba_restore_config_regs(simba);
 		return (DDI_SUCCESS);
+
+	default:
+		break;
 	}
 	return (DDI_FAILURE);
 }
@@ -495,6 +498,9 @@ simba_detach(dev_info_t *devi, ddi_detach_cmd_t cmd)
 	case DDI_SUSPEND:
 		simba_save_config_regs(simba);
 		return (DDI_SUCCESS);
+
+	default:
+		break;
 	}
 	return (DDI_FAILURE);
 }

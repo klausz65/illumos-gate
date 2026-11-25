@@ -1867,10 +1867,10 @@ async_rxint(struct asycom *asy, uchar_t lsr)
 				if (c == 0)  {
 		/* Look for break on kbd, stdin, or rconsdev */
 					if ((async->async_dev == kbddev) ||
-					    ((async->async_dev == rconsdev) ||
+					    (((async->async_dev == rconsdev) ||
 					    (async->async_dev == stdindev)) &&
 					    (abort_enable !=
-					    KIOCABORTALTERNATE))
+					    KIOCABORTALTERNATE)))
 						abort_sequence_enter((char *)0);
 					else
 						async->async_break++;

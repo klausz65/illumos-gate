@@ -854,7 +854,8 @@ ib_update_intr_state(pci_t *pci_p, dev_info_t *rdip,
 
 	ino_p = ib_locate_ino(ib_p, IB_MONDO_TO_INO(mondo));
 	if (ino_p && (ipil_p = ib_ino_locate_ipil(ino_p, hdlp->ih_pri))) {
-		if (ih_p = ib_intr_locate_ih(ipil_p, rdip, hdlp->ih_inum)) {
+		if ((ih_p = ib_intr_locate_ih(ipil_p, rdip,
+		     hdlp->ih_inum)) != NULL) {
 			ih_p->ih_intr_state = new_intr_state;
 			ret = DDI_SUCCESS;
 		}

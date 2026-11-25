@@ -1680,7 +1680,7 @@ vdc_ver_negotiation(vdc_t *vdcp)
 	vio_msg_t vio_msg;
 	int status;
 
-	if (status = vdc_init_ver_negotiation(vdcp, vdc_version[0]))
+	if ((status = vdc_init_ver_negotiation(vdcp, vdc_version[0])) != 0)
 		return (status);
 
 	/* release lock and wait for response */
@@ -1775,7 +1775,7 @@ vdc_attr_negotiation(vdc_t *vdcp)
 	int status;
 	vio_msg_t vio_msg;
 
-	if (status = vdc_init_attr_negotiation(vdcp))
+	if ((status = vdc_init_attr_negotiation(vdcp)) != 0)
 		return (status);
 
 	/* release lock and wait for response */
@@ -1882,7 +1882,7 @@ vdc_dring_negotiation(vdc_t *vdcp)
 	int status;
 	vio_msg_t vio_msg;
 
-	if (status = vdc_init_dring_negotiate(vdcp))
+	if ((status = vdc_init_dring_negotiate(vdcp)) != 0)
 		return (status);
 
 	/* release lock and wait for response */
@@ -1991,7 +1991,7 @@ vdc_rdx_exchange(vdc_t *vdcp)
 	int status;
 	vio_msg_t vio_msg;
 
-	if (status = vdc_send_rdx(vdcp))
+	if ((status = vdc_send_rdx(vdcp)) != 0)
 		return (status);
 
 	/* release lock and wait for response */
@@ -3431,7 +3431,7 @@ vdc_do_sync_op(vdc_t *vdcp, int operation, caddr_t addr, size_t nbytes,
 static int
 vdc_drain_response(vdc_t *vdc, struct buf *buf)
 {
-	int			rv, idx, retries;
+	int			rv, idx = -1, retries;
 	size_t			msglen;
 	vdc_local_desc_t	*ldep = NULL;	/* Local Dring Entry Pointer */
 	vio_dring_msg_t		dmsg;

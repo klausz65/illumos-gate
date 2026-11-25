@@ -81,9 +81,6 @@ set_platform_defaults(void)
  * Definitions for accessing the pci config space of the isa node
  * of Southbridge.
  */
-static ddi_acc_handle_t isa_handle = NULL;	/* handle for isa pci space */
-
-
 void
 load_platform_drivers(void)
 {

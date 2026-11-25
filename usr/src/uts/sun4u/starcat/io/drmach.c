@@ -2591,6 +2591,7 @@ drmach_portid2bnum(int portid)
 
 	default:
 		ASSERT(0);		/* catch in debug kernels */
+		return (-1);
 	}
 
 	return (((portid >> 4) & 0x7e) | slot);
@@ -3316,7 +3317,7 @@ drmach_copy_rename_init(drmachid_t t_id, uint64_t t_slice_offset,
 
 #ifdef DEBUG
 	{
-	uint64_t s_basepa, s_size, t_size;
+	uint64_t s_basepa, s_size= 0, t_size = 0;
 
 	x_ml = c_ml;
 	while (x_ml->ml_next != NULL)
@@ -3464,8 +3465,7 @@ drmach_copy_rename_fini(drmachid_t id)
 		break;
 	}
 	case DRMACH_CR_IOPAUSE_ERR:
-		ASSERT((uintptr_t)cr->earg >= 0 &&
-		    (uintptr_t)cr->earg < AXQ_MAX_EXP);
+		ASSERT((uintptr_t)cr->earg < AXQ_MAX_EXP);
 
 		err = drerr_new(0,  ESBD_SUSPEND, "EX%d", (uintptr_t)cr->earg);
 		cmn_err(CE_WARN, "failed to idle EX%ld AXQ slot1 activity prior"
@@ -3560,7 +3560,6 @@ drmach_copy_rename(drmachid_t id)
 	uint_t			 pstate;
 	uint32_t		 exp = 0;
 	on_trap_data_t		 otd;
-	xcfunc_t		*drmach_end_wait_xcall = drmach_rename_done;
 
 	ASSERT(cr->isa == (void *)drmach_copy_rename_init);
 	ASSERT(MUTEX_HELD(&cpu_lock));
@@ -3570,7 +3569,7 @@ drmach_copy_rename(drmachid_t id)
 	 * Prevent slot1 IO from accessing Safari memory bus.
 	 */
 	if (axq_iopause_enable_all(&exp) != DDI_SUCCESS) {
-		ASSERT(exp >= 0 && exp < AXQ_MAX_EXP);
+		ASSERT(exp < AXQ_MAX_EXP);
 		cr->ecode = DRMACH_CR_IOPAUSE_ERR;
 		cr->earg = (void *)(uintptr_t)exp;
 		return;
@@ -3757,9 +3756,6 @@ copy_rename_end:
 	/* enable CE reporting */
 	set_error_enable(neer);
 
-	if (cr->ecode != DRMACH_CR_OK)
-		drmach_end_wait_xcall = drmach_rename_abort;
-
 	/*
 	 * XXX CHEETAH SUPPORT
 	 */
@@ -3773,7 +3769,8 @@ copy_rename_end:
 
 	axq_iopause_disable_all();
 
-	xt_some(cpuset, drmach_end_wait_xcall, 0, 0);
+	xt_some(cpuset, cr->ecode == DRMACH_CR_OK ?
+		drmach_rename_done : drmach_rename_abort, 0, 0);
 }
 
 static void drmach_io_dispose(drmachid_t);
@@ -5950,7 +5947,7 @@ drmach_io_unrelease(drmachid_t id)
 			ios.eri_dip = NULL;
 			ios.bnum = dp->bp->bnum;
 
-			if (pdip = ddi_get_parent(dip)) {
+			if ((pdip = ddi_get_parent(dip)) != NULL) {
 				ndi_hold_devi(pdip);
 				ndi_devi_enter(pdip);
 			}
@@ -6019,7 +6016,7 @@ drmach_io_release(drmachid_t id)
 			ios.eri_dip = NULL;
 			ios.bnum = dp->bp->bnum;
 
-			if (pdip = ddi_get_parent(dip)) {
+			if ((pdip = ddi_get_parent(dip)) != NULL) {
 				ndi_hold_devi(pdip);
 				ndi_devi_enter(pdip);
 			}
@@ -6131,7 +6128,7 @@ drmach_io_post_attach(drmachid_t id)
 	ios.eri_dip = NULL;
 	ios.bnum = dp->bp->bnum;
 
-	if (pdip = ddi_get_parent(dip)) {
+	if ((pdip = ddi_get_parent(dip)) != NULL) {
 		ndi_hold_devi(pdip);
 		ndi_devi_enter(pdip);
 	}
@@ -6858,7 +6855,7 @@ static sbd_error_t *
 drmach_pt_ikprobe(drmachid_t id, drmach_opts_t *opts)
 {
 	drmach_board_t		*bp = (drmach_board_t *)id;
-	sbd_error_t		*err;
+	sbd_error_t		*err = NULL;
 	sc_gptwocfg_cookie_t	scc;
 
 	if (!DRMACH_IS_BOARD_ID(id))
@@ -7144,7 +7141,7 @@ drmach_unconfigure(drmachid_t id, int flags)
 					ios.eri_dip = NULL;
 					ios.bnum = dp->bp->bnum;
 
-					if (pdip = ddi_get_parent(rdip)) {
+					if ((pdip = ddi_get_parent(rdip)) != NULL) {
 						ndi_hold_devi(pdip);
 						ndi_devi_enter(pdip);
 					}
@@ -8568,7 +8565,7 @@ drmach_sr_dip(dev_info_t *dip, int suspend)
 {
 	int	 rv;
 	major_t	 maj;
-	char	*name, *name_addr, *aka;
+	char	*name, *name_addr, *aka = "<unknown>";
 
 	if ((name = ddi_get_name(dip)) == NULL)
 		name = "<null name>";
@@ -8672,7 +8669,7 @@ drmach_resume_first()
 int
 drmach_log_sysevent(int board, char *hint, int flag, int verbose)
 {
-	sysevent_t			*ev;
+	sysevent_t			*ev = NULL;
 	sysevent_id_t			eid;
 	int				rv, km_flag;
 	sysevent_value_t		evnt_val;
@@ -8760,7 +8757,7 @@ drmach_msg_memregs_init(dr_memregs_t regs_arr[])
 {
 	int		rv, exp, mcnum, bank;
 	uint64_t	madr;
-	drmachid_t	id;
+	drmachid_t	id = NULL;
 	drmach_board_t	*bp;
 	drmach_mem_t	*mp;
 	dr_memregs_t	*memregs;

@@ -324,7 +324,7 @@ mmu_setup_page_sizes(struct hat *hat, uint64_t *ttecnt, uint8_t *tmp_pgsz)
 	/*
 	 * Don't program 2nd dtlb for kernel and ism hat
 	 */
-	ASSERT(hat->sfmmu_ismhat == NULL);
+	ASSERT(hat->sfmmu_ismhat == 0);
 	ASSERT(hat != ksfmmup);
 
 	if (cpu_impl_dual_pgsz == 0)	/* disable_dual_pgsz flag */

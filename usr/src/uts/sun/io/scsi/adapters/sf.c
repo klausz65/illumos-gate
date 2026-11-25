@@ -1912,7 +1912,7 @@ sf_add_cr_pool(struct sf *sf)
 	 * Generate a (cmd/rsp structure) free list
 	 */
 	/* ensure ptr points to start of long word (8-byte block) */
-	dptr = (caddr_t)((uintptr_t)(ptr->cmd_base) + 7 & ~7);
+	dptr = (caddr_t)(((uintptr_t)(ptr->cmd_base) + 7) & ~7);
 	/* keep track of actual size after moving pointer */
 	real_cmd_buf_size -= (dptr - ptr->cmd_base);
 	eptr = ptr->rsp_base;
@@ -1920,8 +1920,12 @@ sf_add_cr_pool(struct sf *sf)
 	/* set actual total number of entries */
 	ptr->ntot = min((real_cmd_buf_size / sizeof (struct fcp_cmd)),
 	    (real_rsp_buf_size / FCP_MAX_RSP_IU_SIZE));
+
+	if (ptr->ntot == 0)
+		goto fail;
+
 	ptr->nfree = ptr->ntot;
-	ptr->free = (struct sf_cr_free_elem *)ptr->cmd_base;
+	ptr->free = (struct sf_cr_free_elem *)dptr;
 	ptr->sf = sf;
 
 	/* set up DMA for each pair of entries */

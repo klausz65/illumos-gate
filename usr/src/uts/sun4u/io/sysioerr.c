@@ -272,7 +272,6 @@ sysio_init_err(struct sbus_soft_state *softsp)
 static uint_t
 sysio_dis_err(struct sbus_soft_state *softsp)
 {
-	volatile uint64_t tmpreg;
 	volatile uint64_t *mondo_vec_reg, *clear_vec_reg;
 
 	*softsp->sysio_ctrl_reg &= ~SYSIO_APCKEN;
@@ -280,11 +279,6 @@ sysio_dis_err(struct sbus_soft_state *softsp)
 	*softsp->sbus_err_reg &= ~SB_CSR_ERRINT_EN;
 
 	/* Flush store buffers */
-	tmpreg = *softsp->sbus_ctrl_reg;
-#ifdef lint
-	tmpreg = tmpreg;
-#endif
-
 	/* Unmap mapping registers */
 	mondo_vec_reg = (softsp->intr_mapping_reg + UE_ECC_MAPREG);
 	clear_vec_reg = (softsp->clr_intr_reg + UE_ECC_CLEAR);
@@ -308,7 +302,7 @@ sysio_dis_err(struct sbus_soft_state *softsp)
 	*clear_vec_reg = 0;
 
 	/* Flush store buffers */
-	tmpreg = *softsp->sbus_ctrl_reg;
+	(void) *(volatile uint64_t *)softsp->sbus_ctrl_reg;
 
 	return (BF_NONE);
 }

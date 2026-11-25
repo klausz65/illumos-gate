@@ -98,63 +98,6 @@ sbdp_walk_prom_tree(pnode_t node, int(*f)(pnode_t, void *, uint_t), void *arg)
 	(void) prom_tree_access(sbdp_walk_prom_tree_start, &arg_block, NULL);
 }
 
-static void
-sbdp_attach_branch(dev_info_t *pdip, pnode_t node, void *arg)
-{
-	attach_pkt_t	*apktp = (attach_pkt_t *)arg;
-	pnode_t		child;
-	dev_info_t	*dip = NULL;
-	static int	err = 0;
-	static int	len = 0;
-	char		name[OBP_MAXDRVNAME];
-#if OBP_MAXDRVNAME == OBP_MAXPROPNAME
-#define	buf	name
-#else
-	char		buf[OBP_MAXPROPNAME];
-#endif
-	static fn_t	f = "sbdp_attach_branch";
-
-	SBDP_DBG_FUNC("%s\n", f);
-
-	if (node == OBP_NONODE)
-		return;
-
-	/*
-	 * Get the status for this node
-	 * If it has failed we imitate boot by not creating a node
-	 * in solaris. We just warn the user
-	 */
-	if (check_status(node, buf, pdip) != DDI_SUCCESS) {
-		SBDP_DBG_STATE("status failed skipping this node\n");
-		return;
-	}
-
-	len = prom_getproplen(node, OBP_REG);
-	if (len <= 0) {
-		return;
-	}
-
-	(void) prom_getprop(node, OBP_NAME, (caddr_t)name);
-	err = ndi_devi_alloc(pdip, name, node, &dip);
-	if (err != NDI_SUCCESS) {
-		return;
-	}
-	SBDP_DBG_STATE("attaching %s\n", name);
-	err = ndi_devi_online(dip, NDI_DEVI_BIND);
-	if (err != NDI_SUCCESS) {
-		(void) ndi_devi_free(dip);
-		return;
-	}
-	child = prom_childnode(node);
-	if (child != OBP_NONODE) {
-		for (; child != OBP_NONODE;
-		    child = prom_nextnode(child)) {
-			sbdp_attach_branch(dip, child, (void *)apktp);
-		}
-	}
-#undef buf
-}
-
 static int
 sbdp_find_ssm_dip(dev_info_t *dip, void *arg)
 {
@@ -339,7 +282,7 @@ sbdp_detach_bd(int node, int board, sbd_error_t *sep)
 	sbdp_walk_prom_tree(prom_rootnode(), sbdp_select_top_nodes,
 	    (void *) apktp);
 
-	if (rv = sbdp_detach_nodes(apktp)) {
+	if ((rv = sbdp_detach_nodes(apktp)) != 0) {
 		sbdp_set_err(sep, ESBD_IO, NULL);
 		return (rv);
 	}

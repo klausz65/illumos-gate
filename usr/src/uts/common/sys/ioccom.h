@@ -63,21 +63,21 @@ extern "C" {
 #define	_IO(x, y)	(IOC_VOID|(x<<8)|y)
 #define	_IOR(x, y, t) 							\
 	    ((int)((uint32_t)						\
-	    (IOC_OUT|(((sizeof (t))&IOCPARM_MASK)<<16)|(x<<8)|y)))
+	    (IOC_OUT|(((sizeof (t))&IOCPARM_MASK)<<16)|(((x)<<8)|(y)))))
 
 #define	_IORN(x, y, t)	((int)((uint32_t)(IOC_OUT|(((t)&IOCPARM_MASK)<<16)| \
 	    (x<<8)|y)))
 
 #define	_IOW(x, y, t)							\
 	    ((int)((uint32_t)(IOC_IN|(((sizeof (t))&IOCPARM_MASK)<<16)|	\
-	    (x<<8)|y)))
+	    ((x)<<8)|(y))))
 
 #define	_IOWN(x, y, t)	((int32_t)(uint32_t)(IOC_IN|(((t)&IOCPARM_MASK)<<16)| \
 	    (x<<8)|y))
 
 #define	_IOWR(x, y, t)							\
 	    ((int)((uint32_t)(IOC_INOUT|(((sizeof (t))&IOCPARM_MASK)<<16)| \
-	    (x<<8)|y)))
+	    ((x)<<8)|(y))))
 
 #define	_IOWRN(x, y, t)							\
 	    ((int)((uint32_t)(IOC_INOUT|(((t)&IOCPARM_MASK)<<16)| \

@@ -125,7 +125,6 @@ static void vsw_process_pkt_data(void *, void *, uint32_t);
 static void vsw_process_data_ibnd_pkt(vsw_ldc_t *, void *);
 static void vsw_process_err_pkt(vsw_ldc_t *, void *, vio_msg_tag_t *);
 static void vsw_process_evt_read(vsw_ldc_t *ldcp);
-static void vsw_ldc_rcv(vsw_ldc_t *ldcp);
 
 /* Switching/data transmit routines */
 static	int vsw_descrsend(vsw_ldc_t *, mblk_t *);
@@ -156,12 +155,6 @@ static int vsw_mapin_avail(vsw_ldc_t *ldcp);
 /* tx/msg/rcv thread routines */
 static void vsw_stop_tx_thread(vsw_ldc_t *ldcp);
 static void vsw_ldc_tx_worker(void *arg);
-
-/* Misc support routines */
-static void vsw_save_lmacaddr(vsw_t *vswp, uint64_t macaddr);
-static int vsw_get_same_dest_list(struct ether_header *ehp,
-    mblk_t **rhead, mblk_t **rtail, mblk_t **mpp);
-static mblk_t *vsw_dupmsgchain(mblk_t *mp);
 
 /* Debugging routines */
 static void dump_flags(uint64_t);
@@ -4032,7 +4025,7 @@ static int
 vsw_ldcsend(vsw_ldc_t *ldcp, mblk_t *mp, uint32_t retries)
 {
 	int		i;
-	int		rc;
+	int		rc = 0;
 	int		status = 0;
 	vsw_port_t	*port = ldcp->ldc_port;
 	dring_info_t	*dp = NULL;
@@ -4831,7 +4824,7 @@ vsw_mapin_avail(vsw_ldc_t *ldcp)
 /*
  * Debugging routines
  */
-static void
+static void __attribute__((unused))
 display_state(void)
 {
 	vsw_t		*vswp;
@@ -4920,7 +4913,7 @@ display_ring(dring_info_t *dringp)
 	    i, priv_count, pub_count);
 }
 
-static void
+static void __attribute__((unused))
 dump_flags(uint64_t state)
 {
 	int	i;

@@ -1053,8 +1053,8 @@ nxge_txdma_reclaim(p_nxge_t nxgep, p_tx_ring_t tx_ring_p, int nmblks)
 				NXGE_DEBUG_MSG((nxgep, TX_CTL,
 				    "==> nxge_txdma_reclaim: "
 				    "USE DMA"));
-				if (rc = ddi_dma_unbind_handle
-				    (tx_msg_p->dma_handle)) {
+				if ((rc = ddi_dma_unbind_handle
+				    (tx_msg_p->dma_handle)) != DDI_SUCCESS) {
 					cmn_err(CE_WARN, "!nxge_reclaim: "
 					    "ddi_dma_unbind_handle "
 					    "failed. status %d", rc);

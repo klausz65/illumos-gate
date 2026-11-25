@@ -250,7 +250,7 @@ ppm_create_db(dev_info_t *dip)
 	(void) strcpy(domdata.name, PPM_DOMAIN_PROP);
 	cdata[0] = &domdata;
 	cdata[1] = NULL;
-	if (err = ppm_get_confdata(cdata, dip)) {
+	if ((err = ppm_get_confdata(cdata, dip)) != 0) {
 		PPMD(D_CREATEDB, ("%s: failed to get prop \"%s\"!\n",
 		    str, PPM_DOMAIN_PROP))
 		return (ppm_attach_err(cdata, err));
@@ -291,7 +291,7 @@ ppm_create_db(dev_info_t *dip)
 
 		cdata[0] = &modeldata;
 		cdata[1] = NULL;
-		if (err = ppm_get_confdata(cdata, dip)) {
+		if ((err = ppm_get_confdata(cdata, dip)) != 0) {
 			PPMD(D_CREATEDB, ("%s: Can't read property %s!\n",
 			    str, modeldata.name))
 			return (ppm_attach_err(cdata, err));
@@ -340,7 +340,7 @@ ppm_create_db(dev_info_t *dip)
 
 		cdata[0] = &devdata;
 		cdata[1] = NULL;
-		if (err = ppm_get_confdata(cdata, dip)) {
+		if ((err = ppm_get_confdata(cdata, dip)) != 0) {
 			PPMD(D_CREATEDB, ("%s: Can't read property %s!\n",
 			    str, devdata.name))
 			return (ppm_attach_err(cdata, err));
@@ -841,7 +841,7 @@ ppm_init_lyr(ppm_dc_t	*dc, dev_info_t *dip)
 
 	ASSERT(dc && dc->path);
 
-	if (err = ldi_ident_from_dip(dip, &li)) {
+	if ((err = ldi_ident_from_dip(dip, &li)) != 0) {
 		cmn_err(CE_WARN, "%s: get ldi identifier "
 		    "failed (err=%d)", str, err);
 	}
@@ -876,6 +876,8 @@ ppm_lock_one(ppm_dev_t *ppmd, power_req_t *reqp, int *iresp)
 
 	case PMR_PPM_TRY_LOCK_POWER:
 		*iresp = pm_try_locking_power_single(ppmd->dip);
+		break;
+	default:
 		break;
 	}
 }

@@ -488,7 +488,7 @@ pci_map(dev_info_t *dip, dev_info_t *rdip, ddi_map_req_t *mp,
 	pci_t *pci_p = get_pci_soft_state(ddi_get_instance(dip));
 	struct regspec p_regspec;
 	ddi_map_req_t p_mapreq;
-	int reglen, rval, r_no;
+	int reglen, rval, r_no = 0;
 	pci_regspec_t reloc_reg, *rp = &reloc_reg;
 
 	DEBUG2(DBG_MAP, dip, "rdip=%s%d:",
@@ -523,7 +523,7 @@ pci_map(dev_info_t *dip, dev_info_t *rdip, ddi_map_req_t *mp,
 	DEBUG0(DBG_MAP | DBG_CONT, dip, "\n");
 
 	/* use "assigned-addresses" to relocate regspec within pci space */
-	if (rval = pci_reloc_reg(dip, rdip, pci_p, rp))
+	if ((rval = pci_reloc_reg(dip, rdip, pci_p, rp)) != 0)
 		goto done;
 
 	if (len)	/* adjust regspec according to mapping request */
@@ -531,7 +531,7 @@ pci_map(dev_info_t *dip, dev_info_t *rdip, ddi_map_req_t *mp,
 	rp->pci_phys_low += off;
 
 	/* use "ranges" to translate relocated pci regspec into parent space */
-	if (rval = pci_xlate_reg(pci_p, rp, &p_regspec))
+	if ((rval = pci_xlate_reg(pci_p, rp, &p_regspec)) != 0)
 		goto done;
 
 	p_mapreq = *mp;		/* dup the whole structure */
@@ -586,9 +586,9 @@ pci_dma_setup(dev_info_t *dip, dev_info_t *rdip, ddi_dma_req_t *dmareq,
 		return (DDI_DMA_NORESOURCES);
 	if (mp == (ddi_dma_impl_t *)DDI_DMA_NOMAPPING)
 		return (DDI_DMA_NOMAPPING);
-	if (ret = pci_dma_type(pci_p, dmareq, mp))
+	if ((ret = pci_dma_type(pci_p, dmareq, mp)) != 0)
 		goto freehandle;
-	if (ret = pci_dma_pfn(pci_p, dmareq, mp))
+	if ((ret = pci_dma_pfn(pci_p, dmareq, mp)) != 0)
 		goto freehandle;
 
 	switch (PCI_DMA_TYPE(mp)) {
@@ -604,7 +604,7 @@ pci_dma_setup(dev_info_t *dip, dev_info_t *rdip, ddi_dma_req_t *dmareq,
 				PCI_DVMA_FASTTRAK_PROF(mp);
 			}
 		}
-		if (ret = pci_dvma_map(mp, dmareq, iommu_p))
+		if ((ret = pci_dvma_map(mp, dmareq, iommu_p)) != 0)
 			goto freehandle;
 		break;
 	case DMAI_FLAGS_PEER_TO_PEER:	/* LINTED E_EQUALITY_NOT_ASSIGNMENT */
@@ -660,7 +660,7 @@ pci_dma_allochdl(dev_info_t *dip, dev_info_t *rdip, ddi_dma_attr_t *attrp,
 	DEBUG1(DBG_DMA_ALLOCH, dip, "mp=%p\n", mp);
 
 	/* check and convert dma attributes to handle parameters */
-	if (rval = pci_dma_attr2hdl(pci_p, mp)) {
+	if ((rval = pci_dma_attr2hdl(pci_p, mp)) != 0) {
 		pci_dma_freehdl(dip, rdip, (ddi_dma_handle_t)mp);
 		*handlep = NULL;
 		return (rval);
@@ -711,14 +711,14 @@ pci_dma_bindhdl(dev_info_t *dip, dev_info_t *rdip,
 	ASSERT((mp->dmai_flags & ~DMAI_FLAGS_PRESERVE) == 0);
 	mp->dmai_flags |= DMAI_FLAGS_INUSE;
 
-	if (ret = pci_dma_type(pci_p, dmareq, mp))
+	if ((ret = pci_dma_type(pci_p, dmareq, mp)) != 0)
 		goto err;
-	if (ret = pci_dma_pfn(pci_p, dmareq, mp))
+	if ((ret = pci_dma_pfn(pci_p, dmareq, mp)) != 0)
 		goto err;
 
 	switch (PCI_DMA_TYPE(mp)) {
 	case DMAI_FLAGS_DVMA:
-		if (ret = pci_dvma_win(pci_p, dmareq, mp))
+		if ((ret = pci_dvma_win(pci_p, dmareq, mp)) != 0)
 			goto map_err;
 		if (!PCI_DMA_CANCACHE(mp)) {	/* try fast track */
 			if (PCI_DMA_CANFAST(mp)) {
@@ -728,7 +728,7 @@ pci_dma_bindhdl(dev_info_t *dip, dev_info_t *rdip,
 				PCI_DVMA_FASTTRAK_PROF(mp);
 			}
 		}
-		if (ret = pci_dvma_map(mp, dmareq, iommu_p))
+		if ((ret = pci_dvma_map(mp, dmareq, iommu_p)) != 0)
 			goto map_err;
 mapped:
 		*ccountp = 1;
@@ -738,7 +738,7 @@ mapped:
 		break;
 	case DMAI_FLAGS_BYPASS:
 	case DMAI_FLAGS_PEER_TO_PEER:
-		if (ret = pci_dma_physwin(pci_p, dmareq, mp))
+		if ((ret = pci_dma_physwin(pci_p, dmareq, mp)) != 0)
 			goto map_err;
 		*ccountp = WINLST(mp)->win_ncookies;
 		*cookiep = *(ddi_dma_cookie_t *)(WINLST(mp) + 1); /* wholeobj */
@@ -1160,7 +1160,7 @@ pci_do_caut_get(pci_t *pci_p, peekpoke_ctlops_t *cautacc_ctlops_arg)
 static int
 pci_ctlops_peek(pci_t *pci_p, peekpoke_ctlops_t *in_args, void *result)
 {
-	result = (void *)in_args->host_addr;
+	_NOTE(ARGUNUSED(result))
 	return (in_args->handle ? pci_do_caut_get(pci_p, in_args) :
 	    pci_do_peek(pci_p, in_args));
 }

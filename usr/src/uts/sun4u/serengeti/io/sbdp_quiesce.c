@@ -372,7 +372,6 @@ sbdp_suspend_devices_(dev_info_t *dip, sbdp_sr_handle_t *srh)
 static int
 sbdp_suspend_devices_enter(dev_info_t *dip, void *arg)
 {
-	struct dev_info *devi = DEVI(dip);
 	ndi_devi_enter(dip);
 	return (DDI_WALK_CONTINUE);
 }
@@ -381,7 +380,6 @@ sbdp_suspend_devices_enter(dev_info_t *dip, void *arg)
 static int
 sbdp_suspend_devices_exit(dev_info_t *dip, void *arg)
 {
-	struct dev_info *devi = DEVI(dip);
 	ndi_devi_exit(dip);
 	return (DDI_WALK_CONTINUE);
 }
@@ -428,9 +426,11 @@ sbdp_resume_devices(dev_info_t *start, sbdp_sr_handle_t *srh)
 		} else if (sbdp_is_real_device(dip) &&
 		    SR_FAILED_DIP(srh) == NULL) {
 
-			if (DEVI(dip)->devi_binding_name != NULL) {
-				bn = ddi_binding_name(dip);
-			}
+			bn = ddi_binding_name(dip);
+			if (bn == NULL)
+				bn = ddi_get_name(dip);
+			if (bn == NULL)
+				bn = "<unknown>";
 #ifdef DEBUG
 			if (!sbdp_bypass_device(bn)) {
 #else

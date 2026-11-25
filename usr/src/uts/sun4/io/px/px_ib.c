@@ -823,8 +823,8 @@ px_ib_update_intr_state(px_t *px_p, dev_info_t *rdip,
 
 	ino_p = px_ib_locate_ino(ib_p, ino);
 	if (ino_p && (ipil_p = px_ib_ino_locate_ipil(ino_p, pil))) {
-		if (ih_p = px_ib_intr_locate_ih(ipil_p, rdip, inum, rec_type,
-		    msg_code)) {
+		if ((ih_p = px_ib_intr_locate_ih(ipil_p, rdip, inum, rec_type,
+		    msg_code)) != NULL) {
 			ih_p->ih_intr_state = new_intr_state;
 			ret = DDI_SUCCESS;
 		}
@@ -1221,7 +1221,7 @@ px_ib_log_new_cpu(px_ib_t *ib_p, cpuid_t old_cpu_id, cpuid_t new_cpu_id,
 	mutex_enter(&ib_p->ib_ino_lst_mutex);
 
 	/* Log in OS data structures the new CPU. */
-	if (ino_p = px_ib_locate_ino(ib_p, ino)) {
+	if ((ino_p = px_ib_locate_ino(ib_p, ino)) != NULL) {
 
 		/* Log in OS data structures the new CPU. */
 		ino_p->ino_cpuid = new_cpu_id;

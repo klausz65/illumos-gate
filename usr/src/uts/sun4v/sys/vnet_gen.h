@@ -96,9 +96,6 @@ extern "C" {
  */
 #define	VGEN_RXDRING_NRBUFS	(vnet_num_descriptors * vgen_nrbufs_factor)
 
-static struct ether_addr etherbroadcastaddr = {
-	0xff, 0xff, 0xff, 0xff, 0xff, 0xff
-};
 /*
  * MIB II broadcast/multicast packets
  */
@@ -183,11 +180,11 @@ typedef enum {
 
 /* bounds check rx index */
 #define	CHECK_RXI(i, ldcp)	\
-		(((i) >= 0) && ((i) < (ldcp)->num_rxds))
+		((uint64_t)(i) < (ldcp)->num_rxds)
 
 /* bounds check tx index */
 #define	CHECK_TXI(i, ldcp)	\
-		(((i) >= 0) && ((i) < (ldcp)->num_txds))
+		((uint64_t)(i) < (ldcp)->num_txds)
 
 #ifdef DEBUG
 

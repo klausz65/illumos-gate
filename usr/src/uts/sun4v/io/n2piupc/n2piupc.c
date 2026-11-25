@@ -128,7 +128,6 @@ _init(void)
 
 		return (DDI_SUCCESS);
 
-bad_mod_install:
 	n2piupc_kstat_fini();
 bad_kstat_init:
 	ddi_soft_state_fini(&n2piupc_state_p);

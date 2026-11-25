@@ -135,7 +135,6 @@ static int pcmu_map(dev_info_t *, dev_info_t *, ddi_map_req_t *,
 static int pcmu_intr_ops(dev_info_t *, dev_info_t *, ddi_intr_op_t,
     ddi_intr_handle_impl_t *, void *);
 
-static uint32_t pcmu_identity_init(pcmu_t *pcmu_p);
 static int pcmu_intr_setup(pcmu_t *pcmu_p);
 static void pcmu_pbm_errstate_get(pcmu_t *pcmu_p,
     pcmu_pbm_errstate_t *pbm_err_p);
@@ -690,7 +689,7 @@ pcmu_map(dev_info_t *dip, dev_info_t *rdip, ddi_map_req_t *mp,
 	pcmu_t *pcmu_p = get_pcmu_soft_state(ddi_get_instance(dip));
 	struct regspec p_regspec;
 	ddi_map_req_t p_mapreq;
-	int reglen, rval, r_no;
+	int reglen, rval, r_no = 0;
 	pci_regspec_t reloc_reg, *rp = &reloc_reg;
 
 	PCMU_DBG2(PCMU_DBG_MAP, dip, "rdip=%s%d:",
@@ -727,7 +726,7 @@ pcmu_map(dev_info_t *dip, dev_info_t *rdip, ddi_map_req_t *mp,
 	PCMU_DBG0(PCMU_DBG_MAP | PCMU_DBG_CONT, dip, "\n");
 
 	/* use "assigned-addresses" to relocate regspec within pci space */
-	if (rval = pcmu_reloc_reg(dip, rdip, pcmu_p, rp)) {
+	if ((rval = pcmu_reloc_reg(dip, rdip, pcmu_p, rp)) !=0 ) {
 		goto done;
 	}
 
@@ -738,7 +737,7 @@ pcmu_map(dev_info_t *dip, dev_info_t *rdip, ddi_map_req_t *mp,
 	rp->pci_phys_low += off;
 
 	/* use "ranges" to translate relocated pci regspec into parent space */
-	if (rval = pcmu_xlate_reg(pcmu_p, rp, &p_regspec)) {
+	if ((rval = pcmu_xlate_reg(pcmu_p, rp, &p_regspec)) !=0 ) {
 		goto done;
 	}
 
@@ -1126,14 +1125,14 @@ pcmu_intr_setup(pcmu_t *pcmu_p)
 	}
 
 	pcb_p->pcb_no_of_inos = no_of_intrs;
-	if (i = pcmu_ecc_register_intr(pcmu_p)) {
+	if ((i = pcmu_ecc_register_intr(pcmu_p)) != 0 ) {
 		goto teardown;
 	}
 
 	intr_dist_add(pcmu_cb_intr_dist, pcb_p);
 	pcmu_ecc_enable_intr(pcmu_p);
 
-	if (i = pcmu_pbm_register_intr(pcbm_p)) {
+	if ((i = pcmu_pbm_register_intr(pcbm_p)) != 0 ) {
 		intr_dist_rem(pcmu_cb_intr_dist, pcb_p);
 		goto teardown;
 	}

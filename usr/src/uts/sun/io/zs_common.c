@@ -1061,15 +1061,10 @@ zs_program(struct zs_prog *zspp)
 static void
 zsnull_intr(struct zscom *zs)
 {
-	short	c;
-
 	SCC_WRITE0(ZSWR0_RESET_TXINT);
 	SCC_WRITE0(ZSWR0_RESET_STATUS);
-	c = SCC_READDATA();
+	(void) SCC_READDATA();
 	ZSDELAY();
-#ifdef lint
-	c = c;
-#endif /* lint */
 	SCC_WRITE0(ZSWR0_RESET_ERRORS);
 }
 

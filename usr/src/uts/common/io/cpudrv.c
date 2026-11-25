@@ -1128,8 +1128,8 @@ cpudrv_monitor(void *arg)
 			CPUDRV_MONITOR_PM_BUSY_AND_RAISE(dip, cpudsp, cpupm,
 			    new_spd);
 		}
-	} else if ((user_cnt <= cur_spd->user_lwm) &&
-	    (idle_cnt >= cur_spd->idle_hwm) || !CPU_ACTIVE(cpudsp->cp)) {
+	} else if (((user_cnt <= cur_spd->user_lwm) &&
+	    (idle_cnt >= cur_spd->idle_hwm)) || !CPU_ACTIVE(cpudsp->cp)) {
 		cur_spd->idle_blwm_cnt = 0;
 		cur_spd->idle_bhwm_cnt = 0;
 		/*

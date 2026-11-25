@@ -695,7 +695,7 @@ mondo_recover_proc(uint16_t cpuid, int bn)
 	u_longlong_t pahi, palo;
 	int pages_claimed = 0;
 	tte_t tsbe_tte;
-	int tried_kernel_tsb = 0;
+	volatile int tried_kernel_tsb = 0;
 	mmu_ctx_t *mmu_ctxp;
 
 	CHEETAH_LIVELOCK_STAT(proc_entry);
@@ -761,7 +761,7 @@ mondo_recover_proc(uint16_t cpuid, int bn)
 	cnum = hat->sfmmu_ctxs[mmu_ctxp->mmu_idx].cnum;
 	CHEETAH_LIVELOCK_STATSET(proc_cnum, cnum);
 
-	if ((cnum < 0) || (cnum == INVALID_CONTEXT) ||
+	if ((cnum == INVALID_CONTEXT) ||
 	    (cnum >= mmu_ctxp->mmu_nctxs)) {
 		CHEETAH_LIVELOCK_STAT(proc_cnum_bad);
 		goto badstruct;
@@ -2055,7 +2055,7 @@ cpu_deferred_error(struct regs *rp, ulong_t p_clo_flags)
 		int pcb_flag = 0;
 
 		if (t_afsr_errs &
-		    (C_AFSR_ASYNC_ERRS | C_AFSR_EXT_ASYNC_ERRS &
+		    ((C_AFSR_ASYNC_ERRS | C_AFSR_EXT_ASYNC_ERRS) &
 		    ~(C_AFSR_BERR | C_AFSR_TO)))
 			pcb_flag |= ASYNC_HWERR;
 
@@ -2747,7 +2747,7 @@ cpu_ce_log_err(struct async_flt *aflt, errorq_elem_t *eqep)
 static uchar_t
 cpu_ce_scrub_mem_err_common(struct async_flt *ecc, boolean_t logout_tried)
 {
-	uchar_t disp = CE_XDIAG_EXTALG;
+	volatile uchar_t disp = CE_XDIAG_EXTALG;
 	on_trap_data_t otd;
 	uint64_t orig_err;
 	ch_cpu_logout_t *clop;
@@ -3194,8 +3194,8 @@ ce_lkychk_cb(ce_lkychk_cb_t *cbarg)
 	int ptnrtype;
 
 	kpreempt_disable();
-	if (cp = ce_ptnr_select(aflt, PTNR_SIBLINGOK | PTNR_SELFOK,
-	    &ptnrtype)) {
+	if ((cp = ce_ptnr_select(aflt, PTNR_SIBLINGOK | PTNR_SELFOK,
+	    &ptnrtype)) != NULL) {
 		xc_one(cp->cpu_id, ce_ptnrchk_xc, (uint64_t)aflt,
 		    (uint64_t)&disp);
 		CE_XDIAG_SETLKYINFO(aflt->flt_disp, disp);
@@ -6678,13 +6678,16 @@ cpu_ereport_post(struct async_flt *aflt)
 	nv_alloc_t *nva = NULL;
 	nvlist_t *ereport, *detector, *resource;
 	errorq_elem_t *eqep;
+	boolean_t sync_post;
 	ch_async_flt_t *ch_flt = (ch_async_flt_t *)aflt;
 	char unum[UNUM_NAMLEN];
 	int synd_code;
 	uint8_t msg_type;
 	plat_ecc_ch_async_flt_t	plat_ecc_ch_flt;
 
-	if (aflt->flt_panic || panicstr) {
+	sync_post = (aflt->flt_panic || panicstr != NULL);
+
+	if (sync_post) {
 		eqep = errorq_reserve(ereport_errorq);
 		if (eqep == NULL)
 			return;
@@ -6743,7 +6746,7 @@ cpu_ereport_post(struct async_flt *aflt)
 	    &plat_ecc_ch_flt.ecaf_afar_status,
 	    &plat_ecc_ch_flt.ecaf_synd_status);
 
-	if (aflt->flt_panic || panicstr) {
+	if (sync_post) {
 		errorq_commit(ereport_errorq, eqep, ERRORQ_SYNC);
 	} else {
 		(void) fm_ereport_post(ereport, EVCH_TRYHARD);
@@ -7125,7 +7128,7 @@ xc_set_cpu_error_state(uintptr_t arg1, uintptr_t arg2 __unused)
 void
 cpu_faulted_exit(struct cpu *cp)
 {
-	ch_cpu_errors_t cpu_error_regs;
+	ch_cpu_errors_t cpu_error_regs = { 0 };
 
 	cpu_error_regs.afsr = C_AFSR_CECC_ERRS;
 	if (IS_PANTHER(cpunodes[cp->cpu_id].implementation))

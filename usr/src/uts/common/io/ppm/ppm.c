@@ -256,7 +256,7 @@ ppm_getinfo(dev_info_t *dip, ddi_info_cmd_t cmd, void *arg, void **resultp)
 
 	switch (cmd) {
 	case DDI_INFO_DEVT2DEVINFO:
-		if (unitp = ddi_get_soft_state(ppm_statep, (dev_t)arg)) {
+		if ((unitp = ddi_get_soft_state(ppm_statep, (dev_t)arg)) != NULL) {
 			*resultp = unitp->dip;
 			rval = DDI_SUCCESS;
 		} else

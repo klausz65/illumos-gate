@@ -271,7 +271,7 @@ envctrl_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 	register int	instance;
 	char		name[16];
 	uint8_t fspval;
-	register struct	envctrlunit *unitp;
+	register struct	envctrlunit *unitp = NULL;
 	struct ddi_device_acc_attr attr;
 	uchar_t *creg_prop;
 	uint_t len, tblsz;
@@ -596,7 +596,7 @@ remlock:
 	mutex_destroy(&unitp->umutex);
 
 failed:
-	if (unitp->ctlr_handle)
+	if (unitp != NULL && unitp->ctlr_handle)
 		ddi_regs_map_free(&unitp->ctlr_handle);
 
 	cmn_err(CE_WARN, "%s%d: attach failed\n", ddi_get_name(dip), instance);
@@ -1532,7 +1532,7 @@ envctrl_led_blink(void *arg)
 		 * module for the mass storage fault led.
 		 * and set it.
 		 */
-		val = (val & ~(EHC_PCF8574_PORT4) | JAV_FSP_MASK);
+		val = ((val & ~EHC_PCF8574_PORT4) | JAV_FSP_MASK);
 		unitp->present_led_state = B_FALSE;
 	} else {
 		val = (val | EHC_PCF8574_PORT4 | JAV_FSP_MASK);
@@ -2236,8 +2236,8 @@ envctrl_abort_seq_handler(char *msg)
 	 * not be zero.
 	 */
 	for (i = 0; i < MAX_DEVS; i++) {
-		if (unitp = (struct envctrlunit *)
-		    ddi_get_soft_state(envctrlsoft_statep, i))
+		if ((unitp = (struct envctrlunit *)
+		    ddi_get_soft_state(envctrlsoft_statep, i)) != NULL)
 			break;
 	}
 

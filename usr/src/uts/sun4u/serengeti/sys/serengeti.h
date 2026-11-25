@@ -168,7 +168,7 @@ extern "C" {
  * otherwise FALSE.
  */
 #define	SG_BOARD_IS_CPU_TYPE(board_num) \
-	((((board_num) >= 0) && ((board_num) < SG_MAX_CPU_BDS)) ? TRUE: FALSE)
+	(((uint_t)(board_num) < SG_MAX_CPU_BDS) ? TRUE: FALSE)
 
 /*
  * SG_BOARD_IS_IO_TYPE
@@ -187,8 +187,7 @@ extern "C" {
  * otherwise FALSE.
  */
 #define	SG_PORTID_IS_CPU_TYPE(portid) \
-	(((((portid) & SG_SAFARI_ID_MASK) >= SG_MIN_CPU_SAFARI_ID) && \
-	(((portid) & SG_SAFARI_ID_MASK) <= SG_MAX_CPU_SAFARI_ID)) ? TRUE: FALSE)
+	((((portid) & SG_SAFARI_ID_MASK) <= SG_MAX_CPU_SAFARI_ID) ? TRUE: FALSE)
 
 /*
  * SG_PORTID_IS_IO_TYPE

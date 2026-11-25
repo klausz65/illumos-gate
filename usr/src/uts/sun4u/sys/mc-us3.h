@@ -160,7 +160,7 @@ uint64_t get_mcr(int);
 #define	MC_DESTRC_DEBUG	0x00000040
 #define	MC_LIST_DEBUG	0x00000080
 
-static uint_t mc_debug = 0;
+static uint_t mc_debug __unused = 0;
 
 #define	_PRINTF prom_printf
 #define	DPRINTF(flag, args)	if (mc_debug & flag) _PRINTF args;

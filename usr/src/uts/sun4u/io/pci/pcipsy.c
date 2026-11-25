@@ -261,9 +261,9 @@ pci_intr_setup(pci_t *pci_p)
 
 	if (pci_p->pci_common_p->pci_common_refcnt == 0) {
 		cb_p->cb_no_of_inos = no_of_intrs;
-		if (i = cb_register_intr(pci_p))
+		if ((i = cb_register_intr(pci_p)) != 0)
 			goto teardown;
-		if (i = ecc_register_intr(pci_p))
+		if ((i = ecc_register_intr(pci_p)) != 0)
 			goto teardown;
 
 		intr_dist_add(cb_intr_dist, cb_p);
@@ -271,7 +271,7 @@ pci_intr_setup(pci_t *pci_p)
 		ecc_enable_intr(pci_p);
 	}
 
-	if (i = pbm_register_intr(pbm_p)) {
+	if ((i = pbm_register_intr(pbm_p)) != 0) {
 		if (pci_p->pci_common_p->pci_common_refcnt == 0)
 			intr_dist_rem(cb_intr_dist, cb_p);
 		goto teardown;

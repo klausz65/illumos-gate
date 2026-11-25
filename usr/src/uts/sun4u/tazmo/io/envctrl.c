@@ -414,7 +414,7 @@ envctrl_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 	int	instance;
 	char		name[16];
 	uint8_t fspval;
-	struct	envctrlunit *unitp;
+	struct	envctrlunit *unitp = NULL;
 	struct ddi_device_acc_attr attr;
 	int *reg_prop;
 	uchar_t *creg_prop;
@@ -734,7 +734,7 @@ remlock:
 	mutex_destroy(&unitp->umutex);
 
 failed:
-	if (unitp->ctlr_handle)
+	if (unitp != NULL && unitp->ctlr_handle)
 		ddi_regs_map_free(&unitp->ctlr_handle);
 
 	cmn_err(CE_WARN, "envctrl_attach:failed.\n");
@@ -1659,7 +1659,7 @@ envctrl_recv(struct envctrlunit *unitp, caddr_t *data, int chip_type)
 
 retry:
 		status = eHc_read_pcf8591((struct eHc_envcunit *)unitp,
-		    PCF8591_BASE_ADDR | temp->chip_num & 0xF,
+		    PCF8591_BASE_ADDR | (temp->chip_num & 0xF),
 		    temp->sensor_num, 0, 0, 1, &recv_data, 1);
 
 		/*
@@ -1747,7 +1747,7 @@ envctrl_get_ps_temp(struct envctrlunit *unitp, uint8_t psaddr)
 
 retry:
 	status = eHc_read_pcf8591((struct eHc_envcunit *)unitp,
-	    PCF8591_BASE_ADDR | psaddr & 0xF, 0, 1, 0, 1, buf, 4);
+	    PCF8591_BASE_ADDR | (psaddr & 0xF), 0, 1, 0, 1, buf, 4);
 
 	tempr = 0;
 	for (i = 0; i < PCF8591_MAX_PORTS; i++) {
@@ -1950,7 +1950,7 @@ envctrl_led_blink(void *arg)
 		 * module for the mass storage fault led.
 		 * and set it.
 		 */
-		fspchip.val = (fspchip.val & ~(ENVCTRL_PCF8574_PORT4) |
+		fspchip.val = ((fspchip.val & ~ENVCTRL_PCF8574_PORT4) |
 		    0xC0);
 		unitp->present_led_state = B_FALSE;
 	} else {
@@ -2395,7 +2395,7 @@ envctrl_PS_intr_service(struct envctrlunit *unitp, uint8_t psaddr)
 
 retry:
 	status = eHc_read_pcf8574a((struct eHc_envcunit *)unitp,
-	    PCF8574A_BASE_ADDR | psaddr & 0xF, &recv_data, 1);
+	    PCF8574A_BASE_ADDR | (psaddr & 0xF), &recv_data, 1);
 	if (status != DDI_SUCCESS) {
 		drv_usecwait(1000);
 		if (retrys < envctrl_max_retries) {
@@ -2663,6 +2663,11 @@ envctrl_ps_probe(struct envctrlunit *unitp)
 		case PSTEMP0:
 			devaddr = 0;
 			break;
+		default:
+			cmn_err(CE_WARN,
+				"envctrl_ps_probe: unknown psaddr %d",
+				psaddr[i]);
+			continue;
 		}
 		retrys = 0;
 retry:
@@ -2816,8 +2821,8 @@ envctrl_abort_seq_handler(char *msg)
 	 * not be zero.
 	 */
 	for (i = 0; i < MAX_DEVS; i++) {
-		if (unitp = (struct envctrlunit *)
-		    ddi_get_soft_state(envctrlsoft_statep, i))
+		if ((unitp = (struct envctrlunit *)
+		    ddi_get_soft_state(envctrlsoft_statep, i)) != NULL)
 			break;
 	}
 
@@ -2918,8 +2923,8 @@ envctrl_get_dskled(struct envctrlunit *unitp, struct envctrl_pcf8574_chip *chip)
 	ASSERT(MUTEX_HELD(&unitp->umutex));
 
 	if (chip->chip_num > ENVCTRL_PCF8574_DEV2 ||
-	    chip->type != ENVCTRL_ENCL_BACKPLANE4 &&
-	    chip->type != ENVCTRL_ENCL_BACKPLANE8) {
+	    (chip->type != ENVCTRL_ENCL_BACKPLANE4 &&
+	    chip->type != ENVCTRL_ENCL_BACKPLANE8)) {
 		return (DDI_FAILURE);
 	}
 	oldtype = chip->type;
@@ -2950,8 +2955,7 @@ envctrl_set_dskled(struct envctrlunit *unitp, struct envctrl_pcf8574_chip *chip)
 
 
 	if (chip->chip_num > ENVCTRL_PCF8574_DEV2 ||
-	    chip->val > ENVCTRL_DISK8LED_ALLOFF ||
-	    chip->val < ENVCTRL_CHAR_ZERO) {
+	    chip->val > ENVCTRL_DISK8LED_ALLOFF) {
 		return (DDI_FAILURE);
 	}
 
@@ -3376,7 +3380,7 @@ static int
 eHc_start_pcf8584(struct eHc_envcunit *ehcp, uint8_t byteaddress)
 {
 	uint8_t poll_status;
-	uint8_t discard;
+	uint8_t discard __attribute__((unused));
 	int i;
 
 	/* wait if bus is busy */
@@ -3576,7 +3580,7 @@ eHc_write_pcf8584(struct eHc_envcunit *ehcp, uint8_t data)
 static int
 eHc_after_read_pcf8584(struct eHc_envcunit *ehcp, uint8_t *data)
 {
-	uint8_t discard;
+	uint8_t discard __attribute__((unused));
 	uint8_t poll_status;
 	int i = 0;
 
@@ -3691,7 +3695,7 @@ eHc_read_pcf8574a(struct eHc_envcunit *ehcp, int byteaddress, uint8_t *buf,
 {
 	int i;
 	int status;
-	uint8_t discard;
+	uint8_t discard __attribute__((unused));
 
 	ASSERT((byteaddress & 0x1) == 0);
 	ASSERT(MUTEX_HELD(&ehcp->umutex));
@@ -3793,7 +3797,7 @@ eHc_read_pcf8574(struct eHc_envcunit *ehcp, int byteaddress, uint8_t *buf,
 {
 	int i;
 	int status;
-	uint8_t discard;
+	uint8_t discard __attribute__((unused));
 
 	ASSERT((byteaddress & 0x1) == 0);
 	ASSERT(MUTEX_HELD(&ehcp->umutex));
@@ -3894,7 +3898,7 @@ eHc_read_lm75(struct eHc_envcunit *ehcp, int byteaddress, uint8_t *buf,
 {
 	int i;
 	int status;
-	uint8_t discard;
+	uint8_t discard __attribute__((unused));
 
 	ASSERT((byteaddress & 0x1) == 0);
 	ASSERT(MUTEX_HELD(&ehcp->umutex));

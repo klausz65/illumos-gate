@@ -108,8 +108,8 @@ static char hpc3130_to_hpc_led_map[] = {
 static char hpc3130_from_hpc_led_map[] = {
 	HPC3130_ATTN_OFF, HPC3130_ATTN_ON, HPC3130_ATTN_FST
 };
-#define	HPC3130_TO_HPC_LED(val)		(hpc3130_to_hpc_led_map[val])
-#define	HPC3130_FROM_HPC_LED(val)	(hpc3130_from_hpc_led_map[val])
+#define	HPC3130_TO_HPC_LED(val)		(hpc3130_to_hpc_led_map[(unsigned char)(val)])
+#define	HPC3130_FROM_HPC_LED(val)	(hpc3130_from_hpc_led_map[(unsigned char)(val)])
 
 #define	HPC3130_MAX_SLOT	0x4
 

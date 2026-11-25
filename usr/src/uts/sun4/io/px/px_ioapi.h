@@ -204,7 +204,7 @@ typedef uint64_t pci_device_t;
 
 #define	PCI_TSBID(tsbnum, tsbindex) \
 	((((tsbid_t)tsbnum & PCI_TSB_NUM_MASK) << PCI_TSB_NUM) | \
-	(((tsbid_t)tsbindex & PCI_TSB_INDEX_MASK) << PCI_TSB_INDEX))
+	((((tsbid_t)(tsbindex)) & PCI_TSB_INDEX_MASK) << PCI_TSB_INDEX))
 
 #define	PCI_TSBID_TO_TSBNUM(tsbid) \
 	((tsbid >> PCI_TSB_NUM) & PCI_TSB_NUM_MASK)

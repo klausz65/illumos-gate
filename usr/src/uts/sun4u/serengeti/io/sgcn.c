@@ -631,7 +631,7 @@ sgcn_start()
 	 */
 	q = sgcn_state->sgcn_writeq;
 	ASSERT(q != NULL);
-	while (mp = getq(q)) {
+	while ((mp = getq(q)) != NULL) {
 		switch (mp->b_datap->db_type) {
 		case M_IOCTL:
 			/*
@@ -726,7 +726,7 @@ sgcn_flush()
 
 	prom_printf("sgcn_flush(): WARNING console output is dropped "
 	    "time=%lX\n", gethrestime_sec());
-	while (mp = getq(q)) {
+	while ((mp = getq(q)) != NULL) {
 		freemsg(mp);
 	}
 
@@ -956,6 +956,11 @@ sgcn_rw(int rw, caddr_t buf, int len)
 	if (len == 0)
 		return (0);
 
+	if (rw != RW_CONSOLE_READ && rw != RW_CONSOLE_WRITE) {
+		sgcn_log_error(rw, EINVAL);
+		return (-1);
+	}
+
 	/* sanity check */
 	if (buf == NULL || len < 0) {
 		sgcn_log_error(rw, EINVAL);
@@ -975,9 +980,9 @@ sgcn_rw(int rw, caddr_t buf, int len)
 
 	if (rw == RW_CONSOLE_READ)
 		size = header.cnsram_in_end - header.cnsram_in_begin;
-	else if (rw == RW_CONSOLE_WRITE)
+	else
 		size = header.cnsram_out_end - header.cnsram_out_begin;
-	if (size < 0) {
+	if (size <= 0) {
 		sgcn_log_error(rw, EPROTO);
 		return (-1);
 	}
@@ -988,7 +993,7 @@ sgcn_rw(int rw, caddr_t buf, int len)
 		    header.cnsram_in_end,
 		    header.cnsram_in_rdptr,
 		    header.cnsram_in_wrptr, buf, len);
-	else if (rw == RW_CONSOLE_WRITE)
+	else
 		nbytes = circular_buffer_write(
 		    header.cnsram_out_begin,
 		    header.cnsram_out_end,
@@ -1068,7 +1073,7 @@ circular_buffer_write(int begin, int end, int rd, int wr, caddr_t buf, int len)
 	len = min(len, space);
 	space_at_end = end - wr;
 
-	if (rd > wr || rd <= wr && space_at_end >= len) { /* one piece */
+	if (rd > wr || (rd <= wr && space_at_end >= len)) { /* one piece */
 		/* write console data */
 		rv = iosram_write(SBBC_CONSOLE_KEY, wr, buf, len);
 		if (rv != 0) goto out;

@@ -70,7 +70,6 @@ static int qcn_transmit_write(queue_t *, mblk_t *);
 static int qcn_transmit_putchr(queue_t *, mblk_t *);
 static void qcn_receive_read(void);
 static void qcn_receive_getchr(void);
-static void qcn_flush(void);
 static uint_t qcn_hi_intr(caddr_t, caddr_t);
 static uint_t qcn_soft_intr(caddr_t arg1, caddr_t arg2);
 
@@ -86,7 +85,6 @@ static boolean_t abort_charseq_recognize(uchar_t);
 
 static qcn_t *qcn_state;
 static uchar_t qcn_stopped = B_FALSE;
-static int qcn_timeout_period = 20;	/* time out in seconds */
 size_t qcn_input_dropped;	/* dropped input character counter */
 
 #ifdef QCN_POLLING
@@ -99,7 +97,6 @@ static cyc_handler_t qcn_poll_cychandler = {
 };
 static cyclic_id_t qcn_poll_cycid = CYCLIC_NONE;
 static uint64_t	qcn_poll_interval = 5;  /* milli sec */
-static uint64_t sb_interval = 0;
 uint_t qcn_force_polling = 0;
 #endif
 
@@ -849,7 +846,7 @@ qcn_start(void)
 	 */
 	q = qcn_state->qcn_writeq;
 	ASSERT(q != NULL);
-	while (mp = getq(q)) {
+	while ((mp = getq(q)) != NULL) {
 		if (mp->b_datap->db_type == M_IOCTL) {
 			/*
 			 * These are those IOCTLs queued up
@@ -953,26 +950,6 @@ qcn_transmit_putchr(queue_t *q, mblk_t *mp)
 		freeb(bp);
 	}
 	return (0);
-}
-
-/*
- * called when SC first establishes console connection
- * drop all the data on the output queue
- */
-static void
-qcn_flush(void)
-{
-	queue_t *q;
-	mblk_t *mp;
-
-	ASSERT(MUTEX_HELD(&qcn_state->qcn_lock));
-
-	q = qcn_state->qcn_writeq;
-
-	prom_printf("qcn_flush(): WARNING console output is dropped time=%lx\n",
-	    gethrestime_sec());
-	while (mp = getq(q))
-		freemsg(mp);
 }
 
 static void

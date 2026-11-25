@@ -1834,6 +1834,7 @@ ntwdt_set_cfgvar(int var, int val)
 	default:
 		ASSERT(0);
 		_NOTE(NOTREACHED)
+		return (NTWDT_FAILURE);
 	}
 
 	set_wdt.property_id = var;

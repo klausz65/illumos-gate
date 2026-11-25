@@ -63,7 +63,6 @@
  */
 
 /* DDI entrypoints */
-static int vnetdevinfo(dev_info_t *, ddi_info_cmd_t, void *, void **);
 static int vnetattach(dev_info_t *, ddi_attach_cmd_t);
 static int vnetdetach(dev_info_t *, ddi_detach_cmd_t);
 
@@ -73,7 +72,6 @@ static int vnet_m_start(void *);
 static void vnet_m_stop(void *);
 static int vnet_m_promisc(void *, boolean_t);
 static int vnet_m_multicst(void *, boolean_t, const uint8_t *);
-static int vnet_m_unicst(void *, const uint8_t *);
 mblk_t *vnet_m_tx(void *, mblk_t *);
 static void vnet_m_ioctl(void *arg, queue_t *q, mblk_t *mp);
 #ifdef	VNET_IOC_DEBUG
@@ -426,7 +424,7 @@ vnetattach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 	case DDI_RESUME:
 	case DDI_PM_RESUME:
 	default:
-		goto vnet_attach_fail;
+		return (DDI_FAILURE);
 	}
 
 	instance = ddi_get_instance(dip);
@@ -712,23 +710,6 @@ vnet_m_stop(void *arg)
 	RW_EXIT(&vnetp->vrwlock);
 
 	DBG1(vnetp, "exit\n");
-}
-
-/* set the unicast mac address of the device */
-static int
-vnet_m_unicst(void *arg, const uint8_t *macaddr)
-{
-	_NOTE(ARGUNUSED(macaddr))
-
-	vnet_t *vnetp = arg;
-
-	DBG1(vnetp, "enter\n");
-	/*
-	 * NOTE: setting mac address dynamically is not supported.
-	 */
-	DBG1(vnetp, "exit\n");
-
-	return (VNET_FAILURE);
 }
 
 /* enable/disable a multicast address */
@@ -1056,7 +1037,7 @@ static vnet_pseudo_rx_ring_t *
 vnet_alloc_pseudo_rx_ring(vnet_t *vnetp)
 {
 	vnet_pseudo_rx_group_t  *rx_grp;
-	vnet_pseudo_rx_ring_t	*rx_ringp;
+	vnet_pseudo_rx_ring_t	*rx_ringp = NULL;
 	int			index;
 
 	rx_grp = &vnetp->rx_grp[0];
@@ -1076,6 +1057,12 @@ vnet_alloc_pseudo_rx_ring(vnet_t *vnetp)
 			rx_grp->ring_cnt++;
 			break;
 		}
+	}
+
+	if (index == rx_grp->max_ring_cnt) {
+		/* no free ring found */
+		RW_EXIT(&rx_grp->lock);
+		return (NULL);
 	}
 
 	RW_EXIT(&rx_grp->lock);
@@ -1707,9 +1694,10 @@ vnet_send_dds_msg(vnet_t *vnetp, void *dmsg)
 {
 	int rv;
 
-	if (vnetp->vgenhdl != NULL) {
-		rv = vgen_dds_tx(vnetp->vgenhdl, dmsg);
-	}
+	if (vnetp->vgenhdl == NULL)
+		return (VNET_FAILURE);
+
+	rv = vgen_dds_tx(vnetp->vgenhdl, dmsg);
 	return (rv);
 }
 

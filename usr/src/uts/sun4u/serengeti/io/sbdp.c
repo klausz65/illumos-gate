@@ -250,7 +250,7 @@ sbdp_get_unit_num(sbdp_handle_t *hp, dev_info_t *dip)
 	int		unit = -1;
 	int		portid;
 	processorid_t	cpuid;
-	sbd_comp_type_t	type;
+	sbd_comp_type_t	type = SBD_COMP_UNKNOWN;
 	char		dev_type[OBP_MAXPROPNAME];
 	int		i;
 	pnode_t		nodeid;
@@ -275,6 +275,7 @@ sbdp_get_unit_num(sbdp_handle_t *hp, dev_info_t *dip)
 		if (strcmp(dev_type, SBDP_OTYPE(i)) != 0)
 			continue;
 		type = SBDP_CT(i);
+		break;
 	}
 
 	switch (type) {

@@ -55,11 +55,6 @@ INSTALL_TARGET	= $(BINARY) $(ROOTMODULE) $(ROOT_CONFFILE)
 CFLAGS += $(CCVERBOSE)
 LDFLAGS += -ztype=kmod -Ndrv/ip -Ndrv/eri -Ndrv/iosram -Nmisc/mboxsc
 
-CERRWARN += -_gcc=-Wno-parentheses
-CERRWARN += -_gcc=-Wno-uninitialized
-CERRWARN += -_gcc=-Wno-unused-label
-CERRWARN += -_gcc=-Wno-type-limits
-
 #
 #	Default build targets.
 #

@@ -666,7 +666,7 @@ find_chosen_dip(void)
 void
 load_platform_drivers(void)
 {
-	int ret;
+	int ret = 0;
 
 	/*
 	 * Load and attach the mc-us3 memory driver.

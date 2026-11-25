@@ -4353,8 +4353,8 @@ nxge_rx_mac_init(p_nxge_t nxgep)
 
 		(void) nxge_fflp_init_hostinfo(nxgep);
 
-		xconfig = CFG_XMAC_RX_ERRCHK | CFG_XMAC_RX_CRC_CHK |
-		    CFG_XMAC_RX | CFG_XMAC_RX_CODE_VIO_CHK &
+		xconfig = (CFG_XMAC_RX_ERRCHK | CFG_XMAC_RX_CRC_CHK |
+		    CFG_XMAC_RX | CFG_XMAC_RX_CODE_VIO_CHK) &
 		    ~CFG_XMAC_RX_STRIP_CRC;
 
 		if (nxgep->filter.all_phys_cnt != 0)
@@ -4385,7 +4385,7 @@ nxge_rx_mac_init(p_nxge_t nxgep)
 
 		(void) nxge_fflp_init_hostinfo(nxgep);
 
-		bconfig = CFG_BMAC_RX_DISCARD_ON_ERR | CFG_BMAC_RX &
+		bconfig = (CFG_BMAC_RX_DISCARD_ON_ERR | CFG_BMAC_RX) &
 		    ~CFG_BMAC_RX_STRIP_CRC;
 
 		if (nxgep->filter.all_phys_cnt != 0)
@@ -6130,9 +6130,9 @@ nxge_check_10g_link(p_nxge_t nxgep)
 					break;
 				}
 
-				if (nxgep->link_notify &&
+				if ((nxgep->link_notify &&
 				    nxgep->link_check_count > 3 &&
-				    nxgep->nxge_mac_state == NXGE_MAC_STARTED ||
+				    nxgep->nxge_mac_state == NXGE_MAC_STARTED) ||
 				    nxgep->statsp->mac_stats.link_up == 1) {
 					nxgep->statsp->mac_stats.link_up = 0;
 					nxgep->statsp->mac_stats.link_speed = 0;

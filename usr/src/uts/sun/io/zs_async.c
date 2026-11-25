@@ -498,11 +498,9 @@ static int	zsa_resume(struct zscom *zs);
 static void
 zsa_null(struct zscom *zs)
 {
-	short	c;
-
 	SCC_WRITE0(ZSWR0_RESET_TXINT);
 	SCC_WRITE0(ZSWR0_RESET_STATUS);
-	c = SCC_READDATA();
+	(void) SCC_READDATA();
 	ZSDELAY();
 	SCC_WRITE0(ZSWR0_RESET_ERRORS);
 }
@@ -1801,8 +1799,9 @@ zsa_xsint(struct zscom *zs)
 		 * even if the normal abort key sequence isn't working.
 		 */
 		if ((za->za_dev == kbddev) ||
-		    ((za->za_dev == rconsdev) || (za->za_dev == stdindev)) &&
-		    (abort_enable != KIOCABORTALTERNATE)) {
+		    (((za->za_dev == rconsdev) ||
+		    (za->za_dev == stdindev)) &&
+			(abort_enable != KIOCABORTALTERNATE))) {
 			abort_sequence_enter((char *)NULL);
 			/*
 			 * We just broke into the monitor or debugger,
@@ -1838,7 +1837,7 @@ zsa_rxint(struct zscom *zs)
 	uchar_t c;
 	uchar_t *rd_cur = zs->zs_rd_cur;
 	uchar_t *rd_lim = zs->zs_rd_lim;
-	mblk_t	*bp;
+	mblk_t	*bp = NULL;
 	uint_t	fm = za->za_rcv_flags_mask;
 
 
@@ -1959,7 +1958,7 @@ zsa_srint(struct zscom *zs)
 {
 	struct asyncline *za = (struct asyncline *)&zs->zs_priv_str;
 	short s1;
-	uchar_t c;
+	uchar_t c = 0;
 	uchar_t c1;
 	mblk_t *bp = za->za_rcvblk;
 	uchar_t *rd_cur = zs->zs_rd_cur;
@@ -2019,6 +2018,9 @@ zsa_srint(struct zscom *zs)
 				c1 = 0xff;
 			else
 				c1 = c;
+			break;
+		default:
+			c1 = c;
 			break;
 		}
 

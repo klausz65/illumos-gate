@@ -111,7 +111,6 @@ static int pcitool_get_bar(pci_t *pci_p, pcitool_reg_t *prg,
     boolean_t *is_io_space);
 static int pcitool_config_request(pci_t *pci_p, pcitool_reg_t *prg,
     uint64_t base_addr, uint64_t max_addr, uint8_t size, boolean_t write_flag);
-static int pcitool_intr_get_max_ino(uint32_t *arg, int mode);
 static int pcitool_get_intr(dev_info_t *dip, void *arg, int mode, pci_t *pci_p);
 static int pcitool_set_intr(dev_info_t *dip, void *arg, int mode, pci_t *pci_p);
 
@@ -297,7 +296,7 @@ pcitool_get_intr(dev_info_t *dip, void *arg, int mode, pci_t *pci_p)
 	volatile uint64_t *imregp;
 	uint64_t imregval;
 	uint32_t ino;
-	uint8_t num_devs_ret;
+	uint8_t num_devs_ret = 0;
 	int cpu_id;
 	int copyout_rval;
 	int rval = SUCCESS;

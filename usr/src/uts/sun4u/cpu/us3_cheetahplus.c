@@ -939,28 +939,6 @@ pn_matching_valid_l2_line(uint64_t faddr, ch_ec_data_t *clo_l2_data) {
 }
 
 /*
- * This array is used to convert the 3 digit PgSz encoding (as used in
- * various MMU registers such as MMU_TAG_ACCESS_EXT) into the corresponding
- * page size.
- */
-static uint64_t tlb_pgsz_to_size[] = {
-	/* 000 = 8KB: */
-	0x2000,
-	/* 001 = 64KB: */
-	0x10000,
-	/* 010 = 512KB: */
-	0x80000,
-	/* 011 = 4MB: */
-	0x400000,
-	/* 100 = 32MB: */
-	0x2000000,
-	/* 101 = 256MB: */
-	0x10000000,
-	/* undefined for encodings 110 and 111: */
-	0, 0
-};
-
-/*
  * The itlb_parity_trap and dtlb_parity_trap handlers transfer control here
  * after collecting logout information related to the TLB parity error and
  * flushing the offending TTE entries from the ITLB or DTLB.

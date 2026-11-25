@@ -2918,7 +2918,7 @@ static void
 iosram_update_addrs(struct iosramsoft *softp)
 {
 	int		i;
-	iosram_flags_t	*flagsp;
+	iosram_flags_t	*flagsp = NULL;
 	iosram_chunk_t	*chunkp;
 
 	ASSERT(mutex_owned(&iosram_mutex));
@@ -2936,6 +2936,7 @@ iosram_update_addrs(struct iosramsoft *softp)
 			    chunkp->toc_data.off, (void *)flagsp));
 		}
 	}
+	ASSERT(flagsp != NULL);
 
 	/*
 	 * Now, go through and update each chunk's flags pointer.  This can't be

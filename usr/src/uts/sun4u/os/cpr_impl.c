@@ -563,7 +563,7 @@ i_cpr_write_machdep(vnode_t *vp)
 	cmach.md_magic = (uint_t)CPR_MACHDEP_MAGIC;
 	cmach.md_size = sizeof (m_info) + sizeof (ustr);
 
-	if (rc = cpr_write(vp, (caddr_t)&cmach, sizeof (cmach))) {
+	if ((rc = cpr_write(vp, (caddr_t)&cmach, sizeof (cmach))) != 0) {
 		cpr_err(CE_WARN, "Failed to write descriptor.");
 		return (rc);
 	}
@@ -609,13 +609,13 @@ i_cpr_write_machdep(vnode_t *vp)
 
 	i_cpr_save_cpu_info();
 
-	if (rc = cpr_write(vp, (caddr_t)&m_info, sizeof (m_info))) {
+	if ((rc = cpr_write(vp, (caddr_t)&m_info, sizeof (m_info))) != 0) {
 		cpr_err(CE_WARN, "Failed to write machdep info.");
 		return (rc);
 	}
 
 	fmt = "error writing %s forth info";
-	if (rc = cpr_write(vp, (caddr_t)ustr, sizeof (ustr)))
+	if ((rc = cpr_write(vp, (caddr_t)ustr, sizeof (ustr))) != 0)
 		cpr_err(CE_WARN, fmt, "unix-tte");
 
 	return (rc);
@@ -1232,7 +1232,7 @@ i_cpr_dump_sensitive_kpages(vnode_t *vp)
 	if (i_cpr_storage_desc_base) {
 		for (descp = i_cpr_storage_desc_base;
 		    descp <= i_cpr_storage_desc_last_used; descp++) {
-			if (error = cpr_dump_sensitive(vp, descp))
+			if ((error = cpr_dump_sensitive(vp, descp)) != 0)
 				return (error);
 			spin_cnt++;
 			if ((spin_cnt & 0x5F) == 1)
@@ -1379,7 +1379,7 @@ i_cpr_reusefini(void)
 	if (cpr_reusable_mode)
 		cpr_reusable_mode = 0;
 
-	if (rc = cpr_open_deffile(FREAD|FWRITE, &vp)) {
+	if ((rc = cpr_open_deffile(FREAD|FWRITE, &vp)) != 0) {
 		if (rc == EROFS) {
 			cpr_err(CE_CONT, "uadmin A_FREEZE AD_REUSEFINI "
 			    "(uadmin %d %d)\nmust be done with / mounted "
@@ -1411,8 +1411,8 @@ i_cpr_reusefini(void)
 			 */
 			cdef->mini.magic = 0;
 			cdef->mini.reusable = 0;
-			if (rc = cpr_rdwr(UIO_WRITE, vp,
-			    &cdef->mini, sizeof (cdef->mini))) {
+			if ((rc = cpr_rdwr(UIO_WRITE, vp,
+			    &cdef->mini, sizeof (cdef->mini))) != 0) {
 				cpr_err(CE_WARN, "Failed writing %s, errno %d",
 				    cpr_default_path, rc);
 			}
@@ -1432,7 +1432,7 @@ i_cpr_reuseinit(void)
 {
 	int rc = 0;
 
-	if (rc = cpr_default_setup(1))
+	if ((rc = cpr_default_setup(1)) != 0)
 		return (rc);
 
 	/*
@@ -1459,7 +1459,7 @@ i_cpr_check_cprinfo(void)
 	cmini_t mini;
 	int rc = 0;
 
-	if (rc = cpr_open_deffile(FREAD, &vp)) {
+	if ((rc = cpr_open_deffile(FREAD, &vp)) != 0) {
 		if (rc == ENOENT)
 			cpr_err(CE_NOTE, "cprinfo file does not "
 			    "exist.  You must run 'uadmin %d %d' "
@@ -1666,7 +1666,7 @@ i_cpr_prom_pages(int action)
 	if (action == CPR_PROM_SAVE) {
 		if (ppage_buf == NULL) {
 			ASSERT(pphys_list == NULL);
-			if (error = i_cpr_find_ppages())
+			if ((error = i_cpr_find_ppages()) != 0)
 				return (error);
 			i_cpr_save_ppages();
 		}

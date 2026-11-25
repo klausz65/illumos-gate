@@ -982,8 +982,11 @@ vdds_new_niu_node(dev_info_t *dip, void *arg, uint_t flags)
 	}
 	if (rnum == nrng) {
 		DERR(NULL, "No free ranges entry found");
+		kmem_free((void *)prng, prnglen);
 		return (DDI_WALK_ERROR);
 	}
+
+	prp = &prng[rnum];
 
 	/*
 	 * child_hi will have HV cookie as HV cookie is more like
@@ -1062,7 +1065,7 @@ vdds_find_node(uint64_t cookie, dev_info_t *sdip,
 	arg.dip = NULL;
 	arg.cookie = cookie;
 
-	if (pdip = ddi_get_parent(sdip)) {
+	if ((pdip = ddi_get_parent(sdip)) != NULL) {
 		ndi_devi_enter(pdip);
 	}
 

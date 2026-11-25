@@ -86,7 +86,6 @@ static dev_info_t *gptwocfg_create_cpu_node(dev_info_t *, spcd_t *,
     uint_t, uint_t, uint_t, uint_t);
 static dev_info_t *gptwocfg_create_mc_node(dev_info_t *, spcd_t *, uint_t);
 static dev_info_t *gptwocfg_create_cmp_node(dev_info_t *, spcd_t *, uint_t);
-static int gptwocfg_create_core_node(dev_info_t *, spcd_t *, uint_t, uint_t);
 static int set_mc_props(dev_info_t *new_child, void *arg, uint_t flags);
 static int set_cmp_props(dev_info_t *new_child, void *arg, uint_t flags);
 static int set_cpu_props(dev_info_t *new_child, void *arg, uint_t flags);
@@ -179,7 +178,7 @@ gptwocfg_configure_cpu(dev_info_t *ap, spcd_t *pcd, uint_t portid)
 	}
 
 	if (CPU_IMPL_IS_CMP(implementation)) {
-		if (cmp_node = gptwocfg_create_cmp_node(ap, pcd, portid))
+		if ((cmp_node = gptwocfg_create_cmp_node(ap, pcd, portid)) != NULL)
 			nodes++;
 		else
 			return (NULL);
@@ -189,9 +188,9 @@ gptwocfg_configure_cpu(dev_info_t *ap, spcd_t *pcd, uint_t portid)
 		if (pcd->spcd_agent[i] != SPCD_RSV_PASS)
 			continue;
 
-		if (cpu_node[i] = gptwocfg_create_cpu_node(cmp_node ?
+		if ((cpu_node[i] = gptwocfg_create_cpu_node(cmp_node ?
 		    cmp_node : ap, pcd, portid, pcd->spcd_cpuid[i], i,
-		    implementation)) {
+		    implementation)) != NULL) {
 			/*
 			 * If the CPU is a CMP, the entire branch is
 			 * manipulated using just the top node. Thus,

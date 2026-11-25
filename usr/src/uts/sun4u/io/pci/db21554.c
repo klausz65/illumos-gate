@@ -724,11 +724,12 @@ db_detach(dev_info_t *dip, ddi_detach_cmd_t cmd)
 
 	case DDI_DETACH :
 		db_fm_fini(dbp);
-		if (dbp->dev_state & DB_SECONDARY_NEXUS)
+		if (dbp->dev_state & DB_SECONDARY_NEXUS) {
 			if (pcihp_uninit(dip) == DDI_FAILURE)
 				return (DDI_FAILURE);
-		else
+		} else {
 			ddi_remove_minor_node(dip, "devctl");
+		}
 
 		mutex_destroy(&dbp->db_busown);
 		ddi_regs_map_free(&dbp->csr_mem_handle);
@@ -1718,7 +1719,7 @@ db_pci_map(dev_info_t *dip, dev_info_t *rdip, ddi_map_req_t *mp,
     off_t offset, off_t len, caddr_t *addrp)
 {
 	register dev_info_t *pdip;
-	int reg_proplen, num_regs, rnumber;
+	int reg_proplen, num_regs = 0, rnumber = 0;
 	uint_t	addr_space_type;
 	pci_regspec_t *pci_regsetp, pci_reg;
 	db_ctrl_t *dbp;

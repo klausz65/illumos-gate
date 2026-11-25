@@ -524,8 +524,9 @@ dr_move_memory(dr_handle_t *hp, dr_mem_unit_t *s_mp, dr_mem_unit_t *t_mp)
 
 	dr_release_sr_handle(srhp);
 	err = drmach_copy_rename_fini(cr_id);
-	if (err)
+	if (err) {
 		DRERR_SET_C(&s_mp->sbm_cm.sbdev_error, &err);
+	}
 
 	affinity_clear();
 
@@ -981,8 +982,9 @@ dr_post_attach_mem(dr_handle_t *hp, dr_common_unit_t **devlist, int devnum)
 			    mp->sbm_cm.sbdev_id,
 			    ml->ml_address,
 			    ml->ml_size);
-			if (err)
+			if (err) {
 				DRERR_SET_C(&mp->sbm_cm.sbdev_error, &err);
+			}
 		}
 
 		memlist_delete(mlist);
@@ -1088,8 +1090,9 @@ dr_add_memory_spans(dr_mem_unit_t *mp, struct memlist *ml)
 		    ml->ml_address,
 		    ml->ml_size);
 
-		if (err)
+		if (err) {
 			DRERR_SET_C(&mp->sbm_cm.sbdev_error, &err);
+		}
 
 		if (rv != KPHYSM_OK) {
 			cmn_err(CE_WARN, "%s:"
@@ -1340,8 +1343,9 @@ dr_post_detach_mem_unit(dr_mem_unit_t *s_mp)
 		/* delete target's entire address space */
 		err = drmach_mem_del_span(t_mp->sbm_cm.sbdev_id,
 		    t_old_basepa & ~ sm, sz);
-		if (err)
+		if (err) {
 			DRERR_SET_C(&t_mp->sbm_cm.sbdev_error, &err);
+		}
 		ASSERT(err == NULL);
 
 		/*
@@ -1353,16 +1357,18 @@ dr_post_detach_mem_unit(dr_mem_unit_t *s_mp)
 		 */
 		err = drmach_mem_del_span(s_mp->sbm_cm.sbdev_id,
 		    s_old_basepa & ~ sm, t_new_basepa & sm);
-		if (err)
+		if (err) {
 			DRERR_SET_C(&s_mp->sbm_cm.sbdev_error, &err);
+		}
 		ASSERT(err == NULL);
 
 	} else {
 		/* delete board's entire address space */
 		err = drmach_mem_del_span(s_mp->sbm_cm.sbdev_id,
 		    s_old_basepa & ~ sm, sz);
-		if (err)
+		if (err) {
 			DRERR_SET_C(&s_mp->sbm_cm.sbdev_error, &err);
+		}
 		ASSERT(err == NULL);
 	}
 

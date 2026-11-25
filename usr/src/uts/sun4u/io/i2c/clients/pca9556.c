@@ -604,7 +604,7 @@ pca9556_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 	pca9556_unit_t		*pcap;
 	int			err = 0;
 	int			instance = MINOR_TO_INST(getminor(dev));
-	int			port;
+	int			port = MINOR_TO_PORT(getminor(dev));
 	i2c_gpio_t		g_buf;
 	uchar_t			temp;
 	boolean_t		write_io = B_FALSE;
@@ -614,9 +614,8 @@ pca9556_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 	pcap = (pca9556_unit_t *)
 	    ddi_get_soft_state(pca9556_soft_statep, instance);
 
-	if (pcap->pca9555_device) {
-		port =  MINOR_TO_PORT(getminor(dev));
-	}
+	if (pcap == NULL)
+		return (ENXIO);
 	if (pca9556_debug) {
 		prom_printf("pca9556_ioctl: instance=%d\n", instance);
 	}

@@ -220,7 +220,7 @@ static void
 todm_set_power_alarm(timestruc_t ts)
 {
 	todinfo_t	tod;
-	uchar_t	c;
+	uchar_t	c __attribute__((unused));
 
 	ASSERT(MUTEX_HELD(&tod_lock));
 	tod = utc_to_tod(ts.tv_sec);
@@ -247,7 +247,7 @@ todm_set_power_alarm(timestruc_t ts)
 static void
 todm_clear_power_alarm()
 {
-	uchar_t	c;
+	uchar_t	c __attribute__((unused));
 
 	ASSERT(MUTEX_HELD(&tod_lock));
 

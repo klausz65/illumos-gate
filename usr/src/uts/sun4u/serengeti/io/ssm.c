@@ -721,7 +721,7 @@ ssm_open(dev_t *devi, int flags, int otyp, cred_t *credp)
 
 	board = (getminor(*devi) & SSM_BOARD_MASK);
 
-	if (board < 0 || board > plat_max_boards()) {
+	if (board > plat_max_boards()) {
 		return (ENXIO);
 	}
 
@@ -789,7 +789,7 @@ ssm_close(dev_t dev, int flags, int otyp, cred_t *credp)
 
 	board = (getminor(dev) & SSM_BOARD_MASK);
 
-	if (board < 0 || board > plat_max_boards())
+	if (board > plat_max_boards())
 		return (ENXIO);
 
 	return (DDI_SUCCESS);
@@ -858,6 +858,7 @@ ssm_ioctl(dev_t dev, int cmd, intptr_t arg, int mode, cred_t *credp,
 
 		ssm_loaded_sbd = FALSE;
 		softsp->initialized = FALSE;
+		break;
 	}
 #endif
 

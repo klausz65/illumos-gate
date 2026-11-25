@@ -1205,8 +1205,8 @@ px_dma_physwin(px_t *px_p, ddi_dma_req_t *dmareq, ddi_dma_impl_t *mp)
 
 		DBG(DBG_BYPASS, mp->dmai_rdip, "newwin pfn[%x-%x] %x cks\n",
 		    win_pfn0_index, i - 1, cookie_no);
-		if (ret = px_dma_newwin(dip, dmareq, mp, cookie_no,
-		    win_pfn0_index, i - 1, win_pp, count_max, bypass_addr))
+		if ((ret = px_dma_newwin(dip, dmareq, mp, cookie_no,
+		    win_pfn0_index, i - 1, win_pp, count_max, bypass_addr)) != 0)
 			goto err;
 
 		win_pp = &(*win_pp)->win_next;	/* win_pp = *(win_pp) */
@@ -1221,8 +1221,8 @@ px_dma_physwin(px_t *px_p, ddi_dma_req_t *dmareq, ddi_dma_impl_t *mp)
 	cookie_no++;
 	DBG(DBG_BYPASS, mp->dmai_rdip, "newwin pfn[%x-%x] %x cks\n",
 	    win_pfn0_index, i - 1, cookie_no);
-	if (ret = px_dma_newwin(dip, dmareq, mp, cookie_no, win_pfn0_index,
-	    i - 1, win_pp, count_max, bypass_addr))
+	if ((ret = px_dma_newwin(dip, dmareq, mp, cookie_no, win_pfn0_index,
+	    i - 1, win_pp, count_max, bypass_addr)) != 0)
 		goto err;
 	win_no++;
 	px_dma_adjust(dmareq, mp, mp->dmai_winlst);

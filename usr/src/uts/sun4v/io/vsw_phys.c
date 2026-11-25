@@ -130,7 +130,6 @@ extern uint32_t vsw_publish_macaddr_count;
 extern uint32_t vsw_vlan_frame_untag(void *arg, int type, mblk_t **np,
 	mblk_t **npt);
 extern void vsw_physlink_state_update(vsw_t *vswp);
-static char mac_mtu_propname[] = "mtu";
 
 /*
  * Tunables used in this file.

@@ -514,7 +514,7 @@ n2rng_collect_diag_bits(n2rng_t *n2rng, int rngid,
     n2rng_setup_t *collect_setupp, void *buffer, int numbytes,
     n2rng_setup_t *exit_setupp, uint64_t exitstate)
 {
-	int		rv;
+	int		rv = 0;
 	int		override_rv = 0;
 	uint64_t	hverr;
 	int		i;

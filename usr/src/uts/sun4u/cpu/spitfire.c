@@ -1443,7 +1443,7 @@ cpu_async_error(struct regs *rp, ulong_t p_afar, ulong_t p_afsr,
 		 */
 		if (aflt->flt_in_memory) {
 			uint32_t ec_set_size;
-			uchar_t state;
+			uchar_t state = 0;
 			uint32_t ecache_idx;
 			uint64_t faultpa = P2ALIGN(aflt->flt_addr, 64);
 

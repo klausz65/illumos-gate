@@ -244,6 +244,9 @@ sbmem_detach(dev_info_t *devi, ddi_detach_cmd_t cmd)
 
 	case DDI_SUSPEND:
 		return (DDI_SUCCESS);
+
+	default:
+		break;
 	}
 	return (DDI_FAILURE);
 }

@@ -2785,9 +2785,7 @@ hvio_resume(devhandle_t dev_hdl, devino_t devino, pxu_t *pxu_p)
 		cmn_err(CE_WARN,
 		    "hvio_resume: hvio_intr_devino_to_sysino failed, "
 		    "ret 0x%lx", ret);
-	}
-
-	if ((ret =  hvio_intr_setstate(dev_hdl, sysino, INTR_IDLE_STATE))
+	} else if ((ret = hvio_intr_setstate(dev_hdl, sysino, INTR_IDLE_STATE))
 	    != H_EOK) {
 		cmn_err(CE_WARN,
 		    "hvio_resume: hvio_intr_setstate failed, "
@@ -2825,7 +2823,7 @@ hvio_cb_suspend(devhandle_t dev_hdl, pxu_t *pxu_p)
 	default:
 		DBG(DBG_CB, NULL, "hvio_cb_suspend - unknown chip type: 0x%x\n",
 		    PX_CHIP_TYPE(pxu_p));
-		break;
+		return (H_EIO);
 	}
 
 	config_state = kmem_zalloc(cb_size, KM_NOSLEEP);
@@ -2877,7 +2875,7 @@ hvio_cb_resume(devhandle_t pci_dev_hdl, devhandle_t xbus_dev_hdl,
 	default:
 		DBG(DBG_CB, NULL, "hvio_cb_resume - unknown chip type: 0x%x\n",
 		    PX_CHIP_TYPE(pxu_p));
-		break;
+		return;
 	}
 
 	ASSERT(pxu_p->xcb_config_state);
@@ -2894,9 +2892,7 @@ hvio_cb_resume(devhandle_t pci_dev_hdl, devhandle_t xbus_dev_hdl,
 		cmn_err(CE_WARN,
 		    "hvio_cb_resume: hvio_intr_devino_to_sysino failed, "
 		    "ret 0x%lx", ret);
-	}
-
-	if ((ret = hvio_intr_setstate(pci_dev_hdl, sysino, INTR_IDLE_STATE))
+	} else if ((ret = hvio_intr_setstate(pci_dev_hdl, sysino, INTR_IDLE_STATE))
 	    != H_EOK) {
 		cmn_err(CE_WARN,
 		    "hvio_cb_resume: hvio_intr_setstate failed, "
@@ -3015,6 +3011,9 @@ px_link_wait4l1idle(caddr_t csr_base)
 {
 	uint8_t ltssm_state;
 	int ntries = px_max_l1_tries;
+
+	if (ntries <= 0)
+		return (DDI_FAILURE);
 
 	while (ntries > 0) {
 		ltssm_state = CSR_FR(csr_base, LPU_LTSSM_STATUS1, LTSSM_STATE);

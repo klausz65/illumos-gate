@@ -912,6 +912,8 @@ ds_get_hv_pri(ds_pri_state_t *sp)
 	 */
 	if (!ISP2(pri_size))
 		buf_size = 1 << highbit(pri_size);
+	else
+		buf_size = pri_size;
 	DS_PRI_DBG("ds_get_hv_pri: buf_size = 0x%lx\n", buf_size);
 
 	buf_va = contig_mem_alloc(buf_size);

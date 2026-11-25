@@ -82,7 +82,6 @@ static int mdesc_detach(dev_info_t *, ddi_detach_cmd_t);
 static int mdesc_open(dev_t *, int, int, cred_t *);
 static int mdesc_close(dev_t, int, int, cred_t *);
 static int mdesc_read(dev_t, struct uio *, cred_t *);
-static int mdesc_write(dev_t, struct uio *, cred_t *);
 static int mdesc_rw(dev_t, struct uio *, enum uio_rw);
 static int mdesc_ioctl(dev_t, int, intptr_t, int, cred_t *, int *);
 
@@ -389,28 +388,12 @@ mdesc_close(dev_t dev, int flag, int otyp, cred_t *credp)
 	return (0);
 }
 
-
-
-
 /*ARGSUSED*/
 static int
 mdesc_read(dev_t dev, struct uio *uiop, cred_t *credp)
 {
 	return (mdesc_rw(dev, uiop, UIO_READ));
 }
-
-
-
-
-/*ARGSUSED*/
-static int
-mdesc_write(dev_t dev, struct uio *uiop, cred_t *credp)
-{
-	return (ENXIO);	/* This driver version does not allow updates */
-}
-
-
-
 
 static int
 mdesc_rw(dev_t dev, struct uio *uiop, enum uio_rw rw)
@@ -471,9 +454,6 @@ mdesc_rw(dev_t dev, struct uio *uiop, enum uio_rw rw)
 
 	return (retval);
 }
-
-
-
 
 /*ARGSUSED*/
 static int

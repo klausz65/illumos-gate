@@ -397,7 +397,6 @@ sysctrl_attach(dev_info_t *devi, ddi_attach_cmd_t cmd)
 {
 	struct sysctrl_soft_state *softsp;
 	int instance;
-	uchar_t tmp_reg;
 	dev_info_t *dip;
 	char *propval;
 	int proplen;
@@ -561,7 +560,7 @@ sysctrl_attach(dev_info_t *devi, ddi_attach_cmd_t cmd)
 	 * read. This is a feature of the ADC hardware. After a power cycle
 	 * it does not contains valid data until a read occurs.
 	 */
-	tmp_reg = *(softsp->temp_reg);
+	(void) *(volatile uchar_t *)softsp->temp_reg;
 
 	/* Wait 30 usec for ADC hardware to stabilize. */
 	DELAY(30);
@@ -569,10 +568,7 @@ sysctrl_attach(dev_info_t *devi, ddi_attach_cmd_t cmd)
 	/* shut off all interrupt sources */
 	*(softsp->csr) &= ~(SYS_PPS_FAN_FAIL_EN | SYS_PS_FAIL_EN |
 	    SYS_AC_PWR_FAIL_EN | SYS_SBRD_PRES_EN);
-	tmp_reg = *(softsp->csr);
-#ifdef lint
-	tmp_reg = tmp_reg;
-#endif
+	(void) *(volatile uchar_t *)softsp->csr;
 
 	/*
 	 * Now register our high interrupt with the system.
@@ -736,10 +732,7 @@ sysctrl_attach(dev_info_t *devi, ddi_attach_cmd_t cmd)
 	*(softsp->csr) |= enable_sys_interrupt &
 	    (SYS_AC_PWR_FAIL_EN | SYS_PS_FAIL_EN |
 	    SYS_PPS_FAN_FAIL_EN | SYS_SBRD_PRES_EN);
-	tmp_reg = *(softsp->csr);
-#ifdef lint
-	tmp_reg = tmp_reg;
-#endif
+	(void) *(volatile uchar_t *)softsp->csr;
 	mutex_exit(&softsp->csr_mutex);
 
 	/* Initialize the temperature */
@@ -891,7 +884,7 @@ bad1:
 
 bad0:
 	ddi_soft_state_free(sysctrlp, instance);
-	ddi_remove_minor_node(dip, NULL);
+	ddi_remove_minor_node(devi, NULL);
 	cmn_err(CE_WARN,
 	    "sysctrl%d: Initialization failure. Some system level events,"
 	    " {AC Fail, Fan Failure, PS Failure} not detected", instance);
@@ -1445,7 +1438,6 @@ system_high_handler(caddr_t arg)
 	struct sysctrl_soft_state *softsp = (struct sysctrl_soft_state *)arg;
 	uchar_t csr;
 	uchar_t status2;
-	uchar_t tmp_reg;
 	int serviced = 0;
 
 	ASSERT(softsp);
@@ -1544,10 +1536,7 @@ system_high_handler(caddr_t arg)
 
 	/* update the real csr */
 	*(softsp->csr) = csr;
-	tmp_reg = *(softsp->csr);
-#ifdef lint
-	tmp_reg = tmp_reg;
-#endif
+	(void) *(volatile uchar_t *)softsp->csr;
 	mutex_exit(&softsp->csr_mutex);
 
 	return (DDI_INTR_CLAIMED);
@@ -1645,7 +1634,6 @@ static uint_t
 spur_reenable(caddr_t arg)
 {
 	struct sysctrl_soft_state *softsp = (struct sysctrl_soft_state *)arg;
-	uchar_t tmp_reg;
 
 	ASSERT(softsp);
 
@@ -1655,10 +1643,7 @@ spur_reenable(caddr_t arg)
 	*(softsp->csr) |= softsp->saved_en_state &
 	    (SYS_AC_PWR_FAIL_EN | SYS_PS_FAIL_EN |
 	    SYS_PPS_FAN_FAIL_EN | SYS_SBRD_PRES_EN);
-	tmp_reg = *(softsp->csr);
-#ifdef lint
-	tmp_reg = tmp_reg;
-#endif
+	(void) *(volatile uchar_t *)softsp->csr;
 
 	/* clear out the saved state */
 	softsp->saved_en_state = 0;
@@ -1763,16 +1748,12 @@ static uint_t
 ac_fail_reenable(caddr_t arg)
 {
 	struct sysctrl_soft_state *softsp = (struct sysctrl_soft_state *)arg;
-	uchar_t tmp_reg;
 
 	ASSERT(softsp);
 
 	mutex_enter(&softsp->csr_mutex);
 	*(softsp->csr) |= SYS_AC_PWR_FAIL_EN;
-	tmp_reg = *(softsp->csr);
-#ifdef lint
-	tmp_reg = tmp_reg;
-#endif
+	(void) *(volatile uchar_t *)softsp->csr;
 	mutex_exit(&softsp->csr_mutex);
 
 	return (DDI_INTR_CLAIMED);
@@ -1822,7 +1803,6 @@ ps_fail_handler(struct sysctrl_soft_state *softsp, int fromint)
 	struct ps_state *pstatp;
 	int poll_needed = 0;
 	uchar_t ps_stat, ps_pres, status1, status2, pppsr;
-	uchar_t tmp_reg;
 	enum power_state current_power_state;
 
 	ASSERT(softsp);
@@ -2034,10 +2014,7 @@ ps_fail_handler(struct sysctrl_soft_state *softsp, int fromint)
 						/* disable rconsole */
 						*(softsp->clk_freq2) &=
 						    ~RCONS_UART_EN;
-					tmp_reg = *(softsp->csr);
-#ifdef lint
-					tmp_reg = tmp_reg;
-#endif
+					(void) *(volatile uchar_t *)softsp->csr;
 
 				}
 
@@ -2140,10 +2117,7 @@ ps_fail_handler(struct sysctrl_soft_state *softsp, int fromint)
 	if (!poll_needed) {
 		mutex_enter(&softsp->csr_mutex);
 		*(softsp->csr) |= SYS_PS_FAIL_EN;
-		tmp_reg = *(softsp->csr);
-#ifdef lint
-		tmp_reg = tmp_reg;
-#endif
+		(void) *(volatile uchar_t *)softsp->csr;
 		mutex_exit(&softsp->csr_mutex);
 	}
 
@@ -2505,7 +2479,6 @@ static uint_t
 pps_fanfail_reenable(caddr_t arg)
 {
 	struct sysctrl_soft_state *softsp = (struct sysctrl_soft_state *)arg;
-	uchar_t tmp_reg;
 
 	ASSERT(softsp);
 
@@ -2522,10 +2495,7 @@ pps_fanfail_reenable(caddr_t arg)
 	softsp->pps_fan_saved = SYS_AC_FAN_OK | SYS_KEYSW_FAN_OK;
 
 	*(softsp->csr) |= SYS_PPS_FAN_FAIL_EN;
-	tmp_reg = *(softsp->csr);
-#ifdef lint
-	tmp_reg = tmp_reg;
-#endif
+	(void) *(volatile uchar_t *)softsp->csr;
 	mutex_exit(&softsp->csr_mutex);
 
 	return (DDI_INTR_CLAIMED);
@@ -2781,7 +2751,6 @@ static uint_t
 bd_insert_normal(caddr_t arg)
 {
 	struct sysctrl_soft_state *softsp = (struct sysctrl_soft_state *)arg;
-	uchar_t tmp_reg;
 
 	ASSERT(softsp);
 
@@ -2795,10 +2764,7 @@ bd_insert_normal(caddr_t arg)
 		mutex_enter(&softsp->csr_mutex);
 		*(softsp->csr) |= SYS_SBRD_PRES_EN;
 		/* flush the hardware store buffer */
-		tmp_reg = *(softsp->csr);
-#ifdef lint
-		tmp_reg = tmp_reg;
-#endif
+		(void) *(volatile uchar_t *)softsp->csr;
 		mutex_exit(&softsp->csr_mutex);
 	}
 
@@ -2848,10 +2814,7 @@ blink_led_handler(caddr_t arg)
 	*(softsp->csr) = tmp_reg;
 
 	/* flush the hardware store buffer */
-	tmp_reg = *(softsp->csr);
-#ifdef lint
-	tmp_reg = tmp_reg;
-#endif
+	(void) *(volatile uchar_t *)softsp->csr;
 	mutex_exit(&softsp->csr_mutex);
 
 	(void) timeout(blink_led_timeout, softsp, blink_led_timeout_hz);
@@ -3365,7 +3328,6 @@ sysc_slot_info(int nslots, int *start, int *limit, int *incr)
 static void
 rcons_reinit(struct sysctrl_soft_state *softsp)
 {
-	uchar_t tmp_reg;
 
 	if (!(softsp->rcons_ctl))
 		/*
@@ -3385,7 +3347,7 @@ rcons_reinit(struct sysctrl_soft_state *softsp)
 	*(softsp->clk_freq2) &= ~RCONS_UART_EN;
 
 	/* flush the hardware buffers */
-	tmp_reg = *(softsp->csr);
+	(void) *(volatile uchar_t *)softsp->csr;
 
 	/*
 	 * Program the UART to watch ttya console.
@@ -3396,11 +3358,8 @@ rcons_reinit(struct sysctrl_soft_state *softsp)
 	*(softsp->clk_freq2) |= RCONS_UART_EN;
 
 	/* flush the hardware buffers */
-	tmp_reg = *(softsp->csr);
+	(void) *(volatile uchar_t *)softsp->csr;
 
 	/* print some info for user to watch */
 	cmn_err(CE_NOTE, "Remote console reinitialized");
-#ifdef lint
-	tmp_reg = tmp_reg;
-#endif
 }

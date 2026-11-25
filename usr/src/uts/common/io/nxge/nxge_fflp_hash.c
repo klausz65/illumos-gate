@@ -255,7 +255,7 @@ nxge_crc32c(uint32_t crc32, const uint8_t *buf, int len)
 {
 	int rem;
 
-	rem = 4 - ((uintptr_t)buf) & 3;
+	rem = (4 - (uintptr_t)buf) & 3;
 	if (rem != 0) {
 		if (len < rem) {
 			rem = len;

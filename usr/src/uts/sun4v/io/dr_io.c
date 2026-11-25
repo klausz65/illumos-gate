@@ -443,7 +443,7 @@ dr_io_configure(dr_vio_req_t *req, dr_vio_res_t *res)
 	cb_arg_t	cba;
 	int		drctl_cmd;
 	int		drctl_flags = 0;
-	drctl_rsrc_t	*drctl_req;
+	drctl_rsrc_t	*drctl_req = NULL;
 	size_t		drctl_req_len;
 	drctl_rsrc_t	*drctl_rsrc = NULL;
 	drctl_cookie_t	drctl_res_ck;
@@ -613,9 +613,11 @@ done:
 	if (pdip)
 		e_ddi_branch_rele(pdip);
 
-	DR_DBG_KMEM("%s: free addr %p size %ld\n",
-	    __func__, (void *)drctl_req, drctl_req_len);
-	kmem_free(drctl_req, drctl_req_len);
+	if (drctl_req != NULL) {
+	    DR_DBG_KMEM("%s: free addr %p size %ld\n",
+		__func__, (void *)drctl_req, drctl_req_len);
+	    kmem_free(drctl_req, drctl_req_len);
+	}
 
 	if (drctl_resp) {
 		DR_DBG_KMEM("%s: free addr %p size %ld\n",
@@ -719,7 +721,7 @@ dr_io_unconfigure(dr_vio_req_t *req, dr_vio_res_t *res)
 		drctl_req->status = DRCTL_STATUS_CONFIG_FAILURE;
 
 		rv = EPERM;
-	} else if (rv = e_ddi_branch_destroy(dip, &fdip, 0)) {
+	} else if ((rv = e_ddi_branch_destroy(dip, &fdip, 0)) != 0) {
 		char *path = kmem_alloc(MAXPATHLEN, KM_SLEEP);
 
 		DR_DBG_KMEM("%s: alloc addr %p size %d\n",
@@ -779,7 +781,7 @@ dr_vio_data_handler(ds_cb_arg_t arg, void *buf, size_t buflen)
 
 	size_t		res_len;
 	dr_vio_res_t	*res;
-	dr_vio_req_t	*req;
+	dr_vio_req_t	*req = NULL;
 
 	/*
 	 * Allocate a response buffer, because we always want to

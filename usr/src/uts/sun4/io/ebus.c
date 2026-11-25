@@ -348,6 +348,9 @@ ebus_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 
 		ebus_p->state = RESUMED;
 		break;
+
+	default:
+		return (DDI_FAILURE);
 	}
 
 	return (DDI_SUCCESS);
@@ -731,6 +734,9 @@ ebus_ctlops(dev_info_t *dip, dev_info_t *rdip,
 		*((uint_t *)result) = i / sizeof (ebus_regspec_t);
 		kmem_free(ebus_rp, i);
 		return (DDI_SUCCESS);
+
+	default:
+		break;
 	}
 
 	/*
@@ -916,7 +922,7 @@ static void
 ebus_debug(uint_t flag, ebus_devstate_t *ebus_p, char *fmt,
 	uintptr_t a1, uintptr_t a2, uintptr_t a3, uintptr_t a4, uintptr_t a5)
 {
-	char *s;
+	char *s = "unknown";
 
 	if (ebus_debug_flags & flag) {
 		switch (flag) {

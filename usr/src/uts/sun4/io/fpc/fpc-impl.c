@@ -64,21 +64,6 @@ static uint64_t event_field_mask[NUM_TOTAL_COUNTERS] = {
 	LPU_PIC1_EVT_MASK		/* LPU counter 2 */
 };
 
-/* Offsets of the fields shown in event_field_masks. */
-static int event_field_offset[NUM_TOTAL_COUNTERS] = {
-	PIC0_EVT_SEL_SHIFT,		/* JBC counter 0 */
-	PIC1_EVT_SEL_SHIFT,		/* JBC counter 1 */
-	PIC0_EVT_SEL_SHIFT,		/* IMU counter 0 */
-	PIC1_EVT_SEL_SHIFT,		/* IMU counter 1 */
-	PIC0_EVT_SEL_SHIFT,		/* MMU counter 0 */
-	PIC1_EVT_SEL_SHIFT,		/* MMU counter 1 */
-	PIC0_EVT_SEL_SHIFT,		/* TLU counter 0 */
-	PIC1_EVT_SEL_SHIFT,		/* TLU counter 1 */
-	PIC2_EVT_SEL_SHIFT,		/* TLU counter 2 */
-	PIC0_EVT_SEL_SHIFT,		/* LPU counter 1 */
-	PIC2_EVT_SEL_SHIFT		/* LPU counter 2 */
-};
-
 /* For determining platform suitability at _init time. */
 int
 fpc_init_platform_check()

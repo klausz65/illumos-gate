@@ -193,7 +193,7 @@ static int
 ehc_start_pcf8584(struct ehc_envcunit *ehcp, uint8_t byteaddress)
 {
 	uint8_t poll_status;
-	uint8_t discard;
+	uint8_t discard __attribute__((unused));
 	int i;
 
 	/* wait if bus is busy */
@@ -473,7 +473,7 @@ ehc_write_pcf8584(struct ehc_envcunit *ehcp, uint8_t data)
 static int
 ehc_after_read_pcf8584(struct ehc_envcunit *ehcp, uint8_t *data)
 {
-	uint8_t discard;
+	uint8_t discard __attribute__((unused));
 	uint8_t poll_status;
 	int i = 0;
 
@@ -667,7 +667,7 @@ ehc_read_pcf8574a(struct ehc_envcunit *ehcp, int byteaddress, uint8_t *buf,
 {
 	int i;
 	int status;
-	uint8_t discard;
+	uint8_t discard __attribute__((unused));
 
 	ASSERT((byteaddress & 0x1) == 0);
 	ASSERT(MUTEX_HELD(&ehcp->umutex));
@@ -769,7 +769,7 @@ ehc_read_pcf8574(struct ehc_envcunit *ehcp, int byteaddress, uint8_t *buf,
 {
 	int i;
 	int status;
-	uint8_t discard;
+	uint8_t discard __attribute__((unused));
 
 	ASSERT((byteaddress & 0x1) == 0);
 	ASSERT(MUTEX_HELD(&ehcp->umutex));
@@ -870,7 +870,7 @@ ehc_read_lm75(struct ehc_envcunit *ehcp, int byteaddress, uint8_t *buf,
 {
 	int i;
 	int status;
-	uint8_t discard;
+	uint8_t discard __attribute__((unused));
 
 	ASSERT((byteaddress & 0x1) == 0);
 	ASSERT(MUTEX_HELD(&ehcp->umutex));

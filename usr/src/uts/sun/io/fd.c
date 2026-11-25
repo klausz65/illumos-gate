@@ -767,7 +767,8 @@ fd_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 
 	/* Initially set the characteristics to high density */
 	fdc->c_un->un_curfdtype = 1;
-	*fdc->c_un->un_chars = fdtypes[fdc->c_un->un_curfdtype];
+	*fdc->c_un->un_chars = 
+	    fdtypes[(unsigned char)fdc->c_un->un_curfdtype];
 	fdunpacklabel(&fdlbl_high_80, &fdc->c_un->un_label);
 
 	/* Make sure drive is present */
@@ -2953,7 +2954,7 @@ fdformat(struct fdctlr *fdc, int unit, int cyl, int hd)
 	struct fdunit *un;
 	struct fd_char *ch;
 	int	cmdresult;
-	uchar_t	*fmthdrs;
+	uchar_t	*fmthdrs = NULL;
 	caddr_t fd;
 	int	i;
 	size_t	real_length;
@@ -4163,7 +4164,7 @@ fdintr_dma()
 	uint_t		ccount;
 	uint_t		windex;
 	uint_t		done = 0;
-	int		tmp_dcsr;
+	int		tmp_dcsr = 0;
 	int		to;
 	uchar_t		tmp;
 	int		i = 0;
@@ -4957,7 +4958,7 @@ fdrecalseek(struct fdctlr *fdc, int unit, int arg, int execflg)
 	csb->csb_retrys = 0;
 
 	/* send cmd off to fdexec */
-	if (result = fdexec(fdc, FDXC_SLEEP | execflg)) {
+	if ((result = fdexec(fdc, FDXC_SLEEP | execflg)) != 0) {
 		goto out;
 	}
 
@@ -5292,7 +5293,7 @@ fdgetlabel(struct fdctlr *fdc, int unit)
 
 		/* Always start with the highest density (1.7MB) */
 		un->un_curfdtype = 0;
-		*(un->un_chars) = fdtypes[un->un_curfdtype];
+		*(un->un_chars) = fdtypes[(unsigned char)un->un_curfdtype];
 	}
 
 	FDERRPRINT(FDEP_L1, FDEM_GETL,
@@ -5327,7 +5328,7 @@ fdgetlabel(struct fdctlr *fdc, int unit)
 		 */
 
 		un->un_curfdtype = (un->un_curfdtype + 1) % nfdtypes;
-		*(un->un_chars) = fdtypes[un->un_curfdtype];
+		*(un->un_chars) = fdtypes[(unsigned char)un->un_curfdtype];
 
 
 	}
@@ -5340,7 +5341,7 @@ fdgetlabel(struct fdctlr *fdc, int unit)
 
 		/* The default characteristics are high density (1.4MB) */
 		un->un_curfdtype = 1;
-		*(un->un_chars) = fdtypes[un->un_curfdtype];
+		*(un->un_chars) = fdtypes[(unsigned char)un->un_curfdtype];
 
 		fdunpacklabel(&fdlbl_high_80, &un->un_label);
 

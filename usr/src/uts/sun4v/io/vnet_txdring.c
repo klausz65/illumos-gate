@@ -45,6 +45,10 @@
 #include <sys/vio_util.h>
 #include <sys/vnet_gen.h>
 
+static struct ether_addr etherbroadcastaddr = {
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+};
+
 /*
  * This file contains the implementation of TxDring data transfer mode of VIO
  * Protocol in vnet. The functions in this file are invoked from vnet_gen.c
