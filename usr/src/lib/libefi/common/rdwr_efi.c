@@ -254,7 +254,7 @@ efi_alloc_and_read(int fd, struct dk_gpt **vtoc)
 		return (VT_ERROR);
 	}
 
-	if (mbr->signature != MBB_MAGIC) {
+	if (LE_16(mbr->signature) != MBB_MAGIC) {
 		free(mbr);
 		return (VT_EINVAL);
 	}
