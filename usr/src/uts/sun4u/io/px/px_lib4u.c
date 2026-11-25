@@ -65,7 +65,7 @@ static int px_goto_l0(px_t *px_p);
 static int px_pre_pwron_check(px_t *px_p);
 static uint32_t px_identity_init(px_t *px_p);
 static boolean_t px_cpr_callb(void *arg, int code);
-static uint_t px_cb_intr(caddr_t arg);
+static uint_t px_cb_intr(caddr_t, caddr_t);
 
 /*
  * ACKNAK Latency Threshold Table.
@@ -106,7 +106,6 @@ int
 px_lib_map_regs(pxu_t *pxu_p, dev_info_t *dip)
 {
 	ddi_device_acc_attr_t	attr;
-	px_reg_bank_t		reg_bank = PX_REG_CSR;
 
 	DBG(DBG_ATTACH, dip, "px_lib_map_regs: pxu_p:0x%p, dip 0x%p\n",
 	    pxu_p, dip);
@@ -118,41 +117,35 @@ px_lib_map_regs(pxu_t *pxu_p, dev_info_t *dip)
 	/*
 	 * PCI CSR Base
 	 */
-	if (ddi_regs_map_setup(dip, reg_bank, &pxu_p->px_address[reg_bank],
-	    0, 0, &attr, &pxu_p->px_ac[reg_bank]) != DDI_SUCCESS) {
-		goto fail;
+	if (ddi_regs_map_setup(dip, PX_REG_CSR, &pxu_p->px_address[PX_REG_CSR],
+	    0, 0, &attr, &pxu_p->px_ac[PX_REG_CSR]) != DDI_SUCCESS) {
+		cmn_err(CE_WARN, "%s%d: unable to map reg entry 0x%x\n",
+		    ddi_driver_name(dip), ddi_get_instance(dip), PX_REG_CSR);
+		return (DDI_FAILURE);
 	}
 
-	reg_bank++;
+	DBG(DBG_ATTACH, dip, "reg_bank 0x%x address 0x%p\n", PX_REG_CSR,
+	    pxu_p->px_address[PX_REG_CSR]);
 
 	/*
 	 * XBUS CSR Base
 	 */
-	if (ddi_regs_map_setup(dip, reg_bank, &pxu_p->px_address[reg_bank],
-	    0, 0, &attr, &pxu_p->px_ac[reg_bank]) != DDI_SUCCESS) {
-		goto fail;
+	if (ddi_regs_map_setup(dip, PX_REG_XBC, &pxu_p->px_address[PX_REG_XBC],
+	    0, 0, &attr, &pxu_p->px_ac[PX_REG_XBC]) != DDI_SUCCESS) {
+		pxu_p->px_address[PX_REG_CSR] = NULL;
+		ddi_regs_map_free(&pxu_p->px_ac[PX_REG_CSR]);
+
+		cmn_err(CE_WARN, "%s%d: unable to map reg entry 0x%x\n",
+		    ddi_driver_name(dip), ddi_get_instance(dip), PX_REG_XBC);
+		return (DDI_FAILURE);
 	}
 
-	pxu_p->px_address[reg_bank] -= FIRE_CONTROL_STATUS;
+	pxu_p->px_address[PX_REG_XBC] -= FIRE_CONTROL_STATUS;
 
-done:
-	for (; reg_bank >= PX_REG_CSR; reg_bank--) {
-		DBG(DBG_ATTACH, dip, "reg_bank 0x%x address 0x%p\n",
-		    reg_bank, pxu_p->px_address[reg_bank]);
-	}
+	DBG(DBG_ATTACH, dip, "reg_bank 0x%x address 0x%p\n", PX_REG_XBC,
+	    pxu_p->px_address[PX_REG_XBC]);
 
 	return (DDI_SUCCESS);
-
-fail:
-	cmn_err(CE_WARN, "%s%d: unable to map reg entry %d\n",
-	    ddi_driver_name(dip), ddi_get_instance(dip), reg_bank);
-
-	for (reg_bank--; reg_bank >= PX_REG_CSR; reg_bank--) {
-		pxu_p->px_address[reg_bank] = NULL;
-		ddi_regs_map_free(&pxu_p->px_ac[reg_bank]);
-	}
-
-	return (DDI_FAILURE);
 }
 
 /*
@@ -1481,9 +1474,8 @@ px_set_cb(dev_info_t *dip, uint64_t val)
 
 /*ARGSUSED*/
 int
-px_lib_map_vconfig(dev_info_t *dip,
-	ddi_map_req_t *mp, pci_config_offset_t off,
-		pci_regspec_t *rp, caddr_t *addrp)
+px_lib_map_vconfig(dev_info_t *dip, ddi_map_req_t *mp, pci_config_offset_t off,
+    pci_regspec_t *rp, caddr_t *addrp)
 {
 	/*
 	 * No special config space access services in this layer.
@@ -1813,9 +1805,9 @@ px_lib_do_caut_get(dev_info_t *dip, peekpoke_ctlops_t *cautacc_ctlops_arg)
 /*ARGSUSED*/
 int
 px_lib_ctlops_peek(dev_info_t *dip, dev_info_t *rdip,
-    peekpoke_ctlops_t *in_args, void *result)
+    peekpoke_ctlops_t *in_args, void **result)
 {
-	result = (void *)in_args->host_addr;
+	*result = (void *)in_args->host_addr;
 	return (in_args->handle ? px_lib_do_caut_get(dip, in_args) :
 	    px_lib_do_peek(dip, in_args));
 }
@@ -1971,7 +1963,7 @@ l23ready_done:
  * PME_To_ACK message.
  */
 uint_t
-px_pmeq_intr(caddr_t arg)
+px_pmeq_intr(caddr_t arg, caddr_t arg1 __unused)
 {
 	px_t	*px_p = (px_t *)arg;
 
@@ -2099,7 +2091,7 @@ px_err_add_intr(px_fault_t *px_fault_p)
 	px_t		*px_p = DIP_TO_STATE(dip);
 
 	VERIFY(add_ivintr(px_fault_p->px_fh_sysino, PX_ERR_PIL,
-	    (intrfunc)px_fault_p->px_err_func, (caddr_t)px_fault_p,
+	    px_fault_p->px_err_func, (caddr_t)px_fault_p,
 	    NULL, NULL) == 0);
 
 	px_ib_intr_enable(px_p, intr_dist_cpuid(), px_fault_p->px_intr_ino);
@@ -2203,7 +2195,7 @@ px_cb_add_intr(px_fault_t *fault_p)
 
 	/* register cb interrupt */
 	VERIFY(add_ivintr(fault_p->px_fh_sysino, PX_ERR_PIL,
-	    (intrfunc)cb_p->px_cb_func, (caddr_t)cb_p, NULL, NULL) == 0);
+	    cb_p->px_cb_func, (caddr_t)cb_p, NULL, NULL) == 0);
 
 
 	/* update cb list */
@@ -2329,7 +2321,7 @@ px_cb_rem_intr(px_fault_t *fault_p)
  * px_cb_intr() - sun4u only,  CB interrupt dispatcher
  */
 uint_t
-px_cb_intr(caddr_t arg)
+px_cb_intr(caddr_t arg, caddr_t arg1 __unused)
 {
 	px_cb_t		*cb_p = (px_cb_t *)arg;
 	px_t		*pxp;
@@ -2346,7 +2338,7 @@ px_cb_intr(caddr_t arg)
 	pxp = cb_p->pxl->pxp;
 	f_p = &pxp->px_cb_fault;
 
-	ret = f_p->px_err_func((caddr_t)f_p);
+	ret = f_p->px_err_func((caddr_t)f_p, NULL);
 
 	mutex_exit(&cb_p->cb_mutex);
 	return (ret);
@@ -2562,7 +2554,7 @@ int
 px_lib_hotplug_init(dev_info_t *dip, void *arg)
 {
 	px_t	*px_p = DIP_TO_STATE(dip);
-	pxu_t 	*pxu_p = (pxu_t *)px_p->px_plat_p;
+	pxu_t	*pxu_p = (pxu_t *)px_p->px_plat_p;
 	uint64_t ret;
 
 	if (ddi_prop_exists(DDI_DEV_T_ANY, dip, DDI_PROP_DONTPASS,
@@ -2596,7 +2588,7 @@ px_lib_hotplug_uninit(dev_info_t *dip)
 {
 	if (hvio_hotplug_uninit(dip) == DDI_SUCCESS) {
 		px_t	*px_p = DIP_TO_STATE(dip);
-		pxu_t 	*pxu_p = (pxu_t *)px_p->px_plat_p;
+		pxu_t	*pxu_p = (pxu_t *)px_p->px_plat_p;
 
 		px_ib_intr_disable(px_p->px_ib_p,
 		    px_p->px_inos[PX_INTR_HOTPLUG], IB_INTR_WAIT);
@@ -2622,7 +2614,7 @@ px_hp_intr_redist(px_t *px_p)
 boolean_t
 px_lib_is_in_drain_state(px_t *px_p)
 {
-	pxu_t 	*pxu_p = (pxu_t *)px_p->px_plat_p;
+	pxu_t	*pxu_p = (pxu_t *)px_p->px_plat_p;
 	caddr_t csr_base = (caddr_t)pxu_p->px_address[PX_REG_CSR];
 	uint64_t drain_status;
 
@@ -2638,7 +2630,7 @@ px_lib_is_in_drain_state(px_t *px_p)
 pcie_req_id_t
 px_lib_get_bdf(px_t *px_p)
 {
-	pxu_t 	*pxu_p = (pxu_t *)px_p->px_plat_p;
+	pxu_t	*pxu_p = (pxu_t *)px_p->px_plat_p;
 	caddr_t csr_base = (caddr_t)pxu_p->px_address[PX_REG_CSR];
 	pcie_req_id_t bdf;
 

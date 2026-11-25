@@ -24,7 +24,7 @@
 # Use is subject to license terms.
 #
 ARCH = sun4u
-include ../../sun4//Makefile.plugin
+
 include ../../sun4/pcibus/Makefile.pci
 
 LDFLAGS += -L$(ROOT)/usr/lib -Wl,-zdirect -Wl,-zlazyload

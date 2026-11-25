@@ -56,10 +56,8 @@ static int px_info(dev_info_t *dip, ddi_info_cmd_t infocmd,
 static int px_cb_attach(px_t *);
 static int px_pwr_setup(dev_info_t *dip);
 static void px_pwr_teardown(dev_info_t *dip);
-static void px_set_mps(px_t *px_p);
 
 extern void pci_cfgacc_acc(pci_cfgacc_req_t *);
-extern int pcie_max_mps;
 extern void (*pci_cfgacc_acc_p)(pci_cfgacc_req_t *);
 /*
  * bus ops and dev ops structures:
@@ -121,7 +119,7 @@ static struct dev_ops px_ops = {
 extern struct mod_ops mod_driverops;
 
 static struct modldrv modldrv = {
-	&mod_driverops, 			/* Type of module - driver */
+	&mod_driverops,				/* Type of module - driver */
 #if defined(sun4u)
 	"Sun4u Host to PCIe nexus driver",	/* Name of module. */
 #elif defined(sun4v)
@@ -318,8 +316,6 @@ px_attach(dev_info_t *dip, ddi_attach_cmd_t cmd)
 
 			bus_p->bus_hp_sup_modes |= PCIE_NATIVE_HP_MODE;
 		}
-
-		(void) px_set_mps(px_p);
 
 		if (pcie_init(dip, (caddr_t)&regops) != DDI_SUCCESS)
 			goto err_bad_hotplug;
@@ -644,7 +640,7 @@ px_pwr_setup(dev_info_t *dip)
 	hdl.ih_pri = px_pwr_pil;
 
 	/* Add PME_TO_ACK message handler */
-	hdl.ih_cb_func = (ddi_intr_handler_t *)px_pmeq_intr;
+	hdl.ih_cb_func = px_pmeq_intr;
 	if (px_add_msiq_intr(dip, dip, &hdl, MSG_REC,
 	    (msgcode_t)PCIE_PME_ACK_MSG, -1,
 	    &px_p->px_pm_msiq_id) != DDI_SUCCESS) {
@@ -715,20 +711,20 @@ px_pwr_teardown(dev_info_t *dip)
 /*
  * bus map entry point:
  *
- * 	if map request is for an rnumber
+ *	if map request is for an rnumber
  *		get the corresponding regspec from device node
- * 	build a new regspec in our parent's format
+ *	build a new regspec in our parent's format
  *	build a new map_req with the new regspec
  *	call up the tree to complete the mapping
  */
 int
 px_map(dev_info_t *dip, dev_info_t *rdip, ddi_map_req_t *mp,
-	off_t off, off_t len, caddr_t *addrp)
+    off_t off, off_t len, caddr_t *addrp)
 {
 	px_t *px_p = DIP_TO_STATE(dip);
 	struct regspec p_regspec;
 	ddi_map_req_t p_mapreq;
-	int reglen, rval, r_no;
+	int reglen, rval, r_no = 0;
 	pci_regspec_t reloc_reg, *rp = &reloc_reg;
 
 	DBG(DBG_MAP, dip, "rdip=%s%d:",
@@ -791,7 +787,7 @@ px_map(dev_info_t *dip, dev_info_t *rdip, ddi_map_req_t *mp,
 	 */
 
 	/* relocate within 64-bit pci space through "assigned-addresses" */
-	if (rval = px_reloc_reg(dip, rdip, px_p, rp))
+	if ((rval = px_reloc_reg(dip, rdip, px_p, rp)) != 0)
 		goto done;
 
 	if (len)	/* adjust regspec according to mapping request */
@@ -799,7 +795,7 @@ px_map(dev_info_t *dip, dev_info_t *rdip, ddi_map_req_t *mp,
 	rp->pci_phys_low += off;
 
 	/* translate relocated pci regspec into parent space through "ranges" */
-	if (rval = px_xlate_reg(px_p, rp, &p_regspec))
+	if ((rval = px_xlate_reg(px_p, rp, &p_regspec)) != 0)
 		goto done;
 
 	p_mapreq = *mp;		/* dup the whole structure */
@@ -835,7 +831,7 @@ done:
  */
 int
 px_dma_setup(dev_info_t *dip, dev_info_t *rdip, ddi_dma_req_t *dmareq,
-	ddi_dma_handle_t *handlep)
+    ddi_dma_handle_t *handlep)
 {
 	px_t *px_p = DIP_TO_STATE(dip);
 	px_mmu_t *mmu_p = px_p->px_mmu_p;
@@ -851,9 +847,9 @@ px_dma_setup(dev_info_t *dip, dev_info_t *rdip, ddi_dma_req_t *dmareq,
 		return (DDI_DMA_NORESOURCES);
 	if (mp == (ddi_dma_impl_t *)DDI_DMA_NOMAPPING)
 		return (DDI_DMA_NOMAPPING);
-	if (ret = px_dma_type(px_p, dmareq, mp))
+	if ((ret = px_dma_type(px_p, dmareq, mp)) != 0)
 		goto freehandle;
-	if (ret = px_dma_pfn(px_p, dmareq, mp))
+	if ((ret = px_dma_pfn(px_p, dmareq, mp)) != 0)
 		goto freehandle;
 
 	switch (PX_DMA_TYPE(mp)) {
@@ -869,7 +865,7 @@ px_dma_setup(dev_info_t *dip, dev_info_t *rdip, ddi_dma_req_t *dmareq,
 				PX_DVMA_FASTTRAK_PROF(mp);
 			}
 		}
-		if (ret = px_dvma_map(mp, dmareq, mmu_p))
+		if ((ret = px_dvma_map(mp, dmareq, mmu_p)) != 0)
 			goto freehandle;
 		break;
 	case PX_DMAI_FLAGS_PTP:
@@ -903,7 +899,7 @@ freehandle:
  */
 int
 px_dma_allochdl(dev_info_t *dip, dev_info_t *rdip, ddi_dma_attr_t *attrp,
-	int (*waitfp)(caddr_t), caddr_t arg, ddi_dma_handle_t *handlep)
+    int (*waitfp)(caddr_t), caddr_t arg, ddi_dma_handle_t *handlep)
 {
 	px_t *px_p = DIP_TO_STATE(dip);
 	ddi_dma_impl_t *mp;
@@ -927,7 +923,7 @@ px_dma_allochdl(dev_info_t *dip, dev_info_t *rdip, ddi_dma_attr_t *attrp,
 	DBG(DBG_DMA_ALLOCH, dip, "mp=%p\n", mp);
 
 	/* check and convert dma attributes to handle parameters */
-	if (rval = px_dma_attr2hdl(px_p, mp)) {
+	if ((rval = px_dma_attr2hdl(px_p, mp)) != 0) {
 		px_dma_freehdl(dip, rdip, (ddi_dma_handle_t)mp);
 		*handlep = NULL;
 		return (rval);
@@ -961,13 +957,19 @@ px_dma_freehdl(dev_info_t *dip, dev_info_t *rdip, ddi_dma_handle_t handle)
  */
 int
 px_dma_bindhdl(dev_info_t *dip, dev_info_t *rdip,
-	ddi_dma_handle_t handle, ddi_dma_req_t *dmareq,
-	ddi_dma_cookie_t *cookiep, uint_t *ccountp)
+    ddi_dma_handle_t handle, ddi_dma_req_t *dmareq,
+    ddi_dma_cookie_t *cookiep, uint_t *ccountp)
 {
 	px_t *px_p = DIP_TO_STATE(dip);
 	px_mmu_t *mmu_p = px_p->px_mmu_p;
 	ddi_dma_impl_t *mp = (ddi_dma_impl_t *)handle;
+	int kmflag;
 	int ret;
+
+	if (dmareq->dmar_fp == DDI_DMA_SLEEP)
+		kmflag = KM_SLEEP;
+	else
+		kmflag = KM_NOSLEEP;
 
 	DBG(DBG_DMA_BINDH, dip, "rdip=%s%d mp=%p dmareq=%p\n",
 	    ddi_driver_name(rdip), ddi_get_instance(rdip), mp, dmareq);
@@ -978,14 +980,14 @@ px_dma_bindhdl(dev_info_t *dip, dev_info_t *rdip,
 	ASSERT((mp->dmai_flags & ~PX_DMAI_FLAGS_PRESERVE) == 0);
 	mp->dmai_flags |= PX_DMAI_FLAGS_INUSE;
 
-	if (ret = px_dma_type(px_p, dmareq, mp))
+	if ((ret = px_dma_type(px_p, dmareq, mp)) != 0)
 		goto err;
-	if (ret = px_dma_pfn(px_p, dmareq, mp))
+	if ((ret = px_dma_pfn(px_p, dmareq, mp)) != 0)
 		goto err;
 
 	switch (PX_DMA_TYPE(mp)) {
 	case PX_DMAI_FLAGS_DVMA:
-		if (ret = px_dvma_win(px_p, dmareq, mp))
+		if ((ret = px_dvma_win(px_p, dmareq, mp)) != 0)
 			goto map_err;
 		if (!PX_DMA_CANCACHE(mp)) {	/* try fast track */
 			if (PX_DMA_CANFAST(mp)) {
@@ -995,17 +997,24 @@ px_dma_bindhdl(dev_info_t *dip, dev_info_t *rdip,
 				PX_DVMA_FASTTRAK_PROF(mp);
 			}
 		}
-		if (ret = px_dvma_map(mp, dmareq, mmu_p))
+		if ((ret = px_dvma_map(mp, dmareq, mmu_p)) != 0)
 			goto map_err;
 mapped:
-		*ccountp = 1;
-		MAKE_DMA_COOKIE(cookiep, mp->dmai_mapping, mp->dmai_size);
-		mp->dmai_ncookies = 1;
+		mp->dmai_cookie =
+		    kmem_zalloc(sizeof (ddi_dma_cookie_t), kmflag);
+		if (mp->dmai_cookie == NULL) {
+			ret = DDI_DMA_NORESOURCES;
+			goto map_err;
+		}
+
+		MAKE_DMA_COOKIE(mp->dmai_cookie, mp->dmai_mapping, mp->dmai_size);
+		*cookiep = mp->dmai_cookie[0];
+		*ccountp = mp->dmai_ncookies = 1;
 		mp->dmai_curcookie = 1;
 		break;
 	case PX_DMAI_FLAGS_BYPASS:
 	case PX_DMAI_FLAGS_PTP:
-		if (ret = px_dma_physwin(px_p, dmareq, mp))
+		if ((ret = px_dma_physwin(px_p, dmareq, mp)) != 0)
 			goto map_err;
 		*ccountp = PX_WINLST(mp)->win_ncookies;
 		*cookiep =
@@ -1066,6 +1075,7 @@ px_dma_unbindhdl(dev_info_t *dip, dev_info_t *rdip, ddi_dma_handle_t handle)
 		px_mmu_unmap_window(mmu_p, mp);
 		px_dvma_unmap(mmu_p, mp);
 		px_dma_freepfn(mp);
+		kmem_free(mp->dmai_cookie, sizeof (ddi_dma_cookie_t));
 		break;
 	case PX_DMAI_FLAGS_BYPASS:
 	case PX_DMAI_FLAGS_PTP:
@@ -1096,8 +1106,8 @@ px_dma_unbindhdl(dev_info_t *dip, dev_info_t *rdip, ddi_dma_handle_t handle)
  */
 int
 px_dma_win(dev_info_t *dip, dev_info_t *rdip,
-	ddi_dma_handle_t handle, uint_t win, off_t *offp,
-	size_t *lenp, ddi_dma_cookie_t *cookiep, uint_t *ccountp)
+    ddi_dma_handle_t handle, uint_t win, off_t *offp,
+    size_t *lenp, ddi_dma_cookie_t *cookiep, uint_t *ccountp)
 {
 	ddi_dma_impl_t	*mp = (ddi_dma_impl_t *)handle;
 	int		ret;
@@ -1200,8 +1210,8 @@ static char *px_dmactl_str[] = {
 /*ARGSUSED*/
 int
 px_dma_ctlops(dev_info_t *dip, dev_info_t *rdip, ddi_dma_handle_t handle,
-	enum ddi_dma_ctlops cmd, off_t *offp, size_t *lenp, caddr_t *objp,
-	uint_t cache_flags)
+    enum ddi_dma_ctlops cmd, off_t *offp, size_t *lenp, caddr_t *objp,
+    uint_t cache_flags)
 {
 	ddi_dma_impl_t *mp = (ddi_dma_impl_t *)handle;
 
@@ -1263,7 +1273,7 @@ px_dma_ctlops(dev_info_t *dip, dev_info_t *rdip, ddi_dma_handle_t handle,
  */
 int
 px_ctlops(dev_info_t *dip, dev_info_t *rdip,
-	ddi_ctl_enum_t op, void *arg, void *result)
+    ddi_ctl_enum_t op, void *arg, void *result)
 {
 	px_t *px_p = DIP_TO_STATE(dip);
 	struct detachspec *ds;
@@ -1440,42 +1450,4 @@ px_intr_ops(dev_info_t *dip, dev_info_t *rdip, ddi_intr_op_t intr_op,
 	}
 
 	return (ret);
-}
-
-static void
-px_set_mps(px_t *px_p)
-{
-	dev_info_t	*dip;
-	pcie_bus_t	*bus_p;
-	int		max_supported;
-
-	dip = px_p->px_dip;
-	bus_p = PCIE_DIP2BUS(dip);
-
-	bus_p->bus_mps = -1;
-
-	if (pcie_root_port(dip) == DDI_FAILURE) {
-		if (px_lib_get_root_complex_mps(px_p, dip,
-		    &max_supported) < 0) {
-
-			DBG(DBG_MPS, dip, "MPS:  Can not get RC MPS\n");
-			return;
-		}
-
-		DBG(DBG_MPS, dip, "MPS: Root Complex MPS Cap of = %x\n",
-		    max_supported);
-
-		if (pcie_max_mps < max_supported)
-			max_supported = pcie_max_mps;
-
-		(void) pcie_get_fabric_mps(dip, ddi_get_child(dip),
-		    &max_supported);
-
-		bus_p->bus_mps = max_supported;
-
-		(void) px_lib_set_root_complex_mps(px_p, dip, bus_p->bus_mps);
-
-		DBG(DBG_MPS, dip, "MPS: Root Complex MPS Set to = %x\n",
-		    bus_p->bus_mps);
-	}
 }

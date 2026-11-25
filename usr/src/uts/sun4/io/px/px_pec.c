@@ -45,8 +45,6 @@
 
 extern uint_t px_ranges_phi_mask;
 
-static uint_t px_pec_error_intr(caddr_t a);
-
 int
 px_pec_attach(px_t *px_p)
 {
@@ -63,6 +61,9 @@ px_pec_attach(px_t *px_p)
 	pec_p = kmem_zalloc(sizeof (px_pec_t), KM_SLEEP);
 	px_p->px_pec_p = pec_p;
 	pec_p->pec_px_p = px_p;
+	pec_p->pec_corr_msg_msiq_id = (msiqid_t)-1;
+	pec_p->pec_non_fatal_msg_msiq_id = (msiqid_t)-1;
+	pec_p->pec_fatal_msg_msiq_id = (msiqid_t)-1;
 
 	len = snprintf(pec_p->pec_nameinst_str,
 	    sizeof (pec_p->pec_nameinst_str),
@@ -152,7 +153,7 @@ px_pec_msg_add_intr(px_t *px_p)
 
 	/* Initialize handle */
 	bzero(&hdl, sizeof (ddi_intr_handle_impl_t));
-	hdl.ih_cb_func = (ddi_intr_handler_t *)px_err_fabric_intr;
+	hdl.ih_cb_func = (ddi_intr_handler_t *)(uintptr_t)px_err_fabric_intr;
 	hdl.ih_ver = DDI_INTR_VERSION;
 	hdl.ih_state = DDI_IHDL_STATE_ALLOC;
 	hdl.ih_dip = dip;
@@ -252,7 +253,7 @@ px_pec_msg_rem_intr(px_t *px_p)
 	hdl.ih_dip = dip;
 
 	/* Remove correctable error message handler */
-	if (pec_p->pec_corr_msg_msiq_id >= 0) {
+	if (pec_p->pec_corr_msg_msiq_id != (msiqid_t)-1) {
 		px_lib_msg_setvalid(dip, PCIE_CORR_MSG, PCIE_MSG_INVALID);
 
 		hdl.ih_pri = PX_ERR_LOW_PIL;
@@ -268,7 +269,7 @@ px_pec_msg_rem_intr(px_t *px_p)
 	}
 
 	/* Remove non-fatal error message handler */
-	if (pec_p->pec_non_fatal_msg_msiq_id >= 0) {
+	if (pec_p->pec_non_fatal_msg_msiq_id != (msiqid_t)-1) {
 		px_lib_msg_setvalid(dip, PCIE_NONFATAL_MSG,
 		    PCIE_MSG_INVALID);
 
@@ -285,7 +286,7 @@ px_pec_msg_rem_intr(px_t *px_p)
 	}
 
 	/* Remove fatal error message handler */
-	if (pec_p->pec_fatal_msg_msiq_id >= 0) {
+	if (pec_p->pec_fatal_msg_msiq_id != (msiqid_t)-1) {
 		px_lib_msg_setvalid(dip, PCIE_FATAL_MSG, PCIE_MSG_INVALID);
 
 		hdl.ih_pri = PX_ERR_PIL;

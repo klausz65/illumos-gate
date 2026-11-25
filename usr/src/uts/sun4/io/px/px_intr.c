@@ -141,7 +141,7 @@ extern uint64_t intr_get_time(void);
  * DDI_INTR_UNCLAIMED otherwise.
  */
 uint_t
-px_intx_intr(caddr_t arg)
+px_intx_intr(caddr_t arg, caddr_t arg1 __unused)
 {
 	px_ino_pil_t	*ipil_p = (px_ino_pil_t *)arg;
 	px_ino_t	*ino_p = ipil_p->ipil_ino_p;
@@ -243,7 +243,7 @@ px_intx_intr(caddr_t arg)
  * DDI_INTR_UNCLAIMED otherwise.
  */
 uint_t
-px_msiq_intr(caddr_t arg)
+px_msiq_intr(caddr_t arg, caddr_t arg1 __unused)
 {
 	px_ino_pil_t	*ipil_p = (px_ino_pil_t *)arg;
 	px_ino_t	*ino_p = ipil_p->ipil_ino_p;
@@ -606,7 +606,7 @@ px_msix_ops(dev_info_t *dip, dev_info_t *rdip, ddi_intr_op_t intr_op,
 		    (i_ddi_get_msix(rdip) == NULL)) {
 			ddi_intr_msix_t		*msix_p;
 
-			if (msix_p = pci_msix_init(rdip)) {
+			if ((msix_p = pci_msix_init(rdip)) != NULL) {
 				i_ddi_set_msix(rdip, msix_p);
 				break;
 			}
@@ -1024,8 +1024,7 @@ px_add_intx_intr(dev_info_t *dip, dev_info_t *rdip,
 	DBG(DBG_A_INTX, dip, "px_add_intx_intr: pil=0x%x mondo=0x%x\n",
 	    hdlp->ih_pri, hdlp->ih_vector);
 
-	DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp,
-	    (ddi_intr_handler_t *)px_intx_intr, (caddr_t)ipil_p, NULL);
+	DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp, px_intx_intr, (caddr_t)ipil_p, NULL);
 
 	ret = i_ddi_add_ivintr(hdlp);
 
@@ -1160,7 +1159,7 @@ px_add_msiq_intr(dev_info_t *dip, dev_info_t *rdip,
 	px_msiq_state_t	*msiq_state_p = &ib_p->ib_msiq_state;
 	devino_t	ino;
 	px_ih_t		*ih_p;
-	px_ino_t	*ino_p;
+	px_ino_t	*ino_p = NULL;
 	px_ino_pil_t	*ipil_p, *ipil_list;
 	int32_t		weight;
 	int		ret = DDI_SUCCESS;
@@ -1226,8 +1225,7 @@ px_add_msiq_intr(dev_info_t *dip, dev_info_t *rdip,
 	DBG(DBG_MSIQ, dip, "px_add_msiq_intr: pil=0x%x mondo=0x%x\n",
 	    hdlp->ih_pri, hdlp->ih_vector);
 
-	DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp,
-	    (ddi_intr_handler_t *)px_msiq_intr, (caddr_t)ipil_p, NULL);
+	DDI_INTR_ASSIGN_HDLR_N_ARGS(hdlp, px_msiq_intr, (caddr_t)ipil_p, NULL);
 
 	ret = i_ddi_add_ivintr(hdlp);
 

@@ -50,7 +50,7 @@
 
 
 /* mask for the ranges property in calculating the real PFN range */
-uint_t px_ranges_phi_mask = ((1 << 28) -1);
+uint_t px_ranges_phi_mask = ((1 << 28) - 1);
 
 /*
  * Hypervisor VPCI services information for the px nexus driver.
@@ -1306,7 +1306,7 @@ px_pci_config_get(ddi_acc_impl_t *handle, uint32_t *addr, int size)
 		/* XXX update error kstats */
 		return (0xffffffff);
 
-	if (cdip = pcie_find_dip_by_bdf(px_pvt->dip, pci_dev_addr >> 8))
+	if ((cdip = pcie_find_dip_by_bdf(px_pvt->dip, pci_dev_addr >> 8)) != NULL)
 		busp = PCIE_DIP2BUS(cdip);
 	/*
 	 * This can be called early, before busp or busp->bus_dom has
@@ -1827,7 +1827,7 @@ done:
 /*ARGSUSED*/
 int
 px_lib_ctlops_peek(dev_info_t *dip, dev_info_t *rdip,
-    peekpoke_ctlops_t *in_args, void *result)
+    peekpoke_ctlops_t *in_args, void **result)
 {
 	px_t *px_p = DIP_TO_STATE(dip);
 	px_pec_t *pec_p = px_p->px_pec_p;
@@ -1843,7 +1843,7 @@ px_lib_ctlops_peek(dev_info_t *dip, dev_info_t *rdip,
 	uint64_t peekval;
 	int err = DDI_SUCCESS;
 
-	result = (void *)in_args->host_addr;
+	*result = (void *)in_args->host_addr;
 
 	ra = (r_addr_t)va_to_pa((void *)dev_addr);
 	for (; repcount; repcount--) {
@@ -2065,9 +2065,8 @@ px_lib_pmctl(int cmd, px_t *px_p)
 	return (DDI_FAILURE);
 }
 
-/*ARGSUSED*/
 uint_t
-px_pmeq_intr(caddr_t arg)
+px_pmeq_intr(caddr_t arg1 __unused, caddr_t arg2 __unused)
 {
 	return (DDI_INTR_CLAIMED);
 }

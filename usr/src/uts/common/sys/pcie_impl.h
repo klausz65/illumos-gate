@@ -430,6 +430,10 @@ typedef struct pcie_bus {
 	void		*bus_hp_ctrl;		/* HP bus ctrl data */
 	int		bus_ari;		/* ARI device */
 
+#ifdef	__sparcv9
+	uint64_t	bus_cfgacc_base;	/* config space base address */
+#endif
+
 	/* workaround for PCI/PCI-X devs behind PCIe2PCI Bridge */
 	pcie_req_id_t   bus_pcie2pci_secbus;
 

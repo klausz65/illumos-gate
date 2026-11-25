@@ -28,7 +28,6 @@ ARCH = sun4u
 
 sun4u_SRCS = hb_sun4u.c
 
-include ../../sun4/Makefile.plugin
 include ../../sun4/hostbridge/Makefile.hb
 
 LDFLAGS +=	-L$(ROOT)/usr/lib -Wl,-zdirect -Wl,-zlazyload

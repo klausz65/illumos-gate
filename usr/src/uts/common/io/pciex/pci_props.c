@@ -148,7 +148,9 @@
 #include <sys/cmn_err.h>
 #include <sys/pci.h>
 #include <sys/pcie.h>
+#ifndef __sparcv9
 #include <sys/pci_cfgspace.h>
+#endif
 #include <sys/pci_props.h>
 #include <sys/sysmacros.h>
 #include <sys/plat/pci_prd.h>
@@ -304,34 +306,46 @@ pci_prop_name_node(dev_info_t *dip, const pci_prop_data_t *prop)
 static uint8_t
 pci_prop_get8(ddi_acc_handle_t acc, const pci_prop_data_t *prop, uint16_t off)
 {
+#ifndef __sparcv9
 	if (acc == NULL) {
 		return ((*pci_getb_func)(prop->ppd_bus, prop->ppd_dev,
 		    prop->ppd_func, off));
 	} else {
+#endif
 		return (pci_config_get8(acc, off));
+#ifndef __sparcv9
 	}
+#endif
 }
 
 static uint16_t
 pci_prop_get16(ddi_acc_handle_t acc, const pci_prop_data_t *prop, uint16_t off)
 {
+#ifndef __sparcv9
 	if (acc == NULL) {
 		return ((*pci_getw_func)(prop->ppd_bus, prop->ppd_dev,
 		    prop->ppd_func, off));
 	} else {
+#endif
 		return (pci_config_get16(acc, off));
+#ifndef __sparcv9
 	}
+#endif
 }
 
 static uint32_t
 pci_prop_get32(ddi_acc_handle_t acc, const pci_prop_data_t *prop, uint16_t off)
 {
+#ifndef __sparcv9
 	if (acc == NULL) {
 		return ((*pci_getl_func)(prop->ppd_bus, prop->ppd_dev,
 		    prop->ppd_func, off));
 	} else {
+#endif
 		return (pci_config_get32(acc, off));
+#ifndef __sparcv9
 	}
+#endif
 }
 
 static pci_prop_failure_t
