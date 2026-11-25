@@ -352,7 +352,7 @@ file path=kernel/misc/$(ARCH64)/mac group=sys mode=0755
 hardlink path=kernel/misc/$(ARCH64)/md5 \
     target=../../../kernel/crypto/$(ARCH64)/md5
 file path=kernel/misc/$(ARCH64)/mii group=sys mode=0755
-$(i386_ONLY)file path=kernel/misc/$(ARCH64)/net80211 group=sys mode=0755
+file path=kernel/misc/$(ARCH64)/net80211 group=sys mode=0755
 file path=kernel/misc/$(ARCH64)/neti group=sys mode=0755
 $(i386_ONLY)file path=kernel/misc/$(ARCH64)/pci_autoconfig group=sys mode=0755
 $(i386_ONLY)file path=kernel/misc/$(ARCH64)/pcicfg group=sys mode=0755

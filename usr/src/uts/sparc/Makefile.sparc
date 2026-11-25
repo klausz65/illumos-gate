@@ -474,6 +474,7 @@ MISC_KMODS	+= rpcsec rpcsec_gss kgssapi kmech_dummy
 MISC_KMODS	+= kmech_krb5
 MISC_KMODS	+= fssnap_if
 MISC_KMODS	+= hidparser kbtrans usba usba10 usbs49_fw
+MISC_KMODS	+= net80211
 MISC_KMODS	+= s1394
 MISC_KMODS	+= hpcsvc pcihp
 MISC_KMODS	+= rsmops
