@@ -303,20 +303,37 @@ map_addr_proc(caddr_t *addrp, size_t len, offset_t off, int vacalign,
 		 */
 		if (flags & _MAP_RANDOMIZE) {
 			uint32_t slew;
-			uint32_t maxslew;
+			size_t maxslew;
 
 			(void) random_get_pseudo_bytes((uint8_t *)&slew,
 			    sizeof (slew));
 
-			maxslew = MIN(aslr_max_map_skew, (addr - base));
+			/*
+			 * Compute the maximum slew as an unsigned size.  The
+			 * gap and the erratum limit are pointer differences;
+			 * a 64-bit process maps at 0xffffffff........, so
+			 * (addr - errata57_limit) with errata57_limit == 0
+			 * (every CPU but Spitfire) is negative as a ptrdiff_t.
+			 * MIN() then picked it, and storing it in a uint32_t
+			 * kept the low 32 bits of addr: zero for a 4 GB
+			 * aligned addr (integer divide by zero below, a
+			 * panic), or more than the gap (the mapping slid
+			 * below the gap and mmap failed with ENOMEM).
+			 */
+			maxslew = MIN(aslr_max_map_skew, (size_t)(addr - base));
 			/*
 			 * Don't allow ASLR to cause mappings to fail below
 			 * because of SF erratum #57
 			 */
-			maxslew = MIN(maxslew, (addr - errata57_limit));
+			if (errata57_limit != NULL && addr > errata57_limit) {
+				maxslew = MIN(maxslew,
+				    (size_t)(addr - errata57_limit));
+			}
 
-			slew = slew % maxslew;
-			addr -= P2ALIGN(slew, align_amount);
+			if (maxslew != 0) {
+				slew = slew % maxslew;
+				addr -= P2ALIGN(slew, align_amount);
+			}
 		}
 
 		ASSERT(addr > base);
