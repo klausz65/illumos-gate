@@ -18,6 +18,9 @@ VERS 		= .1
 
 TARGET_ARCH=	sparcv9
 OBJECTS		= $(mvecvis2COBJS) $(mvecvis2SOBJS)
+pics/__vcosbig_ultra3.o := sparcv9_COPTFLAG = -xO1 -m64 -xarch=sparcvis2
+pics/__vsinbig_ultra3.o := sparcv9_COPTFLAG = -xO1 -m64 -xarch=sparcvis2
+
 
 include ../Makefile.com
 include	$(SRC)/lib/Makefile.lib.64

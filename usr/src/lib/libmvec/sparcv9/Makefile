@@ -19,6 +19,9 @@ LIBRARY		= libmvec.a
 VERS		= .1
 
 OBJECTS		= $(mvecOBJS)
+pics/__vcos.o := sparcv9_COPTFLAG = -xO1
+pics/__vsin.o := sparcv9_COPTFLAG = -xO1
+pics/__vsincos.o := sparcv9_COPTFLAG = -xO1
 
 include ../Makefile.com
 include	$(SRC)/lib/Makefile.lib.64

@@ -22,7 +22,7 @@ OBJECTS		= $(mvecvis2COBJS) $(mvecvis2SOBJS)
 include ../Makefile.com
 
 CHIP		= vis
-XARCH		= sparcvis2
+sparc_XARCH	= -m32 -xarch=sparcvis2
 
 SRCS		= $(mvecvis2COBJS:%.o=../common/%.c)
 
