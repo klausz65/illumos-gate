@@ -117,6 +117,10 @@ file \
     mode=0555
 file path=opt/elf-tests/tests/resolution/mixed-hidden-comdat/visible.s mode=0444
 dir  path=opt/elf-tests/tests/sections
+dir  path=opt/elf-tests/tests/sections/nobits-segment
+file path=opt/elf-tests/tests/sections/nobits-segment/mapfile.nobits mode=0444
+file path=opt/elf-tests/tests/sections/nobits-segment/nobits-segment mode=0555
+file path=opt/elf-tests/tests/sections/nobits-segment/nobits.c mode=0444
 dir  path=opt/elf-tests/tests/sections/shf-exclude
 file path=opt/elf-tests/tests/sections/shf-exclude/Makefile.test mode=0444
 file path=opt/elf-tests/tests/sections/shf-exclude/exclude-exec mode=0555

@@ -56,6 +56,9 @@ tests = ['mixed-hidden-comdat']
 arch = i86pc
 tests = ['exclude-kmod', 'exclude-exec', 'exclude-so', 'include-reloc', 'unknown-os']
 
+[/opt/elf-tests/tests/sections/nobits-segment]
+tests = ['nobits-segment']
+
 [/opt/elf-tests/tests/string-merge/]
 tests = ['simple']
 

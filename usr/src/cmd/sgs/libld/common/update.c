@@ -24,6 +24,7 @@
  *	  All Rights Reserved
  *
  * Copyright (c) 1989, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2026 The OpenIndiana SPARC desktop contributors
  */
 
 /*
@@ -4244,19 +4245,33 @@ ld_update_outfile(Ofl_desc *ofl)
 		}
 
 		/*
+		 * If no file content has been assigned to this segment (it
+		 * only contains no-bits sections), then reset the offset for
+		 * consistency.  The segment's virtual address is then aligned
+		 * independently of the file offsets that elf_update() gave its
+		 * sections, so those offsets can no longer be used to lay out
+		 * its sections: they need not be congruent with the segment's
+		 * address modulo the sections' alignment.  Lay the sections out
+		 * from the segment's start instead, here for the segment size,
+		 * and below for the section addresses.
+		 */
+		if (phdr->p_filesz == 0) {
+			phdr->p_offset = 0;
+			phdr->p_memsz = 0;
+			for (APLIST_TRAVERSE(sgp->sg_osdescs, idx2, osp)) {
+				Shdr	*shdr = osp->os_shdr;
+
+				phdr->p_memsz = (Xword)S_ROUND(phdr->p_memsz,
+				    shdr->sh_addralign) + shdr->sh_size;
+			}
+		}
+
+		/*
 		 * If segment size symbols are required (specified via a
 		 * mapfile) update their value.
 		 */
 		for (APLIST_TRAVERSE(sgp->sg_sizesym, idx2, sdp))
 			sdp->sd_sym->st_value = phdr->p_memsz;
-
-		/*
-		 * If no file content has been assigned to this segment (it
-		 * only contains no-bits sections), then reset the offset for
-		 * consistency.
-		 */
-		if (phdr->p_filesz == 0)
-			phdr->p_offset = 0;
 
 		/*
 		 * If a virtual address has been specified for this segment
@@ -4363,9 +4378,14 @@ ld_update_outfile(Ofl_desc *ofl)
 
 			if (!(flags & FLG_OF_RELOBJ) &&
 			    (phdr->p_type == PT_LOAD)) {
-				if (hshdr)
+				if (hshdr && (phdr->p_filesz == 0)) {
+					/* no file content: see p_memsz above */
+					vaddr = (Addr)S_ROUND(vaddr +
+					    hshdr->sh_size, shdr->sh_addralign);
+				} else if (hshdr) {
 					vaddr += (shdr->sh_offset -
 					    hshdr->sh_offset);
+				}
 
 				shdr->sh_addr = vaddr;
 				hshdr = shdr;

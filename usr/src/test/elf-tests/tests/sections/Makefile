@@ -14,6 +14,6 @@
 # Copyright 2018 Joyent, Inc.
 #
 
-SUBDIRS = shf-exclude
+SUBDIRS = shf-exclude nobits-segment
 
 include $(SRC)/test/Makefile.com
