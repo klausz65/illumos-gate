@@ -901,7 +901,7 @@ ieee80211_recv_beacon(ieee80211com_t *ic, mblk_t *mp, struct ieee80211_node *in,
 			break;
 		case IEEE80211_ELEMID_FHPARMS:
 			if (ic->ic_phytype == IEEE80211_T_FH) {
-				scan.fhdwell = LE_16(*(uint16_t *)(frm + 2));
+				scan.fhdwell = LE_READ_2(frm + 2);
 				scan.chan = IEEE80211_FH_CHAN(frm[4], frm[5]);
 				scan.fhindex = frm[6];
 				scan.phytype = IEEE80211_T_FH;

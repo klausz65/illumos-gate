@@ -886,7 +886,7 @@ ieee80211_parse_htcap(struct ieee80211_node *in, const uint8_t *ie)
 	} else
 		in->in_flags &= ~IEEE80211_NODE_HTCOMPAT;
 
-	in->in_htcap = *(uint16_t *)(ie +
+	in->in_htcap = LE_READ_2(ie +
 	    offsetof(struct ieee80211_ie_htcap, hc_cap));
 	in->in_htparam = ie[offsetof(struct ieee80211_ie_htcap, hc_param)];
 	/* needed or will ieee80211_parse_htinfo always be called? */
@@ -916,9 +916,9 @@ ieee80211_parse_htinfo(struct ieee80211_node *in, const uint8_t *ie)
 	htinfo = (const struct ieee80211_ie_htinfo *)ie;
 	in->in_htctlchan = htinfo->hi_ctrlchannel;
 	in->in_ht2ndchan = SM(htinfo->hi_byte1, IEEE80211_HTINFO_2NDCHAN);
-	w = *(uint16_t *)(&htinfo->hi_byte2);
+	w = LE_READ_2(&htinfo->hi_byte2);
 	in->in_htopmode = SM(w, IEEE80211_HTINFO_OPMODE);
-	w = *(uint16_t *)(&htinfo->hi_byte45);
+	w = LE_READ_2(&htinfo->hi_byte45);
 	in->in_htstbc = SM(w, IEEE80211_HTINFO_BASIC_STBCMCS);
 	/*
 	 * Handle 11n channel switch.  Use the received HT ie's to
@@ -1146,9 +1146,9 @@ ieee80211_aggr_recv_action(struct ieee80211_node *in,
 		switch (ia->ia_action) {
 		case IEEE80211_ACTION_BA_ADDBA_REQUEST:
 			dialogtoken = frm[2];
-			baparamset = *(uint16_t *)(frm+3);
-			batimeout = *(uint16_t *)(frm+5);
-			baseqctl = *(uint16_t *)(frm+7);
+			baparamset = LE_READ_2(frm+3);
+			batimeout = LE_READ_2(frm+5);
+			baseqctl = LE_READ_2(frm+7);
 
 			tid = MS(baparamset, IEEE80211_BAPS_TID);
 			bufsiz = MS(baparamset, IEEE80211_BAPS_BUFSIZ);
@@ -1196,11 +1196,11 @@ ieee80211_aggr_recv_action(struct ieee80211_node *in,
 
 		case IEEE80211_ACTION_BA_ADDBA_RESPONSE:
 			dialogtoken = frm[2];
-			code = *(uint16_t *)(frm+3);
-			baparamset = *(uint16_t *)(frm+5);
+			code = LE_READ_2(frm+3);
+			baparamset = LE_READ_2(frm+5);
 			tid = MS(baparamset, IEEE80211_BAPS_TID);
 			bufsiz = MS(baparamset, IEEE80211_BAPS_BUFSIZ);
-			batimeout = *(uint16_t *)(frm+7);
+			batimeout = LE_READ_2(frm+7);
 
 			ac = TID_TO_WME_AC(tid);
 			tap = &in->in_tx_ampdu[ac];
@@ -1228,8 +1228,8 @@ ieee80211_aggr_recv_action(struct ieee80211_node *in,
 			return;
 
 		case IEEE80211_ACTION_BA_DELBA:
-			baparamset = *(uint16_t *)(frm+2);
-			code = *(uint16_t *)(frm+4);
+			baparamset = LE_READ_2(frm+2);
+			code = LE_READ_2(frm+4);
 
 			tid = MS(baparamset, IEEE80211_DELBAPS_TID);
 

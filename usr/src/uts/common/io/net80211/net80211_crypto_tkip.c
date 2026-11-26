@@ -517,7 +517,8 @@ wep_encrypt(uint8_t *key, mblk_t *mp, uint_t off, size_t data_len,
 	(void) rc4_crypt(ctx, mp->b_rptr + off, mp->b_rptr + off, data_len);
 
 	/* tack on ICV */
-	*(uint32_t *)crcbuf = LE_32(~crc);
+	crc = LE_32(~crc);
+	bcopy(&crc, crcbuf, sizeof (crc));
 	(void) rc4_crypt(ctx, crcbuf, icv, IEEE80211_WEP_CRCLEN);
 
 	(void) rc4_final(ctx, icv, IEEE80211_WEP_CRCLEN);
@@ -528,6 +529,7 @@ wep_encrypt(uint8_t *key, mblk_t *mp, uint_t off, size_t data_len,
 static int
 wep_decrypt(uint8_t *key, mblk_t *mp, uint_t off, size_t data_len)
 {
+	uint32_t rxcrc;
 	uint8_t crcbuf[IEEE80211_WEP_CRCLEN];
 	uint8_t *icv;
 	uint32_t crc;
@@ -550,7 +552,8 @@ wep_decrypt(uint8_t *key, mblk_t *mp, uint_t off, size_t data_len)
 	(void) rc4_crypt(ctx, icv, crcbuf, IEEE80211_WEP_CRCLEN);
 	(void) rc4_final(ctx, crcbuf, IEEE80211_WEP_CRCLEN);
 
-	return (crc == ~LE_32(*(uint32_t *)crcbuf));
+	bcopy(crcbuf, &rxcrc, sizeof (rxcrc));
+	return (crc == ~LE_32(rxcrc));
 }
 
 static uint32_t
