@@ -1552,7 +1552,7 @@ dladm_wlan_wpa_set_key(dladm_handle_t handle, datalink_id_t linkid,
 		(void) memset(wk.ik_macaddr, 0, DLADM_WLAN_BSSID_LEN);
 	wk.ik_keyix = key_idx;
 	wk.ik_keylen = key_len;
-	(void) memcpy(&wk.ik_keyrsc, &seq, 6);	/* only use 48-bit of seq */
+	wk.ik_keyrsc = seq & 0xffffffffffffULL;	/* only use 48-bit of seq */
 	(void) memcpy(wk.ik_keydata, key, key_len);
 
 	return (i_dladm_wlan_param(handle, linkid, &wk, MAC_PROP_WL_KEY,
