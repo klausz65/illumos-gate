@@ -1411,9 +1411,43 @@ ld_do_activerelocs(Ofl_desc *ofl)
 		 * If '-z noreloc' is specified - skip the do_reloc stage.
 		 */
 		if (OFL_DO_RELOC(ofl)) {
-			if (do_reloc_ld(arsp, addr, &value, ld_reloc_sym_name,
-			    ifl_name, OFL_SWAP_RELOC_DATA(ofl, arsp),
-			    ofl->ofl_lml) == 0) {
+			const Rel_entry	*rep = &reloc_table[arsp->rel_rtype];
+			uchar_t		*raddr = addr;
+			union {
+				Xword	x;
+				uchar_t	b[sizeof (Xword)];
+			} ubuf;
+			int		ret;
+
+			/*
+			 * An aligned data relocation (R_SPARC_16, R_SPARC_32,
+			 * R_SPARC_64) can target a field that is aligned
+			 * within its input section but not in the output
+			 * section, when the input section has a smaller
+			 * alignment than the field: LLVM emits R_SPARC_32
+			 * and R_SPARC_64 for aligned fields of debugging
+			 * sections, whose sh_addralign is 1.  The data of a
+			 * non-allocatable section is never accessed with
+			 * aligned loads, so resolve such a relocation in an
+			 * aligned buffer, with all of its checks, and copy
+			 * the bytes into place.
+			 */
+			if (((arsp->rel_isdesc->is_shdr->sh_flags &
+			    SHF_ALLOC) == 0) &&
+			    ((rep->re_flags & FLG_RE_UNALIGN) == 0) &&
+			    (rep->re_fsize > 1) &&
+			    (rep->re_fsize <= sizeof (Xword)) &&
+			    (((uintptr_t)addr & (rep->re_fsize - 1)) != 0)) {
+				(void) memcpy(ubuf.b, addr, rep->re_fsize);
+				raddr = ubuf.b;
+			}
+
+			ret = do_reloc_ld(arsp, raddr, &value,
+			    ld_reloc_sym_name, ifl_name,
+			    OFL_SWAP_RELOC_DATA(ofl, arsp), ofl->ofl_lml);
+			if (raddr != addr)
+				(void) memcpy(addr, ubuf.b, rep->re_fsize);
+			if (ret == 0) {
 				ofl->ofl_flags |= FLG_OF_FATAL;
 				return_code = S_ERROR;
 			}
