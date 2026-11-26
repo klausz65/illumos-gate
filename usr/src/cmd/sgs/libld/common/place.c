@@ -673,6 +673,26 @@ isp_convert_type(Is_desc *isp, Word sh_type)
 }
 
 /*
+ * The .eh_frame output section of an executable or shared object (there
+ * is at most one), or NULL.
+ */
+static Os_desc *
+eh_frame_osp(Ofl_desc *ofl)
+{
+	Sg_desc	*sgp;
+	Os_desc	*osp;
+	Aliste	idx1, idx2;
+
+	for (APLIST_TRAVERSE(ofl->ofl_segs, idx1, sgp)) {
+		for (APLIST_TRAVERSE(sgp->sg_osdescs, idx2, osp)) {
+			if ((osp->os_flags & FLG_OS_EHFRAME) != 0)
+				return (osp);
+		}
+	}
+	return (NULL);
+}
+
+/*
  * Issue a fatal warning for the given .eh_frame section, which
  * cannot be merged with the existing .eh_frame output section.
  */
@@ -895,6 +915,36 @@ ld_place_section(Ofl_desc *ofl, Is_desc *isp, Place_path_info *path_info,
 	 */
 	if (shflags & SHF_TLS)
 		shflags |= SHF_WRITE;
+
+	/*
+	 * An executable or shared object has a single .eh_frame output
+	 * section (see the is_ehframe check below). Compilers differ in
+	 * whether .eh_frame is writable: gcc on SPARC emits it with
+	 * SHF_WRITE, LLVM (rustc) without, so a Rust program linked with
+	 * gcc's crtend.o brings both. Such an input section differs from
+	 * the existing .eh_frame output section only in SHF_WRITE and is
+	 * added to it, as GNU ld does, instead of failing as a second
+	 * .eh_frame (eh_frame_muldef()). The output section keeps the flags
+	 * and segment of its first input section; a relocation that would
+	 * need it writable at run time is still diagnosed as a text
+	 * relocation. Links that do not mix the two are not affected.
+	 */
+	if (is_ehframe && (ofl->ofl_flags & FLG_OF_EHFRAME) &&
+	    !(ofl->ofl_flags & FLG_OF_RELOBJ) &&
+	    !(isp->is_flags & FLG_IS_COMDAT)) {
+		Os_desc	*eosp = eh_frame_osp(ofl);
+
+		if (eosp != NULL && eosp->os_sgdesc != NULL &&
+		    (shflags ^ eosp->os_shdr->sh_flags) == SHF_WRITE) {
+			set_addralign(ofl, eosp, isp);
+			if (os_attach_isp(ofl, eosp, isp,
+			    (eosp->os_sgdesc->sg_flags & FLG_SG_IS_ORDER) != 0) == 0)
+				return ((Os_desc *)S_ERROR);
+			DBG_CALL(Dbg_sec_added(ofl->ofl_lml, eosp,
+			    eosp->os_sgdesc));
+			return (eosp);
+		}
+	}
 
 	/*
 	 * Traverse the entrance criteria list searching for a segment that
